@@ -13,29 +13,34 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * One player's Field Guide, immutable: the mobs seen, kills per mob, and the looks seen ({@code mob/look}).
+ * One player's Field Guide, immutable: the mobs seen, kills per mob, the looks seen ({@code mob/look}) and the mobs
+ * whose trophy the player has owned.
  * Saved and synced to its owner as a player attachment on both loaders; copied on death.
  */
-public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, Set<String> looks) {
-    public static final FieldGuideProgress EMPTY = new FieldGuideProgress(Set.of(), Map.of(), Set.of());
+public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, Set<String> looks, Set<String> trophies) {
+    public static final FieldGuideProgress EMPTY = new FieldGuideProgress(Set.of(), Map.of(), Set.of(), Set.of());
     private static final int MAX = 4096;
 
     public static final Codec<FieldGuideProgress> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().fieldOf("seen").forGetter(p -> List.copyOf(p.seen)),
             Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("kills").forGetter(FieldGuideProgress::kills),
-            Codec.STRING.listOf().fieldOf("looks").forGetter(p -> List.copyOf(p.looks))
-    ).apply(i, (seen, kills, looks) -> new FieldGuideProgress(new LinkedHashSet<>(seen), kills, new LinkedHashSet<>(looks))));
+            Codec.STRING.listOf().fieldOf("looks").forGetter(p -> List.copyOf(p.looks)),
+            Codec.STRING.listOf().optionalFieldOf("trophies", List.of()).forGetter(p -> List.copyOf(p.trophies))
+    ).apply(i, (seen, kills, looks, trophies) -> new FieldGuideProgress(new LinkedHashSet<>(seen), kills, new LinkedHashSet<>(looks),
+            new LinkedHashSet<>(trophies))));
 
     public static final StreamCodec<ByteBuf, FieldGuideProgress> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.seen),
             ByteBufCodecs.map(LinkedHashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.VAR_INT, MAX), p -> new LinkedHashMap<>(p.kills),
             ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.looks),
+            ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.trophies),
             FieldGuideProgress::new);
 
     public FieldGuideProgress {
         seen = Collections.unmodifiableSet(new LinkedHashSet<>(seen));
         kills = Collections.unmodifiableMap(new LinkedHashMap<>(kills));
         looks = Collections.unmodifiableSet(new LinkedHashSet<>(looks));
+        trophies = Collections.unmodifiableSet(new LinkedHashSet<>(trophies));
     }
 
     public boolean hasSeen(String mob) {
@@ -64,7 +69,7 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         s.add(mob);
         Set<String> l = new LinkedHashSet<>(looks);
         if (newLook) l.add(mob + "/" + look);
-        return new FieldGuideProgress(s, kills, l);
+        return new FieldGuideProgress(s, kills, l, trophies);
     }
 
     /** A copy with one more kill of the mob, which also counts as seeing it. */
@@ -72,6 +77,18 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         FieldGuideProgress p = withSeen(mob, look);
         Map<String, Integer> k = new LinkedHashMap<>(p.kills);
         k.merge(mob, 1, Integer::sum);
-        return new FieldGuideProgress(p.seen, k, p.looks);
+        return new FieldGuideProgress(p.seen, k, p.looks, p.trophies);
+    }
+
+    public boolean hasTrophy(String mob) {
+        return trophies.contains(mob);
+    }
+
+    /** A copy with the mob's trophy owned; the same instance if it already was. */
+    public FieldGuideProgress withTrophy(String mob) {
+        if (trophies.contains(mob)) return this;
+        Set<String> t = new LinkedHashSet<>(trophies);
+        t.add(mob);
+        return new FieldGuideProgress(seen, kills, looks, t);
     }
 }

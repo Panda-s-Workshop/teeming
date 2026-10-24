@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class FieldGuideProgressTest {
     private static FieldGuideProgress sample() {
         return FieldGuideProgress.EMPTY.withSeen("thornhorn", "base").withKill("slagheart_golem", "cooled_golem")
-                .withKill("slagheart_golem", "base").withKill("slagheart_golem", "base");
+                .withKill("slagheart_golem", "base").withKill("slagheart_golem", "base").withTrophy("levimoth");
     }
 
     @Test
@@ -34,6 +35,23 @@ class FieldGuideProgressTest {
     void unchangedIsSameInstance() {
         FieldGuideProgress p = sample();
         assertSame(p, p.withSeen("thornhorn", "base"), "seeing a known mob in a known look changes nothing");
+    }
+
+    @Test
+    void trophiesOwned() {
+        FieldGuideProgress p = sample();
+        assertTrue(p.hasTrophy("levimoth"));
+        assertFalse(p.hasTrophy("thornhorn"));
+        assertSame(p, p.withTrophy("levimoth"), "owning a trophy twice changes nothing");
+        assertTrue(p.withKill("levimoth", "base").hasTrophy("levimoth"), "a kill keeps the trophies");
+    }
+
+    @Test
+    void oldSaveWithoutTrophiesLoads() {
+        JsonElement json = JsonParser.parseString("{\"seen\":[\"thornhorn\"],\"kills\":{\"thornhorn\":2},\"looks\":[\"thornhorn/base\"]}");
+        FieldGuideProgress p = FieldGuideProgress.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+        assertEquals(2, p.killsOf("thornhorn"));
+        assertTrue(p.trophies().isEmpty());
     }
 
     @Test

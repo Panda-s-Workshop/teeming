@@ -2,17 +2,22 @@ package com.panda.teeming.fieldguide;
 
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.platform.Services;
+import com.panda.teeming.registry.ModComponents;
+import com.panda.teeming.registry.ModItems;
+import com.panda.teeming.trophy.TrophyMob;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * The Field Guide's server side. "Seen": a Teeming mob within 24 blocks that the player has a line of sight
  * to, checked every 20 ticks per player against nearby Teeming mobs only. A player kill counts too; the third kill
- * reveals the mob's tell, counter, drops and looks. The client turns the synced changes into toasts.
+ * reveals the mob's tell, counter, drops and looks. A trophy in the player's inventory, checked on the same beat, marks
+ * that mob's trophy as owned for good. The client turns the synced changes into toasts.
  */
 public final class FieldGuide {
     public static final double SEEN_RANGE = 24.0;
@@ -49,8 +54,19 @@ public final class FieldGuide {
             if (!after.hasSeen(creature.mobId())) fresh++;
             after = after.withSeen(creature.mobId(), creature.look());
         }
+        after = withTrophies(player, after);
         if (after != before) set(player, after);
         return fresh;
+    }
+
+    /** Marks every trophy in the player's inventory as owned. */
+    static FieldGuideProgress withTrophies(ServerPlayer player, FieldGuideProgress progress) {
+        for (ItemStack stack : player.getInventory()) {
+            if (!stack.is(ModItems.TROPHY.get())) continue;
+            TrophyMob mob = stack.getOrDefault(ModComponents.TROPHY_MOB.get(), TrophyMob.NONE);
+            if (!mob.isEmpty()) progress = progress.withTrophy(mob.mob());
+        }
+        return progress;
     }
 
     /** The sight rule: within 24 blocks and in the player's line of sight. */

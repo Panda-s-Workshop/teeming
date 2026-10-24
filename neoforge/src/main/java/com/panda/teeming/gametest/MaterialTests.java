@@ -56,9 +56,12 @@ final class MaterialTests {
         return BuiltInRegistries.POTION.get(Identifier.parse(id)).orElseThrow(() -> new IllegalStateException("no potion " + id));
     }
 
-    /** What crafting {@code stacks} in a grid makes, or empty. */
+    /** What crafting {@code stacks} in a 3-wide grid makes, or empty. */
     private static ItemStack craft(GameTestHelper helper, List<ItemStack> stacks) {
-        CraftingInput input = CraftingInput.of(stacks.size(), 1, stacks);
+        List<ItemStack> grid = new ArrayList<>(stacks);
+        int width = Math.min(3, grid.size()), height = (grid.size() + width - 1) / width;
+        while (grid.size() < width * height) grid.add(ItemStack.EMPTY);
+        CraftingInput input = CraftingInput.of(width, height, grid);
         return helper.getLevel().getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
                 .map(r -> r.value().assemble(input)).orElse(ItemStack.EMPTY);
     }
@@ -81,9 +84,26 @@ final class MaterialTests {
                 String[] w = use.split(" ");
                 if (w[0].equals("craft")) {
                     int in = Integer.parseInt(w[1]), want = Integer.parseInt(w[3]);
-                    ItemStack out = craft(helper, Collections.nCopies(in, new ItemStack(mat.get())));
-                    if (!out.is(item(w[2])) || out.getCount() != want) wrong.add(id + ": " + in + " crafts into " + out + ", want " + want + " " + w[2]);
+                    List<ItemStack> stacks = new ArrayList<>(Collections.nCopies(in, new ItemStack(mat.get())));
+                    for (int i = 4; i < w.length; i++) {                          // extra ingredients, item*count
+                        String[] extra = w[i].split("\\*");
+                        for (int n = 0; n < Integer.parseInt(extra[1]); n++) stacks.add(new ItemStack(item(extra[0])));
+                    }
+                    ItemStack out = craft(helper, stacks);
+                    if (!out.is(item(w[2])) || out.getCount() != want) wrong.add(id + ": " + use + " gives " + out + ", want " + want + " " + w[2]);
+                    if (w.length > 4 && !craft(helper, Collections.nCopies(in, new ItemStack(mat.get()))).isEmpty() && in > 1) {
+                        wrong.add(id + ": " + use + " also crafts without its extra ingredients");
+                    }
                     unlock(server, id + "_to_" + Identifier.parse(w[2]).getPath(), wrong);
+                } else if (w[0].equals("tipped")) {
+                    List<ItemStack> stacks = new ArrayList<>(Collections.nCopies(8, new ItemStack(Items.ARROW)));
+                    stacks.add(new ItemStack(mat.get()));
+                    ItemStack out = craft(helper, stacks);
+                    PotionContents contents = out.get(DataComponents.POTION_CONTENTS);
+                    if (!out.is(Items.TIPPED_ARROW) || out.getCount() != 8 || contents == null || !contents.is(potion(w[1]))) {
+                        wrong.add(id + ": 8 arrows and one give " + out + ", want 8 tipped arrows of " + w[1]);
+                    }
+                    unlock(server, id + "_to_tipped_arrow", wrong);
                 } else if (w[0].equals("brew")) {
                     BrewingInput input = new BrewingInput(PotionContents.createItemStack(Items.POTION, Potions.AWKWARD), new ItemStack(mat.get()));
                     ItemStack out = server.getRecipeManager().getRecipeFor(RecipeType.BREWING, input, helper.getLevel())

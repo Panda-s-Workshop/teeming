@@ -5,10 +5,13 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
 import com.panda.teeming.mob.TeemingCreature;
+import com.panda.teeming.registry.ModComponents;
+import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Dim;
 import com.panda.teeming.roster.RosterStats.Entry;
 import com.panda.teeming.spawn.TeemingSpawns;
+import com.panda.teeming.trophy.TrophyMob;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,26 +21,34 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * The Field Guide: an open book. Left page: tabs Overworld / Nether / End with seen counts, and the tab's
- * creatures ("???" until seen). Right page: the chosen creature, turning, with its home and role; its tell and counter
- * once the player has killed it three times. Read-only: the data is the synced player attachment.
+ * creatures ("???" until seen, a crown once its trophy is owned). Right page: the chosen creature, an ink silhouette
+ * until seen, then turning, with its home and role; its tell, counter and drops once the player has killed it three
+ * times. Read-only: the data is the synced player attachment.
  */
 public class FieldGuideScreen extends Screen {
     static final Identifier BOOK = TeemingMod.id("textures/gui/field_guide.png");
     static final int W = 300, H = 184;
     static final int L_X = 14, L_W = 128, R_X = 158, R_W = 128;
-    static final int TAB_Y = 26, TAB_H = 12, TAB_GAP = 2, LIST_Y = 56, ROW_H = 12;
-    static final int MODEL_Y = 10, MODEL_H = 58, FLIP_Y = H - 22;
-    static final int INK = 0xFF34261A, INK_MUTED = 0xFF7A6650, ACCENT = 0xFF3E5A30, SELECT = 0x3343602F;
+    static final int TAB_X = L_X - 3, TAB_Y = 26, TAB_H = 12, TAB_GAP = 1, TAB_PAD = 4, LIST_Y = 56, ROW_H = 12;
+    /** Keeps the tabs and the count clear of the spine's shadow on the left page's inner edge. */
+    static final int SPINE_MARGIN = 8;
+    static final int MODEL_Y = 10, MODEL_H = 52, FLIP_Y = H - 22;
+    static final int SILHOUETTE_W = 124, SILHOUETTE_H = 50, DROPS_Y = FLIP_Y - 30;
+    static final int INK = 0xFF34261A, INK_MUTED = 0xFF7A6650, ACCENT = 0xFF3E5A30, SELECT = 0x3343602F, TROPHY = 0xFFA87A22;
 
     private static final Dim[] TABS = Dim.values();
     private final Map<String, LivingEntity> portraits = new HashMap<>();
@@ -78,13 +89,13 @@ public class FieldGuideScreen extends Screen {
 
     /** Tabs sized to their names, left to right. */
     public int[] tabBounds(int t) {
-        int x = x0 + L_X;
+        int x = x0 + TAB_X;
         for (int i = 0; i < t; i++) x += tabWidth(i) + TAB_GAP;
         return new int[] {x, y0 + TAB_Y, tabWidth(t), TAB_H};
     }
 
     private int tabWidth(int t) {
-        return font.width(tabName(t)) + 6;
+        return font.width(tabName(t)) + TAB_PAD * 2;
     }
 
     private static Component tabName(int t) {
@@ -167,7 +178,7 @@ public class FieldGuideScreen extends Screen {
         FieldGuideProgress p = progress();
         drawLeft(g, p, mx, my);
         List<Entry> list = entries(TABS[tab]);
-        if (!list.isEmpty()) drawRight(g, p, list.get(Math.min(selected, list.size() - 1)), partial);
+        if (!list.isEmpty()) drawRight(g, p, list.get(Math.min(selected, list.size() - 1)), partial, mx, my);
     }
 
     private void drawLeft(GuiGraphicsExtractor g, FieldGuideProgress p, int mx, int my) {
@@ -181,7 +192,7 @@ public class FieldGuideScreen extends Screen {
         List<Entry> list = entries(TABS[tab]);
         long seen = list.stream().filter(m -> p.hasSeen(m.id())).count();
         String count = seen + " / " + list.size();
-        g.text(font, count, x0 + L_X + L_W - font.width(count), y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
+        g.text(font, count, x0 + L_X + L_W - SPINE_MARGIN - font.width(count), y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
         if (list.isEmpty()) {
             g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.empty"), x0 + L_X, y0 + LIST_Y, L_W, INK_MUTED, false);
             return;
@@ -195,18 +206,20 @@ public class FieldGuideScreen extends Screen {
             g.text(font, String.format("%02d", mob.number()), b[0] + 3, b[1] + 2, INK_MUTED, false);
             g.text(font, name, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
             if (p.revealed(mob.id(), FieldGuide.KILLS_TO_REVEAL)) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
+            if (p.hasTrophy(mob.id())) g.text(font, "♛", b[0] + b[2] - 20, b[1] + 2, TROPHY, false);
         }
     }
 
-    private void drawRight(GuiGraphicsExtractor g, FieldGuideProgress p, Entry mob, float partial) {
+    private void drawRight(GuiGraphicsExtractor g, FieldGuideProgress p, Entry mob, float partial, int mx, int my) {
         int x = x0 + R_X, y = y0 + MODEL_Y;
         boolean known = p.hasSeen(mob.id());
         boolean revealed = p.revealed(mob.id(), FieldGuide.KILLS_TO_REVEAL);
         Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
         if (revealed && side == 1) {
             centered(g, name, x + R_W / 2, y, INK);
-            int ty = labelled(g, "tell", mob, x, y + 14);
-            labelled(g, "counter", mob, x, ty + 2);
+            int ty = labelled(g, "tell", mob, x, y + 14, DROPS_Y - 2);
+            labelled(g, "counter", mob, x, ty + 2, DROPS_Y - 2);
+            drops(g, mob, x, y0 + DROPS_Y, mx, my);
             flip(g, "◀ " + Component.translatable("screen.teeming.field_guide.about").getString());
             return;
         }
@@ -219,18 +232,24 @@ public class FieldGuideScreen extends Screen {
                         x + R_W / 2.0F + spin, y + MODEL_H / 2.0F, portrait);
             }
         } else {
-            g.fill(x + R_W / 2 - 18, y + 6, x + R_W / 2 + 18, y + MODEL_H - 6, 0x33000000);
-            centered(g, "?", x + R_W / 2, y + MODEL_H / 2 - 4, INK_MUTED);
+            g.blit(RenderPipelines.GUI_TEXTURED, silhouette(mob), x + (R_W - SILHOUETTE_W) / 2, y + 1, 0, 0, SILHOUETTE_W, SILHOUETTE_H,
+                    SILHOUETTE_W, SILHOUETTE_H);
         }
         int ty = y + MODEL_H + 3;
-        centered(g, name, x + R_W / 2, ty, INK);
+        if (known && p.hasTrophy(mob.id())) {
+            Component crowned = name.copy().append(Component.literal(" ♛").withColor(TROPHY));   // its trophy is owned
+            centered(g, crowned, x + R_W / 2, ty, INK);
+        } else {
+            centered(g, name, x + R_W / 2, ty, INK);
+        }
         ty += 12;
         if (!known) {
             g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.unseen"), x, ty, R_W, INK_MUTED, false);
             return;
         }
-        ty = para(g, Component.translatable("guide.teeming." + mob.id() + ".home"), x, ty, ACCENT, FLIP_Y - 12);
-        para(g, Component.translatable("guide.teeming." + mob.id() + ".role"), x, ty, INK, FLIP_Y - 12);
+        int foot = revealed ? FLIP_Y - 12 : FLIP_Y - 2;
+        ty = para(g, Component.translatable("guide.teeming." + mob.id() + ".home"), x, ty, ACCENT, foot);
+        para(g, Component.translatable("guide.teeming." + mob.id() + ".role"), x, ty, INK, foot);
         if (revealed) {
             int seenLooks = (int) mob.looks().stream().filter(l -> p.hasSeenLook(mob.id(), l)).count();
             g.text(font, Component.translatable("screen.teeming.field_guide.looks", seenLooks, mob.looks().size()), x, y0 + FLIP_Y - 11, INK_MUTED, false);
@@ -254,17 +273,40 @@ public class FieldGuideScreen extends Screen {
         g.text(font, label, b[0] + b[2] - font.width(label), b[1], ACCENT, false);
     }
 
-    private int labelled(GuiGraphicsExtractor g, String key, Entry mob, int x, int y) {
+    private int labelled(GuiGraphicsExtractor g, String key, Entry mob, int x, int y, int foot) {
         g.text(font, Component.translatable("screen.teeming.field_guide." + key), x, y, ACCENT, false);
-        return para(g, Component.translatable("guide.teeming." + mob.id() + "." + key), x, y + 10, INK, FLIP_Y - 2);
+        return para(g, Component.translatable("guide.teeming." + mob.id() + "." + key), x, y + 10, INK, foot);
     }
 
-    /** Wrapped text that stops above {@code foot} (page-relative); returns the next line's y. */
+    /** The drops row: a label and the items' icons, each naming itself on hover. */
+    private void drops(GuiGraphicsExtractor g, Entry mob, int x, int y, int mx, int my) {
+        g.text(font, Component.translatable("screen.teeming.field_guide.drops"), x, y, ACCENT, false);
+        int ix = x;
+        for (String id : MobDrops.of(mob.id())) {
+            ItemStack stack = BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).map(ItemStack::new).orElse(ItemStack.EMPTY);
+            if (stack.isEmpty()) continue;
+            if (stack.is(ModItems.TROPHY.get())) stack.set(ModComponents.TROPHY_MOB.get(), new TrophyMob(mob.id(), "base"));
+            g.item(stack, ix, y + 10);
+            if (mx >= ix && mx < ix + 16 && my >= y + 10 && my < y + 26) g.setTooltipForNextFrame(font, stack, mx, my);
+            ix += 18;
+        }
+    }
+
+    private final Map<String, Identifier> silhouettes = new HashMap<>();
+
+    private Identifier silhouette(Entry mob) {
+        return silhouettes.computeIfAbsent(mob.id(), id -> TeemingMod.id("textures/gui/field_guide/silhouette/" + id + ".png"));
+    }
+
+    /** Wrapped text that stops above {@code foot} (page-relative), its last line ending in "…" if cut; returns the next line's y. */
     private int para(GuiGraphicsExtractor g, Component text, int x, int y, int colour, int foot) {
         int bottom = y0 + foot;
-        var lines = font.split(text, R_W);
-        for (var line : lines) {
+        List<FormattedText> lines = font.getSplitter().splitLines(text, R_W, Style.EMPTY);
+        for (int i = 0; i < lines.size(); i++) {
             if (y + 9 > bottom) break;
+            String line = lines.get(i).getString();
+            boolean cut = i + 1 < lines.size() && y + 18 > bottom;
+            if (cut) line = font.plainSubstrByWidth(line.stripTrailing(), R_W - font.width("…")) + "…";
             g.text(font, line, x, y, colour, false);
             y += 9;
         }

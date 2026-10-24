@@ -8,6 +8,7 @@ import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.DamageTypeTags;
@@ -37,8 +38,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * Slagheart Golem: heat 0–12 rises by 1 for every hit it takes and every 3 s while it fights; its cracks
- * glow in four stages (heat / 3). At 12 it shakes for 1 s (tell) and erupts: 10 damage and fire within 5 blocks, heat
- * back to 6. Counter: a snowball cools it by 2, splash water by 4, powder snow by 12; at heat 0 it is quenched for
+ * glow in four stages (heat / 3). At 12 it shakes for 1 s (tell), smoke tracing the 5-block reach on the ground, and
+ * erupts: 10 damage and fire within 5 blocks, a ring of flame along that edge, heat back to 6. Counter: a snowball cools it by 2, splash water by 4, powder snow by 12; at heat 0 it is quenched for
  * 3 s and takes ×1.5.
  */
 public class SlagheartGolem extends TeemingMonster {
@@ -50,6 +51,7 @@ public class SlagheartGolem extends TeemingMonster {
     public static final int TELL_TICKS = 20;
     public static final int ERUPT_TICKS = 10;
     public static final double ERUPT_RADIUS = 5.0;
+    private static final int RING_POINTS = 40;
     public static final float ERUPT_DAMAGE = 10.0F;
     public static final int SNOWBALL = 2, SPLASH = 4, POWDER_SNOW = 12;
     public static final int QUENCH_TICKS = 60;
@@ -138,6 +140,7 @@ public class SlagheartGolem extends TeemingMonster {
         if (core().in(Step.TELL) || core().in(Step.ERUPT)) {
             getNavigation().stop();
             RUMBLE.trail(this, 2);
+            if (core().in(Step.TELL) && tickCount % 4 == 0) ring(level, ParticleTypes.SMOKE, 0.0);   // how far to run
             return;
         }
         if (core().in(Step.QUENCHED)) {
@@ -176,8 +179,18 @@ public class SlagheartGolem extends TeemingMonster {
         level.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.2, getZ(), 40, 1.5, 0.8, 1.5, 0.2);
         level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 1.0, getZ(), 60, 2.0, 0.6, 2.0, 0.08);
         level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0, getZ(), 3, 1.0, 0.5, 1.0, 0.0);
+        ring(level, ParticleTypes.FLAME, 0.02);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.SLAGHEART_GOLEM_ERUPT.get(), getSoundSource(), 1.0F, 1.0F);
         return hit;
+    }
+
+    /** Particles along the ground at the eruption's reach, rising at {@code lift}. */
+    private void ring(ServerLevel level, SimpleParticleType particle, double lift) {
+        for (int i = 0; i < RING_POINTS; i++) {
+            double a = i * (Math.PI * 2 / RING_POINTS);
+            level.sendParticles(particle, getX() + Math.cos(a) * ERUPT_RADIUS, getY() + 0.2, getZ() + Math.sin(a) * ERUPT_RADIUS,
+                    1, 0.0, 0.05, 0.0, lift);
+        }
     }
 
     @Override

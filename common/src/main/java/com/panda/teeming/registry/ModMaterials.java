@@ -17,7 +17,7 @@ public final class ModMaterials {
 
     public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, SLAG_GLAND, CHORUS_SILK);
 
-    /** Each material's uses, for the GameTests: "craft <count in> <result> <count out>" or "brew <potion>". */
+    /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.of(
             "tough_hide", List.of("craft 1 minecraft:leather 2"),
             "slag_gland", List.of("craft 1 minecraft:magma_cream 2"),

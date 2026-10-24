@@ -4,22 +4,27 @@ import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
 import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.overworld.Thornhorn;
+import com.panda.teeming.registry.ModComponents;
+import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.trophy.TrophyMob;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-/** A real ServerPlayer near a mob gets its entry, a wall hides it, three kills reveal it. */
+/** A real ServerPlayer near a mob gets its entry, a wall hides it, three kills reveal it, a held trophy is owned for good. */
 final class FieldGuideTests {
     private FieldGuideTests() {}
 
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("fieldguide_seen", FieldGuideTests::seen);
         out.accept("fieldguide_reveal", FieldGuideTests::reveal);
+        out.accept("fieldguide_trophy_owned", FieldGuideTests::trophyOwned);
     }
 
     private static ServerPlayer player(GameTestHelper helper, double x, double z) {
@@ -47,6 +52,22 @@ final class FieldGuideTests {
             helper.assertTrue(FieldGuide.look(player) == 0, "looking again adds nothing");
             helper.succeed();
         });
+    }
+
+    private static void trophyOwned(GameTestHelper helper) {
+        ServerPlayer player = player(helper, 1.5, 1.5);
+        ItemStack trophy = ModItems.TROPHY.get().getDefaultInstance();
+        trophy.set(ModComponents.TROPHY_MOB.get(), new TrophyMob("slagheart_golem", "base"));
+        player.getInventory().setItem(3, trophy);
+        player.getInventory().setItem(4, ModItems.TROPHY.get().getDefaultInstance());   // a blank trophy names no mob
+        FieldGuide.look(player);
+        FieldGuideProgress p = FieldGuide.get(player);
+        helper.assertTrue(p.hasTrophy("slagheart_golem"), "a trophy in the inventory marks its mob as owned");
+        helper.assertTrue(p.trophies().size() == 1, "only named trophies count, owned " + p.trophies());
+        player.getInventory().setItem(3, ItemStack.EMPTY);                             // placed on a shelf, say
+        FieldGuide.look(player);
+        helper.assertTrue(FieldGuide.get(player).hasTrophy("slagheart_golem"), "it stays owned once the trophy leaves the inventory");
+        helper.succeed();
     }
 
     private static void reveal(GameTestHelper helper) {
