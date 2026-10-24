@@ -1,0 +1,88 @@
+name: 💥 Crash report
+description: The game or server crashes, freezes or won't start.
+labels: ["type: crash", "status: needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The crash report is the most useful thing you can send. It's in the `crash-reports` folder of your game or server, or shown in the launcher.
+
+  - type: input
+    id: crash
+    attributes:
+      label: Crash report
+      description: Upload the crash report to [mclo.gs](https://mclo.gs) and paste the link. If there's no crash report, upload `logs/latest.log` instead.
+      placeholder: https://mclo.gs/...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: when
+    attributes:
+      label: When does it crash?
+      options:
+        - While the game starts
+        - Creating or loading a world
+        - When a Teeming mob spawns
+        - Fighting or meeting a Teeming mob
+        - Opening the Field Guide or placing a trophy
+        - Using a drop, a charm or a recipe
+        - Starting or running a dedicated server
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What were you doing?
+      placeholder: Flew to the outer End islands and the game froze when a mob spawned near me.
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Teeming version
+      description: From the jar's name or the mods list, such as 0.1.0.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Loader
+      description: Teeming is for Minecraft 26.3 on NeoForge and Fabric.
+      options:
+        - NeoForge
+        - Fabric
+    validations:
+      required: true
+
+  - type: input
+    id: loader_version
+    attributes:
+      label: Loader version
+      description: The NeoForge version, or the Fabric Loader and Fabric API versions.
+      placeholder: NeoForge 26.3.0.89, or Fabric Loader 0.19.5 with Fabric API 0.161.0+26.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: Your mod list, the modpack's name and version, or "none".
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I'm on the latest Teeming release.
+          required: false
+        - label: I searched the open and closed issues for this crash.
+          required: true

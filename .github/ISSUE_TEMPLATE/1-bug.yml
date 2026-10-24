@@ -1,0 +1,116 @@
+name: 🐛 Bug report
+description: Something behaves wrong, without crashing.
+labels: ["type: bug", "status: needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! One problem per issue, please. For crashes use the **Crash report** form, and for problems that only happen together with another mod, **Conflict with another mod**. Questions go to [Discussions](https://github.com/Panda-s-Workshop/teeming/discussions).
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What's wrong, and which mob or item. Screenshots help a lot.
+      placeholder: A Dunefin keeps beaching on sandstone and never gets stunned.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      placeholder: |
+        1. Create a world with seed 1111
+        2. Go to the desert at 104 70 -220
+        3. Wait for a Dunefin to beach, then try to stun it
+    validations:
+      required: false
+
+  - type: input
+    id: where
+    attributes:
+      label: Seed and coordinates
+      description: The world seed and the coordinates from F3, so the same spot can be found again.
+      placeholder: Seed 1111, desert at 104 70 -220
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Overworld mobs
+        - Nether mobs
+        - End mobs
+        - Spawning (where, how many)
+        - Field Guide
+        - Trophies
+        - Drops, recipes, brewing and charms
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Teeming version
+      description: From the jar's name or the mods list, such as 0.1.0.
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Loader
+      description: Teeming is for Minecraft 26.3 on NeoForge and Fabric.
+      options:
+        - NeoForge
+        - Fabric
+    validations:
+      required: true
+
+  - type: input
+    id: loader_version
+    attributes:
+      label: Loader version
+      description: The NeoForge version, or the Fabric Loader and Fabric API versions.
+      placeholder: NeoForge 26.3.0.89, or Fabric Loader 0.19.5 with Fabric API 0.161.0+26.3
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: Your mod list, the modpack's name and version, or "none". Mods that add biomes, mobs or change spawning matter most.
+    validations:
+      required: true
+
+  - type: input
+    id: log
+    attributes:
+      label: Log
+      description: Upload `logs/latest.log` to [mclo.gs](https://mclo.gs) and paste the link.
+      placeholder: https://mclo.gs/...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I'm on the latest Teeming release.
+          required: false
+        - label: I searched the open and closed issues for this problem.
+          required: true

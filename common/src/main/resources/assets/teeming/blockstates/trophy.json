@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "teeming:block/trophy"
+    },
+    "facing=east": {
+      "model": "teeming:block/trophy",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "teeming:block/trophy",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "teeming:block/trophy",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,29 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share your finds: rare mobs, trophy shelves, Field Guide progress, clever counters, and modpacks with Teeming. Seeds and coordinates let others visit the same places.
+
+  - type: textarea
+    id: show
+    attributes:
+      label: What you'd like to share
+      description: Drag screenshots straight into this box.
+    validations:
+      required: true
+
+  - type: input
+    id: seed
+    attributes:
+      label: Seed and coordinates
+      placeholder: Seed 1111, a rare mob at 152 70 -40 in the desert
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Teeming version
+      placeholder: 0.1.0
+    validations:
+      required: false

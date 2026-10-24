@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:slag_gland"
+  ],
+  "result": {
+    "id": "minecraft:magma_cream",
+    "count": 2
+  }
+}
