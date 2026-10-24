@@ -71,6 +71,9 @@ public final class LevimothTests {
             helper.assertTrue(Math.abs(clouds.getFirst().getRadius() - Levimoth.CLOUD_RADIUS) < 0.01F, "radius 3, got " + clouds.getFirst().getRadius());
             helper.assertTrue(near.hasEffect(MobEffects.LEVITATION), "the pig 1.5 blocks away levitates");
             helper.assertTrue(near.getEffect(MobEffects.LEVITATION).getAmplifier() == Levimoth.LEVITATION_LEVEL, "Levitation II");
+            int left = near.getEffect(MobEffects.LEVITATION).getDuration();
+            helper.assertTrue(left > Levimoth.LEVITATION_TICKS - 10 && left <= Levimoth.LEVITATION_TICKS, "Levitation lasts 60 ticks, " + left + " left");
+            helper.assertTrue(clouds.getFirst().getDuration() == Levimoth.CLOUD_TICKS, "the cloud lasts 100 ticks, got " + clouds.getFirst().getDuration());
             helper.assertTrue(!moth.hasEffect(MobEffects.LEVITATION), "its own dust doesn't lift the moth");
         });
     }
@@ -90,9 +93,12 @@ public final class LevimothTests {
 
     private static void cooldown(GameTestHelper helper) {
         Levimoth moth = moth(helper);
+        int[] most = {0};
+        helper.onEachTick(() -> most[0] = Math.max(most[0], moth.cooldown()));
         helper.runAtTickTime(2, () -> moth.hurtServer(helper.getLevel(), moth.damageSources().magic(), 1.0F));
         helper.runAtTickTime(2 + Levimoth.TELL_TICKS + Levimoth.RELEASE_TICKS + 4, () -> {
             helper.assertTrue(moth.core().idle() && moth.cooldown() > 0, "after the release it rests, cooldown " + moth.cooldown() + ", " + moth.phase());
+            helper.assertTrue(most[0] >= Levimoth.COOLDOWN - 1 && most[0] <= Levimoth.COOLDOWN, "the rest is 120 ticks, saw " + most[0]);
             moth.hurtServer(helper.getLevel(), moth.damageSources().magic(), 1.0F);
             helper.assertTrue(moth.core().idle(), "a hit during the cooldown doesn't flare again, phase " + moth.phase());
             helper.assertTrue(clouds(helper).size() == 1, "still one cloud");

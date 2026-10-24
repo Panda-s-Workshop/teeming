@@ -5,6 +5,7 @@ import com.panda.teeming.client.ClientSinks;
 import com.panda.teeming.client.TeemingClientInit;
 import com.panda.teeming.client.mob.CreatureLayers;
 import com.panda.teeming.client.mob.MobRenderers;
+import com.panda.teeming.client.trophy.TrophyItemRenderer;
 import com.panda.teeming.client.trophy.TrophyRenderer;
 import com.panda.teeming.registry.ModBlockEntities;
 import net.fabricmc.api.ClientModInitializer;
@@ -14,6 +15,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
@@ -32,5 +34,6 @@ public final class TeemingFabricClient implements ClientModInitializer {
         });
         CreatureLayers.register((layer, definition) -> ModelLayerRegistry.registerModelLayer(layer, definition::get));
         BlockEntityRenderers.register(ModBlockEntities.TROPHY.get(), TrophyRenderer::new);
+        SpecialModelRenderers.ID_MAPPER.put(TrophyItemRenderer.TYPE, TrophyItemRenderer.Unbaked.MAP_CODEC);
     }
 }

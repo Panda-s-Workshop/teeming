@@ -13,27 +13,31 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * One player's Field Guide, immutable: the mobs seen, kills per mob, the looks seen ({@code mob/look}) and the mobs
- * whose trophy the player has owned.
+ * One player's Field Guide, immutable: the mobs seen, kills per mob, the looks seen ({@code mob/look}), the mobs
+ * whose trophy the player has owned, and the server's kills-to-reveal setting (carried here so the client shows the
+ * server's number).
  * Saved and synced to its owner as a player attachment on both loaders; copied on death.
  */
-public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, Set<String> looks, Set<String> trophies) {
-    public static final FieldGuideProgress EMPTY = new FieldGuideProgress(Set.of(), Map.of(), Set.of(), Set.of());
+public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, Set<String> looks, Set<String> trophies, int revealAt) {
+    public static final int DEFAULT_REVEAL_AT = 3;
+    public static final FieldGuideProgress EMPTY = new FieldGuideProgress(Set.of(), Map.of(), Set.of(), Set.of(), DEFAULT_REVEAL_AT);
     private static final int MAX = 4096;
 
     public static final Codec<FieldGuideProgress> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().fieldOf("seen").forGetter(p -> List.copyOf(p.seen)),
             Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("kills").forGetter(FieldGuideProgress::kills),
             Codec.STRING.listOf().fieldOf("looks").forGetter(p -> List.copyOf(p.looks)),
-            Codec.STRING.listOf().optionalFieldOf("trophies", List.of()).forGetter(p -> List.copyOf(p.trophies))
-    ).apply(i, (seen, kills, looks, trophies) -> new FieldGuideProgress(new LinkedHashSet<>(seen), kills, new LinkedHashSet<>(looks),
-            new LinkedHashSet<>(trophies))));
+            Codec.STRING.listOf().optionalFieldOf("trophies", List.of()).forGetter(p -> List.copyOf(p.trophies)),
+            Codec.INT.optionalFieldOf("reveal_at", DEFAULT_REVEAL_AT).forGetter(FieldGuideProgress::revealAt)
+    ).apply(i, (seen, kills, looks, trophies, revealAt) -> new FieldGuideProgress(new LinkedHashSet<>(seen), kills, new LinkedHashSet<>(looks),
+            new LinkedHashSet<>(trophies), revealAt)));
 
     public static final StreamCodec<ByteBuf, FieldGuideProgress> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.seen),
             ByteBufCodecs.map(LinkedHashMap::new, ByteBufCodecs.STRING_UTF8, ByteBufCodecs.VAR_INT, MAX), p -> new LinkedHashMap<>(p.kills),
             ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.looks),
             ByteBufCodecs.collection(LinkedHashSet::new, ByteBufCodecs.STRING_UTF8, MAX), p -> new LinkedHashSet<>(p.trophies),
+            ByteBufCodecs.VAR_INT, FieldGuideProgress::revealAt,
             FieldGuideProgress::new);
 
     public FieldGuideProgress {
@@ -41,6 +45,7 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         kills = Collections.unmodifiableMap(new LinkedHashMap<>(kills));
         looks = Collections.unmodifiableSet(new LinkedHashSet<>(looks));
         trophies = Collections.unmodifiableSet(new LinkedHashSet<>(trophies));
+        revealAt = Math.max(1, revealAt);
     }
 
     public boolean hasSeen(String mob) {
@@ -51,9 +56,14 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         return kills.getOrDefault(mob, 0);
     }
 
-    /** Tell, counter, drops and looks show once the player has killed it this many times. */
-    public boolean revealed(String mob, int killsToReveal) {
-        return killsOf(mob) >= killsToReveal;
+    /** Tell, counter, drops and looks show once the player has killed it {@link #revealAt} times. */
+    public boolean revealed(String mob) {
+        return killsOf(mob) >= revealAt;
+    }
+
+    /** A copy carrying the server's kills-to-reveal setting; the same instance if it hasn't changed. */
+    public FieldGuideProgress withRevealAt(int value) {
+        return value == revealAt ? this : new FieldGuideProgress(seen, kills, looks, trophies, value);
     }
 
     public boolean hasSeenLook(String mob, String look) {
@@ -69,7 +79,7 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         s.add(mob);
         Set<String> l = new LinkedHashSet<>(looks);
         if (newLook) l.add(mob + "/" + look);
-        return new FieldGuideProgress(s, kills, l, trophies);
+        return new FieldGuideProgress(s, kills, l, trophies, revealAt);
     }
 
     /** A copy with one more kill of the mob, which also counts as seeing it. */
@@ -77,7 +87,7 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         FieldGuideProgress p = withSeen(mob, look);
         Map<String, Integer> k = new LinkedHashMap<>(p.kills);
         k.merge(mob, 1, Integer::sum);
-        return new FieldGuideProgress(p.seen, k, p.looks, p.trophies);
+        return new FieldGuideProgress(p.seen, k, p.looks, p.trophies, p.revealAt);
     }
 
     public boolean hasTrophy(String mob) {
@@ -89,6 +99,6 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         if (trophies.contains(mob)) return this;
         Set<String> t = new LinkedHashSet<>(trophies);
         t.add(mob);
-        return new FieldGuideProgress(seen, kills, looks, t);
+        return new FieldGuideProgress(seen, kills, looks, t, revealAt);
     }
 }

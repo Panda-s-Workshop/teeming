@@ -1,4 +1,144 @@
 {
+  "levimoth.ambient": {
+    "subtitle": "subtitles.teeming.levimoth.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.ambient",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "levimoth.hurt": {
+    "subtitle": "subtitles.teeming.levimoth.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.hurt",
+        "type": "event",
+        "pitch": 0.55
+      }
+    ]
+  },
+  "levimoth.death": {
+    "subtitle": "subtitles.teeming.levimoth.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.death",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "levimoth.flare": {
+    "subtitle": "subtitles.teeming.levimoth.flare",
+    "sounds": [
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "levimoth.tell": {
+    "subtitle": "subtitles.teeming.levimoth.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event"
+      }
+    ]
+  },
+  "levimoth.release": {
+    "subtitle": "subtitles.teeming.levimoth.release",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.wind_burst",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "slagheart_golem.ambient": {
+    "subtitle": "subtitles.teeming.slagheart_golem.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.basalt.break",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.lava.ambient",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "slagheart_golem.hurt": {
+    "subtitle": "subtitles.teeming.slagheart_golem.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.hurt",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.basalt.break",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "slagheart_golem.death": {
+    "subtitle": "subtitles.teeming.slagheart_golem.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.death",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "slagheart_golem.tell": {
+    "subtitle": "subtitles.teeming.slagheart_golem.tell",
+    "sounds": [
+      {
+        "name": "minecraft:entity.blaze.ambient",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.4
+      }
+    ]
+  },
+  "slagheart_golem.erupt": {
+    "subtitle": "subtitles.teeming.slagheart_golem.erupt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.generic.explode",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "slagheart_golem.quench": {
+    "subtitle": "subtitles.teeming.slagheart_golem.quench",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
   "thornhorn.ambient": {
     "subtitle": "subtitles.teeming.thornhorn.ambient",
     "sounds": [
@@ -85,146 +225,6 @@
         "type": "event",
         "pitch": 0.6,
         "volume": 0.8
-      }
-    ]
-  },
-  "slagheart_golem.ambient": {
-    "subtitle": "subtitles.teeming.slagheart_golem.ambient",
-    "sounds": [
-      {
-        "name": "minecraft:block.basalt.break",
-        "type": "event",
-        "pitch": 0.6
-      },
-      {
-        "name": "minecraft:block.lava.ambient",
-        "type": "event",
-        "pitch": 0.7,
-        "volume": 0.6
-      }
-    ]
-  },
-  "slagheart_golem.hurt": {
-    "subtitle": "subtitles.teeming.slagheart_golem.hurt",
-    "sounds": [
-      {
-        "name": "minecraft:entity.iron_golem.hurt",
-        "type": "event",
-        "pitch": 0.7
-      },
-      {
-        "name": "minecraft:block.basalt.break",
-        "type": "event",
-        "pitch": 0.5
-      }
-    ]
-  },
-  "slagheart_golem.death": {
-    "subtitle": "subtitles.teeming.slagheart_golem.death",
-    "sounds": [
-      {
-        "name": "minecraft:entity.iron_golem.death",
-        "type": "event",
-        "pitch": 0.6
-      }
-    ]
-  },
-  "slagheart_golem.tell": {
-    "subtitle": "subtitles.teeming.slagheart_golem.tell",
-    "sounds": [
-      {
-        "name": "minecraft:entity.blaze.ambient",
-        "type": "event",
-        "pitch": 0.5,
-        "volume": 1.4
-      }
-    ]
-  },
-  "slagheart_golem.erupt": {
-    "subtitle": "subtitles.teeming.slagheart_golem.erupt",
-    "sounds": [
-      {
-        "name": "minecraft:entity.generic.explode",
-        "type": "event",
-        "pitch": 0.6
-      }
-    ]
-  },
-  "slagheart_golem.quench": {
-    "subtitle": "subtitles.teeming.slagheart_golem.quench",
-    "sounds": [
-      {
-        "name": "minecraft:block.fire.extinguish",
-        "type": "event",
-        "pitch": 0.8
-      }
-    ]
-  },
-  "levimoth.ambient": {
-    "subtitle": "subtitles.teeming.levimoth.ambient",
-    "sounds": [
-      {
-        "name": "minecraft:entity.bat.ambient",
-        "type": "event",
-        "pitch": 0.5,
-        "volume": 0.7
-      },
-      {
-        "name": "minecraft:entity.parrot.fly",
-        "type": "event",
-        "pitch": 0.7,
-        "volume": 0.6
-      }
-    ]
-  },
-  "levimoth.hurt": {
-    "subtitle": "subtitles.teeming.levimoth.hurt",
-    "sounds": [
-      {
-        "name": "minecraft:entity.bat.hurt",
-        "type": "event",
-        "pitch": 0.55
-      }
-    ]
-  },
-  "levimoth.death": {
-    "subtitle": "subtitles.teeming.levimoth.death",
-    "sounds": [
-      {
-        "name": "minecraft:entity.bat.death",
-        "type": "event",
-        "pitch": 0.5
-      }
-    ]
-  },
-  "levimoth.flare": {
-    "subtitle": "subtitles.teeming.levimoth.flare",
-    "sounds": [
-      {
-        "name": "minecraft:entity.parrot.fly",
-        "type": "event",
-        "pitch": 0.6,
-        "volume": 0.8
-      }
-    ]
-  },
-  "levimoth.tell": {
-    "subtitle": "subtitles.teeming.levimoth.tell",
-    "sounds": [
-      {
-        "name": "minecraft:block.amethyst_block.resonate",
-        "type": "event"
-      }
-    ]
-  },
-  "levimoth.release": {
-    "subtitle": "subtitles.teeming.levimoth.release",
-    "sounds": [
-      {
-        "name": "minecraft:entity.breeze.wind_burst",
-        "type": "event",
-        "pitch": 1.6,
-        "volume": 0.6
       }
     ]
   }

@@ -204,6 +204,11 @@ public class Thornhorn extends TeemingAnimal {
     }
 
     /** Test hook: lets it charge again at once. */
+    /** Ticks until it may charge again. Public as a test hook. */
+    public int cooldown() {
+        return cooldown;
+    }
+
     public void resetCooldown() {
         cooldown = 0;
     }

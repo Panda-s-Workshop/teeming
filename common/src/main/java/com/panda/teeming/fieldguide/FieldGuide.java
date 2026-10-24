@@ -1,5 +1,6 @@
 package com.panda.teeming.fieldguide;
 
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.platform.Services;
 import com.panda.teeming.registry.ModComponents;
@@ -16,13 +17,12 @@ import net.minecraft.world.item.ItemStack;
 /**
  * The Field Guide's server side. "Seen": a Teeming mob within 24 blocks that the player has a line of sight
  * to, checked every 20 ticks per player against nearby Teeming mobs only. A player kill counts too; the third kill
- * reveals the mob's tell, counter, drops and looks. A trophy in the player's inventory, checked on the same beat, marks
+ * (config {@code fieldguide.killsToReveal}) reveals the mob's tell, counter, drops and looks. A trophy in the player's inventory, checked on the same beat, marks
  * that mob's trophy as owned for good. The client turns the synced changes into toasts.
  */
 public final class FieldGuide {
     public static final double SEEN_RANGE = 24.0;
     public static final int CHECK_EVERY = 20;
-    public static final int KILLS_TO_REVEAL = 3;
 
     private FieldGuide() {}
 
@@ -45,7 +45,7 @@ public final class FieldGuide {
     /** Records every Teeming mob the player can see now; returns how many were new. Public as a test hook. */
     public static int look(ServerPlayer player) {
         FieldGuideProgress before = get(player);
-        FieldGuideProgress after = before;
+        FieldGuideProgress after = before.withRevealAt(TeemingConfig.killsToReveal());
         int fresh = 0;
         for (Mob mob : player.level().getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(SEEN_RANGE),
                 m -> m instanceof TeemingCreature && m.isAlive())) {
@@ -77,6 +77,6 @@ public final class FieldGuide {
     /** A Teeming mob died: a player who killed it gets the kill. Called by the mob bases. */
     public static void onKilled(LivingEntity mob, DamageSource source) {
         if (mob.level().isClientSide() || !(source.getEntity() instanceof ServerPlayer player) || !(mob instanceof TeemingCreature creature)) return;
-        set(player, get(player).withKill(creature.mobId(), creature.look()));
+        set(player, get(player).withRevealAt(TeemingConfig.killsToReveal()).withKill(creature.mobId(), creature.look()));
     }
 }

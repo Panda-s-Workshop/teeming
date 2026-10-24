@@ -15,6 +15,9 @@ public final class TeemingConfig {
 
         /** True: End mobs of the main island appear only after the dragon has been killed. */
         boolean endMainIslandAfterDragon();
+
+        /** Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide (1..100). */
+        int killsToReveal();
     }
 
     public static final Source DEFAULTS = new Source() {
@@ -22,6 +25,7 @@ public final class TeemingConfig {
         @Override public boolean mobEnabled(String id) { return true; }
         @Override public double spawnChance(String id) { return 1.0; }
         @Override public boolean endMainIslandAfterDragon() { return true; }
+        @Override public int killsToReveal() { return 3; }
     };
 
     private static Source source = DEFAULTS;
@@ -46,5 +50,9 @@ public final class TeemingConfig {
 
     public static boolean endMainIslandAfterDragon() {
         return source.endMainIslandAfterDragon();
+    }
+
+    public static int killsToReveal() {
+        return Math.clamp(source.killsToReveal(), 1, 100);
     }
 }

@@ -1,5 +1,6 @@
 package com.panda.teeming.gametest;
 
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
 import com.panda.teeming.mob.end.Levimoth;
@@ -72,19 +73,22 @@ final class FieldGuideTests {
 
     private static void reveal(GameTestHelper helper) {
         ServerPlayer player = player(helper, 1.5, 1.5);
-        for (int i = 0; i < FieldGuide.KILLS_TO_REVEAL; i++) {
+        int needed = TeemingConfig.killsToReveal();
+        helper.assertTrue(needed == 3, "the default is 3 kills, config says " + needed);
+        for (int i = 0; i < needed; i++) {
             Levimoth moth = helper.spawn(ModMobs.LEVIMOTH.get(), new Vec3(3.5 + i * 2, 1, 6.5));
             moth.setNoAi(true);
             moth.hurtServer(helper.getLevel(), moth.damageSources().playerAttack(player), 1000.0F);
             helper.assertTrue(moth.isDeadOrDying(), "the player's blow kills it");
-            boolean last = i == FieldGuide.KILLS_TO_REVEAL - 1;
-            helper.assertTrue(FieldGuide.get(player).revealed("levimoth", FieldGuide.KILLS_TO_REVEAL) == last,
+            boolean last = i == needed - 1;
+            helper.assertTrue(FieldGuide.get(player).revealAt() == needed, "the progress carries the server's setting to the client");
+            helper.assertTrue(FieldGuide.get(player).revealed("levimoth") == last,
                     "revealed only at the third kill, kills " + FieldGuide.get(player).killsOf("levimoth"));
         }
         Levimoth other = helper.spawn(ModMobs.LEVIMOTH.get(), new Vec3(9.5, 1, 9.5));
         other.setNoAi(true);
         other.hurtServer(helper.getLevel(), other.damageSources().magic(), 1000.0F);
-        helper.assertTrue(FieldGuide.get(player).killsOf("levimoth") == FieldGuide.KILLS_TO_REVEAL, "a death the player didn't cause doesn't count");
+        helper.assertTrue(FieldGuide.get(player).killsOf("levimoth") == needed, "a death the player didn't cause doesn't count");
         helper.succeed();
     }
 }

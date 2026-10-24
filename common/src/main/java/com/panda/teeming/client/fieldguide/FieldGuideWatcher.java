@@ -31,7 +31,7 @@ public final class FieldGuideWatcher {
                 if (!last.hasSeen(mob)) toast(mc, "seen", mob);
             }
             for (String mob : now.kills().keySet()) {
-                if (now.revealed(mob, FieldGuide.KILLS_TO_REVEAL) && !last.revealed(mob, FieldGuide.KILLS_TO_REVEAL)) toast(mc, "revealed", mob);
+                if (now.revealed(mob) && !last.revealed(mob)) toast(mc, "revealed", mob);
             }
         }
         last = now;

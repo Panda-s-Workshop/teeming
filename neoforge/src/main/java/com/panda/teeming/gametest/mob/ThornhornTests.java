@@ -4,6 +4,8 @@ import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.overworld.Thornhorn;
 import com.panda.teeming.mob.overworld.Thornhorn.Step;
 import com.panda.teeming.registry.ModMobs;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -22,6 +24,8 @@ public final class ThornhornTests {
         out.accept("thornhorn_counter", ThornhornTests::wallStun);
         out.accept("thornhorn_failure", ThornhornTests::tellThenCharge);
         out.accept("mechanic_event_cancel", ThornhornTests::cancelledTell);
+        out.accept("thornhorn_charge_numbers", ThornhornTests::chargeNumbers);
+        out.accept("thornhorn_stun_length", ThornhornTests::stunLength);
     }
 
     /** A Thornhorn 9 blocks from its target, cooldown cleared. */
@@ -78,6 +82,53 @@ public final class ThornhornTests {
             float lost = before - horn.getHealth();
             helper.assertTrue(Math.abs(lost - 4.0F * Thornhorn.STUN_DAMAGE) < 0.01F, "a stunned Thornhorn takes x1.5, lost " + lost);
             helper.assertTrue(pig[0].getHealth() >= pig[0].getMaxHealth(), "the wall saved the pig");
+        });
+    }
+
+    /** The charge covers 0.45 blocks a tick, knocks the target back hard (1.6) and is followed by a 100-tick rest. */
+    private static void chargeNumbers(GameTestHelper helper) {
+        Pig[] pig = new Pig[1];
+        Thornhorn horn = setUp(helper, pig);
+        List<Double> steps = new ArrayList<>();
+        double[] last = {Double.NaN};
+        double[] pigSpeed = {0.0};
+        int[] cooldown = {0};
+        helper.onEachTick(() -> {
+            if (horn.core().in(Step.CHARGE)) {
+                if (!Double.isNaN(last[0])) steps.add(horn.getX() - last[0]);
+                last[0] = horn.getX();
+            } else {
+                last[0] = Double.NaN;
+            }
+            pigSpeed[0] = Math.max(pigSpeed[0], pig[0].getDeltaMovement().horizontalDistance());
+            cooldown[0] = Math.max(cooldown[0], horn.cooldown());
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(cooldown[0] > 0 && horn.core().idle(), "it rests after the charge, cooldown " + cooldown[0]);
+            helper.assertTrue(cooldown[0] >= Thornhorn.COOLDOWN - 1 && cooldown[0] <= Thornhorn.COOLDOWN, "the rest is 100 ticks, saw " + cooldown[0]);
+            helper.assertTrue(steps.size() >= 3, "it charged for at least 3 ticks, saw " + steps.size());
+            double mean = steps.subList(1, steps.size()).stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            helper.assertTrue(Math.abs(mean - Thornhorn.CHARGE_SPEED) < 0.05, "the charge covers 0.45 blocks a tick, mean " + mean);
+            helper.assertTrue(pigSpeed[0] >= Thornhorn.KNOCKBACK * 0.5, "the gore knocks the target back (1.6), its speed peaked at " + pigSpeed[0]);
+        });
+    }
+
+    /** The stun from a wall lasts 60 ticks. */
+    private static void stunLength(GameTestHelper helper) {
+        Pig[] pig = new Pig[1];
+        Thornhorn horn = setUp(helper, pig);
+        helper.runAtTickTime(6, () -> {
+            for (int z = 2; z <= 9; z++) for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(6, y, z), Blocks.STONE);
+        });
+        int[] stunned = {0};
+        boolean[] over = {false};
+        helper.onEachTick(() -> {
+            if (horn.core().in(Step.STUNNED)) stunned[0]++;
+            else if (stunned[0] > 0) over[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(over[0], "the stun ends, " + stunned[0] + " ticks so far");
+            helper.assertTrue(Math.abs(stunned[0] - Thornhorn.STUN_TICKS) <= 1, "the stun lasts 60 ticks, lasted " + stunned[0]);
         });
     }
 

@@ -6,6 +6,7 @@ import com.panda.teeming.client.ClientSinks;
 import com.panda.teeming.client.TeemingClientInit;
 import com.panda.teeming.client.mob.CreatureLayers;
 import com.panda.teeming.client.mob.MobRenderers;
+import com.panda.teeming.client.trophy.TrophyItemRenderer;
 import com.panda.teeming.client.trophy.TrophyRenderer;
 import com.panda.teeming.registry.ModBlockEntities;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -17,6 +18,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 
@@ -35,5 +37,6 @@ public final class TeemingClient {
         }));
         modBus.addListener((EntityRenderersEvent.RegisterLayerDefinitions e) -> CreatureLayers.register(e::registerLayerDefinition));
         modBus.addListener((EntityRenderersEvent.RegisterRenderers e) -> e.registerBlockEntityRenderer(ModBlockEntities.TROPHY.get(), TrophyRenderer::new));
+        modBus.addListener((RegisterSpecialModelRendererEvent e) -> e.register(TrophyItemRenderer.TYPE, TrophyItemRenderer.Unbaked.MAP_CODEC));
     }
 }

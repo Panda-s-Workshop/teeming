@@ -169,15 +169,18 @@ public class SlagheartGolem extends TeemingMonster {
     public int erupt(ServerLevel level) {
         int hit = 0;
         for (LivingEntity victim : level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(ERUPT_RADIUS))) {
-            if (victim == this || victim.distanceTo(this) > ERUPT_RADIUS + 0.5) continue;
+            if (victim == this || victim.distanceTo(this) > ERUPT_RADIUS) continue;     // exactly the ring the tell draws
             if (victim instanceof Player p && (p.isCreative() || p.isSpectator())) continue;
             if (!MechanicEvent.post(this, "erupt_hit", victim)) continue;
             if (victim.hurtServer(level, damageSources().onFire(), ERUPT_DAMAGE)) hit++;
             victim.igniteForSeconds(4.0F);
             Push.away(victim, position(), 0.6, 0.35);
         }
-        level.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.2, getZ(), 40, 1.5, 0.8, 1.5, 0.2);
-        level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 1.0, getZ(), 60, 2.0, 0.6, 2.0, 0.08);
+        level.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.2, getZ(), 40, 1.0, 0.8, 1.0, 0.2);
+        for (int i = 0; i < 60; i++) {                                       // flames fill the reach and never land outside it
+            double a = getRandom().nextDouble() * Math.PI * 2, r = Math.sqrt(getRandom().nextDouble()) * (ERUPT_RADIUS - 0.4);
+            level.sendParticles(ParticleTypes.FLAME, getX() + Math.cos(a) * r, getY() + 0.3, getZ() + Math.sin(a) * r, 1, 0.0, 0.3, 0.0, 0.04);
+        }
         level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0, getZ(), 3, 1.0, 0.5, 1.0, 0.0);
         ring(level, ParticleTypes.FLAME, 0.02);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.SLAGHEART_GOLEM_ERUPT.get(), getSoundSource(), 1.0F, 1.0F);

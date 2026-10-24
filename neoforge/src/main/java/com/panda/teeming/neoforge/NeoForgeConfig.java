@@ -19,6 +19,10 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
             .comment("True: End mobs of the main island appear only after the dragon has been killed.")
             .define("endMainIslandAfterDragon", true);
 
+    private static final ModConfigSpec.IntValue KILLS_TO_REVEAL = B
+            .comment("Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide.")
+            .defineInRange("fieldguide.killsToReveal", 3, 1, 100);
+
     private static final Map<String, ModConfigSpec.BooleanValue> ENABLED = new HashMap<>();
     private static final Map<String, ModConfigSpec.DoubleValue> CHANCE = new HashMap<>();
 
@@ -43,6 +47,11 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
     @Override
     public boolean endMainIslandAfterDragon() {
         return SPEC.isLoaded() ? END_MAIN_ISLAND_AFTER_DRAGON.get() : TeemingConfig.DEFAULTS.endMainIslandAfterDragon();
+    }
+
+    @Override
+    public int killsToReveal() {
+        return SPEC.isLoaded() ? KILLS_TO_REVEAL.get() : TeemingConfig.DEFAULTS.killsToReveal();
     }
 
     @Override

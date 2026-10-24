@@ -6,7 +6,10 @@ import net.minecraft.util.Mth;
 
 /** Levimoth: a constant flutter and bob, wings flared wide and the dust sacs swelling in the tell, a hard shake on release. */
 public class LevimothModel extends TeemingModel {
-    private static final float WING_REST = 20.0F * DEG;
+    /** The wings' roll at rest: a V, pitched up 28 degrees in the rig so their faces show from the front, not just their edges. */
+    private static final float WING_REST = 28.0F * DEG;
+    /** The tell: wings raised into a steep V and tipped toward the threat, eyespots facing it. */
+    private static final float WING_FLARE = 55.0F * DEG, WING_FLARE_PITCH = 40.0F * DEG;
 
     private final ModelPart body, head, abdomen, sacs, wingRight, wingLeft;
 
@@ -34,8 +37,10 @@ public class LevimothModel extends TeemingModel {
         if (s.phase == Step.TELL.ordinal()) {
             float k = smooth(s.progress * 2.5F);
             float pulse = 1.0F + (0.25F + 0.15F * Mth.sin(s.phaseTime * 1.6F)) * k;
-            wingRight.zRot = Mth.lerp(k, wingRight.zRot, -0.35F) + Mth.sin(s.phaseTime * 3.0F) * 0.05F;   // flared flat and wide
-            wingLeft.zRot = Mth.lerp(k, wingLeft.zRot, 0.35F) - Mth.sin(s.phaseTime * 3.0F) * 0.05F;
+            wingRight.zRot = Mth.lerp(k, wingRight.zRot, WING_FLARE) + Mth.sin(s.phaseTime * 3.0F) * 0.05F;   // raised and shown
+            wingLeft.zRot = Mth.lerp(k, wingLeft.zRot, -WING_FLARE) - Mth.sin(s.phaseTime * 3.0F) * 0.05F;
+            wingRight.xRot += WING_FLARE_PITCH * k;
+            wingLeft.xRot += WING_FLARE_PITCH * k;
             wingRight.yRot = 0.3F * k;
             wingLeft.yRot = -0.3F * k;
             abdomen.xRot += 0.45F * k;                                   // tail curls down to show the sacs

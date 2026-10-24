@@ -10,7 +10,7 @@ public final class MobBounds {
     private static final Map<String, float[]> BOUNDS = Map.ofEntries(
             Map.entry("thornhorn", new float[] {1.314F, 1.528F, 2.321F}),
             Map.entry("slagheart_golem", new float[] {2.300F, 2.300F, 1.545F}),
-            Map.entry("levimoth", new float[] {1.719F, 0.759F, 1.014F})
+            Map.entry("levimoth", new float[] {1.695F, 0.922F, 1.001F})
     );
 
     public static float @Nullable [] of(String mob) {

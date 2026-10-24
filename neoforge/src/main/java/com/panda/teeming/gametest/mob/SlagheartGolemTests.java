@@ -8,8 +8,13 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
@@ -23,6 +28,10 @@ public final class SlagheartGolemTests {
         out.accept("slagheart_golem_failure", SlagheartGolemTests::heatErupts);
         out.accept("slagheart_golem_snowball_cools", SlagheartGolemTests::snowballCools);
         out.accept("slagheart_golem_powder_snow_quench", SlagheartGolemTests::powderSnowQuench);
+        out.accept("slagheart_golem_reach", SlagheartGolemTests::reach);
+        out.accept("slagheart_golem_heat_clock", SlagheartGolemTests::heatClock);
+        out.accept("slagheart_golem_splash", SlagheartGolemTests::splash);
+        out.accept("slagheart_golem_quench_length", SlagheartGolemTests::quenchLength);
     }
 
     private static SlagheartGolem golem(GameTestHelper helper) {
@@ -105,6 +114,62 @@ public final class SlagheartGolemTests {
             golem.hurtServer(helper.getLevel(), golem.damageSources().magic(), 4.0F);
             float lost = before - golem.getHealth();
             helper.assertTrue(Math.abs(lost - 4.0F * SlagheartGolem.QUENCHED_DAMAGE) < 0.01F, "quenched it takes x1.5, lost " + lost);
+        });
+    }
+
+    /** The eruption reaches 5 blocks, exactly where its ring is drawn: 4.5 blocks away is hit, 5.6 is not. */
+    private static void reach(GameTestHelper helper) {
+        SlagheartGolem golem = golem(helper);
+        Pig inside = helper.spawn(EntityTypes.PIG, new Vec3(1.0, 1, 5.5));
+        Pig outside = helper.spawn(EntityTypes.PIG, new Vec3(5.5 + 3.96, 1, 5.5 + 3.96));
+        inside.setNoAi(true);
+        outside.setNoAi(true);
+        helper.runAtTickTime(2, () -> {
+            int hit = golem.erupt(helper.getLevel());
+            helper.assertTrue(hit == 1, "one pig within 5 blocks is hit, hit " + hit);
+            helper.assertTrue(inside.isDeadOrDying() || inside.getHealth() < inside.getMaxHealth(), "4.5 blocks away is inside the reach");
+            helper.assertTrue(outside.getHealth() >= outside.getMaxHealth() && !outside.isOnFire(), "5.6 blocks away is outside the reach");
+            helper.succeed();
+        });
+    }
+
+    /** While it has a target it heats by 1 every 60 ticks. */
+    private static void heatClock(GameTestHelper helper) {
+        SlagheartGolem golem = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(5.5, 1, 5.5));
+        Pig pig = helper.spawn(EntityTypes.PIG, new Vec3(9.5, 1, 5.5));
+        pig.setNoAi(true);
+        pig.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000.0);              // outlasts the golem's blows, so the target stays
+        pig.setHealth(1000.0F);
+        helper.runAtTickTime(1, () -> golem.setTarget(pig));
+        helper.runAtTickTime(SlagheartGolem.HEAT_EVERY - 6, () -> helper.assertTrue(golem.heat() == 3, "no heat before 60 ticks, heat " + golem.heat()));
+        helper.runAtTickTime(SlagheartGolem.HEAT_EVERY + 6, () -> {
+            helper.assertTrue(golem.heat() == 4, "60 ticks with a target heat it by 1, heat " + golem.heat());
+            helper.succeed();
+        });
+    }
+
+    /** A splash water bottle cools it by 4. */
+    private static void splash(GameTestHelper helper) {
+        SlagheartGolem golem = golem(helper);
+        golem.setHeat(9);
+        helper.runAtTickTime(2, () -> {
+            Vec3 at = helper.absoluteVec(new Vec3(5.5, 4.5, 5.5));
+            ThrownSplashPotion potion = new ThrownSplashPotion(helper.getLevel(), at.x, at.y, at.z,
+                    PotionContents.createItemStack(Items.SPLASH_POTION, Potions.WATER));
+            potion.setDeltaMovement(0, -0.6, 0);
+            helper.getLevel().addFreshEntity(potion);
+        });
+        helper.succeedWhen(() -> helper.assertTrue(golem.heat() == 9 - SlagheartGolem.SPLASH, "splash water cools it by 4, heat " + golem.heat()));
+    }
+
+    /** Quenched lasts 60 ticks. */
+    private static void quenchLength(GameTestHelper helper) {
+        SlagheartGolem golem = golem(helper);
+        helper.runAtTickTime(2, () -> golem.setHeat(0));
+        helper.runAtTickTime(2 + SlagheartGolem.QUENCH_TICKS - 3, () -> helper.assertTrue(golem.core().in(Step.QUENCHED), "still quenched near 60 ticks, " + golem.phase()));
+        helper.runAtTickTime(2 + SlagheartGolem.QUENCH_TICKS + 3, () -> {
+            helper.assertTrue(!golem.core().in(Step.QUENCHED), "quenched ends after 60 ticks, " + golem.phase());
+            helper.succeed();
         });
     }
 }

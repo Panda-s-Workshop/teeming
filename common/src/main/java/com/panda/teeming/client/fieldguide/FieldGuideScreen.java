@@ -145,7 +145,7 @@ public class FieldGuideScreen extends Screen {
                 }
             }
             if (!list.isEmpty() && in(event.x(), event.y(), flipBounds())
-                    && progress().revealed(list.get(Math.min(selected, list.size() - 1)).id(), FieldGuide.KILLS_TO_REVEAL)) {
+                    && progress().revealed(list.get(Math.min(selected, list.size() - 1)).id())) {
                 side = 1 - side;
                 turn();
                 return true;
@@ -205,7 +205,7 @@ public class FieldGuideScreen extends Screen {
             Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
             g.text(font, String.format("%02d", mob.number()), b[0] + 3, b[1] + 2, INK_MUTED, false);
             g.text(font, name, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
-            if (p.revealed(mob.id(), FieldGuide.KILLS_TO_REVEAL)) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
+            if (p.revealed(mob.id())) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
             if (p.hasTrophy(mob.id())) g.text(font, "♛", b[0] + b[2] - 20, b[1] + 2, TROPHY, false);
         }
     }
@@ -213,7 +213,7 @@ public class FieldGuideScreen extends Screen {
     private void drawRight(GuiGraphicsExtractor g, FieldGuideProgress p, Entry mob, float partial, int mx, int my) {
         int x = x0 + R_X, y = y0 + MODEL_Y;
         boolean known = p.hasSeen(mob.id());
-        boolean revealed = p.revealed(mob.id(), FieldGuide.KILLS_TO_REVEAL);
+        boolean revealed = p.revealed(mob.id());
         Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
         if (revealed && side == 1) {
             centered(g, name, x + R_W / 2, y, INK);
@@ -255,7 +255,7 @@ public class FieldGuideScreen extends Screen {
             g.text(font, Component.translatable("screen.teeming.field_guide.looks", seenLooks, mob.looks().size()), x, y0 + FLIP_Y - 11, INK_MUTED, false);
             flip(g, Component.translatable("screen.teeming.field_guide.fight").getString() + " ▶");
         } else {
-            g.text(font, Component.translatable("screen.teeming.field_guide.kills", p.killsOf(mob.id()), FieldGuide.KILLS_TO_REVEAL), x, y0 + FLIP_Y, INK_MUTED, false);
+            g.text(font, Component.translatable("screen.teeming.field_guide.kills", p.killsOf(mob.id()), p.revealAt()), x, y0 + FLIP_Y, INK_MUTED, false);
         }
     }
 
