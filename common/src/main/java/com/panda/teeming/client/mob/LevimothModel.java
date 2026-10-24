@@ -6,10 +6,13 @@ import net.minecraft.util.Mth;
 
 /** Levimoth: a constant flutter and bob, wings flared wide and the dust sacs swelling in the tell, a hard shake on release. */
 public class LevimothModel extends TeemingModel {
-    /** The wings' roll at rest: a V, pitched up 28 degrees in the rig so their faces show from the front, not just their edges. */
+    /**
+     * The wings' roll at rest: a V. The rig also tips their trailing edges down 28 degrees, so their faces turn toward a
+     * player in front of and below the moth (where players stand), not just their edges.
+     */
     private static final float WING_REST = 28.0F * DEG;
     /** The tell: wings raised into a steep V and tipped toward the threat, eyespots facing it. */
-    private static final float WING_FLARE = 55.0F * DEG, WING_FLARE_PITCH = 40.0F * DEG;
+    private static final float WING_FLARE = 55.0F * DEG, WING_FLARE_PITCH = -40.0F * DEG;
 
     private final ModelPart body, head, abdomen, sacs, wingRight, wingLeft;
 

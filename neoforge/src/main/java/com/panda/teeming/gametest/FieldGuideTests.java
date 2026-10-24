@@ -75,6 +75,9 @@ final class FieldGuideTests {
         ServerPlayer player = player(helper, 1.5, 1.5);
         int needed = TeemingConfig.killsToReveal();
         helper.assertTrue(needed == 3, "the default is 3 kills, config says " + needed);
+        FieldGuide.set(player, FieldGuideProgress.EMPTY.withRevealAt(7));                // a value from an older setting
+        FieldGuide.look(player);
+        helper.assertTrue(FieldGuide.get(player).revealAt() == needed, "a look brings the server's setting, got " + FieldGuide.get(player).revealAt());
         for (int i = 0; i < needed; i++) {
             Levimoth moth = helper.spawn(ModMobs.LEVIMOTH.get(), new Vec3(3.5 + i * 2, 1, 6.5));
             moth.setNoAi(true);

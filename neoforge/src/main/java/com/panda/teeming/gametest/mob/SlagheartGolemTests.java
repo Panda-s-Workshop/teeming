@@ -117,18 +117,18 @@ public final class SlagheartGolemTests {
         });
     }
 
-    /** The eruption reaches 5 blocks, exactly where its ring is drawn: 4.5 blocks away is hit, 5.6 is not. */
+    /** The eruption reaches 5 blocks, exactly where its ring is drawn: 4.5 blocks away is hit, 5.3 is not. */
     private static void reach(GameTestHelper helper) {
         SlagheartGolem golem = golem(helper);
         Pig inside = helper.spawn(EntityTypes.PIG, new Vec3(1.0, 1, 5.5));
-        Pig outside = helper.spawn(EntityTypes.PIG, new Vec3(5.5 + 3.96, 1, 5.5 + 3.96));
+        Pig outside = helper.spawn(EntityTypes.PIG, new Vec3(5.5 + 3.75, 1, 5.5 + 3.75));
         inside.setNoAi(true);
         outside.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             int hit = golem.erupt(helper.getLevel());
             helper.assertTrue(hit == 1, "one pig within 5 blocks is hit, hit " + hit);
             helper.assertTrue(inside.isDeadOrDying() || inside.getHealth() < inside.getMaxHealth(), "4.5 blocks away is inside the reach");
-            helper.assertTrue(outside.getHealth() >= outside.getMaxHealth() && !outside.isOnFire(), "5.6 blocks away is outside the reach");
+            helper.assertTrue(outside.getHealth() >= outside.getMaxHealth() && !outside.isOnFire(), "5.3 blocks away is outside the reach");
             helper.succeed();
         });
     }

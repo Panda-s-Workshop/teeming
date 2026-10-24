@@ -109,7 +109,9 @@ public final class ThornhornTests {
             helper.assertTrue(steps.size() >= 3, "it charged for at least 3 ticks, saw " + steps.size());
             double mean = steps.subList(1, steps.size()).stream().mapToDouble(Double::doubleValue).average().orElse(0);
             helper.assertTrue(Math.abs(mean - Thornhorn.CHARGE_SPEED) < 0.05, "the charge covers 0.45 blocks a tick, mean " + mean);
-            helper.assertTrue(pigSpeed[0] >= Thornhorn.KNOCKBACK * 0.5, "the gore knocks the target back (1.6), its speed peaked at " + pigSpeed[0]);
+            // the hit's own vanilla knockback leaves the pig moving at 0.4 when the gore's 1.6 lands on top: 2.0
+            helper.assertTrue(Math.abs(pigSpeed[0] - (Thornhorn.KNOCKBACK + 0.4)) <= 0.1,
+                    "the gore knocks the target back at 1.6, its speed peaked at " + pigSpeed[0]);
         });
     }
 
