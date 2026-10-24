@@ -23,7 +23,7 @@ public final class ModMobs {
     public static final Supplier<EntityType<Thornhorn>> THORNHORN = ENTITIES.registerEntityType("thornhorn", Thornhorn::new, MobCategory.CREATURE,
             b -> b.sized(1.3F, 1.4F).eyeHeight(1.1F).clientTrackingRange(10));
     public static final Supplier<EntityType<SlagheartGolem>> SLAGHEART_GOLEM = ENTITIES.registerEntityType("slagheart_golem", SlagheartGolem::new, MobCategory.MONSTER,
-            b -> b.sized(1.2F, 2.4F).eyeHeight(2.0F).clientTrackingRange(10).fireImmune());
+            b -> b.sized(1.2F, 2.4F).eyeHeight(1.5F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<Levimoth>> LEVIMOTH = ENTITIES.registerEntityType("levimoth", Levimoth::new, MobCategory.MONSTER,
             b -> b.sized(0.8F, 0.6F).eyeHeight(0.35F).clientTrackingRange(10));
 

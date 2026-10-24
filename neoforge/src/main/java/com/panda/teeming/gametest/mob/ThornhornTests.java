@@ -13,7 +13,7 @@ import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-/** Thornhorn (ROSTER #1): the tell leads to the charge, the charge hits, a wall stuns it, a cancelled tell stops it all. */
+/** Thornhorn: the tell leads to the charge, the charge hits, a wall stuns it, a cancelled tell stops it all. */
 public final class ThornhornTests {
     private ThornhornTests() {}
 
@@ -72,6 +72,7 @@ public final class ThornhornTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(horn.core().in(Step.STUNNED), "a charge into a wall stuns it, phase " + horn.phase());
+            helper.assertTrue(horn.vulnerable(), "stunned, its weak point shows");
             float before = horn.getHealth();
             horn.hurtServer(helper.getLevel(), horn.damageSources().magic(), 4.0F);
             float lost = before - horn.getHealth();

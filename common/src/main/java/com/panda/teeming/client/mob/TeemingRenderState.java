@@ -14,6 +14,8 @@ public class TeemingRenderState extends LivingEntityRenderState {
     public int flags;
     /** The mob's visual stage ({@code MobCore.stage}): picks a staged glowmask. */
     public int stage;
+    /** True while the mob is vulnerable: its weak point glows gold. */
+    public boolean vulnerable;
     /** 0..1 progress of the melee swing. */
     public float attack;
 

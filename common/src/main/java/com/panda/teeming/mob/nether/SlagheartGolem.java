@@ -6,10 +6,10 @@ import com.panda.teeming.mob.Push;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
+import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -36,7 +36,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 /**
- * Slagheart Golem (ROSTER #24): heat 0–12 rises by 1 for every hit it takes and every 3 s while it fights; its cracks
+ * Slagheart Golem: heat 0–12 rises by 1 for every hit it takes and every 3 s while it fights; its cracks
  * glow in four stages (heat / 3). At 12 it shakes for 1 s (tell) and erupts: 10 damage and fire within 5 blocks, heat
  * back to 6. Counter: a snowball cools it by 2, splash water by 4, powder snow by 12; at heat 0 it is quenched for
  * 3 s and takes ×1.5.
@@ -55,7 +55,7 @@ public class SlagheartGolem extends TeemingMonster {
     public static final int QUENCH_TICKS = 60;
     public static final float QUENCHED_DAMAGE = 1.5F;
 
-    private static final Telegraph STEAM = Telegraph.particles(ParticleTypes.CLOUD, 10, 0.6, 0.6).withSound(SoundEvents.FIRE_EXTINGUISH, 1.0F, 0.8F);
+    private static final Telegraph STEAM = Telegraph.particles(ParticleTypes.CLOUD, 10, 0.6, 0.6).withSound(ModSounds.SLAGHEART_GOLEM_QUENCH.get(), 1.0F, 1.0F);
     private static final Telegraph RUMBLE = Telegraph.particles(ParticleTypes.LAVA, 3, 0.5, 0.6);
 
     private int heat = 3;
@@ -71,6 +71,11 @@ public class SlagheartGolem extends TeemingMonster {
     @Override
     public int visualStages() {
         return 4;
+    }
+
+    @Override
+    public boolean vulnerable() {
+        return core().in(Step.QUENCHED);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -112,7 +117,7 @@ public class SlagheartGolem extends TeemingMonster {
         if (heat == 0 && !core().in(Step.QUENCHED)) {
             if (startPhase(Step.QUENCHED, QUENCH_TICKS, null)) STEAM.play(this);
         } else if (heat == MAX_HEAT && core().idle()) {
-            if (startPhase(Step.TELL, TELL_TICKS, getTarget())) playSound(SoundEvents.BLAZE_AMBIENT, 1.4F, 0.5F);
+            if (startPhase(Step.TELL, TELL_TICKS, getTarget())) playSound(ModSounds.SLAGHEART_GOLEM_TELL.get(), 1.0F, 1.0F);
         }
     }
 
@@ -171,7 +176,7 @@ public class SlagheartGolem extends TeemingMonster {
         level.sendParticles(ParticleTypes.LAVA, getX(), getY() + 1.2, getZ(), 40, 1.5, 0.8, 1.5, 0.2);
         level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 1.0, getZ(), 60, 2.0, 0.6, 2.0, 0.08);
         level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0, getZ(), 3, 1.0, 0.5, 1.0, 0.0);
-        level.playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE.value(), getSoundSource(), 1.0F, 0.6F);
+        level.playSound(null, getX(), getY(), getZ(), ModSounds.SLAGHEART_GOLEM_ERUPT.get(), getSoundSource(), 1.0F, 1.0F);
         return hit;
     }
 
@@ -228,17 +233,17 @@ public class SlagheartGolem extends TeemingMonster {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundEvents.BASALT_BREAK;
+        return ModSounds.SLAGHEART_GOLEM_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_HURT;
+        return ModSounds.SLAGHEART_GOLEM_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.IRON_GOLEM_DEATH;
+        return ModSounds.SLAGHEART_GOLEM_DEATH.get();
     }
 
     @Override

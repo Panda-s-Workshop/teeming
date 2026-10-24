@@ -39,4 +39,9 @@ public interface TeemingCreature {
     default int visualStages() {
         return 1;
     }
+
+    /** True during a window when it is open to punishment (quenched, stunned): its weak point glows weak-point gold. */
+    default boolean vulnerable() {
+        return false;
+    }
 }

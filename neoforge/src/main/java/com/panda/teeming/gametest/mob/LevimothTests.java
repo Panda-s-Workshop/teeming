@@ -13,7 +13,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.phys.Vec3;
 
-/** Levimoth (ROSTER #56): a hit starts the flare, the flare ends in a dust cloud that levitates what's inside, not the moth. */
+/** Levimoth: a hit starts the flare, the flare ends in a dust cloud that levitates what's inside, not the moth. */
 public final class LevimothTests {
     private LevimothTests() {}
 

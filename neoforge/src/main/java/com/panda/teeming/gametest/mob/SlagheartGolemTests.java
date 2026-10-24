@@ -13,7 +13,7 @@ import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-/** Slagheart Golem (ROSTER #24): hits heat it, full heat erupts, snowballs and powder snow quench it, quenched it takes x1.5. */
+/** Slagheart Golem: hits heat it, full heat erupts, snowballs and powder snow quench it, quenched it takes x1.5. */
 public final class SlagheartGolemTests {
     private SlagheartGolemTests() {}
 
@@ -100,6 +100,7 @@ public final class SlagheartGolemTests {
         helper.runAtTickTime(2, () -> helper.setBlock(new BlockPos(5, 1, 5), Blocks.POWDER_SNOW));
         helper.succeedWhen(() -> {
             helper.assertTrue(golem.heat() == 0 && golem.core().in(Step.QUENCHED), "powder snow quenches it, heat " + golem.heat() + ", " + golem.phase());
+            helper.assertTrue(golem.vulnerable(), "quenched, its weak point shows");
             float before = golem.getHealth();
             golem.hurtServer(helper.getLevel(), golem.damageSources().magic(), 4.0F);
             float lost = before - golem.getHealth();

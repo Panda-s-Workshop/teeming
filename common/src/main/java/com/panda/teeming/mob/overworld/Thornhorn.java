@@ -6,11 +6,12 @@ import com.panda.teeming.mob.Push;
 import com.panda.teeming.mob.TeemingAnimal;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.Telegraph;
+import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -29,7 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Thornhorn (ROSTER #1): a plains grazer, passive until hurt, then the herd turns on the attacker. Tell: it lowers its
+ * Thornhorn: a plains grazer, passive until hurt, then the herd turns on the attacker. Tell: it lowers its
  * horns and paws the ground for 1 s. Mechanic: a straight charge at 0.45 b/t for up to 14 blocks; a hit does 1.5×Atk
  * and knocks back 1.6. Counter: sidestep so it charges a wall, which stuns it for 3 s and makes it take ×1.5.
  */
@@ -48,13 +49,30 @@ public class Thornhorn extends TeemingAnimal {
     public static final int RECOVER_TICKS = 20;
     public static final int COOLDOWN = 100;
 
-    private static final Telegraph STARS = Telegraph.particles(ParticleTypes.CRIT, 4, 0.35, 1.05);
+    private static final DustParticleOptions STAR = new DustParticleOptions(0xFFD36B, 1.1F);
+    private static final int STARS = 4;
 
     private int cooldown;
     private Vec3 chargeDir = Vec3.ZERO;
 
     public Thornhorn(EntityType<? extends Thornhorn> type, Level level) {
         super(type, level, Step.values());
+    }
+
+    /** Gold stars circling over its head while it is stunned, one lap a second. */
+    private void circleStars(ServerLevel level) {
+        if (tickCount % 2 != 0) return;
+        Vec3 head = position().add(getLookAngle().multiply(1, 0, 1).scale(getBbWidth() * 0.45)).add(0, getBbHeight() + 0.25, 0);
+        double turn = core().elapsed() * (Math.PI * 2 / 20);
+        for (int i = 0; i < STARS; i++) {
+            double a = turn + i * (Math.PI * 2 / STARS);
+            level.sendParticles(STAR, head.x + Math.cos(a) * 0.55, head.y, head.z + Math.sin(a) * 0.55, 1, 0, 0, 0, 0);
+        }
+    }
+
+    @Override
+    public boolean vulnerable() {
+        return core().in(Step.STUNNED);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -98,11 +116,11 @@ public class Thornhorn extends TeemingAnimal {
             chargeTick(level);
         } else if (core().in(Step.STUNNED)) {
             getNavigation().stop();
-            STARS.trail(this, 5);
+            circleStars(level);
         } else if (core().in(Step.RECOVER)) {
             getNavigation().stop();
         } else if (canCharge(target)) {
-            if (startPhase(Step.TELL, TELL_TICKS, target)) playSound(SoundEvents.GOAT_PREPARE_RAM, 1.2F, 0.6F);
+            if (startPhase(Step.TELL, TELL_TICKS, target)) playSound(ModSounds.THORNHORN_TELL.get(), 1.0F, 1.0F);
         }
     }
 
@@ -151,7 +169,7 @@ public class Thornhorn extends TeemingAnimal {
                 victim.knockback(KNOCKBACK, -chargeDir.x, -chargeDir.z, source, damage);
                 Push.sync(victim);
             }
-            level.playSound(null, getX(), getY(), getZ(), SoundEvents.GOAT_RAM_IMPACT, getSoundSource(), 1.2F, 0.7F);
+            level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_RAM.get(), getSoundSource(), 1.0F, 1.0F);
             startPhase(Step.RECOVER, RECOVER_TICKS, null);
             return;
         }
@@ -166,8 +184,8 @@ public class Thornhorn extends TeemingAnimal {
     public void stun(ServerLevel level) {
         if (!startPhase(Step.STUNNED, STUN_TICKS, null)) return;
         setDeltaMovement(-chargeDir.x * 0.2, 0.2, -chargeDir.z * 0.2);
-        level.playSound(null, getX(), getY(), getZ(), SoundEvents.RAVAGER_STUNNED, getSoundSource(), 1.0F, 1.1F);
-        level.playSound(null, getX(), getY(), getZ(), SoundEvents.GOAT_HORN_BREAK, getSoundSource(), 0.8F, 0.6F);
+        level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_STUNNED.get(), getSoundSource(), 1.0F, 1.0F);
+        level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_HORN_CRACK.get(), getSoundSource(), 1.0F, 1.0F);
         level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, level.getBlockState(blockPosition().relative(getDirection()))),
                 getX() + chargeDir.x, getY() + 0.8, getZ() + chargeDir.z, 20, 0.3, 0.3, 0.3, 0.1);
     }
@@ -198,17 +216,17 @@ public class Thornhorn extends TeemingAnimal {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return SoundEvents.GOAT_AMBIENT;
+        return ModSounds.THORNHORN_AMBIENT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.GOAT_HURT;
+        return ModSounds.THORNHORN_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.GOAT_DEATH;
+        return ModSounds.THORNHORN_DEATH.get();
     }
 
     @Override

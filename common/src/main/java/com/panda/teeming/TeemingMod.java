@@ -9,6 +9,7 @@ import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModLoot;
 import com.panda.teeming.registry.ModMaterials;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.registry.ModSounds;
 import com.panda.teeming.registry.ModTabs;
 import com.panda.teeming.spawn.TeemingSpawner;
 import java.util.List;
@@ -23,7 +24,7 @@ public final class TeemingMod {
 
     /** The classes whose static DeferredRegisters hold the mod's content. */
     private static final List<Class<?>> CONTENT = List.of(ModComponents.class, ModBlocks.class, ModBlockEntities.class, ModLoot.class, ModItems.class, ModMaterials.class,
-            ModMobs.class, ModTabs.class);
+            ModMobs.class, ModSounds.class, ModTabs.class);
 
     private TeemingMod() {}
 
