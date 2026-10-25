@@ -248,6 +248,142 @@
       }
     ]
   },
+  "cindermoth_swarm.ambient": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.35
+      },
+      {
+        "name": "minecraft:block.fire.ambient",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.25
+      }
+    ]
+  },
+  "cindermoth_swarm.hurt": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.hurt",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.3
+      }
+    ]
+  },
+  "cindermoth_swarm.death": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.death",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.6
+      }
+    ]
+  },
+  "cindermoth_swarm.drawn": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.drawn",
+    "sounds": [
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.lava.pop",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "cindermoth_swarm.burn": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.burn",
+    "sounds": [
+      {
+        "name": "minecraft:item.firecharge.use",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.fire.ambient",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.8
+      }
+    ]
+  },
+  "cindermoth_swarm.lured": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.lured",
+    "sounds": [
+      {
+        "name": "minecraft:entity.allay.ambient_without_item",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.45
+      },
+      {
+        "name": "minecraft:block.fire.ambient",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "cindermoth_swarm.bored": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.bored",
+    "sounds": [
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.25
+      }
+    ]
+  },
+  "cindermoth_swarm.scatter": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.scatter",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.takeoff",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ]
+  },
   "dripfang.ambient": {
     "subtitle": "subtitles.teeming.dripfang.ambient",
     "sounds": [
@@ -4085,6 +4221,251 @@
         "type": "event",
         "pitch": 0.6,
         "volume": 0.7
+      }
+    ]
+  },
+  "soulfire_seer.ambient": {
+    "subtitle": "subtitles.teeming.soulfire_seer.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.9
+      }
+    ]
+  },
+  "soulfire_seer.hurt": {
+    "subtitle": "subtitles.teeming.soulfire_seer.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton.hurt",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.bone_block.break",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "soulfire_seer.death": {
+    "subtitle": "subtitles.teeming.soulfire_seer.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton.death",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.soul_sand.break",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      }
+    ]
+  },
+  "soulfire_seer.tell": {
+    "subtitle": "subtitles.teeming.soulfire_seer.tell",
+    "sounds": [
+      {
+        "name": "minecraft:entity.guardian.attack",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.respawn_anchor.charge",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "soulfire_seer.lock": {
+    "subtitle": "subtitles.teeming.soulfire_seer.lock",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "soulfire_seer.beam": {
+    "subtitle": "subtitles.teeming.soulfire_seer.beam",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.sonic_boom",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:item.firecharge.use",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      }
+    ]
+  },
+  "soulfire_seer.snuff": {
+    "subtitle": "subtitles.teeming.soulfire_seer.snuff",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.beacon.deactivate",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      }
+    ]
+  },
+  "soulfire_seer.relight": {
+    "subtitle": "subtitles.teeming.soulfire_seer.relight",
+    "sounds": [
+      {
+        "name": "minecraft:block.respawn_anchor.charge",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event"
+      }
+    ]
+  },
+  "soulward_revenant.ambient": {
+    "subtitle": "subtitles.teeming.soulward_revenant.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.ambient",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.chain.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "soulward_revenant.hurt": {
+    "subtitle": "subtitles.teeming.soulward_revenant.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.hurt",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.netherite_block.hit",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "soulward_revenant.death": {
+    "subtitle": "subtitles.teeming.soulward_revenant.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.death",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.chain.break",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "soulward_revenant.glow": {
+    "subtitle": "subtitles.teeming.soulward_revenant.glow",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "soulward_revenant.tell": {
+    "subtitle": "subtitles.teeming.soulward_revenant.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.bell.resonate",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.respawn_anchor.charge",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "soulward_revenant.nova": {
+    "subtitle": "subtitles.teeming.soulward_revenant.nova",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.sonic_boom",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.respawn_anchor.deplete",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "soulward_revenant.crack": {
+    "subtitle": "subtitles.teeming.soulward_revenant.crack",
+    "sounds": [
+      {
+        "name": "minecraft:block.anvil.land",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.chain.break",
+        "type": "event",
+        "pitch": 0.8
       }
     ]
   },

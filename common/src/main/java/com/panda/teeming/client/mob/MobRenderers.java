@@ -71,6 +71,12 @@ public final class MobRenderers {
                 Set.of("base", "crimson_lantern"), 0.35F, 1.0F, 1, false));
         out.register(ModMobs.OSSUARY_WYRM.get(), ctx -> new TeemingRenderer<>(ctx, new OssuaryWyrmModel(ctx.bakeLayer(CreatureLayers.OSSUARY_WYRM)), "ossuary_wyrm",
                 Set.of("base", "bleached_wyrm"), 0.0F, 1.0F, 1, true));
+        out.register(ModMobs.SOULFIRE_SEER.get(), ctx -> new TeemingRenderer<>(ctx, new SoulfireSeerModel(ctx.bakeLayer(CreatureLayers.SOULFIRE_SEER)), "soulfire_seer",
+                Set.of("base", "bone_seer"), 0.4F, 1.0F, 1, false));
+        out.register(ModMobs.CINDERMOTH_SWARM.get(), ctx -> new TeemingRenderer<>(ctx, new CindermothSwarmModel(ctx.bakeLayer(CreatureLayers.CINDERMOTH_SWARM)), "cindermoth_swarm",
+                Set.of("base", "soul_moths"), 0.3F, 1.0F, 1, false));
+        out.register(ModMobs.SOULWARD_REVENANT.get(), ctx -> new TeemingRenderer<>(ctx, new SoulwardRevenantModel(ctx.bakeLayer(CreatureLayers.SOULWARD_REVENANT)), "soulward_revenant",
+                Set.of("base", "gilded_revenant"), 0.55F, 1.0F, 4, true));
         out.register(ModMobs.BASALT_BEHEMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new BasaltBehemothModel(ctx.bakeLayer(CreatureLayers.BASALT_BEHEMOTH)), "basalt_behemoth",
                 Set.of("base"), 1.6F, 1.75F, 3, true));
         out.register(ModMobs.QUAKEHOPPER.get(), ctx -> new TeemingRenderer<>(ctx, new QuakehopperModel(ctx.bakeLayer(CreatureLayers.QUAKEHOPPER)), "quakehopper",

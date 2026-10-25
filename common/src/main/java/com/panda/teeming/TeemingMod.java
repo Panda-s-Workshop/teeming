@@ -7,6 +7,7 @@ import com.panda.teeming.mob.overworld.HollowMourner;
 import com.panda.teeming.registry.ModBlockEntities;
 import com.panda.teeming.registry.ModBlocks;
 import com.panda.teeming.registry.ModComponents;
+import com.panda.teeming.registry.ModEffects;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModLoot;
 import com.panda.teeming.registry.ModMaterials;
@@ -27,7 +28,7 @@ public final class TeemingMod {
 
     /** The classes whose static DeferredRegisters hold the mod's content. */
     private static final List<Class<?>> CONTENT = List.of(ModComponents.class, ModBlocks.class, ModBlockEntities.class, ModLoot.class, ModItems.class, ModMaterials.class,
-            ModMobs.class, ModSounds.class, ModTabs.class);
+            ModMobs.class, ModEffects.class, ModSounds.class, ModTabs.class);
 
     private TeemingMod() {}
 

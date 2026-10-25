@@ -6,6 +6,7 @@ import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.nether.AshJackal;
 import com.panda.teeming.mob.nether.BasaltBehemoth;
+import com.panda.teeming.mob.nether.CindermothSwarm;
 import com.panda.teeming.mob.nether.Flamewright;
 import com.panda.teeming.mob.nether.FortressJailer;
 import com.panda.teeming.mob.nether.Gleamtrap;
@@ -20,6 +21,8 @@ import com.panda.teeming.mob.nether.ShredjawBeetle;
 import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.mob.nether.Slagspitter;
 import com.panda.teeming.mob.nether.SootManta;
+import com.panda.teeming.mob.nether.SoulfireSeer;
+import com.panda.teeming.mob.nether.SoulwardRevenant;
 import com.panda.teeming.mob.nether.Veinleech;
 import com.panda.teeming.mob.overworld.Dripfang;
 import com.panda.teeming.mob.overworld.Dunefin;
@@ -117,6 +120,12 @@ public final class ModMobs {
             b -> b.sized(0.6F, 0.9F).eyeHeight(0.75F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<OssuaryWyrm>> OSSUARY_WYRM = ENTITIES.registerEntityType("ossuary_wyrm", OssuaryWyrm::new, MobCategory.MONSTER,
             b -> b.sized(0.8F, 0.8F).eyeHeight(0.4F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<SoulfireSeer>> SOULFIRE_SEER = ENTITIES.registerEntityType("soulfire_seer", SoulfireSeer::new, MobCategory.MONSTER,
+            b -> b.sized(0.6F, 2.0F).eyeHeight(1.72F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<CindermothSwarm>> CINDERMOTH_SWARM = ENTITIES.registerEntityType("cindermoth_swarm", CindermothSwarm::new, MobCategory.MONSTER,
+            b -> b.sized(1.0F, 1.0F).eyeHeight(0.5F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<SoulwardRevenant>> SOULWARD_REVENANT = ENTITIES.registerEntityType("soulward_revenant", SoulwardRevenant::new, MobCategory.MONSTER,
+            b -> b.sized(0.8F, 2.2F).eyeHeight(1.85F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<BasaltBehemoth>> BASALT_BEHEMOTH = ENTITIES.registerEntityType("basalt_behemoth", BasaltBehemoth::new, MobCategory.MONSTER,
             b -> b.sized(2.4F, 3.2F).eyeHeight(2.6F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<Quakehopper>> QUAKEHOPPER = ENTITIES.registerEntityType("quakehopper", Quakehopper::new, MobCategory.MONSTER,
@@ -163,6 +172,9 @@ public final class ModMobs {
     public static final DeferredItem<Item> GLEAMTRAP_SPAWN_EGG = ITEMS.registerItem("gleamtrap_spawn_egg", Item::new, p -> p.spawnEgg(GLEAMTRAP.get()));
     public static final DeferredItem<Item> PHANTASM_LANTERN_SPAWN_EGG = ITEMS.registerItem("phantasm_lantern_spawn_egg", Item::new, p -> p.spawnEgg(PHANTASM_LANTERN.get()));
     public static final DeferredItem<Item> OSSUARY_WYRM_SPAWN_EGG = ITEMS.registerItem("ossuary_wyrm_spawn_egg", Item::new, p -> p.spawnEgg(OSSUARY_WYRM.get()));
+    public static final DeferredItem<Item> SOULFIRE_SEER_SPAWN_EGG = ITEMS.registerItem("soulfire_seer_spawn_egg", Item::new, p -> p.spawnEgg(SOULFIRE_SEER.get()));
+    public static final DeferredItem<Item> CINDERMOTH_SWARM_SPAWN_EGG = ITEMS.registerItem("cindermoth_swarm_spawn_egg", Item::new, p -> p.spawnEgg(CINDERMOTH_SWARM.get()));
+    public static final DeferredItem<Item> SOULWARD_REVENANT_SPAWN_EGG = ITEMS.registerItem("soulward_revenant_spawn_egg", Item::new, p -> p.spawnEgg(SOULWARD_REVENANT.get()));
     public static final DeferredItem<Item> BASALT_BEHEMOTH_SPAWN_EGG = ITEMS.registerItem("basalt_behemoth_spawn_egg", Item::new, p -> p.spawnEgg(BASALT_BEHEMOTH.get()));
     public static final DeferredItem<Item> QUAKEHOPPER_SPAWN_EGG = ITEMS.registerItem("quakehopper_spawn_egg", Item::new, p -> p.spawnEgg(QUAKEHOPPER.get()));
     public static final DeferredItem<Item> LAVALEAPER_SPAWN_EGG = ITEMS.registerItem("lavaleaper_spawn_egg", Item::new, p -> p.spawnEgg(LAVALEAPER.get()));
@@ -172,7 +184,7 @@ public final class ModMobs {
     public static final DeferredItem<Item> LEVIMOTH_SPAWN_EGG = ITEMS.registerItem("levimoth_spawn_egg", Item::new, p -> p.spawnEgg(LEVIMOTH.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -209,6 +221,9 @@ public final class ModMobs {
         sink.accept(GLEAMTRAP.get(), Gleamtrap.createAttributes().build());
         sink.accept(PHANTASM_LANTERN.get(), PhantasmLantern.createAttributes().build());
         sink.accept(OSSUARY_WYRM.get(), OssuaryWyrm.createAttributes().build());
+        sink.accept(SOULFIRE_SEER.get(), SoulfireSeer.createAttributes().build());
+        sink.accept(CINDERMOTH_SWARM.get(), CindermothSwarm.createAttributes().build());
+        sink.accept(SOULWARD_REVENANT.get(), SoulwardRevenant.createAttributes().build());
         sink.accept(BASALT_BEHEMOTH.get(), BasaltBehemoth.createAttributes().build());
         sink.accept(QUAKEHOPPER.get(), Quakehopper.createAttributes().build());
         sink.accept(LAVALEAPER.get(), Lavaleaper.createAttributes().build());

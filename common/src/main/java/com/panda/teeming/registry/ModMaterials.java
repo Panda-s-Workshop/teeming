@@ -32,12 +32,12 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> CHITIN_PLATE = ITEMS.registerItem("chitin_plate", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SIPHON_GEL = ITEMS.registerItem("siphon_gel", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SOUL_VERTEBRA = ITEMS.registerItem("soul_vertebra", MaterialItem::new);
-    public static final DeferredItem<MaterialItem> MOLTEN_HEART = ITEMS.registerItem("molten_heart", MaterialItem::new);
     public static final DeferredItem<MaterialItem> EMBER_WING = ITEMS.registerItem("ember_wing", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> MOLTEN_HEART = ITEMS.registerItem("molten_heart", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHAIN_LINK = ITEMS.registerItem("chain_link", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHORUS_SILK = ITEMS.registerItem("chorus_silk", MaterialItem::new);
 
-    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, SOUL_VERTEBRA, MOLTEN_HEART, EMBER_WING, CHAIN_LINK, CHORUS_SILK);
+    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, SOUL_VERTEBRA, EMBER_WING, MOLTEN_HEART, CHAIN_LINK, CHORUS_SILK);
 
     /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
@@ -62,8 +62,8 @@ public final class ModMaterials {
             Map.entry("chitin_plate", List.of("craft 4 minecraft:armadillo_scute 1")),
             Map.entry("siphon_gel", List.of("craft 1 minecraft:glowstone_dust 2")),
             Map.entry("soul_vertebra", List.of("craft 1 minecraft:bone_meal 3")),
-            Map.entry("molten_heart", List.of("craft 1 minecraft:magma_block 8")),
             Map.entry("ember_wing", List.of("craft 1 minecraft:blaze_powder 1")),
+            Map.entry("molten_heart", List.of("craft 1 minecraft:magma_block 8")),
             Map.entry("chain_link", List.of("craft 1 minecraft:iron_chain 1")),
             Map.entry("chorus_silk", List.of("brew minecraft:slow_falling")));
 

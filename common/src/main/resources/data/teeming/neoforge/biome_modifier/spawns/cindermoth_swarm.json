@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#teeming:spawns/cindermoth_swarm",
+  "spawners": [
+    {
+      "type": "teeming:cindermoth_swarm",
+      "weight": 12,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

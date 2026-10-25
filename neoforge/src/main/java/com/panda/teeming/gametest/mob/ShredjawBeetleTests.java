@@ -1,6 +1,7 @@
 package com.panda.teeming.gametest.mob;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.effect.SunderEffect;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
@@ -8,7 +9,7 @@ import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.mob.nether.ShredjawBeetle;
 import com.panda.teeming.mob.nether.ShredjawBeetle.Step;
-import com.panda.teeming.mob.nether.ShredjawBeetle.Sunder;
+import com.panda.teeming.registry.ModEffects;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -43,6 +45,9 @@ import org.jspecify.annotations.Nullable;
  * Sunder (at most 3 stacks, for 200 ticks) and 2 more durability from every worn armour piece; a shield raised toward
  * it takes the whole bite, and the beetle reels with its own chitin cracked (armour 8 down to 4). Every number is
  * checked against a plain value.
+ *
+ * <p>Sunder is the {@link SunderEffect} status effect: the victim times it, and the armour modifier comes and goes
+ * with the effect.
  *
  * <p>Every beetle here has its goals cleared and a follow range of 1, so it never notices a survival player in a
  * neighbouring arena; its target is given to it directly, and its bite cycle still runs. Pigs have no AI and 100
@@ -120,9 +125,9 @@ public final class ShredjawBeetleTests {
         return out;
     }
 
-    /** The Sunder modifier's amount on {@code e}'s armour, 0 with none. */
+    /** The Sunder effect's armour modifier on {@code e}, 0 with none. */
     private static double sunder(LivingEntity e) {
-        AttributeModifier m = e.getAttribute(Attributes.ARMOR).getModifier(Sunder.ID);
+        AttributeModifier m = e.getAttribute(Attributes.ARMOR).getModifier(SunderEffect.MODIFIER);
         return m == null ? 0.0 : m.amount();
     }
 
@@ -219,9 +224,9 @@ public final class ShredjawBeetleTests {
             helper.assertTrue(log.tells.size() == 1 && jarred[0], "the jaws closed on the shield and it reels, phase " + b.phase());
             helper.assertTrue(log.sunders.isEmpty() && log.wears.isEmpty(), "no Sunder and no wear were tried");
             helper.assertTrue(p.getHealth() >= before, "the player is unhurt, health " + p.getHealth());
-            helper.assertTrue(sunder(p) == 0.0 && Sunder.stacks(p) == 0, "the player has no Sunder, modifier " + sunder(p));
+            helper.assertTrue(sunder(p) == 0.0 && SunderEffect.stacks(p) == 0, "the player has no Sunder, modifier " + sunder(p));
             helper.assertTrue(worn(p).equals(List.of(0, 0, 0, 0)), "not a point of armour durability lost, " + worn(p));
-            helper.assertTrue(log.cracks.size() == 1 && Sunder.stacks(b) == 1, "its own chitin cracked once, stacks " + Sunder.stacks(b));
+            helper.assertTrue(log.cracks.size() == 1 && SunderEffect.stacks(b) == 1, "its own chitin cracked once, stacks " + SunderEffect.stacks(b));
             helper.assertTrue(Math.abs(b.getAttributeValue(Attributes.ARMOR) - 4.0) < 0.01, "its armour 8 drops to 4, " + b.getAttributeValue(Attributes.ARMOR));
         });
     }
@@ -242,7 +247,7 @@ public final class ShredjawBeetleTests {
             helper.assertTrue(Math.abs(armourBefore - 15.0) < 0.01, "an iron set gives armour 15, got " + armourBefore);
             helper.assertTrue(log.sunders.size() == 1, "the bite landed and sundered, " + log.sunders);
             helper.assertTrue(p.getHealth() < before, "the bite hurt, health " + p.getHealth());
-            helper.assertTrue(Sunder.stacks(p) == 1 && Math.abs(sunder(p) + 4.0) < 0.01, "one stack, -4 armour, modifier " + sunder(p));
+            helper.assertTrue(SunderEffect.stacks(p) == 1 && Math.abs(sunder(p) + 4.0) < 0.01, "one stack, -4 armour, modifier " + sunder(p));
             helper.assertTrue(Math.abs(p.getAttributeValue(Attributes.ARMOR) - 11.0) < 0.01, "armour 15 drops to 11, " + p.getAttributeValue(Attributes.ARMOR));
             helper.assertTrue(worn(p).equals(List.of(3, 3, 3, 3)), "every piece lost 1 from the hit and 2 from the jaws, " + worn(p));
         });
@@ -286,7 +291,7 @@ public final class ShredjawBeetleTests {
         List<Integer> stacks = new ArrayList<>();
         helper.onEachTick(() -> {
             if (b.core().idle() && b.cooldown() > 0) b.resetCooldown();   // the bites come back to back
-            if (stacks.size() < log.sunders.size()) stacks.add(Sunder.stacks(pig));
+            if (stacks.size() < log.sunders.size()) stacks.add(SunderEffect.stacks(pig));
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(log.sunders.size() >= 4 && stacks.size() >= 4, "four bites landed, " + log.sunders.size());
@@ -312,7 +317,7 @@ public final class ShredjawBeetleTests {
             helper.assertTrue(log.sunders.size() == 1, "one bite landed, " + log.sunders);
             helper.assertTrue(over[0], "the Sunder wears off, " + on[0] + " ticks so far");
             helper.assertTrue(Math.abs(on[0] - 200) <= 1, "the Sunder lasts 200 ticks, lasted " + on[0]);
-            helper.assertTrue(Sunder.stacks(pig) == 0, "no stacks are left");
+            helper.assertTrue(SunderEffect.stacks(pig) == 0, "no stacks are left");
         });
     }
 
@@ -327,45 +332,63 @@ public final class ShredjawBeetleTests {
         });
     }
 
-    /** A sundered victim that dies loses its Sunder at once, and the modifier is never a saved (permanent) one. */
+    /**
+     * A sundered victim that dies loses its Sunder at once: the effect and its armour modifier, which only ever exist
+     * together.
+     */
     private static void victimDies(GameTestHelper helper) {
         Pig pig = pig(helper, new Vec3(6.0, 1, 5.5));
         ShredjawBeetle b = beetle(helper, new Vec3(4.5, 1, 5.5), pig);
         Log log = new Log(helper, b);
         int[] killedAt = {-1};
-        boolean[] transientOnly = {true};
+        boolean[] together = {true};
         helper.onEachTick(() -> {
+            if (killedAt[0] < 0 && (sunder(pig) != 0.0) != (SunderEffect.stacks(pig) > 0)) together[0] = false;
             if (!log.sunders.isEmpty() && killedAt[0] < 0) {
                 b.setTarget(null);
-                transientOnly[0] = pig.getAttribute(Attributes.ARMOR).getPermanentModifiers().stream().noneMatch(m -> m.id().equals(Sunder.ID));
+                if (!(SunderEffect.stacks(pig) == 1 && Math.abs(sunder(pig) + 4.0) < 0.01)) together[0] = false;
                 killedAt[0] = log.tick;
                 pig.kill(helper.getLevel());
             }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(killedAt[0] > 0 && log.tick >= killedAt[0] + 2, "the sundered pig was killed");
-            helper.assertTrue(transientOnly[0], "Sunder is a transient modifier, never saved with its victim");
-            helper.assertTrue(sunder(pig) == 0.0 && Sunder.stacks(pig) == 0, "a dead victim keeps no Sunder, modifier " + sunder(pig));
+            helper.assertTrue(together[0], "the armour modifier is there exactly while the Sunder effect is");
+            helper.assertTrue(sunder(pig) == 0.0 && SunderEffect.stacks(pig) == 0, "a dead victim keeps no Sunder, modifier " + sunder(pig));
         });
     }
 
-    /** The beetle that bit a victim dies: no beetle is left to time it, so the victim's Sunder lifts at once. */
+    /**
+     * The beetle that bit a victim dies: the victim's Sunder doesn't depend on it. It keeps its 4 armour off and keeps
+     * running down on the victim's own timer.
+     */
     private static void beetleDies(GameTestHelper helper) {
         Pig pig = pig(helper, new Vec3(6.0, 1, 5.5));
         ShredjawBeetle b = beetle(helper, new Vec3(4.5, 1, 5.5), pig);
         Log log = new Log(helper, b);
         double[] whileAlive = {0.0};
+        int[] leftAtDeath = {-1}, killedAt = {-1};
         helper.onEachTick(() -> {
             if (!log.sunders.isEmpty() && b.isAlive()) {
                 whileAlive[0] = sunder(pig);
+                leftAtDeath[0] = left(pig);
+                killedAt[0] = log.tick;
                 b.kill(helper.getLevel());
             }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(Math.abs(whileAlive[0] + 4.0) < 0.01, "the bite sundered the pig, modifier " + whileAlive[0]);
-            helper.assertTrue(!b.isAlive(), "the beetle is dead");
-            helper.assertTrue(sunder(pig) == 0.0 && Sunder.stacks(pig) == 0, "its victim's Sunder lifted, modifier " + sunder(pig));
+            helper.assertTrue(!b.isAlive() && log.tick >= killedAt[0] + 20, "the beetle has been dead for 20 ticks");
+            helper.assertTrue(SunderEffect.stacks(pig) == 1 && Math.abs(sunder(pig) + 4.0) < 0.01, "its victim is still sundered, modifier " + sunder(pig));
+            int ran = leftAtDeath[0] - left(pig);
+            helper.assertTrue(Math.abs(ran - (log.tick - killedAt[0])) <= 1, "and its Sunder ran down " + ran + " ticks in " + (log.tick - killedAt[0]));
         });
+    }
+
+    /** Ticks left on {@code e}'s Sunder, 0 with none. */
+    private static int left(LivingEntity e) {
+        MobEffectInstance now = e.getEffect(ModEffects.SUNDER.holder());
+        return now == null ? 0 : now.getDuration();
     }
 
     /** Backing out of reach while the jaws are spread: they close on air, nothing is hurt or sundered. */

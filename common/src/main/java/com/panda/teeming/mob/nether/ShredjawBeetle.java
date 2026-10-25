@@ -1,24 +1,17 @@
 package com.panda.teeming.mob.nether;
 
-import com.panda.teeming.TeemingMod;
+import com.panda.teeming.effect.EffectNumbers;
+import com.panda.teeming.effect.SunderEffect;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.registry.ModSounds;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.WeakHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -27,8 +20,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -58,9 +49,9 @@ import org.jspecify.annotations.Nullable;
  * stack of the same Sunder on itself (its armour 8 drops to 4). Backing out of reach before the jaws close also
  * makes it miss.
  *
- * <p>Sunder is a transient armour modifier ({@link Sunder}): never saved, so it is gone after a relog, and never
- * copied to a respawned player. It lifts the moment its victim dies, and when the last beetle that bit a victim dies
- * or unloads.
+ * <p>Sunder is a status effect on the victim ({@link SunderEffect}): the victim times it, so it runs out on time
+ * wherever the beetle that bit is, it is saved and loaded with the victim along with its armour loss, and it lifts the
+ * moment its victim dies.
  */
 public class ShredjawBeetle extends TeemingMonster {
     /** IDLE, jaws spread (tell), the bite, reeling from a blocked bite. */
@@ -74,8 +65,8 @@ public class ShredjawBeetle extends TeemingMonster {
     public static final double BITE_REACH = 1.2;          // blocks between hitboxes: a victim this close when the jaws close is bitten
     public static final float BITE_ARC = 120.0F;          // degrees in front of it the bite covers
     public static final float TURN = 12.0F;               // degrees a tick it turns after its target during the tell
-    public static final double SUNDER_ARMOR = 4.0;        // armour taken per stack of Sunder
-    public static final int SUNDER_MAX = 3;               // stacks at most: 12 armour
+    public static final double SUNDER_ARMOR = EffectNumbers.SUNDER_ARMOR;     // armour taken per stack of Sunder: 4
+    public static final int SUNDER_MAX = EffectNumbers.SUNDER_MAX_STACKS;     // stacks at most: 3, 12 armour
     public static final int SUNDER_TICKS = 200;           // the stacks last 10 s after the latest bite
     public static final int WEAR = 2;                     // extra durability each worn armour piece loses per bite
 
@@ -193,13 +184,6 @@ public class ShredjawBeetle extends TeemingMonster {
     // ---- the cycle -------------------------------------------------------------------------------------------------
 
     @Override
-    public void tick() {
-        // the timers count down before this tick's bites, so a fresh stack lasts its full length
-        if (level() instanceof ServerLevel level) Sunder.tick(level.getServer());
-        super.tick();
-    }
-
-    @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         if (cooldown > 0) cooldown--;
@@ -282,7 +266,7 @@ public class ShredjawBeetle extends TeemingMonster {
     private void bite(ServerLevel level, LivingEntity target, float damage) {
         if (!target.hurtServer(level, damageSources().mobAttack(this), damage)) return;
         setLastHurtMob(target);
-        boolean sundered = MechanicEvent.post(this, "sunder", target) && Sunder.apply(target, this);
+        boolean sundered = MechanicEvent.post(this, "sunder", target) && sunder(target);
         if (MechanicEvent.post(this, "wear", target)) wear(target);
         if (sundered) {
             level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), ModSounds.SHREDJAW_BEETLE_SUNDER.get(), getSoundSource(), 1.0F, 1.0F);
@@ -314,7 +298,7 @@ public class ShredjawBeetle extends TeemingMonster {
         level.playSound(null, j.x, j.y, j.z, ModSounds.SHREDJAW_BEETLE_BLOCKED.get(), getSoundSource(), 1.0F, 1.0F);
         level.sendParticles(ParticleTypes.CRIT, j.x, j.y, j.z, 10, 0.2, 0.15, 0.2, 0.3);
         level.sendParticles(chitin(), getX(), getY(0.8), getZ(), 16, 0.4, 0.15, 0.4, 0.0);
-        if (MechanicEvent.post(this, "crack", target)) Sunder.apply(this, this);
+        if (MechanicEvent.post(this, "crack", target)) sunder(this);
         if (!startPhase(Step.JARRED, JARRED_TICKS, null)) rest();
     }
 
@@ -329,16 +313,12 @@ public class ShredjawBeetle extends TeemingMonster {
         setDeltaMovement(0.0, v.y, 0.0);
     }
 
-    @Override
-    public void die(DamageSource source) {
-        Sunder.release(this);
-        super.die(source);
-    }
-
-    @Override
-    public void onRemoval(RemovalReason reason) {
-        Sunder.release(this);
-        super.onRemoval(reason);
+    /**
+     * One stack of Sunder on {@code victim}, at most {@link #SUNDER_MAX}, and every stack on it lasts
+     * {@link #SUNDER_TICKS} from now. False if it can't be sundered.
+     */
+    private boolean sunder(LivingEntity victim) {
+        return SunderEffect.addStack(victim, this, SUNDER_MAX, SUNDER_TICKS);
     }
 
     // ---- test hooks ------------------------------------------------------------------------------------------------
@@ -351,98 +331,6 @@ public class ShredjawBeetle extends TeemingMonster {
     /** Lets it bite again at once. Public as a test hook. */
     public void resetCooldown() {
         cooldown = 0;
-    }
-
-    // ---- Sunder ----------------------------------------------------------------------------------------------------
-
-    /**
-     * Sunder: a timed armour loss, kept as one transient modifier on the victim's armour ({@link #ID}, add value,
-     * {@code -4 x stacks}). Each bite adds a stack (at most {@link #SUNDER_MAX}) and restarts the shared timer of
-     * {@link #SUNDER_TICKS}; when it runs out every stack goes at once. The modifier is transient, so it is never saved
-     * (a relog clears it) and a respawned player never gets it back.
-     *
-     * <p>The timers live here, ticked once per server tick by any beetle that ticks. A victim's Sunder also lifts when
-     * the victim dies or leaves, and when every beetle that bit it is gone (died or unloaded), so nothing is left
-     * behind when no beetle is around to time it.
-     */
-    public static final class Sunder {
-        public static final Identifier ID = TeemingMod.id("shredjaw_sunder");
-
-        private static final class Mark {
-            int stacks;
-            int left;
-            final Set<UUID> by = new HashSet<>();
-        }
-
-        // server thread only; weak keys, so a victim the server dropped is never kept alive here
-        private static final Map<LivingEntity, Mark> MARKS = new WeakHashMap<>();
-        private static @Nullable MinecraftServer lastServer;
-        private static int lastTick = Integer.MIN_VALUE;
-
-        private Sunder() {}
-
-        /** Adds a stack to {@code victim} (the timer restarts), laid by {@code by}. False if it has no armour to sunder. */
-        public static boolean apply(LivingEntity victim, LivingEntity by) {
-            AttributeInstance armor = victim.getAttribute(Attributes.ARMOR);
-            if (armor == null || victim.level().isClientSide()) return false;
-            Mark mark = MARKS.computeIfAbsent(victim, v -> new Mark());
-            mark.stacks = Math.min(SUNDER_MAX, mark.stacks + 1);
-            mark.left = SUNDER_TICKS;
-            mark.by.add(by.getUUID());
-            armor.addOrUpdateTransientModifier(new AttributeModifier(ID, -SUNDER_ARMOR * mark.stacks, AttributeModifier.Operation.ADD_VALUE));
-            return true;
-        }
-
-        /** Stacks of Sunder on {@code victim} now (0 to 3). */
-        public static int stacks(LivingEntity victim) {
-            Mark mark = MARKS.get(victim);
-            return mark == null ? 0 : mark.stacks;
-        }
-
-        /** Ticks until {@code victim}'s Sunder falls away, 0 with none. */
-        public static int ticksLeft(LivingEntity victim) {
-            Mark mark = MARKS.get(victim);
-            return mark == null ? 0 : mark.left;
-        }
-
-        /** Once per server tick: counts every timer down, lifts the ones that ran out and shows the rest. */
-        static void tick(MinecraftServer server) {
-            if (server == lastServer && server.getTickCount() == lastTick) return;
-            lastServer = server;
-            lastTick = server.getTickCount();
-            for (Iterator<Map.Entry<LivingEntity, Mark>> it = MARKS.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<LivingEntity, Mark> e = it.next();
-                LivingEntity victim = e.getKey();
-                Mark mark = e.getValue();
-                if (victim == null) {
-                    it.remove();
-                } else if (victim.isRemoved() || !victim.isAlive() || --mark.left <= 0) {
-                    strip(victim);
-                    it.remove();
-                } else if (mark.left % 10 == 0 && victim.level() instanceof ServerLevel level) {
-                    // cracked chitin flakes drift off a sundered victim, more with every stack
-                    level.sendParticles(victim instanceof ShredjawBeetle b ? b.chitin() : CHITIN_RED,
-                            victim.getX(), victim.getY(0.6), victim.getZ(), 2 * mark.stacks, 0.3, 0.3, 0.3, 0.0);
-                }
-            }
-        }
-
-        /** {@code beetle} is gone: every victim no other beetle has bitten loses its Sunder now. */
-        static void release(ShredjawBeetle beetle) {
-            UUID id = beetle.getUUID();
-            for (Iterator<Map.Entry<LivingEntity, Mark>> it = MARKS.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry<LivingEntity, Mark> e = it.next();
-                Mark mark = e.getValue();
-                if (!mark.by.remove(id) || !mark.by.isEmpty() && e.getKey() != beetle) continue;
-                if (e.getKey() != null) strip(e.getKey());
-                it.remove();
-            }
-        }
-
-        private static void strip(LivingEntity victim) {
-            AttributeInstance armor = victim.getAttribute(Attributes.ARMOR);
-            if (armor != null) armor.removeModifier(ID);
-        }
     }
 
     // ---- sounds ----------------------------------------------------------------------------------------------------
