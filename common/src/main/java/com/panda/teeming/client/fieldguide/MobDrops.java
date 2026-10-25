@@ -28,11 +28,15 @@ public final class MobDrops {
             Map.entry("hollow_mourner", List.of("teeming:grave_ash", "minecraft:bone", "minecraft:string", "teeming:trophy")),
             Map.entry("dustwhirl", List.of("teeming:gale_essence", "minecraft:stick", "teeming:trophy")),
             Map.entry("skreel", List.of("teeming:gale_essence", "minecraft:feather", "teeming:trophy")),
+            Map.entry("slagspitter", List.of("teeming:slag_gland", "minecraft:basalt", "minecraft:magma_cream", "teeming:trophy")),
             Map.entry("slagheart_golem", List.of("teeming:slag_gland", "minecraft:basalt", "minecraft:coal", "teeming:trophy")),
             Map.entry("soot_manta", List.of("teeming:soot_plume", "minecraft:charcoal", "teeming:trophy")),
             Map.entry("magma_tortoise", List.of("teeming:magma_scute", "minecraft:basalt", "teeming:trophy")),
             Map.entry("gleamtrap", List.of("teeming:siphon_gel", "minecraft:shroomlight", "teeming:trophy")),
+            Map.entry("lavaleaper", List.of("teeming:slag_gland", "minecraft:magma_cream", "teeming:trophy")),
+            Map.entry("pyre_herald", List.of("teeming:ember_wing", "minecraft:charcoal", "teeming:trophy")),
             Map.entry("fortress_jailer", List.of("teeming:chain_link", "minecraft:iron_nugget", "teeming:trophy")),
+            Map.entry("flamewright", List.of("teeming:ember_wing", "minecraft:blaze_powder", "teeming:trophy")),
             Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy"))
     );
 

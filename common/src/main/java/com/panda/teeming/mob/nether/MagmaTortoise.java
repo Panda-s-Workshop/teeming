@@ -63,6 +63,9 @@ public class MagmaTortoise extends TeemingAnimal {
     /** Wandering: a spot this many blocks away, picked again after a wait of this many ticks. */
     public static final double WANDER_MIN = 3.0, WANDER_MAX = 8.0;
     public static final int WANDER_WAIT_MIN = 40, WANDER_WAIT_MAX = 120;
+    /** In a pool too small for that, a spot this close instead; with no spot at all it looks again this soon. */
+    public static final double WANDER_SHORT = 1.5;
+    public static final int WANDER_RETRY = 10;
 
     private static final double EASE = 0.3;           // horizontal speed eased towards the wanted one, per tick
     private static final double FLOAT_PULL = 0.3;     // the float closes this share of its depth error a tick
@@ -199,8 +202,12 @@ public class MagmaTortoise extends TeemingAnimal {
             if (!core().idle() || !isInLava()) return false;
             if (--wait > 0) return false;
             wait = WANDER_WAIT_MIN + random.nextInt(WANDER_WAIT_MAX - WANDER_WAIT_MIN + 1);
-            Vec3 spot = pick();
-            if (spot == null) return false;
+            Vec3 spot = pick(WANDER_MIN, WANDER_MAX);
+            if (spot == null) spot = pick(WANDER_SHORT, WANDER_MIN);
+            if (spot == null) {
+                wait = WANDER_RETRY;
+                return false;
+            }
             wanted = spot;
             return true;
         }
@@ -221,10 +228,10 @@ public class MagmaTortoise extends TeemingAnimal {
             if (core().idle()) wanted = null;
         }
 
-        private @Nullable Vec3 pick() {
+        private @Nullable Vec3 pick(double near, double far) {
             for (int i = 0; i < 10; i++) {
                 double a = random.nextDouble() * Math.PI * 2.0;
-                double r = WANDER_MIN + random.nextDouble() * (WANDER_MAX - WANDER_MIN);
+                double r = near + random.nextDouble() * (far - near);
                 Vec3 spot = position().add(Math.cos(a) * r, 0.0, Math.sin(a) * r);
                 if (clearRun(spot)) return spot;
             }

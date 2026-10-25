@@ -27,10 +27,11 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> SOOT_PLUME = ITEMS.registerItem("soot_plume", MaterialItem::new);
     public static final DeferredItem<MaterialItem> MAGMA_SCUTE = ITEMS.registerItem("magma_scute", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SIPHON_GEL = ITEMS.registerItem("siphon_gel", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> EMBER_WING = ITEMS.registerItem("ember_wing", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHAIN_LINK = ITEMS.registerItem("chain_link", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHORUS_SILK = ITEMS.registerItem("chorus_silk", MaterialItem::new);
 
-    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, SLAG_GLAND, SOOT_PLUME, MAGMA_SCUTE, SIPHON_GEL, CHAIN_LINK, CHORUS_SILK);
+    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, SLAG_GLAND, SOOT_PLUME, MAGMA_SCUTE, SIPHON_GEL, EMBER_WING, CHAIN_LINK, CHORUS_SILK);
 
     /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
@@ -50,6 +51,7 @@ public final class ModMaterials {
             Map.entry("soot_plume", List.of("craft 1 minecraft:ink_sac 2")),
             Map.entry("magma_scute", List.of("brew minecraft:long_fire_resistance")),
             Map.entry("siphon_gel", List.of("craft 1 minecraft:glowstone_dust 2")),
+            Map.entry("ember_wing", List.of("craft 1 minecraft:blaze_powder 1")),
             Map.entry("chain_link", List.of("craft 1 minecraft:iron_chain 1")),
             Map.entry("chorus_silk", List.of("brew minecraft:slow_falling")));
 

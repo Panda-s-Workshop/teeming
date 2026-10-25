@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:ember_wing"
+  ],
+  "result": {
+    "id": "minecraft:blaze_powder",
+    "count": 1
+  }
+}

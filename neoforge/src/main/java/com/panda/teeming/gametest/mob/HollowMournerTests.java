@@ -235,9 +235,18 @@ public final class HollowMournerTests {
         Vec3 grave = helper.absoluteVec(around(4.0, 90));
         Vec3 controlAt = helper.absoluteVec(around(3.5, 270));
         long[] killedAt = {-1};
+        // the most orbs and items seen on any tick: orbs fly to any player within 8 blocks, and a survivor in a
+        // neighbouring arena can take them before a count at the end
+        int[] seen = {0, 0, 0};                                               // control orbs, raised orbs, raised items
         helper.runAtTickTime(1, () -> killBy(helper, husk, pig));
         helper.onEachTick(() -> {
-            if (killedAt[0] >= 0) return;
+            if (killedAt[0] >= 0) {
+                ServerLevel level = helper.getLevel();
+                seen[0] = Math.max(seen[0], level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(controlAt, 4, 3, 4)).size());
+                seen[1] = Math.max(seen[1], level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(grave, 4, 3, 4)).size());
+                seen[2] = Math.max(seen[2], level.getEntitiesOfClass(ItemEntity.class, AABB.ofSize(grave, 4, 3, 4)).size());
+                return;
+            }
             List<Husk> raised = raisedAt(helper, grave);
             if (raised.isEmpty()) return;
             Husk r = raised.getFirst();
@@ -258,13 +267,9 @@ public final class HollowMournerTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(killedAt[0] >= 0, "the dead husk rose");
             helper.assertTrue(helper.getTick() >= killedAt[0] + 24, "waiting for both bodies to fade");
-            ServerLevel level = helper.getLevel();
-            int controlOrbs = level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(controlAt, 4, 3, 4)).size();
-            int orbs = level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(grave, 4, 3, 4)).size();
-            int items = level.getEntitiesOfClass(ItemEntity.class, AABB.ofSize(grave, 4, 3, 4)).size();
-            helper.assertTrue(controlOrbs > 0, "a plain husk leaves experience, found " + controlOrbs + " orbs");
-            helper.assertTrue(orbs == 0, "the raised husk leaves no experience, found " + orbs + " orbs");
-            helper.assertTrue(items == 0, "and no items, found " + items);
+            helper.assertTrue(seen[0] > 0, "a plain husk leaves experience, saw at most " + seen[0] + " orbs");
+            helper.assertTrue(seen[1] == 0, "the raised husk leaves no experience, saw " + seen[1] + " orbs");
+            helper.assertTrue(seen[2] == 0, "and no items, saw " + seen[2]);
         });
     }
 

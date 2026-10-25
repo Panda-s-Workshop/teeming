@@ -49,6 +49,8 @@ public final class MobRenderers {
                 Set.of("base", "red_dust"), 0.45F, 1.0F, 2, true));
         out.register(ModMobs.SKREEL.get(), ctx -> new TeemingRenderer<>(ctx, new SkreelModel(ctx.bakeLayer(CreatureLayers.SKREEL)), "skreel",
                 Set.of(), 0.5F, 1.0F, 1, true));
+        out.register(ModMobs.SLAGSPITTER.get(), ctx -> new TeemingRenderer<>(ctx, new SlagspitterModel(ctx.bakeLayer(CreatureLayers.SLAGSPITTER)), "slagspitter",
+                Set.of("basalt_spitter", "base"), 0.5F, 1.0F, 2, false));
         out.register(ModMobs.SLAGHEART_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new SlagheartGolemModel(ctx.bakeLayer(CreatureLayers.SLAGHEART_GOLEM)), "slagheart_golem",
                 Set.of("base", "cooled_golem"), 0.9F, 1.15F, 4, true));
         out.register(ModMobs.SOOT_MANTA.get(), ctx -> new TeemingRenderer<>(ctx, new SootMantaModel(ctx.bakeLayer(CreatureLayers.SOOT_MANTA)), "soot_manta",
@@ -57,8 +59,14 @@ public final class MobRenderers {
                 Set.of("base", "old_tortoise"), 1.2F, 1.0F, 1, false));
         out.register(ModMobs.GLEAMTRAP.get(), ctx -> new TeemingRenderer<>(ctx, new GleamtrapModel(ctx.bakeLayer(CreatureLayers.GLEAMTRAP)), "gleamtrap",
                 Set.of("base", "warped_gleamtrap"), 0.0F, 1.0F, 3, false));
+        out.register(ModMobs.LAVALEAPER.get(), ctx -> new TeemingRenderer<>(ctx, new LavaleaperModel(ctx.bakeLayer(CreatureLayers.LAVALEAPER)), "lavaleaper",
+                Set.of("base", "ember_leaper"), 0.45F, 1.0F, 3, true));
+        out.register(ModMobs.PYRE_HERALD.get(), ctx -> new TeemingRenderer<>(ctx, new PyreHeraldModel(ctx.bakeLayer(CreatureLayers.PYRE_HERALD)), "pyre_herald",
+                Set.of("base", "soul_herald"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.FORTRESS_JAILER.get(), ctx -> new TeemingRenderer<>(ctx, new FortressJailerModel(ctx.bakeLayer(CreatureLayers.FORTRESS_JAILER)), "fortress_jailer",
                 Set.of("base", "rusted_jailer"), 0.5F, 1.0F, 1, false));
+        out.register(ModMobs.FLAMEWRIGHT.get(), ctx -> new TeemingRenderer<>(ctx, new FlamewrightModel(ctx.bakeLayer(CreatureLayers.FLAMEWRIGHT)), "flamewright",
+                Set.of("base", "soul_wright"), 0.45F, 1.0F, 2, true));
         out.register(ModMobs.LEVIMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new LevimothModel(ctx.bakeLayer(CreatureLayers.LEVIMOTH)), "levimoth",
                 Set.of("base", "pale_levimoth"), 0.35F, 1.0F, 1, false));
     }
