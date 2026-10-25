@@ -64,6 +64,7 @@ final class SpawnTests {
         out.accept("spawn_share_counts", SpawnTests::shareCounts);
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
+        out.accept("spawner_apex", SpawnTests::apex);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -208,11 +209,16 @@ final class SpawnTests {
                     .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
             int vanilla = 0;
             int ours = 0;
-            for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
-                if (teeming(w.value().type())) ours += w.weight();
-                else vanilla += w.weight();
-            }
             String name = key.identifier().getPath();
+            for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
+                if (teeming(w.value().type())) {
+                    ours += w.weight();
+                    RosterStats.Entry row = RosterStats.BY_ID.get(w.value().type().builtInRegistryHolder().key().identifier().getPath());
+                    if (row != null && row.apex()) wrong.add(name + ": the apex " + row.id() + " is on its list; only the spawner's rare apex rule places it");
+                } else {
+                    vanilla += w.weight();
+                }
+            }
             if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
             boolean capped = biome.is(TeemingSpawner.SHARE_CAPPED);
             if (capped != SpawnTable.SHARE_CAPPED.contains(e.getKey())) wrong.add(name + ": share-capped " + capped + " against the table");
@@ -357,6 +363,83 @@ final class SpawnTests {
         nether.setBlockAndUpdate(deltasCap, Blocks.BASALT.defaultBlockState());
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
         helper.succeed();
+    }
+
+    /**
+     * The apex rule, for the Basalt Behemoth (its absence from every biome list is in spawn_share). Built in the GameTest
+     * server's flat Nether (all basalt deltas), apart from the other spawn tests:
+     * without a won apex roll the open floor offers no Behemoth; with one, the Behemoth takes the floor (its rule, its
+     * placement, room for its body and its tag all accept the spot) and wins the pick over the other candidates there;
+     * a Behemoth 200 blocks off keeps a second away, one 262 blocks off doesn't (one per 256 blocks); a won roll in a
+     * patch made crimson forest, outside its tag, offers none. The rarity: 16000 seeded rolls win 1 in 80 within three
+     * standard deviations (158 to 242), and at one full attempt per player every 200 ticks that is one won roll every
+     * 10 to 20 minutes, even with a quarter of won rolls lost to a column without room, light or a cap.
+     */
+    private static void apex(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel nether = server.getLevel(Level.NETHER);
+        RosterStats.Entry row = RosterStats.get("basalt_behemoth");
+        var type = ModMobs.BASALT_BEHEMOTH.get();
+        int x0 = 12288;
+        int z0 = 4096;
+        for (int dx : new int[] {0, 200, 262, 400}) nether.getChunk((x0 + dx) >> 4, z0 >> 4);
+        nether.setChunkForced(x0 >> 4, z0 >> 4, true);
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), String.format(Locale.ROOT,
+                "execute in minecraft:the_nether run fillbiome %d 0 %d %d 60 %d minecraft:crimson_forest", x0 + 400, z0, x0 + 415, z0 + 15));
+        int y = nether.getHeight(Heightmap.Types.MOTION_BLOCKING, x0 + 8, z0 + 8);
+        List<String> wrong = new ArrayList<>();
+        RandomSource random = RandomSource.create(11);
+
+        List<Candidate> noRoll = TeemingSpawner.candidatesAt(nether, x0 + 8, y, z0 + 8, random, false, false);
+        if (noRoll.stream().anyMatch(c -> c.mob() == row)) wrong.add("without a won roll the floor offered the Behemoth: " + ids(noRoll));
+        List<Candidate> rolled = TeemingSpawner.candidatesAt(nether, x0 + 8, y, z0 + 8, random, false, true);
+        Candidate behemoth = rolled.stream().filter(c -> c.mob() == row).findFirst().orElse(null);
+        if (behemoth == null) {
+            wrong.add("a won roll on open basalt-delta floor should offer the Behemoth: " + ids(rolled));
+        } else {
+            if (behemoth.rule() != Rule.APEX_GROUND || !behemoth.apex()) wrong.add("the Behemoth came by rule " + behemoth.rule());
+            checkAccepted(nether, rolled, wrong);
+            if (!TeemingSpawns.placeOk(row, type, nether, behemoth.pos())) wrong.add("its placement refuses " + behemoth.pos().toShortString());
+            if (!nether.noCollision(type.getSpawnAABB(behemoth.pos().getX() + 0.5, behemoth.pos().getY(), behemoth.pos().getZ() + 0.5)))
+                wrong.add("no room for its body at " + behemoth.pos().toShortString());
+            if (!nether.getBiome(behemoth.pos()).is(TeemingSpawns.tag(row.id()))) wrong.add("outside its tag at " + behemoth.pos().toShortString());
+            Candidate leech = new Candidate(RosterStats.get("veinleech"), ModMobs.VEINLEECH.get(), behemoth.pos(), null);
+            for (int i = 0; i < 200; i++) {
+                if (TeemingSpawner.pick(List.of(leech, behemoth), random) != behemoth) {
+                    wrong.add("another candidate took the spot of a won apex roll");
+                    break;
+                }
+            }
+        }
+        List<Candidate> crimson = TeemingSpawner.candidatesAt(nether, x0 + 408, y, z0 + 8, random, false, true);
+        if (crimson.stream().anyMatch(c -> c.mob() == row)) wrong.add("a crimson forest, outside its tag, offered the Behemoth");
+
+        int wins = 0;
+        RandomSource rolls = RandomSource.create(5);
+        for (int i = 0; i < 16000; i++) if (TeemingSpawner.rollsApex(rolls)) wins++;
+        if (wins < 158 || wins > 242) wrong.add("16000 rolls won " + wins + " times, want 1 in 80 (158 to 242)");
+        double minutes = (1.0 / SpawnTable.APEX_CHANCE) * TeemingSpawner.EVERY / 20.0 / 60.0;
+        if (minutes < 10.0 || minutes / 0.75 > 20.0) wrong.add(String.format(Locale.ROOT, "a won roll every %.1f minutes, %.1f with a quarter lost", minutes, minutes / 0.75));
+
+        // one per 256 blocks: a Behemoth at the forced chunk keeps a second from 200 blocks off, not from 262
+        BlockPos first = new BlockPos(x0 + 8, y, z0 + 8);
+        Mob standing = type.create(nether, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        standing.snapTo(first.getX() + 0.5, first.getY(), first.getZ() + 0.5);
+        standing.setNoAi(true);
+        standing.setPersistenceRequired();
+        nether.addFreshEntity(standing);
+        helper.runAtTickTime(5, () -> {
+            if (TeemingSpawner.apexClear(nether, type, first.east(200))) wrong.add("a Behemoth 200 blocks off should keep the spot clear of a second");
+            if (!TeemingSpawner.apexClear(nether, type, first.east(262))) wrong.add("a Behemoth 262 blocks off should leave the spot free");
+            List<Candidate> near = TeemingSpawner.candidatesAt(nether, first.getX() + 200, y, first.getZ(), random, false, true);
+            if (near.stream().anyMatch(c -> c.mob() == row)) wrong.add("a won roll 200 blocks from a Behemoth offered a second");
+            List<Candidate> far = TeemingSpawner.candidatesAt(nether, first.getX() + 262, y, first.getZ(), random, false, true);
+            if (far.stream().noneMatch(c -> c.mob() == row)) wrong.add("a won roll 262 blocks from a Behemoth should offer one: " + ids(far));
+            standing.discard();
+            nether.setChunkForced(x0 >> 4, z0 >> 4, false);
+            if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+            helper.succeed();
+        });
     }
 
     /** Every candidate's own rule (or, for a biome-list mob, its placement) accepts its spot, inside its biome tag. */

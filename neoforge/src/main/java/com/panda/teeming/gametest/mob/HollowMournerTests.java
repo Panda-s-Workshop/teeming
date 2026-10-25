@@ -14,8 +14,10 @@ import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -111,6 +113,13 @@ public final class HollowMournerTests {
     /** Kills a mob outright with a blow from {@code by}: it lies dying for a second, as any mob does. */
     private static void killBy(GameTestHelper helper, LivingEntity victim, LivingEntity by) {
         victim.hurtServer(helper.getLevel(), victim.damageSources().mobAttack(by), 1000.0F);
+    }
+
+    /** An item for a failure message: what it holds, where (relative), how old, and who threw it. */
+    private static String describe(GameTestHelper helper, ItemEntity item) {
+        Vec3 at = helper.relativeVec(item.position());
+        return item.getItem() + String.format(" at %.2f %.2f %.2f", at.x, at.y, at.z) + " age " + item.getAge()
+                + " on tick " + helper.getTick() + " thrower " + item.getOwner();
     }
 
     /** Live raised husks within half a block of {@code abs} (an absolute position). */
@@ -238,13 +247,20 @@ public final class HollowMournerTests {
         // the most orbs and items seen on any tick: orbs fly to any player within 8 blocks, and a survivor in a
         // neighbouring arena can take them before a count at the end
         int[] seen = {0, 0, 0};                                               // control orbs, raised orbs, raised items
+        // the dead husk's own loot (0 to 2 rotten flesh, killed by the pig) already lies by the grave when it rises, so
+        // only items that appear after the raised husk is killed are its drops
+        Set<UUID> lying = new HashSet<>();
+        Map<UUID, String> itemsSeen = new HashMap<>();                        // each new item by the grave, as first seen
         helper.runAtTickTime(1, () -> killBy(helper, husk, pig));
         helper.onEachTick(() -> {
             if (killedAt[0] >= 0) {
                 ServerLevel level = helper.getLevel();
                 seen[0] = Math.max(seen[0], level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(controlAt, 4, 3, 4)).size());
                 seen[1] = Math.max(seen[1], level.getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(grave, 4, 3, 4)).size());
-                seen[2] = Math.max(seen[2], level.getEntitiesOfClass(ItemEntity.class, AABB.ofSize(grave, 4, 3, 4)).size());
+                List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, AABB.ofSize(grave, 4, 3, 4),
+                        e -> !lying.contains(e.getUUID()));
+                seen[2] = Math.max(seen[2], items.size());
+                for (ItemEntity item : items) itemsSeen.putIfAbsent(item.getUUID(), describe(helper, item));
                 return;
             }
             List<Husk> raised = raisedAt(helper, grave);
@@ -260,6 +276,7 @@ public final class HollowMournerTests {
             }
             helper.assertTrue(r.wasExperienceConsumed(), "it gives no experience");
             helper.assertTrue(m.graves().isEmpty(), "the grave is used up: " + m.graves());
+            for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, AABB.ofSize(grave, 4, 3, 4))) lying.add(e.getUUID());
             r.hurtServer(helper.getLevel(), r.damageSources().playerAttack(player), 1000.0F);
             control.hurtServer(helper.getLevel(), control.damageSources().playerAttack(player), 1000.0F);
             killedAt[0] = helper.getTick();
@@ -269,7 +286,8 @@ public final class HollowMournerTests {
             helper.assertTrue(helper.getTick() >= killedAt[0] + 24, "waiting for both bodies to fade");
             helper.assertTrue(seen[0] > 0, "a plain husk leaves experience, saw at most " + seen[0] + " orbs");
             helper.assertTrue(seen[1] == 0, "the raised husk leaves no experience, saw " + seen[1] + " orbs");
-            helper.assertTrue(seen[2] == 0, "and no items, saw " + seen[2]);
+            helper.assertTrue(seen[2] == 0, "and no items, saw " + seen[2] + ": " + itemsSeen.values()
+                    + " (already lying there: " + lying.size() + ")");
         });
     }
 

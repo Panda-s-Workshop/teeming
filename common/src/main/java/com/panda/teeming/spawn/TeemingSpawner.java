@@ -40,7 +40,8 @@ import org.jspecify.annotations.Nullable;
  * The Teeming spawner: places the mobs biome spawn lists can't, on the server tick. Each player gets one attempt every
  * 200 ticks in the Nether and the End. An attempt chooses the spot first: a column 24–64 blocks away, then every
  * spawner rule's spot in it, and in a share-capped biome the spots of the biome-list monsters that live there. It then
- * picks, by weight, among the mobs whose rule accepted a spot (a structure's spot goes to that structure's mobs), and
+ * picks, by weight, among the mobs whose rule accepted a spot (a structure's spot goes to that structure's mobs; an apex
+ * is a candidate only after the attempt wins its rare apex roll, and then takes the spot), and
  * spawns it if the natural-spawn predicate agrees ({@link TeemingSpawns#check}: config, light, local caps), under the
  * vanilla per-player category cap. Spawns in the open world (not a structure) also keep the Teeming share of the
  * monsters round the player at the target ({@link SpawnTable#TARGET_SHARE}).
@@ -65,7 +66,7 @@ public final class TeemingSpawner {
 
     /** Where a spawner mob appears. The rule names are the {@code spawner} values in the roster. */
     public enum Rule {
-        FORTRESS(Level.NETHER), BASTION(Level.NETHER), LAVA_SEA_AIR(Level.NETHER), FUNGUS_CAP(Level.NETHER),
+        FORTRESS(Level.NETHER), BASTION(Level.NETHER), LAVA_SEA_AIR(Level.NETHER), FUNGUS_CAP(Level.NETHER), APEX_GROUND(Level.NETHER),
         MAIN_ISLAND(Level.END), UNDERSIDE(Level.END), VOID_AIR(Level.END), VOID_BELOW(Level.END), SKY(Level.END);
 
         public final ResourceKey<Level> dimension;
@@ -92,6 +93,11 @@ public final class TeemingSpawner {
             return this == LAVA_SEA_AIR || this == FUNGUS_CAP;
         }
 
+        /** An apex on open ground: only after a won apex roll, and only with no other of its kind near (SpawnTable). */
+        public boolean apex() {
+            return this == APEX_GROUND;
+        }
+
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
         public boolean fits(ServerLevel level, BlockPos pos) {
             if (!air(level, pos)) return false;
@@ -99,6 +105,7 @@ public final class TeemingSpawner {
                 case FORTRESS -> floor(level, pos) && inStructure(level, pos, BuiltinStructures.FORTRESS);
                 case BASTION -> floor(level, pos) && inStructure(level, pos, BuiltinStructures.BASTION_REMNANT);
                 case FUNGUS_CAP -> air(level, pos.above()) && level.getBlockState(pos.below()).is(BlockTags.WART_BLOCKS);
+                case APEX_GROUND -> floor(level, pos);
                 case LAVA_SEA_AIR -> pos.getY() > level.getSeaLevel() + 1 && lavaBelow(level, pos);
                 case MAIN_ISLAND -> floor(level, pos) && mainIsland(level, pos) && mainIslandOpen(level);
                 case UNDERSIDE -> !mainIsland(level, pos) && level.getBlockState(pos.above()).isFaceSturdy(level, pos.above(), Direction.DOWN)
@@ -151,6 +158,10 @@ public final class TeemingSpawner {
             return rule != null && rule.structure();
         }
 
+        public boolean apex() {
+            return rule != null && rule.apex();
+        }
+
         /** Counts toward the biome's Teeming share, so the share cap applies. */
         public boolean shared() {
             return rule == null || rule.shared();
@@ -181,13 +192,14 @@ public final class TeemingSpawner {
 
     /** One attempt near the player; {@code sharedOnly} leaves out structure and End rules. */
     public static @Nullable Mob attempt(ServerLevel level, ServerPlayer player, RandomSource random, boolean sharedOnly) {
+        boolean apex = !sharedOnly && rollsApex(random);
         for (int i = 0; i < COLUMNS; i++) {
             double angle = random.nextDouble() * Mth.TWO_PI;
             double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
             int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
             int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
             if (!level.hasChunkAt(new BlockPos(x, player.getBlockY(), z))) continue;
-            List<Candidate> found = candidatesAt(level, x, player.getBlockY(), z, random, sharedOnly);
+            List<Candidate> found = candidatesAt(level, x, player.getBlockY(), z, random, sharedOnly, apex);
             if (found.isEmpty()) continue;
             Candidate pick = pick(found, random);
             MobCategory category = TeemingSpawns.category(pick.mob());
@@ -209,13 +221,23 @@ public final class TeemingSpawner {
      * tag holds anything. Public for the GameTests.
      */
     public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly) {
+        return candidatesAt(level, x, y, z, random, sharedOnly, false);
+    }
+
+    /** As above; {@code apex}: the attempt won its apex roll, so apex mobs may take a spot too. */
+    public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly, boolean apex) {
         List<Candidate> out = new ArrayList<>();
         Map<Rule, Optional<BlockPos>> spots = new EnumMap<>(Rule.class);
         for (Entry mob : RosterStats.ALL) {
             Rule rule = Rule.of(mob.spawner());
-            if (rule == null || rule.dimension != level.dimension() || (sharedOnly && !rule.shared())) continue;
+            if (rule == null || rule.dimension != level.dimension() || (sharedOnly && !rule.shared()) || (rule.apex() && !apex)) continue;
             Optional<EntityType<? extends Mob>> type = TeemingSpawns.type(mob);
             if (type.isEmpty()) continue;
+            if (rule.apex()) {
+                BlockPos pos = apexSpot(level, mob, type.get(), x, y, z, random);
+                if (pos != null) out.add(new Candidate(mob, type.get(), pos, rule));
+                continue;
+            }
             BlockPos pos = spots.computeIfAbsent(rule, r -> Optional.ofNullable(r.find(level, x, y, z, random))).orElse(null);
             if (pos == null) continue;
             if (!mob.biomeSpawns() && !inTagOrUntagged(level, mob, pos)) continue;
@@ -223,6 +245,35 @@ public final class TeemingSpawner {
         }
         shareCappedCandidates(level, x, y, z, random, out);
         return out;
+    }
+
+    /** Whether this attempt wins the apex roll ({@link SpawnTable#APEX_CHANCE}). */
+    public static boolean rollsApex(RandomSource random) {
+        return random.nextDouble() < SpawnTable.APEX_CHANCE;
+    }
+
+    /**
+     * An apex's spot in the column: open ground its placement accepts with room for its body, in its biome tag, and no
+     * other of its kind within {@link SpawnTable#APEX_RADIUS} blocks. A random one of those in the column, or null.
+     */
+    private static @Nullable BlockPos apexSpot(ServerLevel level, Entry mob, EntityType<? extends Mob> type, int x, int y, int z, RandomSource random) {
+        List<BlockPos> fit = new ArrayList<>();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
+        for (int dy = -SCAN; dy <= SCAN; dy++) {
+            pos.setY(y + dy);
+            if (pos.getY() <= level.getMinY() || pos.getY() >= level.getMaxY() || !Rule.APEX_GROUND.fits(level, pos)) continue;
+            if (!TeemingSpawns.placeOk(mob, type, level, pos) || !inTagOrUntagged(level, mob, pos)) continue;
+            if (!level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))) continue;
+            fit.add(pos.immutable());
+        }
+        if (fit.isEmpty()) return null;
+        BlockPos spot = fit.get(random.nextInt(fit.size()));
+        return apexClear(level, type, spot) ? spot : null;
+    }
+
+    /** No mob of the type within {@link SpawnTable#APEX_RADIUS} blocks of the spot. Public for the GameTests. */
+    public static boolean apexClear(ServerLevel level, EntityType<?> type, BlockPos spot) {
+        return level.getEntitiesOfClass(Mob.class, new AABB(spot).inflate(SpawnTable.APEX_RADIUS), e -> e.getType() == type).isEmpty();
     }
 
     /** A spot in the column whose biome is share-capped, with its biome. */
@@ -265,9 +316,13 @@ public final class TeemingSpawner {
         return out;
     }
 
-    /** Weighted pick among the candidates (weight 0 counts as 1); a structure's spot goes to that structure's mobs. */
+    /**
+     * Weighted pick among the candidates (weight 0 counts as 1). A structure's spot goes to that structure's mobs; else a
+     * won apex roll goes to the apex, as it is only a candidate after one.
+     */
     public static Candidate pick(List<Candidate> found, RandomSource random) {
-        List<Candidate> pool = found.stream().anyMatch(Candidate::structure) ? found.stream().filter(Candidate::structure).toList() : found;
+        List<Candidate> pool = found.stream().anyMatch(Candidate::structure) ? found.stream().filter(Candidate::structure).toList()
+                : found.stream().anyMatch(Candidate::apex) ? found.stream().filter(Candidate::apex).toList() : found;
         int total = 0;
         for (Candidate c : pool) total += Math.max(1, c.mob().weight());
         int roll = random.nextInt(total);
@@ -287,12 +342,20 @@ public final class TeemingSpawner {
 
     // ---- the share cap -------------------------------------------------------------------------------------------
 
-    /** The monsters within {@link #SHARE_RADIUS} of the spot: {Teeming, other}. Public for the GameTests. */
+    /**
+     * The monsters within {@link #SHARE_RADIUS} of the spot: {Teeming, other}. Apex mobs count on neither side: an apex
+     * doesn't take a regular mob's place in the share. Public for the GameTests.
+     */
     public static int[] monstersAround(ServerLevel level, BlockPos center) {
         int[] count = new int[2];
         AABB around = new AABB(center).inflate(SHARE_RADIUS);
         for (Mob mob : level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == MobCategory.MONSTER)) {
-            boolean teeming = mob.getType().builtInRegistryHolder().key().identifier().getNamespace().equals(TeemingMod.MODID);
+            var id = mob.getType().builtInRegistryHolder().key().identifier();
+            boolean teeming = id.getNamespace().equals(TeemingMod.MODID);
+            if (teeming) {
+                Entry row = RosterStats.BY_ID.get(id.getPath());
+                if (row != null && row.apex()) continue;
+            }
             count[teeming ? 0 : 1]++;
         }
         return count;

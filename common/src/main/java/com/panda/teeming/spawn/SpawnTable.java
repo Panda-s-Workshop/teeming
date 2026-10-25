@@ -47,12 +47,11 @@ public final class SpawnTable {
             new Row("cindermoth_swarm", "minecraft:nether_wastes", 7),
             new Row("cindermoth_swarm", "minecraft:soul_sand_valley", 4),
             new Row("soulward_revenant", "minecraft:soul_sand_valley", 2),
-            new Row("basalt_behemoth", "minecraft:basalt_deltas", 1),
             new Row("quakehopper", "minecraft:basalt_deltas", 8),
             new Row("ashharrier", "minecraft:basalt_deltas", 6),
             new Row("lavaleaper", "minecraft:nether_wastes", 5),
             new Row("lavaleaper", "minecraft:soul_sand_valley", 3),
-            new Row("lavaleaper", "minecraft:basalt_deltas", 6),
+            new Row("lavaleaper", "minecraft:basalt_deltas", 7),
             new Row("blackstone_scuttler", "minecraft:basalt_deltas", 6),
             new Row("aurovore", "minecraft:nether_wastes", 3));
 
@@ -70,4 +69,12 @@ public final class SpawnTable {
 
     public static final List<Cost> COSTS = List.of(
             new Cost("minecraft:soul_sand_valley", 0.7, 0.15));
+
+    /**
+     * Apex mobs on open ground stay off the biome lists: each full spawner attempt wins an apex roll with this chance
+     * (one attempt per player every 200 ticks: a roll won about every 13.3 minutes), and a won roll places the apex
+     * only where none stands within {@link #APEX_RADIUS} blocks. Apex mobs count in neither side of the share cap.
+     */
+    public static final double APEX_CHANCE = 0.0125;
+    public static final int APEX_RADIUS = 256;
 }

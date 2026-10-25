@@ -17,6 +17,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
@@ -67,14 +69,30 @@ public final class SkreelTests {
     /**
      * A Skreel {@code up} blocks above the arena floor at {@code x}, ready to screech. The test server roofs every
      * arena with barriers 8 above the floor, which leaves no sky to dive from, so the roof over this arena is opened
-     * first; the bird is removed when the test ends, wherever it flew.
+     * first, and the chunks round the arena are kept ticking; the bird is removed when the test ends, wherever it flew.
      */
     private static Skreel skreel(GameTestHelper helper, double x, double up) {
         openRoof(helper);
+        keepTicking(helper, 4);
         Skreel bird = helper.spawn(ModMobs.SKREEL.get(), new Vec3(x, 1 + up, 5.5));
         bird.resetCooldown();
         TestPlayers.whenDone(helper, bird::discard);
         return bird;
+    }
+
+    /**
+     * Keeps mobs ticking up to {@code margin} blocks outside the arena. The test server force-loads only the chunks under
+     * each arena, and an entity in a chunk beside them stops ticking where it is; a neighbouring arena's chunks stay
+     * forced only while its own batch runs. A Skreel circles 6 blocks out from its target, which takes it past the
+     * arena's edge: 1 block over the middle of the floor, 4 over a target that stepped aside. The chunks stay forced
+     * until the batch ends, when the runner lets go of every forced chunk: letting go sooner could drop a chunk that a
+     * neighbour's bird, or the next batch's arena, still needs.
+     */
+    private static void keepTicking(GameTestHelper helper, int margin) {
+        AABB area = helper.getBounds().inflate(margin, 0, margin);
+        for (int cx = Mth.floor(area.minX) >> 4; cx <= Mth.floor(area.maxX) >> 4; cx++) {
+            for (int cz = Mth.floor(area.minZ) >> 4; cz <= Mth.floor(area.maxZ) >> 4; cz++) helper.getLevel().setChunkForced(cx, cz, true);
+        }
     }
 
     /** Clears the barrier roof over the arena (the two layers above its 8 rows), so the sky above it is open. */
@@ -126,6 +144,33 @@ public final class SkreelTests {
         });
         out[0] = p;
         return bird;
+    }
+
+    /** An entity for a failure message: its kind, name and place relative to this arena. */
+    private static String who(GameTestHelper helper, net.minecraft.world.entity.Entity e) {
+        if (e == null) return "none";
+        Vec3 at = helper.relativeVec(e.position());
+        return e.getType().builtInRegistryHolder().key().identifier() + " " + e.getName().getString()
+                + String.format(" at %.1f %.1f %.1f", at.x, at.y, at.z) + (e.isAlive() ? "" : " dead " + e.getRemovalReason());
+    }
+
+    /**
+     * What a screech needs, read now: a target, open sky over it, the height band, reach, sight and no cooldown; and
+     * whether the bird's chunk ticks entities at all.
+     */
+    private static String screechCheck(GameTestHelper helper, Skreel bird) {
+        var t = bird.getTarget();
+        if (t == null) return "no target, bird at " + who(helper, bird);
+        boolean sky = true;
+        BlockPos.MutableBlockPos pos = t.blockPosition().mutable();
+        for (int i = 1; i <= Skreel.MIN_HEIGHT + 2; i++) {
+            pos.move(0, 1, 0);
+            sky &= helper.getLevel().getBlockState(pos).getCollisionShape(helper.getLevel(), pos).isEmpty();
+        }
+        return String.format("target %s, bird %s (ticking %s), sky %s, height %.1f, across %.1f, sight %s, cooldown %d",
+                who(helper, t), who(helper, bird), helper.getLevel().isPositionEntityTicking(bird.blockPosition()), sky,
+                bird.getY() - t.getY(), bird.position().subtract(t.position()).horizontalDistance(),
+                bird.getSensing().hasLineOfSight(t), bird.cooldown());
     }
 
     private static double height(Skreel bird, net.minecraft.world.entity.Entity target) {
@@ -329,14 +374,21 @@ public final class SkreelTests {
         pig[0].setHealth(100.0F);
         long[] diveEnd = {-1}, again = {-1};
         boolean[] dived = {false};
+        List<String> targets = new ArrayList<>();                            // each change of target, with its tick
+        Object[] last = {null};
         helper.onEachTick(() -> {
             long now = helper.getTick();
+            if (bird.getTarget() != last[0]) {
+                last[0] = bird.getTarget();
+                targets.add(now + ": " + who(helper, bird.getTarget()));
+            }
             if (bird.core().in(Step.DIVE)) dived[0] = true;
             else if (dived[0] && diveEnd[0] < 0) diveEnd[0] = now;
             if (diveEnd[0] >= 0 && again[0] < 0 && bird.core().in(Step.TELL)) again[0] = now;
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(again[0] >= 0, "it screeches again, phase " + bird.phase() + ", dive ended at " + diveEnd[0]);
+            helper.assertTrue(again[0] >= 0, "it screeches again, phase " + bird.phase() + ", dive ended at " + diveEnd[0]
+                    + "; " + screechCheck(helper, bird) + "; targets " + targets);
             long gap = again[0] - diveEnd[0];
             helper.assertTrue(gap >= 79 && gap <= 82, "80 ticks from the end of the dive to the next screech, saw " + gap);
         });

@@ -33,7 +33,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * Basalt Behemoth: a 20-tick rear that hurts no one yet; a slam of 14 to everything on the ground within 4 blocks, thrown
  * back, and nothing in the air; then 60 ticks with the core open (armour 0, every hit double) while it keeps walking and
  * swatting; then 60 ticks before it may rear again. Health 200, attack 14, armour 16, a 2.4 x 3.2 hitbox, 100
- * experience, one in 128 blocks, a weight-1 single in the basalt deltas. Every number is checked against a plain value.
+ * experience, one in 128 blocks, placed alone in the basalt deltas by the Teeming spawner's rare apex rule. Every number
+ * is checked against a plain value.
  *
  * <p>Every Behemoth stands at the arena's middle. Those that must stay unaware have their goals cleared and a follow
  * range of 1, so they never notice a survival player in a neighbouring arena; they are told to rear directly. Pigs
@@ -404,23 +405,27 @@ public final class BasaltBehemothTests {
         });
     }
 
-    /** Home: the basalt deltas; spawn weight 1, alone (groups of 1); an apex. */
+    /**
+     * Home: the basalt deltas and nowhere else (its biome tag, which the spawner reads), placed only by the Teeming
+     * spawner's apex rule: on no biome list, so no biome modifier; alone (groups of 1); weight 1 among apex candidates;
+     * an apex.
+     */
     private static void home(GameTestHelper helper) {
         RosterStats.Entry row = RosterStats.get("basalt_behemoth");
         helper.assertTrue(row.apex() && row.dim() == RosterStats.Dim.NETHER, "a Nether apex");
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("basalt_behemoth"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.BASALT_DELTAS)), "its home holds the basalt deltas");
-        var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
-                .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/basalt_behemoth")));
-        helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");
-        Weighted<MobSpawnSettings.SpawnerData> entry = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).spawners().unwrap().stream()
-                .filter(w -> w.value().type() == ModMobs.BASALT_BEHEMOTH.get()).findFirst().orElse(null);
-        helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 1, "spawn weight 1, got " + entry.weight());
-        helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
-                "alone, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
+        helper.assertTrue(tag.get().size() == 1 && tag.get().stream().anyMatch(b -> b.is(Biomes.BASALT_DELTAS)),
+                "its home holds the basalt deltas only: " + tag.get());
+        var rule = com.panda.teeming.spawn.TeemingSpawner.Rule.of(row.spawner());
+        helper.assertTrue(rule == com.panda.teeming.spawn.TeemingSpawner.Rule.APEX_GROUND && rule.apex() && rule.dimension == net.minecraft.world.level.Level.NETHER,
+                "the Nether apex rule places it, got '" + row.spawner() + "'");
+        helper.assertTrue(!row.biomeSpawns(), "on no biome list");
+        helper.assertTrue(access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/basalt_behemoth"))).isEmpty(), "no biome modifier");
+        helper.assertTrue(row.weight() == 1, "weight 1, got " + row.weight());
+        helper.assertTrue(row.groupMin() == 1 && row.groupMax() == 1, "alone, got " + row.groupMin() + ".." + row.groupMax());
         helper.succeed();
     }
 

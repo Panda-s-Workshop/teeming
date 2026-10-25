@@ -95,7 +95,7 @@ public final class RosterStats {
             e(39, "soulfire_seer", Dim.NETHER, Cat.MONSTER, false, 22F, 9F, 0F, 0.6F, 2F, 24, 9F, 22F, 9F, 8, 1, 1, "bone_seer", "soul_vertebra", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(40, "cindermoth_swarm", Dim.NETHER, Cat.MONSTER, false, 10F, 1F, 0F, 1F, 1F, 12, 0F, 10F, 1F, 12, 1, 1, "soul_moths", "ember_wing", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(41, "soulward_revenant", Dim.NETHER, Cat.MONSTER, false, 40F, 6F, 6F, 0.8F, 2.2F, 20, 8F, 40F, 6F, 6, 1, 1, "gilded_revenant", "soul_vertebra", Place.GROUND, false, Integer.MAX_VALUE, ""),
-            e(42, "basalt_behemoth", Dim.NETHER, Cat.MONSTER, true, 200F, 14F, 16F, 2.4F, 3.2F, 20, 14F, 200F, 14F, 1, 1, 1, "", "molten_heart", Place.GROUND, false, Integer.MAX_VALUE, ""),
+            e(42, "basalt_behemoth", Dim.NETHER, Cat.MONSTER, true, 200F, 14F, 16F, 2.4F, 3.2F, 20, 14F, 200F, 14F, 1, 1, 1, "", "molten_heart", Place.NONE, false, Integer.MAX_VALUE, "apex_ground"),
             e(43, "quakehopper", Dim.NETHER, Cat.MONSTER, false, 26F, 5F, 2F, 1F, 1F, 14, 6F, 26F, 5F, 12, 1, 2, "magma_hopper", "slag_gland", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(44, "ashharrier", Dim.NETHER, Cat.MONSTER, false, 24F, 4F, 0F, 1.4F, 0.8F, 16, 6F, 24F, 4F, 10, 1, 1, "cinder_harrier", "ember_wing", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(45, "lavaleaper", Dim.NETHER, Cat.MONSTER, false, 24F, 7F, 2F, 0.8F, 0.6F, 10, 0F, 24F, 7F, 10, 1, 2, "ember_leaper", "slag_gland", Place.LAVA, false, Integer.MAX_VALUE, ""),
