@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:sand_scale",
+    "teeming:sand_scale",
+    "teeming:sand_scale",
+    "teeming:sand_scale"
+  ],
+  "result": {
+    "id": "minecraft:turtle_scute",
+    "count": 1
+  }
+}

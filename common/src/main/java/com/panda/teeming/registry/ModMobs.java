@@ -5,6 +5,10 @@ import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.nether.SlagheartGolem;
+import com.panda.teeming.mob.overworld.Rattlecoil;
+import com.panda.teeming.mob.overworld.ShellguardCrab;
+import com.panda.teeming.mob.overworld.SnapmawBloom;
+import com.panda.teeming.mob.overworld.Stormeel;
 import com.panda.teeming.mob.overworld.Thornhorn;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -22,23 +26,39 @@ public final class ModMobs {
 
     public static final Supplier<EntityType<Thornhorn>> THORNHORN = ENTITIES.registerEntityType("thornhorn", Thornhorn::new, MobCategory.CREATURE,
             b -> b.sized(1.3F, 1.4F).eyeHeight(1.1F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Rattlecoil>> RATTLECOIL = ENTITIES.registerEntityType("rattlecoil", Rattlecoil::new, MobCategory.MONSTER,
+            b -> b.sized(0.8F, 0.4F).eyeHeight(0.3F).clientTrackingRange(10));
+    public static final Supplier<EntityType<SnapmawBloom>> SNAPMAW_BLOOM = ENTITIES.registerEntityType("snapmaw_bloom", SnapmawBloom::new, MobCategory.MONSTER,
+            b -> b.sized(0.9F, 1.3F).eyeHeight(1.0F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Stormeel>> STORMEEL = ENTITIES.registerEntityType("stormeel", Stormeel::new, MobCategory.MONSTER,
+            b -> b.sized(0.6F, 0.5F).eyeHeight(0.3F).clientTrackingRange(10));
+    public static final Supplier<EntityType<ShellguardCrab>> SHELLGUARD_CRAB = ENTITIES.registerEntityType("shellguard_crab", ShellguardCrab::new, MobCategory.CREATURE,
+            b -> b.sized(0.9F, 0.6F).eyeHeight(0.45F).clientTrackingRange(10));
     public static final Supplier<EntityType<SlagheartGolem>> SLAGHEART_GOLEM = ENTITIES.registerEntityType("slagheart_golem", SlagheartGolem::new, MobCategory.MONSTER,
             b -> b.sized(1.2F, 2.4F).eyeHeight(1.5F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<Levimoth>> LEVIMOTH = ENTITIES.registerEntityType("levimoth", Levimoth::new, MobCategory.MONSTER,
             b -> b.sized(0.8F, 0.6F).eyeHeight(0.35F).clientTrackingRange(10));
 
     public static final DeferredItem<Item> THORNHORN_SPAWN_EGG = ITEMS.registerItem("thornhorn_spawn_egg", Item::new, p -> p.spawnEgg(THORNHORN.get()));
+    public static final DeferredItem<Item> RATTLECOIL_SPAWN_EGG = ITEMS.registerItem("rattlecoil_spawn_egg", Item::new, p -> p.spawnEgg(RATTLECOIL.get()));
+    public static final DeferredItem<Item> SNAPMAW_BLOOM_SPAWN_EGG = ITEMS.registerItem("snapmaw_bloom_spawn_egg", Item::new, p -> p.spawnEgg(SNAPMAW_BLOOM.get()));
+    public static final DeferredItem<Item> STORMEEL_SPAWN_EGG = ITEMS.registerItem("stormeel_spawn_egg", Item::new, p -> p.spawnEgg(STORMEEL.get()));
+    public static final DeferredItem<Item> SHELLGUARD_CRAB_SPAWN_EGG = ITEMS.registerItem("shellguard_crab_spawn_egg", Item::new, p -> p.spawnEgg(SHELLGUARD_CRAB.get()));
     public static final DeferredItem<Item> SLAGHEART_GOLEM_SPAWN_EGG = ITEMS.registerItem("slagheart_golem_spawn_egg", Item::new, p -> p.spawnEgg(SLAGHEART_GOLEM.get()));
     public static final DeferredItem<Item> LEVIMOTH_SPAWN_EGG = ITEMS.registerItem("levimoth_spawn_egg", Item::new, p -> p.spawnEgg(LEVIMOTH.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
 
     private ModMobs() {}
 
     /** Every mob's attributes, for the loader's attribute registration. */
     public static void attributes(BiConsumer<EntityType<? extends LivingEntity>, AttributeSupplier> sink) {
         sink.accept(THORNHORN.get(), Thornhorn.createAttributes().build());
+        sink.accept(RATTLECOIL.get(), Rattlecoil.createAttributes().build());
+        sink.accept(SNAPMAW_BLOOM.get(), SnapmawBloom.createAttributes().build());
+        sink.accept(STORMEEL.get(), Stormeel.createAttributes().build());
+        sink.accept(SHELLGUARD_CRAB.get(), ShellguardCrab.createAttributes().build());
         sink.accept(SLAGHEART_GOLEM.get(), SlagheartGolem.createAttributes().build());
         sink.accept(LEVIMOTH.get(), Levimoth.createAttributes().build());
     }
