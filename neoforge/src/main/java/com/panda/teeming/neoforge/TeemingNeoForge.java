@@ -42,7 +42,7 @@ public final class TeemingNeoForge {
             if (e.getLevel() instanceof ServerLevel level) TeemingMod.onLevelTick(level);
         });
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
-            if (!e.getLevel().isClientSide()) TeemingMod.onEntityJoin(e.getEntity());
+            if (!e.getLevel().isClientSide() && !TeemingMod.onEntityJoin(e.getEntity())) e.setCanceled(true);
         });
         modBus.addListener((RegisterSpawnPlacementsEvent e) -> TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override

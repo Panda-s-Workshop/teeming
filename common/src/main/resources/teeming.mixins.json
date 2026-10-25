@@ -4,5 +4,6 @@
   "package": "com.panda.teeming.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
+  "client": ["client.EntityShadowMixin"],
   "injectors": { "defaultRequire": 1 }
 }

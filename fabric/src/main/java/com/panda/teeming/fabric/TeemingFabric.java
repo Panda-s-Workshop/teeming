@@ -52,7 +52,9 @@ public final class TeemingFabric implements ModInitializer {
         ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(Looks.ID, new Looks());
         ModMobs.attributes(FabricDefaultAttributeRegistry::register);
         ServerTickEvents.END_LEVEL_TICK.register(TeemingMod::onLevelTick);
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> TeemingMod.onEntityJoin(entity));
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            if (!TeemingMod.onEntityJoin(entity)) entity.discard();
+        });
         TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override
             public <T extends Mob> void set(EntityType<T> type, SpawnPlacementType placement, Heightmap.Types heightmap,

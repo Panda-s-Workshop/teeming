@@ -2,6 +2,7 @@ package com.panda.teeming;
 
 import com.mojang.logging.LogUtils;
 import com.panda.teeming.fieldguide.FieldGuide;
+import com.panda.teeming.mob.nether.PhantasmLantern;
 import com.panda.teeming.mob.overworld.HollowMourner;
 import com.panda.teeming.registry.ModBlockEntities;
 import com.panda.teeming.registry.ModBlocks;
@@ -48,9 +49,14 @@ public final class TeemingMod {
         FieldGuide.tick(level);
     }
 
-    /** Server, whenever an entity joins a level, spawned or loaded from disk (both loaders). */
-    public static void onEntityJoin(Entity entity) {
+    /**
+     * Server, whenever an entity joins a level, spawned or loaded from disk (both loaders). False when it must not
+     * stay: a Phantasm Lantern's illusion never outlives the lantern that made it, so one loaded from disk is refused.
+     */
+    public static boolean onEntityJoin(Entity entity) {
+        if (PhantasmLantern.Illusions.isIllusion(entity)) return false;   // marked only after its first join
         HollowMourner.onJoin(entity);
+        return true;
     }
 
     public static Identifier id(String path) {

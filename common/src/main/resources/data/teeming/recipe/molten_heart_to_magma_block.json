@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:molten_heart"
+  ],
+  "result": {
+    "id": "minecraft:magma_block",
+    "count": 8
+  }
+}

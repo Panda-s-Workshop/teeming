@@ -59,6 +59,14 @@ public final class MobRenderers {
                 Set.of("base", "old_tortoise"), 1.2F, 1.0F, 1, false));
         out.register(ModMobs.GLEAMTRAP.get(), ctx -> new TeemingRenderer<>(ctx, new GleamtrapModel(ctx.bakeLayer(CreatureLayers.GLEAMTRAP)), "gleamtrap",
                 Set.of("base", "warped_gleamtrap"), 0.0F, 1.0F, 3, false));
+        out.register(ModMobs.PHANTASM_LANTERN.get(), ctx -> new TeemingRenderer<>(ctx, new PhantasmLanternModel(ctx.bakeLayer(CreatureLayers.PHANTASM_LANTERN)), "phantasm_lantern",
+                Set.of("base", "crimson_lantern"), 0.35F, 1.0F, 1, false));
+        out.register(ModMobs.OSSUARY_WYRM.get(), ctx -> new TeemingRenderer<>(ctx, new OssuaryWyrmModel(ctx.bakeLayer(CreatureLayers.OSSUARY_WYRM)), "ossuary_wyrm",
+                Set.of("base", "bleached_wyrm"), 0.0F, 1.0F, 1, true));
+        out.register(ModMobs.BASALT_BEHEMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new BasaltBehemothModel(ctx.bakeLayer(CreatureLayers.BASALT_BEHEMOTH)), "basalt_behemoth",
+                Set.of("base"), 1.6F, 1.75F, 3, true));
+        out.register(ModMobs.QUAKEHOPPER.get(), ctx -> new TeemingRenderer<>(ctx, new QuakehopperModel(ctx.bakeLayer(CreatureLayers.QUAKEHOPPER)), "quakehopper",
+                Set.of("base", "magma_hopper"), 0.6F, 1.0F, 3, false));
         out.register(ModMobs.LAVALEAPER.get(), ctx -> new TeemingRenderer<>(ctx, new LavaleaperModel(ctx.bakeLayer(CreatureLayers.LAVALEAPER)), "lavaleaper",
                 Set.of("base", "ember_leaper"), 0.45F, 1.0F, 3, true));
         out.register(ModMobs.PYRE_HERALD.get(), ctx -> new TeemingRenderer<>(ctx, new PyreHeraldModel(ctx.bakeLayer(CreatureLayers.PYRE_HERALD)), "pyre_herald",
