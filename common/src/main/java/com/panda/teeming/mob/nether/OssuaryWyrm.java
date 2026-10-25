@@ -106,8 +106,11 @@ public class OssuaryWyrm extends TeemingMonster {
     // a Joint on the chain. Where the joints lie follows only from synced state (the phase, its progress, the flags,
     // the facing and the scale), so the server's hitboxes and the client's drawn parts are the same joints without a
     // packet of their own. In the leap every part runs along one path (path(s)) a fixed spacing behind the skull, so
-    // the body traces the skull's path exactly. The mob's own bounding box is the union of the boxes, so a blow on any
-    // part reaches the mob (and a client can pick it); partHit names the box a blow landed on. No part is ever an
+    // the body traces the skull's path exactly. The mob's own bounding box is the union of the boxes of the parts that
+    // reach above the surface, so a blow on any part in the open reaches the mob (and a client can pick it); partHit
+    // names the box a blow landed on. Parts under the surface are left out of it: they lie in solid soul sand where no
+    // blow can reach them, and counting them would make the box reach 7 blocks through the ground, where blasts, area
+    // effects and anything that clears entities from a space would find a mob nobody can see. No part is ever an
     // entity of its own: nothing can kill, save or despawn one apart from the mob.
 
     /** A part's centre in the chain's frame, in blocks: forward along the facing, to the mob's left, and up from its feet. */
@@ -194,14 +197,17 @@ public class OssuaryWyrm extends TeemingMonster {
         return boxes(position());
     }
 
-    /** The union of the parts' boxes: a blow on any of them reaches the mob, and the renderer is culled by all of them. */
+    /**
+     * The union of the boxes of the parts that reach above the surface (its feet are at the surface in every pose): a
+     * blow on any of them reaches the mob, and the renderer is culled by them. With all of it under, the skull's box.
+     */
     @Override
     protected AABB makeBoundingBox(Vec3 at) {
         if (core() == null) return super.makeBoundingBox(at);   // the Entity constructor places it before the core exists
         AABB[] boxes = boxes(at);
-        AABB all = boxes[0];
-        for (int i = 1; i < boxes.length; i++) all = all.minmax(boxes[i]);
-        return all;
+        AABB all = null;
+        for (AABB box : boxes) if (box.maxY > at.y) all = all == null ? box : all.minmax(box);
+        return all != null ? all : boxes[0];
     }
 
     /** True while the skull is out of the sand: its centre above the surface it swims under. */

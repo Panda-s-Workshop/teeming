@@ -105,6 +105,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_HEAR = sound("hushwing.hear");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_BITE = sound("hushwing.bite");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_DECOY = sound("hushwing.decoy");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_AMBIENT = sound("keening_shade.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_HURT = sound("keening_shade.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_DEATH = sound("keening_shade.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_INHALE = sound("keening_shade.inhale");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_WAIL = sound("keening_shade.wail");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_CHOKE = sound("keening_shade.choke");
+    public static final DeferredHolder<SoundEvent, SoundEvent> KEENING_SHADE_VOICE = sound("keening_shade.voice");
     public static final DeferredHolder<SoundEvent, SoundEvent> LAVALEAPER_AMBIENT = sound("lavaleaper.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> LAVALEAPER_HURT = sound("lavaleaper.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> LAVALEAPER_DEATH = sound("lavaleaper.death");
@@ -197,6 +204,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_RATTLE = sound("rattlecoil.rattle");
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_STRIKE = sound("rattlecoil.strike");
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_CALM = sound("rattlecoil.calm");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_AMBIENT = sound("scarlet_mantis.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_HURT = sound("scarlet_mantis.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_DEATH = sound("scarlet_mantis.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_SLASH = sound("scarlet_mantis.slash");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_TELL = sound("scarlet_mantis.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_STANCE = sound("scarlet_mantis.stance");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_PARRY = sound("scarlet_mantis.parry");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_PIERCE = sound("scarlet_mantis.pierce");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_AMBIENT = sound("shellguard_crab.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_HURT = sound("shellguard_crab.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_DEATH = sound("shellguard_crab.death");
@@ -322,6 +337,26 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_FREED = sound("vinedrop_strangler.freed");
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_LAND = sound("vinedrop_strangler.land");
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_CLIMB = sound("vinedrop_strangler.climb");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_AMBIENT = sound("weepling_broodmother.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_HURT = sound("weepling_broodmother.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_DEATH = sound("weepling_broodmother.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_TELL = sound("weepling_broodmother.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_LAY = sound("weepling_broodmother.lay");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_POP = sound("weepling_broodmother.pop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_HATCH = sound("weepling_broodmother.hatch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_GRIEVE = sound("weepling_broodmother.grieve");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_WEEPLING_AMBIENT = sound("weepling_broodmother.weepling_ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_WEEPLING_HURT = sound("weepling_broodmother.weepling_hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_WEEPLING_DEATH = sound("weepling_broodmother.weepling_death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WEEPLING_BROODMOTHER_WITHER = sound("weepling_broodmother.wither");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_AMBIENT = sound("woolcap_grazer.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_HURT = sound("woolcap_grazer.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_DEATH = sound("woolcap_grazer.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_SHEAR = sound("woolcap_grazer.shear");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_GRAZE = sound("woolcap_grazer.graze");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_FED = sound("woolcap_grazer.fed");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_STAMPEDE = sound("woolcap_grazer.stampede");
+    public static final DeferredHolder<SoundEvent, SoundEvent> WOOLCAP_GRAZER_BUMP = sound("woolcap_grazer.bump");
 
     private ModSounds() {}
 

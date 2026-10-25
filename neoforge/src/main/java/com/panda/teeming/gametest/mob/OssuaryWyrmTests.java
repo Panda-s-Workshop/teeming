@@ -54,6 +54,7 @@ public final class OssuaryWyrmTests {
         out.accept("ossuary_wyrm_bite_numbers", OssuaryWyrmTests::biteNumbers);
         out.accept("ossuary_wyrm_hit_numbers", OssuaryWyrmTests::hitNumbers);
         out.accept("ossuary_wyrm_one_pool", OssuaryWyrmTests::onePool);
+        out.accept("ossuary_wyrm_buried_parts", OssuaryWyrmTests::buriedParts);
         out.accept("ossuary_wyrm_stats", OssuaryWyrmTests::stats);
         out.accept("ossuary_wyrm_swim_speed", OssuaryWyrmTests::swimSpeedSoulSand);
         out.accept("ossuary_wyrm_swim_soul_soil", OssuaryWyrmTests::swimSpeedSoulSoil);
@@ -142,7 +143,15 @@ public final class OssuaryWyrmTests {
         boolean[] harmed = {false}, out = {false};
         double[] moved = {0.0};
         Vec3[] start = {null};
+        StringBuilder seen = new StringBuilder();
+        String[] last = {""};
         helper.onEachTick(() -> {
+            // what the wyrm went through, for the failure message
+            String now = w.phase().step() + (w.isRemoved() ? " removed " + w.getRemovalReason() : "") + (w.isNoAi() ? " noAI" : "");
+            if (!now.equals(last[0])) {
+                seen.append(" t").append(helper.getTick()).append('/').append(w.tickCount).append(' ').append(now);
+                last[0] = now;
+            }
             if (!w.core().in(Step.TELL)) return;
             if (first[0] < 0) {
                 first[0] = helper.getTick();
@@ -153,7 +162,8 @@ public final class OssuaryWyrmTests {
             moved[0] = Math.max(moved[0], w.position().distanceTo(start[0]));
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(at.containsKey("tell") && at.containsKey("arc"), "the rumble runs into the arc: " + at);
+            helper.assertTrue(at.containsKey("tell") && at.containsKey("arc"), "the rumble runs into the arc: " + at + ", phases" + seen
+                    + ", elapsed " + w.core().elapsed() + "/" + w.core().length() + ", ticks " + w.tickCount);
             helper.assertTrue(first[0] <= 3, "6.37 blocks from its prey it rumbles at once, it started at tick " + first[0]);
             int tell = at.get("arc") - at.get("tell");
             helper.assertTrue(tell == 20, "the ground rumbles for 20 ticks, measured " + tell);
@@ -305,6 +315,40 @@ public final class OssuaryWyrmTests {
             AABB arena = new AABB(helper.absolutePos(BlockPos.ZERO)).expandTowards(11, 8, 11).inflate(1.0);
             int wyrms = helper.getLevel().getEntitiesOfClass(OssuaryWyrm.class, arena, e -> true).size();
             helper.assertTrue(wyrms == 1, "one wyrm entity, its vertebrae no entities of their own, found " + wyrms);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Parts under the soul sand are out of reach, so they are no part of the mob's own box: swimming with all of it
+     * under, its box is the skull's alone; halfway through the arc it is the union of exactly the parts that reach
+     * above the surface, never reaching down to the buried tail.
+     */
+    private static void buriedParts(GameTestHelper helper) {
+        floor(helper, Blocks.SOUL_SAND, 1, 10, 3, 8);
+        OssuaryWyrm w = wyrm(helper, 2.5, 5.5);
+        w.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // unaware of players in other arenas
+        w.setYRot(-90.0F);                                            // facing +x, its leap along the arena
+        double surface = surface(helper);
+        helper.runAtTickTime(2, () -> {
+            AABB skull = w.partBoxes()[0];
+            helper.assertTrue(w.getBoundingBox().equals(skull), "all of it under, its box is the skull's: " + w.getBoundingBox() + ", skull " + skull);
+            helper.assertTrue(w.getBoundingBox().maxY <= surface, "and it is under the surface, top " + w.getBoundingBox().maxY);
+            helper.assertTrue(w.startPhase(Step.ARC, 40, null), "the arc starts");
+        });
+        helper.runAtTickTime(22, () -> {
+            AABB expected = null;
+            int exposed = 0;
+            for (AABB box : w.partBoxes()) {
+                if (box.maxY <= surface) continue;
+                expected = expected == null ? box : expected.minmax(box);
+                exposed++;
+            }
+            helper.assertTrue(exposed >= 4 && exposed < 9, "halfway through the arc part of it is out, " + exposed + " parts");
+            AABB box = w.getBoundingBox();
+            helper.assertTrue(expected != null && box.inflate(1.0E-6).contains(expected.getMinPosition()) && expected.inflate(1.0E-6).contains(box.getMinPosition())
+                    && box.inflate(1.0E-6).contains(expected.getMaxPosition()) && expected.inflate(1.0E-6).contains(box.getMaxPosition()),
+                    "its box is the union of the parts out of the sand: " + box + ", expected " + expected);
             helper.succeed();
         });
     }

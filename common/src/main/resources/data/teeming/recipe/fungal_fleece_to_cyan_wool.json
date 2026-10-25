@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:fungal_fleece"
+  ],
+  "result": {
+    "id": "minecraft:cyan_wool",
+    "count": 1
+  }
+}

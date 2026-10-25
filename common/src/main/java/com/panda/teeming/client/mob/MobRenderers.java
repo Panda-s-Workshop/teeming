@@ -65,12 +65,20 @@ public final class MobRenderers {
                 Set.of(), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.SHREDJAW_BEETLE.get(), ctx -> new TeemingRenderer<>(ctx, new ShredjawBeetleModel(ctx.bakeLayer(CreatureLayers.SHREDJAW_BEETLE)), "shredjaw_beetle",
                 Set.of("base", "warped_shredjaw"), 0.7F, 1.0F, 1, false));
+        out.register(ModMobs.WEEPLING_BROODMOTHER.get(), ctx -> new TeemingRenderer<>(ctx, new WeeplingBroodmotherModel(ctx.bakeLayer(CreatureLayers.WEEPLING_BROODMOTHER)), "weepling_broodmother",
+                Set.of("base", "bloated_brood"), 0.8F, 1.0F, 1, false));
         out.register(ModMobs.GLEAMTRAP.get(), ctx -> new TeemingRenderer<>(ctx, new GleamtrapModel(ctx.bakeLayer(CreatureLayers.GLEAMTRAP)), "gleamtrap",
                 Set.of("base", "warped_gleamtrap"), 0.0F, 1.0F, 3, false));
+        out.register(ModMobs.SCARLET_MANTIS.get(), ctx -> new TeemingRenderer<>(ctx, new ScarletMantisModel(ctx.bakeLayer(CreatureLayers.SCARLET_MANTIS)), "scarlet_mantis",
+                Set.of("ashen_mantis", "base"), 0.5F, 1.0F, 3, false));
         out.register(ModMobs.PHANTASM_LANTERN.get(), ctx -> new TeemingRenderer<>(ctx, new PhantasmLanternModel(ctx.bakeLayer(CreatureLayers.PHANTASM_LANTERN)), "phantasm_lantern",
                 Set.of("base", "crimson_lantern"), 0.35F, 1.0F, 1, false));
+        out.register(ModMobs.WOOLCAP_GRAZER.get(), ctx -> new TeemingRenderer<>(ctx, new WoolcapGrazerModel(ctx.bakeLayer(CreatureLayers.WOOLCAP_GRAZER)), "woolcap_grazer",
+                Set.of(), 0.6F, 1.0F, 1, false));
         out.register(ModMobs.OSSUARY_WYRM.get(), ctx -> new TeemingRenderer<>(ctx, new OssuaryWyrmModel(ctx.bakeLayer(CreatureLayers.OSSUARY_WYRM)), "ossuary_wyrm",
                 Set.of("base", "bleached_wyrm"), 0.0F, 1.0F, 1, true));
+        out.register(ModMobs.KEENING_SHADE.get(), ctx -> new TeemingRenderer<>(ctx, new KeeningShadeModel(ctx.bakeLayer(CreatureLayers.KEENING_SHADE)), "keening_shade",
+                Set.of("base", "hollow_shade"), 0.35F, 1.0F, 1, false));
         out.register(ModMobs.SOULFIRE_SEER.get(), ctx -> new TeemingRenderer<>(ctx, new SoulfireSeerModel(ctx.bakeLayer(CreatureLayers.SOULFIRE_SEER)), "soulfire_seer",
                 Set.of("base", "bone_seer"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.CINDERMOTH_SWARM.get(), ctx -> new TeemingRenderer<>(ctx, new CindermothSwarmModel(ctx.bakeLayer(CreatureLayers.CINDERMOTH_SWARM)), "cindermoth_swarm",
