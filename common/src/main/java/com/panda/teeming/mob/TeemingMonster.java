@@ -11,6 +11,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.Level;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -68,6 +70,27 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
     public float getWalkTargetValue(BlockPos pos, LevelReader level) {
         RosterStats.Entry row = RosterStats.BY_ID.get(BuiltInRegistries.ENTITY_TYPE.getKey(getType()).getPath());
         return row != null && row.anyLight() ? 0.0F : super.getWalkTargetValue(pos, level);
+    }
+
+    /** A held mob ({@link #pin()}) is moved only as far as its hold allows and is never pushed or knocked back. */
+    @Override
+    public void move(MoverType type, Vec3 delta) {
+        super.move(type, pin().limit(delta));
+    }
+
+    @Override
+    public void push(double x, double y, double z) {
+        if (!pin().held()) super.push(x, y, z);
+    }
+
+    @Override
+    public boolean isPushable() {
+        return !pin().held() && super.isPushable();
+    }
+
+    @Override
+    public void knockback(double strength, double x, double z, DamageSource source, float damage, boolean flag) {
+        if (!pin().held()) super.knockback(strength, x, z, source, damage, flag);
     }
 
     @Override

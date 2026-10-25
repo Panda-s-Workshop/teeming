@@ -2,6 +2,7 @@ package com.panda.teeming.mob.overworld;
 
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
+import com.panda.teeming.mob.Pin;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.registry.ModSounds;
@@ -18,7 +19,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
@@ -100,17 +100,8 @@ public class SnapmawBloom extends TeemingMonster {
 
     /** Only falling moves it: walking, knockback, pistons and currents all lose their sideways part. */
     @Override
-    public void move(MoverType type, Vec3 delta) {
-        super.move(type, new Vec3(0.0, delta.y, 0.0));
-    }
-
-    @Override
-    public void push(double x, double y, double z) {
-    }
-
-    @Override
-    public boolean isPushable() {
-        return false;
+    public Pin pin() {
+        return Pin.ROOTED;
     }
 
     @Override

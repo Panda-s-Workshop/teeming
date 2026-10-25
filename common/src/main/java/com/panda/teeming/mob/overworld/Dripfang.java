@@ -2,6 +2,7 @@ package com.panda.teeming.mob.overworld;
 
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
+import com.panda.teeming.mob.Pin;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
@@ -18,7 +19,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -555,29 +555,10 @@ public class Dripfang extends TeemingMonster {
     }
 
     /** Hanging, dripping or stuck, it is held fast: hanging nothing moves it, stuck only falling does. */
-    private boolean pinned() {
-        return core().in(Step.HANGING) || core().in(Step.TELL) || core().in(Step.STUCK);
-    }
-
     @Override
-    public void move(MoverType type, Vec3 delta) {
-        if (pinned()) delta = core().in(Step.STUCK) ? new Vec3(0.0, Math.min(0.0, delta.y), 0.0) : Vec3.ZERO;
-        super.move(type, delta);
-    }
-
-    @Override
-    public void push(double x, double y, double z) {
-        if (!pinned()) super.push(x, y, z);
-    }
-
-    @Override
-    public boolean isPushable() {
-        return !pinned() && super.isPushable();
-    }
-
-    @Override
-    public void knockback(double strength, double x, double z, DamageSource source, float damage, boolean flag) {
-        if (!pinned()) super.knockback(strength, x, z, source, damage, flag);
+    public Pin pin() {
+        if (core().in(Step.HANGING) || core().in(Step.TELL)) return Pin.FIXED;
+        return core().in(Step.STUCK) ? Pin.ROOTED : Pin.FREE;
     }
 
     /** It is stone that drops for a living: falls never hurt it. */

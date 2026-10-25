@@ -2,6 +2,7 @@ package com.panda.teeming.mob.overworld;
 
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
+import com.panda.teeming.mob.Pin;
 import com.panda.teeming.mob.Push;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
@@ -18,7 +19,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -418,23 +418,8 @@ public class Snagwood extends TeemingMonster {
 
     /** Rooted, only falling moves it. */
     @Override
-    public void move(MoverType type, Vec3 delta) {
-        super.move(type, disguised() ? new Vec3(0.0, delta.y, 0.0) : delta);
-    }
-
-    @Override
-    public void push(double x, double y, double z) {
-        if (!disguised()) super.push(x, y, z);
-    }
-
-    @Override
-    public boolean isPushable() {
-        return !disguised() && super.isPushable();
-    }
-
-    @Override
-    public void knockback(double strength, double x, double z, DamageSource source, float damage, boolean flag) {
-        if (!disguised()) super.knockback(strength, x, z, source, damage, flag);
+    public Pin pin() {
+        return disguised() ? Pin.ROOTED : Pin.FREE;
     }
 
     @Override

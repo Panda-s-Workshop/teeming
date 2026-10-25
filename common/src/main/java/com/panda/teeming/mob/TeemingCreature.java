@@ -40,6 +40,11 @@ public interface TeemingCreature {
         return 1;
     }
 
+    /** How firmly it is held where it is now (a disguise, a grip, a stuck point); free by default. */
+    default Pin pin() {
+        return Pin.FREE;
+    }
+
     /** True during a window when it is open to punishment (quenched, stunned): its weak point glows weak-point gold. */
     default boolean vulnerable() {
         return false;
