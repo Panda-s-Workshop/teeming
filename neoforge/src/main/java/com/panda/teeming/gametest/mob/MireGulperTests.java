@@ -90,7 +90,7 @@ public final class MireGulperTests {
     private static MireGulper gulper(GameTestHelper helper, Vec3 at) {
         MireGulper g = helper.spawn(ModMobs.MIRE_GULPER.get(), at);
         g.removeFreeWill();
-        g.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+        g.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         g.setYRot(-90.0F);
         g.yBodyRot = -90.0F;
         g.yHeadRot = -90.0F;

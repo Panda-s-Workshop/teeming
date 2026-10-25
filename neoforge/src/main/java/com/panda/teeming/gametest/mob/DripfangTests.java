@@ -67,7 +67,7 @@ public final class DripfangTests {
         helper.setBlock(new BlockPos((int) Math.floor(x), CEILING, (int) Math.floor(z)), Blocks.STONE);
         Dripfang fang = helper.spawn(ModMobs.DRIPFANG.get(), new Vec3(x, CEILING - 1.4, z));
         fang.core().setLook("base", true);
-        fang.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+        fang.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         helper.assertTrue(fang.hangHere(), "it grips the stone above it");
         fang.resetRearm();
         return fang;
@@ -274,7 +274,7 @@ public final class DripfangTests {
         Dripfang high = helper.spawn(ModMobs.DRIPFANG.get(), new Vec3(8.5, CEILING - 1, 5.5));
         for (Dripfang fang : new Dripfang[] {low, high}) {
             fang.core().setLook("base", true);
-            fang.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+            fang.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         }
         double crown = helper.absoluteVec(new Vec3(0, CEILING, 0)).y;
         helper.runAtTickTime(3, () -> {

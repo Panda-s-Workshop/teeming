@@ -103,7 +103,7 @@ public final class VinedropStranglerTests {
         VinedropStrangler s = helper.spawn(ModMobs.VINEDROP_STRANGLER.get(), at);
         s.core().setLook("base", true);
         s.removeFreeWill();
-        s.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+        s.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         TestPlayers.whenDone(helper, s::discard);
         return s;
     }

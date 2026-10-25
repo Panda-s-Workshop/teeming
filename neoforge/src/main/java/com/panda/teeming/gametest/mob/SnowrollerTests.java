@@ -64,7 +64,7 @@ public final class SnowrollerTests {
         Snowroller roller = helper.spawn(ModMobs.SNOWROLLER.get(), at);
         roller.core().setLook("base", true);
         roller.removeFreeWill();
-        roller.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+        roller.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         roller.resetCooldown();
         return roller;
     }

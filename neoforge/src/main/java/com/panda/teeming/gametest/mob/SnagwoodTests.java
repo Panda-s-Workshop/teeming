@@ -70,7 +70,7 @@ public final class SnagwoodTests {
         snag.core().setLook("base", true);
         snag.face(snag.position().add(0, 0, 5));
         // no targets from beyond the arena: only what the test sets, or what comes within its own wake range
-        snag.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(0.0);
+        snag.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         return snag;
     }
 
