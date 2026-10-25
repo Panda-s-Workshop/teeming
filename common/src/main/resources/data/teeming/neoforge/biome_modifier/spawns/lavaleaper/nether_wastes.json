@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/lavaleaper",
+      [
+        "minecraft:nether_wastes"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:lavaleaper",
+      "weight": 5,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

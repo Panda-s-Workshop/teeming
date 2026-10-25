@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/soulward_revenant",
+      [
+        "minecraft:soul_sand_valley"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:soulward_revenant",
+      "weight": 2,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

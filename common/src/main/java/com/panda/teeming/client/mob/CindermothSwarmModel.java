@@ -8,7 +8,8 @@ import net.minecraft.util.Mth;
  * Cindermoth Swarm: fifteen moths drawn as one mob, each flying its own small orbit round its place in the cloud with
  * quick wingbeats. Drifting, the cloud is a loose ball, the moths circling lazily. Seeking a light, it draws in and
  * strings out forward, every moth turned to the light and beating harder. Circling a light on the ground, the moths
- * spread into a low ring round it. Engulfing someone, they swirl round them in a wide, frantic shell that shows outside the victim's body. Scattered by a blow, they
+ * spread into a low ring round it. Flaring before it engulfs, the cloud hangs still and pulls into a tight knot, the
+ * moths churning in place with their wings a blur (the brighter glow is the flare's own glowmask). Engulfing someone, they swirl round them in a wide, frantic shell that shows outside the victim's body. Scattered by a blow, they
  * burst outward tumbling, then drift back together over the two seconds.
  */
 public class CindermothSwarmModel extends TeemingModel {
@@ -48,6 +49,14 @@ public class CindermothSwarmModel extends TeemingModel {
             shape.swirl = 0.07F;
             shape.beat = 1.7F;
             shape.lift = 0.75F;
+        } else if (s.phase == Step.TELL.ordinal()) {
+            float k = smooth(s.phaseTime / 4.0F);                          // drawn in over 4 ticks, then held
+            shape.spread = 1.0F - 0.55F * k;                               // a tight knot, every moth pulled to the middle
+            shape.jitter = 1.5F - 0.9F * k;
+            shape.swirl = 0.06F + 0.24F * k;                               // churning fast in place
+            shape.beat = 1.9F + 1.8F * k;                                  // wings a blur
+            shape.lift = 0.55F + 0.4F * k;
+            shape.bob = 0.0F;                                              // it hangs dead still
         } else if (s.phase == Step.ENGULF.ordinal()) {
             shape.spread = 1.5F;                                           // a frantic shell swirling round the victim,
             shape.jitter = 2.0F;                                           // wide enough to show outside its body

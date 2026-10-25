@@ -39,7 +39,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Ashharrier: the 16-tick cry hangs it in the air and takes no one; the stoop that follows grabs its prey and lifts it
- * 8 to 12 blocks over 40 ticks, then lets go, and the fall does the damage (vanilla's: a block of damage for every block
+ * 6 to 9 blocks over 40 ticks, then lets go, and the fall does the damage (vanilla's: a block of damage for every block
  * past 3). A hit on it while it carries makes it let go at once, so an early hit means a low, safe fall. A shield raised
  * into the stoop blocks the grab and stuns it on the ground for 40 ticks. It never lifts a creative player, leaves a
  * victim's Slow Falling alone, and rakes prey too big to carry for its attack damage (4).
@@ -214,8 +214,8 @@ public final class AshharrierTests {
     }
 
     /**
-     * Failing the counter: the stoop grabs the pig (held, shown as Swallowed), lifts it 8 to 12 blocks and lets go; the
-     * fall costs it a point of health for every block past 3, at least 5.
+     * Failing the counter: the stoop grabs the pig (held, shown as Swallowed), lifts it 6 to 9 blocks and lets go; the
+     * fall costs it a point of health for every block past 3, at least 3.
      */
     private static void liftAndDrop(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
@@ -241,8 +241,8 @@ public final class AshharrierTests {
             helper.assertTrue(!pig[0].hasEffect(ModEffects.SWALLOWED.holder()), "let go, it is no longer held");
             double rise = top[0] - from[0];
             int want = Mth.floor(rise - 3.0);
-            helper.assertTrue(rise >= 8.0 - 0.15 && rise <= 12.0 + 0.15, "lifted 8 to 12 blocks, rose " + rise);
-            helper.assertTrue(lost(pig[0]) >= 5.0F, "the fall hurts: at least 5, lost " + lost(pig[0]));
+            helper.assertTrue(rise >= 6.0 - 0.15 && rise <= 9.0 + 0.15, "lifted 6 to 9 blocks, rose " + rise);
+            helper.assertTrue(lost(pig[0]) >= 3.0F, "the fall hurts: at least 3, lost " + lost(pig[0]));
             helper.assertTrue(Math.abs(lost(pig[0]) - want) <= 1.0F, "a fall of " + rise + " costs about " + want + ", lost " + lost(pig[0]));
         });
     }
@@ -279,7 +279,7 @@ public final class AshharrierTests {
         });
     }
 
-    /** Taken straight off the floor, the pig rises between 8 and 12 blocks before it is let go: the height picked. */
+    /** Taken straight off the floor, the pig rises between 6 and 9 blocks before it is let go: the height picked. */
     private static void liftHeight(GameTestHelper helper) {
         Pig pig = pig(helper, GROUND);
         Ashharrier bird = harrier(helper, GROUND.x, 3);
@@ -294,12 +294,12 @@ public final class AshharrierTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(dropped[0], "it lets go, phase " + bird.phase());
             double rise = top[0] - from;
-            helper.assertTrue(rise >= 8.0 - 0.15 && rise <= 12.0 + 0.15, "lifted 8 to 12 blocks, rose " + rise);
+            helper.assertTrue(rise >= 6.0 - 0.15 && rise <= 9.0 + 0.15, "lifted 6 to 9 blocks, rose " + rise);
             helper.assertTrue(Math.abs(rise - bird.liftHeight()) < 0.15, "lifted the height it picked, " + bird.liftHeight() + ", rose " + rise);
         });
     }
 
-    /** The lift's height is picked evenly from 8 to 12: never outside, and both ends reached. */
+    /** The lift's height is picked evenly from 6 to 9: never outside, and both ends reached. */
     private static void liftRange(GameTestHelper helper) {
         RandomSource random = RandomSource.create(44L);
         double low = Double.MAX_VALUE, high = -Double.MAX_VALUE, sum = 0.0;
@@ -310,9 +310,9 @@ public final class AshharrierTests {
             high = Math.max(high, h);
             sum += h;
         }
-        helper.assertTrue(low >= 8.0 && high <= 12.0, "lifts stay within 8 to 12, saw " + low + " to " + high);
-        helper.assertTrue(low < 8.05 && high > 11.95, "both ends of 8 to 12 are reached, saw " + low + " to " + high);
-        helper.assertTrue(Math.abs(sum / n - 10.0) < 0.1, "evenly spread, mean " + sum / n);
+        helper.assertTrue(low >= 6.0 && high <= 9.0, "lifts stay within 6 to 9, saw " + low + " to " + high);
+        helper.assertTrue(low < 6.05 && high > 8.95, "both ends of 6 to 9 are reached, saw " + low + " to " + high);
+        helper.assertTrue(Math.abs(sum / n - 7.5) < 0.1, "evenly spread, mean " + sum / n);
         helper.succeed();
     }
 
@@ -424,7 +424,7 @@ public final class AshharrierTests {
             else dropped[0] = true;
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(dropped[0] && top[0] - from >= 8.0 - 0.15, "lifted the whole way and let go, rose " + (top[0] - from));
+            helper.assertTrue(dropped[0] && top[0] - from >= 6.0 - 0.15, "lifted the whole way and let go, rose " + (top[0] - from));
             helper.assertTrue(pig.hasEffect(MobEffects.SLOW_FALLING), "its Slow Falling is left on it");
             helper.assertTrue(pig.getY() < from + 0.05, "the pig is down, at " + (pig.getY() - from));
             helper.assertTrue(lost(pig) == 0.0F, "it lands unhurt, lost " + lost(pig));

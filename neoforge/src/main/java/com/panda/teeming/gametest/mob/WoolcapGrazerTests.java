@@ -639,7 +639,8 @@ public final class WoolcapGrazerTests {
                 "groups of 2 to 4, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
         var biomes = access.lookupOrThrow(Registries.BIOME);
         helper.assertTrue(add.biomes().contains(biomes.getOrThrow(Biomes.WARPED_FOREST)), "the warped forest is its home");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.CRIMSON_FOREST)), "the crimson forest is not");
+        helper.assertTrue(add.biomes().contains(biomes.getOrThrow(Biomes.CRIMSON_FOREST)), "the crimson forest is its home, where its crimson look lives");
+        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.NETHER_WASTES)), "the nether wastes are not");
 
         helper.setBlock(new BlockPos(5, 0, 5), Blocks.WARPED_NYLIUM);
         RosterStats.Entry row = RosterStats.get("woolcap_grazer");

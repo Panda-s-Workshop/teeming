@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/blackstone_scuttler",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/blackstone_scuttler",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:basalt_deltas"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:blackstone_scuttler",

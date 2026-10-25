@@ -427,14 +427,19 @@ public final class SiphonjellyTests {
         });
     }
 
-    /** Its home: the warped forest and nowhere else, weight 10, groups of 1 to 2; the Crimson Jelly is a look. */
+    /**
+     * Its home: the warped and crimson forests and nowhere else, weight 10, groups of 1 to 2; both forests are
+     * share-capped, so its biome-list spawns leave them out and the Teeming spawner places it there. The Crimson Jelly
+     * is a look.
+     */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
         var biomes = access.lookupOrThrow(Registries.BIOME);
         var tag = biomes.get(TeemingSpawns.tag("siphonjelly"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
         helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.WARPED_FOREST)), "its home holds the warped forest");
-        for (var other : List.of(Biomes.CRIMSON_FOREST, Biomes.SOUL_SAND_VALLEY, Biomes.NETHER_WASTES, Biomes.BASALT_DELTAS, Biomes.PLAINS)) {
+        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.CRIMSON_FOREST)), "its home holds the crimson forest");
+        for (var other : List.of(Biomes.SOUL_SAND_VALLEY, Biomes.NETHER_WASTES, Biomes.BASALT_DELTAS, Biomes.PLAINS)) {
             helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
         }
         RosterStats.Entry row = RosterStats.get("siphonjelly");
@@ -447,6 +452,10 @@ public final class SiphonjellyTests {
                 .filter(w -> w.value().type() == ModMobs.SIPHONJELLY.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
         helper.assertTrue(entry.weight() == 10, "spawn weight 10, got " + entry.weight());
+        var forests = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).biomes();
+        var biomeLookup = access.lookupOrThrow(Registries.BIOME);
+        helper.assertTrue(!forests.contains(biomeLookup.getOrThrow(Biomes.WARPED_FOREST)) && !forests.contains(biomeLookup.getOrThrow(Biomes.CRIMSON_FOREST)),
+                "its biome-list spawns leave out the share-capped forests, where the Teeming spawner places it");
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         List<LookDef> looks = Looks.of("siphonjelly");

@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/hollow_mourner",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/hollow_mourner",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:hollow_mourner",

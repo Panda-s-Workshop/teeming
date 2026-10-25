@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/weepling_broodmother",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/weepling_broodmother",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:weepling_broodmother",

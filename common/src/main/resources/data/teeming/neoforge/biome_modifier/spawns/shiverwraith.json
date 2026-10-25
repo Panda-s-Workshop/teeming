@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/shiverwraith",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/shiverwraith",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:shiverwraith",

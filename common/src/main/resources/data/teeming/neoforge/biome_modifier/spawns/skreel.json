@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/skreel",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/skreel",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:skreel",

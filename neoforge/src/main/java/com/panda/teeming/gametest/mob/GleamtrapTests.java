@@ -367,8 +367,10 @@ public final class GleamtrapTests {
         helper.assertTrue(row.weight() == 8, "spawn weight 8, got " + row.weight());
         helper.assertTrue(row.groupMin() == 1 && row.groupMax() == 1, "alone, got groups of " + row.groupMin() + ".." + row.groupMax());
         var access = helper.getLevel().registryAccess();
-        int biomes = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("gleamtrap")).map(set -> set.size()).orElse(0);
-        helper.assertTrue(biomes == 0, "its biome tag is empty, holds " + biomes);
+        var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("gleamtrap")).orElse(null);
+        helper.assertTrue(tag != null && tag.size() == 2 && tag.stream().anyMatch(b -> b.is(net.minecraft.world.level.biome.Biomes.CRIMSON_FOREST))
+                && tag.stream().anyMatch(b -> b.is(net.minecraft.world.level.biome.Biomes.WARPED_FOREST)),
+                "its biome tag, which the spawner reads, holds the crimson and warped forests only: " + tag);
         helper.assertTrue(access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/gleamtrap"))).isEmpty(), "no biome modifier");
         helper.setBlock(new BlockPos(2, 1, 2), Blocks.NETHER_WART_BLOCK);

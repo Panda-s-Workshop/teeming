@@ -23,6 +23,10 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
             .comment("Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide.")
             .defineInRange("fieldguide.killsToReveal", 3, 1, 100);
 
+    private static final ModConfigSpec.BooleanValue TEMPORARY_BLOCKS = B
+            .comment("False: no mob places even temporary blocks (the Gloomweaver raises no walls and only bites).")
+            .define("griefing.temporary_blocks", true);
+
     private static final Map<String, ModConfigSpec.BooleanValue> ENABLED = new HashMap<>();
     private static final Map<String, ModConfigSpec.DoubleValue> CHANCE = new HashMap<>();
 
@@ -52,6 +56,11 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
     @Override
     public int killsToReveal() {
         return SPEC.isLoaded() ? KILLS_TO_REVEAL.get() : TeemingConfig.DEFAULTS.killsToReveal();
+    }
+
+    @Override
+    public boolean temporaryBlocks() {
+        return SPEC.isLoaded() ? TEMPORARY_BLOCKS.get() : TeemingConfig.DEFAULTS.temporaryBlocks();
     }
 
     @Override

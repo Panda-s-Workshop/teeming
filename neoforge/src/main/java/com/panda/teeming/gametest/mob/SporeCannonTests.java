@@ -573,13 +573,17 @@ public final class SporeCannonTests {
         });
     }
 
-    /** Home: the warped forest and not the crimson forest; spawn weight 8, alone. */
+    /**
+     * Home: the warped and crimson forests, never the nether wastes; spawn weight 8, alone. Both forests are share-capped,
+     * so its biome-list spawns leave them out and the Teeming spawner places it there.
+     */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("spore_cannon"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
         helper.assertTrue(tag.get().stream().anyMatch(bi -> bi.is(Biomes.WARPED_FOREST)), "its home holds the warped forest");
-        helper.assertTrue(tag.get().stream().noneMatch(bi -> bi.is(Biomes.CRIMSON_FOREST)), "its home never holds the crimson forest");
+        helper.assertTrue(tag.get().stream().anyMatch(bi -> bi.is(Biomes.CRIMSON_FOREST)), "its home holds the crimson forest");
+        helper.assertTrue(tag.get().stream().noneMatch(bi -> bi.is(Biomes.NETHER_WASTES)), "its home never holds the nether wastes");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/spore_cannon")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");
@@ -587,6 +591,10 @@ public final class SporeCannonTests {
                 .filter(w -> w.value().type() == ModMobs.SPORE_CANNON.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
         helper.assertTrue(entry.weight() == 8, "spawn weight 8, got " + entry.weight());
+        var forests = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).biomes();
+        var biomeLookup = access.lookupOrThrow(Registries.BIOME);
+        helper.assertTrue(!forests.contains(biomeLookup.getOrThrow(Biomes.WARPED_FOREST)) && !forests.contains(biomeLookup.getOrThrow(Biomes.CRIMSON_FOREST)),
+                "its biome-list spawns leave out the share-capped forests, where the Teeming spawner places it");
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "alone, groups of " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         helper.succeed();

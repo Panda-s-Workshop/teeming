@@ -278,11 +278,11 @@ public class Slagspitter extends TeemingMonster {
         return true;
     }
 
-    /** Where its throat ring is: low on its front. */
+    /** Where its slag-gland ring is: round the root of the spout on its snout. */
     private Vec3 throat() {
         Vec3 f = forward(getYRot());
         double s = getScale();
-        return position().add(f.x * 0.45 * s, 0.2 * s, f.z * 0.45 * s);
+        return position().add(f.x * 0.45 * s, 0.5 * s, f.z * 0.45 * s);
     }
 
     /**

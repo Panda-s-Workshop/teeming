@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/snagwood",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/snagwood",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:snagwood",

@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/mycelite_shambler",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/mycelite_shambler",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:mycelite_shambler",

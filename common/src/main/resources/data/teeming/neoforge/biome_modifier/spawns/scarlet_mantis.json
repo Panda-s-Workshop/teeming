@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/scarlet_mantis",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/scarlet_mantis",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:nether_wastes"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:scarlet_mantis",

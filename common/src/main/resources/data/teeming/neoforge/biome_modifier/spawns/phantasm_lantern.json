@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/phantasm_lantern",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/phantasm_lantern",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:phantasm_lantern",

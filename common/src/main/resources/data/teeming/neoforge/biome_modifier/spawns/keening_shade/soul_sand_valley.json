@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/keening_shade",
+      [
+        "minecraft:soul_sand_valley"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:keening_shade",
+      "weight": 3,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

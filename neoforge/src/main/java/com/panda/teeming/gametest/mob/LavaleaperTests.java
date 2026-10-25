@@ -607,10 +607,22 @@ public final class LavaleaperTests {
         helper.assertTrue(spawner.value().count().minInclusive() == 1 && spawner.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
         var biomes = access.lookupOrThrow(Registries.BIOME);
+        var tag = biomes.get(TeemingSpawns.tag("lavaleaper")).orElse(null);
         for (var biome : List.of(Biomes.NETHER_WASTES, Biomes.BASALT_DELTAS, Biomes.CRIMSON_FOREST, Biomes.WARPED_FOREST, Biomes.SOUL_SAND_VALLEY)) {
-            helper.assertTrue(add.biomes().contains(biomes.getOrThrow(biome)), biome.identifier() + " is its home");
+            helper.assertTrue(tag != null && tag.contains(biomes.getOrThrow(biome)), biome.identifier() + " is its home");
+            helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(biome)),
+                    biome.identifier() + " has a tuned weight or is share-capped, so the roster weight leaves it out");
         }
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.PLAINS)), "the Overworld is not");
+        for (var biome : List.of(Biomes.NETHER_WASTES, Biomes.BASALT_DELTAS, Biomes.SOUL_SAND_VALLEY)) {
+            String path = biome.identifier().getPath();
+            int want = com.panda.teeming.spawn.SpawnTable.tuned("lavaleaper").stream().filter(r -> r.biome().equals(biome.identifier().toString()))
+                    .mapToInt(com.panda.teeming.spawn.SpawnTable.Row::weight).findFirst().orElse(0);
+            var tuned = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                    .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/lavaleaper/" + path))).map(Holder::value).orElse(null);
+            helper.assertTrue(tuned instanceof BiomeModifiers.AddSpawnsBiomeModifier t && want > 0 && t.biomes().contains(biomes.getOrThrow(biome))
+                    && t.spawners().unwrap().getFirst().weight() == want, path + ": a tuned modifier at weight " + want + ", got " + tuned);
+        }
+        helper.assertTrue(tag != null && !tag.contains(biomes.getOrThrow(Biomes.PLAINS)), "the Overworld is not");
 
         shore(helper, 8);
         RosterStats.Entry row = RosterStats.get("lavaleaper");

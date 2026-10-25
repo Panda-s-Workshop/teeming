@@ -47,7 +47,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -564,7 +563,7 @@ public class WoolcapGrazer extends TeemingAnimal implements Shearable {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
-        if (held.getItem() instanceof ShearsItem && readyForShearing()) {
+        if (com.panda.teeming.mob.overworld.VinedropStrangler.shears(held) && readyForShearing()) {
             if (level() instanceof ServerLevel level) {
                 shear(level, SoundSource.PLAYERS, held);
                 if (!shorn()) return InteractionResult.PASS;         // vetoed: nothing taken, the shears untouched

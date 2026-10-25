@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/gloamhound",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/gloamhound",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:gloamhound",

@@ -45,7 +45,7 @@ import org.jspecify.annotations.Nullable;
  * and open sky over it, it climbs and circles 5 blocks out, 7 to 10 blocks above its target. Once it is 5 to 14 blocks
  * above it, it stops in the air and cries for 16 ticks (tell): beak wide, wings folding back, shedding ash and embers.
  * Then it stoops: a falling arc that steers onto the target as it drops. If the stoop connects it grabs its prey in its
- * talons (the prey shows as held) and climbs straight up with it, 8 to 12 blocks over 40 ticks, then lets go. The fall
+ * talons (the prey shows as held) and climbs straight up with it, 6 to 9 blocks over 40 ticks, then lets go. The fall
  * is what hurts. Prey too big to carry is raked by its talons for its attack damage instead.
  *
  * <p>Counters: a hit on it while it carries someone makes it let go at once, so a victim who strikes early falls from
@@ -67,9 +67,12 @@ public class Ashharrier extends TeemingMonster {
 
     /** The cry: it hangs in the air for 0.8 s before it stoops. */
     public static final int TELL_TICKS = 16;
-    /** It lifts its prey between 8 and 12 blocks (picked for each lift), over 40 ticks. */
-    public static final double LIFT_MIN = 8.0;
-    public static final double LIFT_MAX = 12.0;
+    /**
+     * It lifts its prey between 6 and 9 blocks (picked for each lift), over 40 ticks: the highest drop deals 6 fall
+     * damage, which armour doesn't reduce, so 20 health survives three of them.
+     */
+    public static final double LIFT_MIN = 6.0;
+    public static final double LIFT_MAX = 9.0;
     public static final int LIFT_TICKS = 40;
     /** A shield raised into the stoop stuns it on the ground for 2 s. */
     public static final int STUN_TICKS = 40;
@@ -99,8 +102,8 @@ public class Ashharrier extends TeemingMonster {
     public static final double ESCAPE_RANGE = 4.0;
     /** The victim's head is held this far up inside its talons and belly. */
     public static final double GRIP = 0.3;
-    /** Open sky it needs over its target before it circles: room to lift prey 12 blocks and fly over them. */
-    public static final int ROOM = 15;
+    /** Open sky it needs over its target before it circles: room to lift a player 9 blocks and fly over them. */
+    public static final int ROOM = 12;
     /** Climbing away after a stoop (or a stun). */
     public static final int CLIMB_TICKS = 20;
     /** Ticks from the end of one stoop until it may cry again. */
@@ -477,7 +480,7 @@ public class Ashharrier extends TeemingMonster {
         return !(e instanceof Ashharrier) && grab.fits(this, e) && !Grab.isHeld(e);
     }
 
-    /** One lift's height: 8 to 12 blocks, evenly. */
+    /** One lift's height: 6 to 9 blocks, evenly. */
     public static double rollLift(RandomSource random) {
         return LIFT_MIN + random.nextDouble() * (LIFT_MAX - LIFT_MIN);
     }
@@ -617,7 +620,7 @@ public class Ashharrier extends TeemingMonster {
                 && !(target instanceof Ashharrier) && !(target instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
-    /** Open sky over the target: no block in the 15 above its feet, room to lift it 12 blocks and fly over it. */
+    /** Open sky over the target: no block in the 12 above its feet, room to lift it 9 blocks and fly over it. */
     private static boolean roomAbove(ServerLevel level, LivingEntity target) {
         BlockPos.MutableBlockPos pos = target.blockPosition().mutable();
         for (int i = 1; i <= ROOM; i++) {

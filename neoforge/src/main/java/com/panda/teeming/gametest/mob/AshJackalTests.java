@@ -3,6 +3,7 @@ package com.panda.teeming.gametest.mob;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
+import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.nether.AshJackal;
 import com.panda.teeming.mob.nether.AshJackal.Step;
 import com.panda.teeming.registry.ModMobs;
@@ -42,9 +43,9 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Ash Jackal: health 16, attack 4, armour 1, a 0.7 x 0.8 hitbox and no tell (a plain bite of 4); it takes one dropped
- * stack within 10 blocks (one stack each), runs off with it for 200 ticks and drops it when killed; it picks the
- * lowest health fraction within 16 blocks. Every number is checked against a plain value.
+ * Ash Jackal: health 16, attack 4, armour 1, a 0.7 x 0.8 hitbox and a 10-tick sniff before every bite (a plain bite of
+ * 4) and every snatch; it takes one dropped stack within 10 blocks (one stack each), runs off with it for 200 ticks and
+ * drops it when killed; it picks the lowest health fraction within 16 blocks. Every number is checked against a plain value.
  *
  * <p>Every jackal here is confined to its own arena (it takes items and picks fights only inside it), so it never
  * reaches into the arenas beside it, and gives up what it carries before it is removed when the test ends.
@@ -54,6 +55,8 @@ public final class AshJackalTests {
 
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("ash_jackal_tell", AshJackalTests::tell);
+        out.accept("ash_jackal_tell_snatch", AshJackalTests::tellSnatch);
+        out.accept("ash_jackal_tell_cancel", AshJackalTests::tellCancel);
         out.accept("ash_jackal_counter", AshJackalTests::counter);
         out.accept("ash_jackal_failure", AshJackalTests::failure);
         out.accept("ash_jackal_stats", AshJackalTests::stats);
@@ -109,22 +112,111 @@ public final class AshJackalTests {
         return jackal.getPassengers().stream().filter(p -> p instanceof Display.ItemDisplay).map(p -> (Display.ItemDisplay) p).toList();
     }
 
-    /** No tell: from first sight of its target to the bite it never leaves idle, and the first bite takes exactly 4. */
+    /**
+     * The sniff before a bite: with a pig 5 blocks off it runs up and sniffs for exactly 10 ticks, standing still (it moves
+     * less than 0.05 blocks), the pig keeping all 100 health; on the tick the sniff ends the bite lands and takes exactly
+     * 4, the only bite so far. No other phase comes between.
+     */
     private static void tell(GameTestHelper helper) {
         AshJackal jackal = jackal(helper, 3.5, 5.5);
         Pig pig = pig(helper, 8.5, 5.5, 100.0F, 100.0F);
         jackal.setTarget(pig);
-        boolean[] phased = {false};
+        int[] ticks = {0}, endedAt = {-1}, hurtAt = {-1}, tick = {0};
+        boolean[] quiet = {true}, other = {false}, forItem = {false};
+        Vec3[] start = {null};
+        double[] moved = {0.0};
         float[] first = {0.0F};
         helper.onEachTick(() -> {
-            if (first[0] == 0.0F && pig.getHealth() < 100.0F) first[0] = 100.0F - pig.getHealth();
-            if (first[0] == 0.0F && !jackal.core().idle()) phased[0] = true;
+            tick[0]++;
+            if (jackal.core().in(Step.TELL)) {
+                if (start[0] == null) start[0] = jackal.position();
+                ticks[0]++;
+                forItem[0] |= jackal.sniffingItem();
+                moved[0] = Math.max(moved[0], jackal.position().distanceTo(start[0]));
+                if (pig.getHealth() < 100.0F || jackal.bites() > 0) quiet[0] = false;
+            } else if (ticks[0] > 0 && endedAt[0] < 0) {
+                endedAt[0] = tick[0];
+            }
+            if (hurtAt[0] < 0 && pig.getHealth() < 100.0F) {
+                hurtAt[0] = tick[0];
+                first[0] = 100.0F - pig.getHealth();
+            }
+            if (hurtAt[0] < 0 && !jackal.core().idle() && !jackal.core().in(Step.TELL)) other[0] = true;
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(first[0] > 0.0F, "it bit the pig");
-            helper.assertTrue(!phased[0], "no tell or other phase before the bite");
+            helper.assertTrue(hurtAt[0] > 0, "it sniffed and bit the pig, " + ticks[0] + " ticks of sniffing so far");
+            helper.assertTrue(ticks[0] == 10, "the sniff lasts 10 ticks, " + ticks[0]);
+            helper.assertTrue(!forItem[0], "it sniffs at the pig, not at an item");
+            helper.assertTrue(quiet[0], "nothing is bitten while it sniffs");
+            helper.assertTrue(moved[0] < 0.05, "it stands still while it sniffs, moved " + moved[0]);
+            helper.assertTrue(hurtAt[0] == endedAt[0], "the bite lands as the sniff ends, at tick " + hurtAt[0] + ", the sniff ended at " + endedAt[0]);
             helper.assertTrue(Math.abs(first[0] - 4.0F) < 0.01F, "a plain bite takes 4, took " + first[0]);
-            helper.assertTrue(jackal.bites() >= 1, "it counts the bite");
+            helper.assertTrue(jackal.bites() == 1, "one bite, " + jackal.bites());
+            helper.assertTrue(!other[0], "no other phase before the bite");
+        });
+    }
+
+    /**
+     * The sniff before a snatch: next to a dropped stack of 3 bones it sniffs at it for exactly 10 ticks, standing still,
+     * the stack still lying there whole and nothing carried; then the 6-tick dip follows at once and it takes the stack.
+     */
+    private static void tellSnatch(GameTestHelper helper) {
+        AshJackal jackal = jackal(helper, 6.0, 6.5);
+        ItemEntity bones = item(helper, 6.6, 6.5, new ItemStack(Items.BONE, 3));
+        int[] ticks = {0}, endedAt = {-1}, dipAt = {-1}, tick = {0};
+        boolean[] quiet = {true}, forItem = {true};
+        Vec3[] start = {null};
+        double[] moved = {0.0};
+        helper.onEachTick(() -> {
+            tick[0]++;
+            if (jackal.core().in(Step.TELL)) {
+                if (start[0] == null) start[0] = jackal.position();
+                ticks[0]++;
+                forItem[0] &= jackal.sniffingItem();
+                moved[0] = Math.max(moved[0], jackal.position().distanceTo(start[0]));
+                if (!bones.isAlive() || bones.getItem().getCount() != 3 || !jackal.carried().isEmpty() || jackal.snatches() > 0) quiet[0] = false;
+            } else if (ticks[0] > 0 && endedAt[0] < 0) {
+                endedAt[0] = tick[0];
+            }
+            if (dipAt[0] < 0 && jackal.core().in(Step.SNATCH)) dipAt[0] = tick[0];
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(jackal.carried().is(Items.BONE) && jackal.carried().getCount() == 3, "it took the 3 bones, carries " + jackal.carried());
+            helper.assertTrue(ticks[0] == 10, "the sniff lasts 10 ticks, " + ticks[0]);
+            helper.assertTrue(forItem[0], "it sniffs at the item");
+            helper.assertTrue(quiet[0], "nothing is taken while it sniffs");
+            helper.assertTrue(moved[0] < 0.05, "it stands still while it sniffs, moved " + moved[0]);
+            helper.assertTrue(dipAt[0] == endedAt[0], "the dip starts as the sniff ends, at tick " + dipAt[0] + ", the sniff ended at " + endedAt[0]);
+        });
+    }
+
+    /**
+     * A listener that cancels the "tell" step: with a pig in reach and a dropped stack beside it, the jackal never sniffs,
+     * dips or bites in 60 ticks: the pig keeps all 100 health and the stack still lies there.
+     */
+    private static void tellCancel(GameTestHelper helper) {
+        AshJackal jackal = jackal(helper, 5.5, 6.5);
+        Pig pig = pig(helper, 6.5, 7.5, 100.0F, 100.0F);
+        ItemEntity gold = item(helper, 6.0, 6.5, new ItemStack(Items.GOLD_INGOT, 2));
+        jackal.setTarget(pig);
+        int[] vetoed = {0};
+        Consumer<MechanicEvent> veto = e -> {
+            if (e.mob() == jackal && e.step().equals("tell")) {
+                e.cancel();
+                vetoed[0]++;
+            }
+        };
+        MechanicEvent.listen(veto);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
+        boolean[] phased = {false};
+        helper.onEachTick(() -> phased[0] |= !jackal.core().idle());
+        helper.runAtTickTime(60, () -> {
+            helper.assertTrue(vetoed[0] >= 2, "it tried to sniff at the stack and at the pig, " + vetoed[0] + " vetoed");
+            helper.assertTrue(!phased[0], "no sniff, dip or bite, phase " + jackal.phase());
+            helper.assertTrue(pig.getHealth() == 100.0F && jackal.bites() == 0, "the pig keeps all 100 health, " + pig.getHealth());
+            helper.assertTrue(gold.isAlive() && gold.getItem().getCount() == 2 && jackal.carried().isEmpty() && jackal.snatches() == 0,
+                    "the stack still lies there, carried " + jackal.carried());
+            helper.succeed();
         });
     }
 

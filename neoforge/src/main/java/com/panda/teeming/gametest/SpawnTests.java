@@ -1,19 +1,46 @@
 package com.panda.teeming.gametest;
 
+import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.TeemingCreature;
+import com.panda.teeming.mob.look.LookDef;
+import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Place;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawner;
+import com.panda.teeming.spawn.TeemingSpawner.Candidate;
 import com.panda.teeming.spawn.TeemingSpawner.Rule;
 import com.panda.teeming.spawn.TeemingSpawns;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * The special placements (sand, lava, ceiling, leaves, void air, underside) accept their spot and refuse a
@@ -33,6 +60,10 @@ final class SpawnTests {
         out.accept("spawner_main_island_gate", SpawnTests::mainIslandGate);
         out.accept("spawner_spawns", SpawnTests::spawnerSpawns);
         out.accept("spawn_any_light", SpawnTests::anyLight);
+        out.accept("spawn_share", SpawnTests::spawnShare);
+        out.accept("spawn_share_counts", SpawnTests::shareCounts);
+        out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
+        out.accept("place_looks", SpawnTests::placeLooks);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -144,6 +175,289 @@ final class SpawnTests {
                 "the origin and (700, -700) are main island");
         helper.assertTrue(!TeemingSpawner.onMainIsland(new BlockPos(1100, 60, 0)), "1100 blocks out is the outer islands");
         helper.assertTrue(!fits(helper, Rule.MAIN_ISLAND, new BlockPos(5, 1, 5)), "a floor spot outside the End is no main-island spot");
+        helper.succeed();
+    }
+
+    // ---- spawn share ----------------------------------------------------------------------------------------------
+
+    private static boolean teeming(EntityType<?> type) {
+        return type.builtInRegistryHolder().key().identifier().getNamespace().equals(TeemingMod.MODID);
+    }
+
+    private static double share(int teeming, int others) {
+        return teeming + others == 0 ? 0.0 : teeming / (double) (teeming + others);
+    }
+
+    /**
+     * In each Nether biome Teeming makes about 1 in 4 to 6 of the monster picks (17-25 %). Read from the live
+     * spawn lists, after the biome modifiers ran. Vanilla's own monster weights are unchanged. A biome with tuned
+     * weights lands in the range. A share-capped biome can't: its vanilla monster weight is too small for even weight 1
+     * per Teeming mob (the warped forest has only the enderman at weight 1, so its six Teeming monsters would be 6 of 7
+     * picks; the crimson forest's 15 against nine mobs would be 38 %). Its list holds no Teeming monster, and for any
+     * number of other monsters round the player the spawner's cap settles in the range, or, where whole mobs can't, on
+     * the whole number nearest the target.
+     */
+    private static void spawnShare(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
+        List<String> wrong = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        for (Map.Entry<String, Integer> e : SpawnTable.VANILLA_MONSTER_WEIGHT.entrySet()) {
+            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, Identifier.parse(e.getKey()));
+            Holder.Reference<Biome> biome = biomes.getOrThrow(key);
+            MobSpawnSettings settings = biome.value().getModifiedEnvironmentAttributes()
+                    .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
+            int vanilla = 0;
+            int ours = 0;
+            for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
+                if (teeming(w.value().type())) ours += w.weight();
+                else vanilla += w.weight();
+            }
+            String name = key.identifier().getPath();
+            if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
+            boolean capped = biome.is(TeemingSpawner.SHARE_CAPPED);
+            if (capped != SpawnTable.SHARE_CAPPED.contains(e.getKey())) wrong.add(name + ": share-capped " + capped + " against the table");
+            if (capped) {
+                if (ours != 0) wrong.add(name + ": share-capped, yet its list holds Teeming monster weight " + ours);
+                for (int others = 1; others <= 70; others++) {
+                    int t = 0;
+                    while (TeemingSpawner.shareAllows(t, others)) t++;
+                    double got = share(t, others);
+                    double off = Math.abs(got - SpawnTable.TARGET_SHARE);
+                    boolean nearest = off <= Math.abs(share(t + 1, others) - SpawnTable.TARGET_SHARE)
+                            && (t == 0 || off <= Math.abs(share(t - 1, others) - SpawnTable.TARGET_SHARE));
+                    if (!(got >= SpawnTable.SHARE_MIN && got <= SpawnTable.SHARE_MAX) && !nearest)
+                        wrong.add(name + ": with " + others + " other monsters the cap stops at " + t + " Teeming (" + got + ")");
+                }
+                seen.add(name + " share-capped (vanilla " + vanilla + ")");
+            } else {
+                String costs = costsMatch(settings);
+                if (costs != null) wrong.add(name + ": " + costs);
+                double got = share(ours, vanilla);
+                if (got < SpawnTable.SHARE_MIN || got > SpawnTable.SHARE_MAX)
+                    wrong.add(String.format(Locale.ROOT, "%s: Teeming weight %d of %d, %.1f %%", name, ours, ours + vanilla, got * 100));
+                seen.add(String.format(Locale.ROOT, "%s %d/%d = %.1f %%", name, ours, ours + vanilla, got * 100));
+            }
+        }
+        if (TeemingSpawner.shareAllows(0, 0)) wrong.add("the cap adds a Teeming monster where no other monster is");
+        if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+        TeemingMod.LOGGER.info("spawn_share: {}", String.join(", ", seen));
+        helper.succeed();
+    }
+
+    /**
+     * Where every vanilla monster of a list carries one spawn cost, every Teeming monster must carry the same one: the
+     * cost throttles each spawn, so without it Teeming's share of real spawns would run far past its share of the
+     * weights (the soul sand valley's 0.7 / 0.15). Null when they match or vanilla's monsters have no common cost.
+     */
+    static String costsMatch(MobSpawnSettings settings) {
+        MobSpawnSettings.MobSpawnCost common = null;
+        boolean first = true;
+        List<EntityType<?>> ours = new ArrayList<>();
+        for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
+            EntityType<?> type = w.value().type();
+            if (teeming(type)) {
+                ours.add(type);
+                continue;
+            }
+            MobSpawnSettings.MobSpawnCost cost = settings.getMobSpawnCost(type);
+            if (first) common = cost;
+            else if (cost == null || !cost.equals(common)) common = null;
+            first = false;
+        }
+        if (common == null) return null;
+        for (EntityType<?> type : ours) {
+            if (!common.equals(settings.getMobSpawnCost(type)))
+                return type.builtInRegistryHolder().key().identifier().getPath() + " has spawn cost " + settings.getMobSpawnCost(type)
+                        + ", vanilla's monsters there " + common;
+        }
+        return null;
+    }
+
+    /** The share cap's count: monsters only (a pig and a Woolcap Grazer are creatures), Teeming ones apart from the rest. */
+    private static void shareCounts(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos center = helper.absolutePos(new BlockPos(5, 1, 5));
+        int[] before = TeemingSpawner.monstersAround(level, center);
+        List<Mob> placed = new ArrayList<>();
+        for (int i = 0; i < 3; i++) placed.add(helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, new BlockPos(2 + i * 2, 1, 2)));
+        placed.add(helper.spawnWithNoFreeWill(ModMobs.VEINLEECH.get(), new BlockPos(2, 1, 6)));
+        placed.add(helper.spawnWithNoFreeWill(ModMobs.WOOLCAP_GRAZER.get(), new BlockPos(5, 1, 8)));
+        placed.add(helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(8, 1, 8)));
+        int[] after = TeemingSpawner.monstersAround(level, center);
+        placed.forEach(Mob::discard);
+        helper.assertTrue(after[0] - before[0] == 1, "one more Teeming monster counted, got " + (after[0] - before[0]));
+        helper.assertTrue(after[1] - before[1] == 3, "three more other monsters counted, got " + (after[1] - before[1]));
+        helper.succeed();
+    }
+
+    /**
+     * The spawner chooses the spot first and picks only among the mobs whose rule accepts it. Built in the GameTest
+     * server's flat Nether (all basalt deltas), far from the arenas, with part of it made a crimson forest:
+     * a wart block in the crimson forest goes to the Gleamtrap (fungus-cap rule, its tag holds the crimson forest) and
+     * to the crimson forest's biome-list monsters on top of it (the forest is share-capped, so the spawner places them),
+     * never to a fortress or bastion mob, as no structure is there; the plain crimson floor goes to the biome-list
+     * monsters and not the Gleamtrap; a wart block in the basalt deltas goes to nobody (the Gleamtrap's tag leaves the
+     * deltas out, and the deltas' Teeming monsters come from its own spawn list). A structure's spot goes to that
+     * structure's mobs: a fortress candidate beside a biome one always wins, and two fortress mobs (weight 0, read as 1)
+     * share the rolls.
+     */
+    private static void picksBySpot(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel nether = server.getLevel(Level.NETHER);
+        int x0 = 4096;
+        int z0 = 4096;
+        for (int cx = x0 >> 4; cx <= (x0 + 63) >> 4; cx++) {
+            for (int cz = z0 >> 4; cz <= (z0 + 15) >> 4; cz++) nether.getChunk(cx, cz);
+        }
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), String.format(Locale.ROOT,
+                "execute in minecraft:the_nether run fillbiome %d 0 %d %d 60 %d minecraft:crimson_forest", x0, z0, x0 + 31, z0 + 15));
+        int y = nether.getHeight(Heightmap.Types.MOTION_BLOCKING, x0 + 4, z0 + 4);
+        BlockPos cap = new BlockPos(x0 + 4, y, z0 + 4);
+        BlockPos deltasCap = new BlockPos(x0 + 48, y, z0 + 8);
+        nether.setBlockAndUpdate(cap, Blocks.NETHER_WART_BLOCK.defaultBlockState());
+        nether.setBlockAndUpdate(deltasCap, Blocks.NETHER_WART_BLOCK.defaultBlockState());
+        RandomSource random = RandomSource.create(7);
+        Holder<Biome> crimson = nether.getBiome(cap.above());
+        helper.assertTrue(crimson.is(ResourceKey.create(Registries.BIOME, Identifier.parse(CRIMSON))),
+                "the filled area is a crimson forest, got " + crimson.getRegisteredName());
+        List<String> wrong = new ArrayList<>();
+
+        List<Candidate> onCap = TeemingSpawner.candidatesAt(nether, cap.getX(), y, cap.getZ(), random, false);
+        checkAccepted(nether, onCap, wrong);
+        if (onCap.stream().noneMatch(c -> c.mob().id().equals("gleamtrap") && c.rule() == Rule.FUNGUS_CAP && c.pos().equals(cap.above())))
+            wrong.add("the wart block's top should go to the Gleamtrap: " + ids(onCap));
+        if (onCap.stream().noneMatch(c -> c.mob().id().equals("veinleech") && c.rule() == null))
+            wrong.add("the crimson forest's Veinleech should stand on the cap too: " + ids(onCap));
+        if (onCap.stream().anyMatch(Candidate::structure)) wrong.add("no structure here, yet " + ids(onCap));
+
+        List<Candidate> plain = TeemingSpawner.candidatesAt(nether, x0 + 20, y, z0 + 8, random, false);
+        checkAccepted(nether, plain, wrong);
+        if (plain.stream().anyMatch(c -> c.mob().id().equals("gleamtrap"))) wrong.add("no wart block, yet the Gleamtrap: " + ids(plain));
+        if (plain.stream().noneMatch(c -> c.mob().id().equals("veinleech"))) wrong.add("the plain crimson floor should take the Veinleech: " + ids(plain));
+        if (plain.stream().anyMatch(c -> c.mob().id().equals("prismback"))) wrong.add("the Prismback lives in the wastes: " + ids(plain));
+
+        List<Candidate> deltas = TeemingSpawner.candidatesAt(nether, deltasCap.getX(), y, deltasCap.getZ(), random, false);
+        if (!deltas.isEmpty()) wrong.add("a wart block in the basalt deltas should take nothing: " + ids(deltas));
+
+        BlockPos at = cap.above();
+        Candidate jailer = new Candidate(RosterStats.get("fortress_jailer"), ModMobs.FORTRESS_JAILER.get(), at, Rule.FORTRESS);
+        Candidate herald = new Candidate(RosterStats.get("pyre_herald"), ModMobs.PYRE_HERALD.get(), at, Rule.FORTRESS);
+        Candidate leech = new Candidate(RosterStats.get("veinleech"), ModMobs.VEINLEECH.get(), at, null);
+        int jailers = 0;
+        for (int i = 0; i < 400; i++) {
+            Candidate got = TeemingSpawner.pick(List.of(leech, jailer, herald), random);
+            if (got == leech) {
+                wrong.add("a biome mob took a fortress spot");
+                break;
+            }
+            if (got == jailer) jailers++;
+        }
+        if (jailers < 140 || jailers > 260) wrong.add("two fortress mobs should share the rolls, the Jailer took " + jailers + " of 400");
+        nether.setBlockAndUpdate(cap, Blocks.BASALT.defaultBlockState());
+        nether.setBlockAndUpdate(deltasCap, Blocks.BASALT.defaultBlockState());
+        if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+        helper.succeed();
+    }
+
+    /** Every candidate's own rule (or, for a biome-list mob, its placement) accepts its spot, inside its biome tag. */
+    private static void checkAccepted(ServerLevel level, List<Candidate> found, List<String> wrong) {
+        for (Candidate c : found) {
+            boolean ok = c.rule() != null ? c.rule().fits(level, c.pos()) : TeemingSpawns.placeOk(c.mob(), c.type(), level, c.pos());
+            if (!ok) wrong.add(c.mob().id() + " at " + c.pos().toShortString() + ", which its rule refuses");
+            if (c.rule() == null && !level.getBiome(c.pos()).is(TeemingSpawns.tag(c.mob().id())))
+                wrong.add(c.mob().id() + " outside its tag at " + c.pos().toShortString());
+        }
+    }
+
+    private static String ids(List<Candidate> found) {
+        return found.stream().map(c -> c.mob().id() + (c.rule() == null ? "" : "/" + c.rule())).toList().toString();
+    }
+
+    // ---- looks named after a place -------------------------------------------------------------------------------
+
+    /** A second look named after a place, the biome it belongs to, and another Nether home of the mob. */
+    private record PlaceLook(String mob, String look, String place, String elsewhere) {}
+
+    private static final String CRIMSON = "minecraft:crimson_forest";
+    private static final String WARPED = "minecraft:warped_forest";
+    private static final String VALLEY = "minecraft:soul_sand_valley";
+    private static final String WASTES = "minecraft:nether_wastes";
+    private static final String DELTAS = "minecraft:basalt_deltas";
+
+    private static final List<PlaceLook> PLACE_LOOKS = List.of(
+            new PlaceLook("phantasm_lantern", "crimson_lantern", CRIMSON, WARPED),
+            new PlaceLook("woolcap_grazer", "crimson_woolcap", CRIMSON, WARPED),
+            new PlaceLook("siphonjelly", "crimson_jelly", CRIMSON, WARPED),
+            new PlaceLook("spore_cannon", "crimson_cannon", CRIMSON, WARPED),
+            new PlaceLook("gloomweaver", "crimson_weaver", CRIMSON, WARPED),
+            new PlaceLook("shredjaw_beetle", "warped_shredjaw", WARPED, CRIMSON),
+            new PlaceLook("gleamtrap", "warped_gleamtrap", WARPED, CRIMSON),
+            new PlaceLook("scarlet_mantis", "ashen_mantis", WASTES, CRIMSON),
+            new PlaceLook("ash_jackal", "soul_jackal", VALLEY, WASTES),
+            new PlaceLook("cindermoth_swarm", "soul_moths", VALLEY, WASTES),
+            new PlaceLook("pyre_herald", "soul_herald", VALLEY, WASTES),
+            new PlaceLook("flamewright", "soul_wright", VALLEY, WASTES),
+            new PlaceLook("slagspitter", "basalt_spitter", DELTAS, WASTES));
+
+    /** Mobs whose base look belongs to their other home, so in the place only the place look appears. */
+    private static final Map<String, String> PLACE_BASES = Map.of(
+            "phantasm_lantern", WARPED, "woolcap_grazer", WARPED, "siphonjelly", WARPED, "spore_cannon", WARPED,
+            "gloomweaver", WARPED, "shredjaw_beetle", CRIMSON);
+
+    private static Predicate<String> in(Holder<Biome> biome) {
+        return spec -> spec.startsWith("#")
+                ? biome.is(TagKey.create(Registries.BIOME, Identifier.parse(spec.substring(1))))
+                : biome.is(ResourceKey.create(Registries.BIOME, Identifier.parse(spec)));
+    }
+
+    /** How many of 200 evenly spread picks in the biome give the look. */
+    private static int picks(List<LookDef> looks, Holder<Biome> biome, String look) {
+        int n = 0;
+        for (int roll = 0; roll < 200; roll++) {
+            int r = roll;
+            if (LookDef.pick(looks, in(biome), bound -> r % bound).id().equals(look)) n++;
+        }
+        return n;
+    }
+
+    /**
+     * Each second look named after a place appears only there, and the mob lives there: the look is limited to that
+     * biome, the mob's live biome tag holds it, picks in that biome give the look, and picks in another of the mob's
+     * Nether homes never do. Where the base look belongs to the other home, every pick in the place is the place look
+     * and every pick in the other home is the base.
+     */
+    private static void placeLooks(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
+        List<String> wrong = new ArrayList<>();
+        for (PlaceLook p : PLACE_LOOKS) {
+            String where = p.mob() + "/" + p.look();
+            LookDef look = Looks.get(p.mob(), p.look()).orElse(null);
+            if (look == null) {
+                wrong.add(where + " not loaded");
+                continue;
+            }
+            if (!look.biomes().equals(p.place())) wrong.add(where + " is limited to '" + look.biomes() + "', not " + p.place());
+            Holder<Biome> place = biomes.getOrThrow(ResourceKey.create(Registries.BIOME, Identifier.parse(p.place())));
+            Holder<Biome> elsewhere = biomes.getOrThrow(ResourceKey.create(Registries.BIOME, Identifier.parse(p.elsewhere())));
+            var tag = biomes.get(TeemingSpawns.tag(p.mob()));
+            if (tag.isEmpty() || !tag.get().contains(place)) wrong.add(where + ": the mob doesn't live in " + p.place());
+            if (tag.isEmpty() || !tag.get().contains(elsewhere)) wrong.add(where + ": the mob doesn't live in " + p.elsewhere());
+            List<LookDef> looks = Looks.of(p.mob());
+            int there = picks(looks, place, p.look());
+            int away = picks(looks, elsewhere, p.look());
+            if (there == 0) wrong.add(where + " never picked in " + p.place());
+            if (away != 0) wrong.add(where + " picked " + away + " times in " + p.elsewhere());
+            String baseHome = PLACE_BASES.get(p.mob());
+            LookDef base = Looks.get(p.mob(), LookDef.BASE).orElseThrow();
+            if (baseHome != null) {
+                if (!base.biomes().equals(baseHome)) wrong.add(p.mob() + "/base is limited to '" + base.biomes() + "', not " + baseHome);
+                if (there != 200) wrong.add(where + " is " + there + " of 200 picks in " + p.place() + ", want all");
+                if (picks(looks, elsewhere, LookDef.BASE) != 200) wrong.add(p.mob() + "/base should be every pick in " + p.elsewhere());
+            } else if (!base.biomes().isEmpty()) {
+                wrong.add(p.mob() + "/base is limited to " + base.biomes() + ", though the look of its place shares it");
+            }
+        }
+        if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
         helper.succeed();
     }
 }

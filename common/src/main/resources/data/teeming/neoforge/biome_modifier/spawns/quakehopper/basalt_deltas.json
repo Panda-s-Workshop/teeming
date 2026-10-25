@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/quakehopper",
+      [
+        "minecraft:basalt_deltas"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:quakehopper",
+      "weight": 8,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package com.panda.teeming.gametest.mob;
 
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
@@ -8,10 +9,12 @@ import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.mob.nether.Gloomweaver;
 import com.panda.teeming.mob.nether.Gloomweaver.Step;
+import com.panda.teeming.neoforge.NeoForgeConfig;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -25,6 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
@@ -82,7 +86,10 @@ public final class GloomweaverTests {
         out.accept("gloomweaver_snapped_length", GloomweaverTests::snappedLength);
         TeemingGameTests.timeLimit("gloomweaver_snapped_length", 140);
         out.accept("gloomweaver_air_only", GloomweaverTests::airOnly);
-        out.accept("gloomweaver_no_grief", GloomweaverTests::noGrief);
+        out.accept("no_grief_when_gamerule_off", GloomweaverTests::noGrief);
+        out.accept("gloomweaver_config_off", GloomweaverTests::configOff);
+        out.accept("temp_blocks_cleanup", GloomweaverTests::chunkUnloadCleanup);
+        TeemingGameTests.timeLimit("temp_blocks_cleanup", 600);
         out.accept("gloomweaver_wall_cancel", GloomweaverTests::wallCancel);
         out.accept("gloomweaver_death_cleanup", GloomweaverTests::deathCleanup);
         out.accept("gloomweaver_discard_cleanup", GloomweaverTests::discardCleanup);
@@ -516,6 +523,123 @@ public final class GloomweaverTests {
         });
     }
 
+    /**
+     * The server's {@code griefing.temporary_blocks} setting turned off: it neither spins nor raises a wall, but still
+     * bites for 5. The setting is swapped for one that says off and back to the loader's own within one tick, so no
+     * other test sees it.
+     */
+    private static void configOff(GameTestHelper helper) {
+        Gloomweaver g = standardWeaver(helper);
+        Pig pig = standardPig(helper);
+        helper.runAtTickTime(3, () -> {
+            ServerLevel level = helper.getLevel();
+            NeoForgeConfig loader = new NeoForgeConfig();
+            TeemingConfig.Source off = new TeemingConfig.Source() {
+                @Override public double spawningDensity() { return loader.spawningDensity(); }
+                @Override public boolean mobEnabled(String id) { return loader.mobEnabled(id); }
+                @Override public double spawnChance(String id) { return loader.spawnChance(id); }
+                @Override public boolean endMainIslandAfterDragon() { return loader.endMainIslandAfterDragon(); }
+                @Override public int killsToReveal() { return loader.killsToReveal(); }
+                @Override public boolean temporaryBlocks() { return false; }
+            };
+            boolean can, spun, walled;
+            TeemingConfig.use(off);
+            try {
+                can = g.canSpin(pig);
+                spun = g.spin(pig);
+                walled = g.raiseWall(level, pig) != null;
+            } finally {
+                TeemingConfig.use(loader);
+            }
+            helper.assertTrue(TeemingConfig.temporaryBlocks(), "the setting is on by default");
+            helper.assertTrue(!can && !spun, "with temporary blocks off it won't spin");
+            helper.assertTrue(!walled && wart(helper).isEmpty() && g.walls().size() == 0, "and raises no wall");
+            helper.assertTrue(g.doHurtTarget(level, pig) && Math.abs(100.0F - pig.getHealth() - 5.0F) < 0.01F,
+                    "it still bites for 5, the pig lost " + (100.0F - pig.getHealth()));
+            helper.assertTrue(g.canSpin(pig), "with it on again it may spin");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * A real chunk unload and reload: far from every arena (10,000 blocks east), a chunk is force-loaded and floored,
+     * and a weaver (no AI, kept from despawning) raises its wall there at a still pig. The chunk is let go; once the
+     * weaver has been unloaded with it, the chunk is force-loaded again. When the weaver is back and has ticked, no
+     * block of its wall is left anywhere in the chunk, and it holds no walls and no waiting spots.
+     */
+    private static void chunkUnloadCleanup(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        int cx = (origin.getX() >> 4) + 625, cz = origin.getZ() >> 4;
+        BlockPos base = new BlockPos(cx << 4, origin.getY(), cz << 4);      // the floor's corner; mobs stand a block up
+        UUID[] ids = {null, null};
+        int[] stage = {0};
+        Gloomweaver[] first = {null};
+        TestPlayers.whenDone(helper, () -> {
+            for (UUID id : ids) {
+                Entity e = id == null ? null : level.getEntity(id);
+                if (e != null) e.discard();
+            }
+            if (level.hasChunk(cx, cz)) {
+                for (int dx = 0; dx < 16; dx++) {
+                    for (int dz = 0; dz < 16; dz++) level.setBlockAndUpdate(base.offset(dx, 0, dz), Blocks.AIR.defaultBlockState());
+                }
+            }
+            level.setChunkForced(cx, cz, false);
+        });
+        helper.runAtTickTime(2, () -> {
+            level.setChunkForced(cx, cz, true);
+            level.getChunk(cx, cz);
+            for (int dx = 0; dx < 16; dx++) {
+                for (int dz = 0; dz < 16; dz++) {
+                    level.setBlockAndUpdate(base.offset(dx, 0, dz), Blocks.STONE.defaultBlockState());
+                    for (int dy = 1; dy <= 5; dy++) level.setBlockAndUpdate(base.offset(dx, dy, dz), Blocks.AIR.defaultBlockState());
+                }
+            }
+            Gloomweaver g = ModMobs.GLOOMWEAVER.get().create(level, EntitySpawnReason.MOB_SUMMONED);
+            Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.MOB_SUMMONED);
+            g.snapTo(base.getX() + 2.5, base.getY() + 1, base.getZ() + 8.5, 0.0F, 0.0F);
+            pig.snapTo(base.getX() + 8.5, base.getY() + 1, base.getZ() + 8.5, 0.0F, 0.0F);
+            for (var m : List.of(g, pig)) {
+                m.setNoAi(true);
+                m.setPersistenceRequired();
+                level.addFreshEntity(m);
+            }
+            g.core().setLook("base", true);
+            ids[0] = g.getUUID();
+            ids[1] = pig.getUUID();
+            helper.assertTrue(g.raiseWall(level, pig) != null, "the wall goes up in the far chunk");
+            helper.assertTrue(wartIn(level, base) == 15, "15 blocks, " + wartIn(level, base));
+            first[0] = g;
+            level.setChunkForced(cx, cz, false);                             // let the chunk go
+            stage[0] = 1;
+        });
+        helper.onEachTick(() -> {
+            if (stage[0] == 1 && first[0].isRemoved()) {
+                helper.assertTrue(first[0].getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK,
+                        "the weaver left with its chunk, " + first[0].getRemovalReason());
+                stage[0] = 2;
+                level.setChunkForced(cx, cz, true);                          // and load it again
+            } else if (stage[0] == 2 && level.getEntity(ids[0]) instanceof Gloomweaver back && back != first[0] && back.tickCount > 2) {
+                helper.assertTrue(wartIn(level, base) == 0, "no block of the wall is left after the reload, " + wartIn(level, base));
+                helper.assertTrue(back.walls().size() == 0 && back.walls().waiting() == 0, "and the weaver holds none");
+                stage[0] = 3;
+                helper.succeed();
+            }
+        });
+    }
+
+    /** Warped wart blocks in the 16 x 16 chunk floored at {@code base}, from its floor up 6 blocks. */
+    private static int wartIn(ServerLevel level, BlockPos base) {
+        int n = 0;
+        for (int dx = 0; dx < 16; dx++) {
+            for (int dz = 0; dz < 16; dz++) {
+                for (int dy = 0; dy <= 6; dy++) if (level.getBlockState(base.offset(dx, dy, dz)).is(Blocks.WARPED_WART_BLOCK)) n++;
+            }
+        }
+        return n;
+    }
+
     /** A listener that cancels the "wall" step stops the wall: the spin runs out, nothing is placed. */
     private static void wallCancel(GameTestHelper helper) {
         Gloomweaver g = standardWeaver(helper);
@@ -665,7 +789,8 @@ public final class GloomweaverTests {
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("gloomweaver"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
         helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.WARPED_FOREST)), "its home holds the warped forest");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.CRIMSON_FOREST)), "its home never holds the crimson forest");
+        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.CRIMSON_FOREST)), "its home holds the crimson forest");
+        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.NETHER_WASTES)), "its home never holds the nether wastes");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/gloomweaver")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");
@@ -673,6 +798,10 @@ public final class GloomweaverTests {
                 .filter(w -> w.value().type() == ModMobs.GLOOMWEAVER.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
         helper.assertTrue(entry.weight() == 8, "spawn weight 8, got " + entry.weight());
+        var forests = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).biomes();
+        var biomeLookup = access.lookupOrThrow(Registries.BIOME);
+        helper.assertTrue(!forests.contains(biomeLookup.getOrThrow(Biomes.WARPED_FOREST)) && !forests.contains(biomeLookup.getOrThrow(Biomes.CRIMSON_FOREST)),
+                "its biome-list spawns leave out the share-capped forests, where the Teeming spawner places it");
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "alone, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         helper.succeed();

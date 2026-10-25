@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/dustwhirl",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/dustwhirl",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:dustwhirl",

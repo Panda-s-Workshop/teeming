@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/basalt_behemoth",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/basalt_behemoth",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:basalt_deltas"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:basalt_behemoth",

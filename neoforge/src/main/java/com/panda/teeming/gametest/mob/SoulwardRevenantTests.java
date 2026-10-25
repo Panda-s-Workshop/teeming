@@ -267,7 +267,20 @@ public final class SoulwardRevenantTests {
         helper.assertTrue(spawner.weight() == 6, "spawn weight 6, got " + spawner.weight());
         helper.assertTrue(spawner.value().count().minInclusive() == 1 && spawner.value().count().maxInclusive() == 1,
                 "groups of 1, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
-        helper.assertTrue(add.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SOUL_SAND_VALLEY)), "soul sand valleys are its home");
+        int tunedWeight = com.panda.teeming.spawn.SpawnTable.tuned("soulward_revenant").stream().filter(r -> r.biome().equals("minecraft:soul_sand_valley"))
+                .mapToInt(com.panda.teeming.spawn.SpawnTable.Row::weight).findFirst().orElse(0);
+        var tunedModifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/soulward_revenant/soul_sand_valley"))).map(Holder::value).orElse(null);
+        if (!(tunedModifier instanceof BiomeModifiers.AddSpawnsBiomeModifier tunedAdd)) {
+            helper.fail("no tuned spawn modifier for the soul sand valley: " + tunedModifier);
+            return;
+        }
+        var tunedSpawner = tunedAdd.spawners().unwrap().getFirst();
+        helper.assertTrue(tunedWeight > 0 && tunedSpawner.value().type() == ModMobs.SOULWARD_REVENANT.get() && tunedSpawner.weight() == tunedWeight,
+                "the soul sand valley: tuned weight " + tunedWeight + " for its share, got " + tunedSpawner.weight());
+        helper.assertTrue(tunedAdd.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SOUL_SAND_VALLEY)), "the soul sand valley is its home");
+        helper.assertTrue(!add.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SOUL_SAND_VALLEY)),
+                "the roster weight leaves out the soul sand valley, which has its own");
         helper.succeed();
     }
 

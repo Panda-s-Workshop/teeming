@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/soulfire_seer",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/soulfire_seer",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:soul_sand_valley"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:soulfire_seer",

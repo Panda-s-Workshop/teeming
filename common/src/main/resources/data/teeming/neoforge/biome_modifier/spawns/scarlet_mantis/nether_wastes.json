@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/scarlet_mantis",
+      [
+        "minecraft:nether_wastes"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:scarlet_mantis",
+      "weight": 6,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

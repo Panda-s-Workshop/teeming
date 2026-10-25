@@ -21,6 +21,7 @@ final class FabricConfig implements TeemingConfig.Source {
     private final double spawningDensity;
     private final boolean endMainIslandAfterDragon;
     private final int killsToReveal;
+    private final boolean temporaryBlocks;
     private final Map<String, Boolean> enabled = new HashMap<>();
     private final Map<String, Double> chance = new HashMap<>();
 
@@ -30,6 +31,8 @@ final class FabricConfig implements TeemingConfig.Source {
         String gate = p.getProperty("endMainIslandAfterDragon");
         endMainIslandAfterDragon = gate == null ? d.endMainIslandAfterDragon() : !gate.trim().equalsIgnoreCase("false");
         killsToReveal = (int) clamp(p.getProperty("fieldguide.killsToReveal"), d.killsToReveal(), 1, 100);
+        String temporary = p.getProperty("griefing.temporary_blocks");
+        temporaryBlocks = temporary == null ? d.temporaryBlocks() : !temporary.trim().equalsIgnoreCase("false");
         for (RosterStats.Entry mob : RosterStats.ALL) {
             String on = p.getProperty("mob." + mob.id() + ".enabled");
             enabled.put(mob.id(), on == null ? d.mobEnabled(mob.id()) : !on.trim().equalsIgnoreCase("false"));
@@ -51,6 +54,7 @@ final class FabricConfig implements TeemingConfig.Source {
             p.setProperty("spawningDensity", String.valueOf(d.spawningDensity()));
             p.setProperty("endMainIslandAfterDragon", String.valueOf(d.endMainIslandAfterDragon()));
             p.setProperty("fieldguide.killsToReveal", String.valueOf(d.killsToReveal()));
+            p.setProperty("griefing.temporary_blocks", String.valueOf(d.temporaryBlocks()));
             for (RosterStats.Entry mob : RosterStats.ALL) {
                 p.setProperty("mob." + mob.id() + ".enabled", String.valueOf(d.mobEnabled(mob.id())));
                 p.setProperty("mob." + mob.id() + ".spawnChance", String.valueOf(d.spawnChance(mob.id())));
@@ -62,6 +66,7 @@ final class FabricConfig implements TeemingConfig.Source {
                            below 1 it thins natural spawns, above 1 it raises the local caps)
                          endMainIslandAfterDragon: true keeps the main island's End mobs away until the dragon has been killed
                          fieldguide.killsToReveal: 1..100, kills of a mob that reveal its tell, counter, drops and looks in the Field Guide
+                         griefing.temporary_blocks: false stops every mob placing even temporary blocks (the Gloomweaver raises no walls)
                          mob.<id>.enabled: false stops that mob's natural spawns (eggs and commands still work)
                          mob.<id>.spawnChance: 0..1, the chance a natural spawn that passed every other rule goes ahead""");
             } catch (IOException e) {
@@ -93,6 +98,11 @@ final class FabricConfig implements TeemingConfig.Source {
     @Override
     public int killsToReveal() {
         return killsToReveal;
+    }
+
+    @Override
+    public boolean temporaryBlocks() {
+        return temporaryBlocks;
     }
 
     @Override

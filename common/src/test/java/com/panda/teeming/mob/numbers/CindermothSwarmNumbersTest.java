@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The Cindermoth Swarm's numbers, written out as plain values: HP 10, a burn of 1 a second (attack 1), Arm 0, 1.0 x 1.0,
- * no tell; it seeks the brightest light within 12 blocks, and a light on the ground holds it 200 ticks; soul sand valley
+ * a 12 t flare before it engulfs; it seeks the brightest light within 12 blocks, and a light on the ground holds it 200 ticks; soul sand valley
  * and nether wastes, weight 12, alone; second look Soul Moths; drops ember wing. The rest (40 ticks scattered, a sweep
  * taking double, 0.12 blocks a tick, flames of 19 ticks) is its design. The GameTests check the numbers are applied;
  * this checks they are the right numbers.
@@ -20,6 +20,7 @@ class CindermothSwarmNumbersTest {
         assertEquals(12.0, CindermothSwarm.SEEK_RANGE);
         assertEquals(200, CindermothSwarm.HOVER_TICKS);
         assertEquals(20, CindermothSwarm.BURN_INTERVAL);
+        assertEquals(12, CindermothSwarm.TELL_TICKS);
     }
 
     @Test
@@ -36,6 +37,7 @@ class CindermothSwarmNumbersTest {
         assertEquals(300, CindermothSwarm.GIVE_UP_TICKS);
         assertEquals(0.1, CindermothSwarm.TOUCH_REACH);
         assertTrue(CindermothSwarm.SEEK_SPEED < 0.216, "it drifts slower than a walk, so walking away escapes it");
+        assertTrue(CindermothSwarm.TELL_TICKS >= 8, "a tell of at least 8 t; its burn is 1 x Atk, under 1.5 x, so 8 t is enough");
         assertTrue(CindermothSwarm.FLAME_TICKS < CindermothSwarm.BURN_INTERVAL, "its flames never last long enough to burn on their own");
         assertTrue(CindermothSwarm.GIVE_UP_TICKS > CindermothSwarm.SEEK_RANGE / CindermothSwarm.SEEK_SPEED,
                 "it never gives up a light it could still reach from the edge of its range");
@@ -49,7 +51,7 @@ class CindermothSwarmNumbersTest {
         assertEquals(0.0F, row.armor());
         assertEquals(1.0F, row.width());
         assertEquals(1.0F, row.height());
-        assertEquals(0, row.tellTicks());
+        assertEquals(12, row.tellTicks());
         assertEquals(12, row.weight());
         assertEquals(1, row.groupMin());
         assertEquals(1, row.groupMax());

@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/snapmaw_bloom",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/snapmaw_bloom",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:snapmaw_bloom",

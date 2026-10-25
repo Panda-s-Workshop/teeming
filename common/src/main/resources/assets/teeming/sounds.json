@@ -46,6 +46,22 @@
       }
     ]
   },
+  "ash_jackal.sniff": {
+    "subtitle": "subtitles.teeming.ash_jackal.sniff",
+    "sounds": [
+      {
+        "name": "minecraft:entity.fox.sniff",
+        "type": "event",
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:entity.sniffer.sniffing",
+        "type": "event",
+        "pitch": 1.35,
+        "volume": 0.5
+      }
+    ]
+  },
   "ash_jackal.bite": {
     "subtitle": "subtitles.teeming.ash_jackal.bite",
     "sounds": [
@@ -701,6 +717,23 @@
         "type": "event",
         "pitch": 1.6,
         "volume": 0.4
+      }
+    ]
+  },
+  "cindermoth_swarm.flare": {
+    "subtitle": "subtitles.teeming.cindermoth_swarm.flare",
+    "sounds": [
+      {
+        "name": "minecraft:entity.parrot.fly",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.campfire.crackle",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
       }
     ]
   },

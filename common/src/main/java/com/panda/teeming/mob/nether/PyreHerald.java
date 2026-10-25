@@ -3,10 +3,8 @@ package com.panda.teeming.mob.nether;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
-import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.registry.ModSounds;
-import com.panda.teeming.roster.RosterStats;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
@@ -26,7 +24,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -172,17 +169,17 @@ public class PyreHerald extends TeemingMonster {
 
     // ---- who it rallies -----------------------------------------------------------------------------------------------
 
+    /** Who its rally shells, as data packs can change it: blazes, wither skeletons and every Teeming mob of the Nether. */
+    public static final net.minecraft.tags.TagKey<EntityType<?>> ALLIES =
+            net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, com.panda.teeming.TeemingMod.id("pyre_herald_allies"));
+
     /**
-     * Whether its rally shells {@code e}: a blaze, a wither skeleton, or a Teeming mob of the Nether, but never another
-     * herald (heralds don't shield each other). Players, other mobs and Overworld or End Teeming mobs never count.
+     * Whether its rally shells {@code e}: anything in {@link #ALLIES}, but never another herald (heralds don't shield
+     * each other). Players never count.
      */
     public static boolean rallies(Entity e) {
-        if (e instanceof PyreHerald) return false;
-        EntityType<?> type = e.getType();
-        if (type == EntityTypes.BLAZE || type == EntityTypes.WITHER_SKELETON) return true;
-        if (!(e instanceof TeemingCreature creature)) return false;
-        RosterStats.Entry row = RosterStats.BY_ID.get(creature.mobId());
-        return row != null && row.dim() == RosterStats.Dim.NETHER;
+        if (e instanceof PyreHerald || e instanceof net.minecraft.world.entity.player.Player) return false;
+        return e.is(ALLIES);
     }
 
     /** Every ally within its rally's reach, nearest first. */

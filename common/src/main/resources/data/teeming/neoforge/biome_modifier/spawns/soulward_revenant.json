@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/soulward_revenant",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/soulward_revenant",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:soul_sand_valley"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:soulward_revenant",

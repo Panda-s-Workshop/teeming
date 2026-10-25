@@ -104,6 +104,13 @@ public final class TeemingGameTests {
             String key = ref.value().getDescriptionId();
             if (!lang.has(key)) missing.add(key);
         });
+        // item tags: recipe viewers show their names, and Fabric warns about a tag without one
+        helper.getLevel().registryAccess().lookupOrThrow(Registries.ITEM).getTags().forEach(tag -> {
+            Identifier id = tag.key().location();
+            if (!id.getNamespace().equals(TeemingMod.MODID)) return;
+            String key = "tag.item." + id.getNamespace() + "." + id.getPath().replace('/', '.');
+            if (!lang.has(key)) missing.add(key);
+        });
         helper.getLevel().getServer().getAdvancements().getAllAdvancements().forEach(holder -> {
             if (!holder.id().getNamespace().equals(TeemingMod.MODID)) return;
             holder.value().display().ifPresent(d -> {

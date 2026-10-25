@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/dunefin",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/dunefin",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:dunefin",

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/ash_jackal",
+      [
+        "minecraft:soul_sand_valley"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:ash_jackal",
+      "weight": 4,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 2,
+        "max_inclusive": 3
+      }
+    }
+  ]
+}

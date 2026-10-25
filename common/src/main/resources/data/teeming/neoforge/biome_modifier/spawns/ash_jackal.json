@@ -1,6 +1,24 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/ash_jackal",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/ash_jackal",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:nether_wastes",
+              "minecraft:soul_sand_valley"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:ash_jackal",

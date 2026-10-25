@@ -1,18 +1,25 @@
 package com.panda.teeming.spawn;
 
 import com.panda.teeming.TeemingConfig;
+import com.panda.teeming.TeemingMod;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Entry;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -20,6 +27,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -29,20 +37,31 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The Teeming spawner: places the mobs biome spawn lists can't, on the server tick. Each player gets one
- * attempt every 200 ticks in the Nether and the End: pick a registered mob with a spawner rule for this dimension
- * (weighted), a column 24–64 blocks away, the rule's position in it, then the same predicate as natural spawns
- * ({@link TeemingSpawns#check}: config, light, local caps), under the vanilla per-player category cap.
+ * The Teeming spawner: places the mobs biome spawn lists can't, on the server tick. Each player gets one attempt every
+ * 200 ticks in the Nether and the End. An attempt chooses the spot first: a column 24–64 blocks away, then every
+ * spawner rule's spot in it, and in a share-capped biome the spots of the biome-list monsters that live there. It then
+ * picks, by weight, among the mobs whose rule accepted a spot (a structure's spot goes to that structure's mobs), and
+ * spawns it if the natural-spawn predicate agrees ({@link TeemingSpawns#check}: config, light, local caps), under the
+ * vanilla per-player category cap. Spawns in the open world (not a structure) also keep the Teeming share of the
+ * monsters round the player at the target ({@link SpawnTable#TARGET_SHARE}).
  */
 public final class TeemingSpawner {
     public static final int EVERY = 200;
+    /** While the player stands in a share-capped biome, open-world spawns are also tried this often. */
+    public static final int CAPPED_EVERY = 50;
     public static final int MIN_DISTANCE = 24;
     public static final int MAX_DISTANCE = 64;
+    /** Columns an attempt tries until one holds a spot some mob accepts. */
+    public static final int COLUMNS = 4;
+    /** The share cap counts the monsters within this many blocks of the player (vanilla's despawn range). */
+    public static final int SHARE_RADIUS = 128;
     /** The End's main island region: vanilla's {@code the_end} biome covers 64 chunks around the origin. */
     public static final int MAIN_ISLAND_RADIUS = 1024;
     /** Empty blocks under a spot that make it a drop into the void (underside and void-air rules). */
     public static final int VOID_GAP = 4;
     private static final int SCAN = 24;
+    /** Biomes whose Teeming monsters only this spawner places, under the share cap (default: {@link SpawnTable#SHARE_CAPPED}). */
+    public static final TagKey<Biome> SHARE_CAPPED = TagKey.create(Registries.BIOME, TeemingMod.id("share_capped"));
 
     /** Where a spawner mob appears. The rule names are the {@code spawner} values in the roster. */
     public enum Rule {
@@ -58,6 +77,19 @@ public final class TeemingSpawner {
         public static @Nullable Rule of(String name) {
             if (name.isEmpty()) return null;
             return valueOf(name.toUpperCase(Locale.ROOT));
+        }
+
+        /** A structure's own spot: when an attempt finds one, only that structure's mobs may take it. */
+        public boolean structure() {
+            return this == FORTRESS || this == BASTION;
+        }
+
+        /**
+         * A spot in the open Nether: its spawns count toward the biome's Teeming share, so they obey the share cap. The
+         * End aims at a different mix and structures keep their own lists, so neither does.
+         */
+        public boolean shared() {
+            return this == LAVA_SEA_AIR || this == FUNGUS_CAP;
         }
 
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
@@ -78,7 +110,7 @@ public final class TeemingSpawner {
         }
 
         /** A spot of this rule in the column at x, z near height {@code y}, or null. */
-        @Nullable BlockPos find(ServerLevel level, int x, int y, int z, RandomSource random) {
+        public @Nullable BlockPos find(ServerLevel level, int x, int y, int z, RandomSource random) {
             int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
             boolean empty = top <= level.getMinY();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
@@ -110,6 +142,21 @@ public final class TeemingSpawner {
         }
     }
 
+    /**
+     * A mob and the spot found for it. {@code rule} null: a biome-list monster placed in a share-capped biome, standing
+     * in for that biome's spawn list.
+     */
+    public record Candidate(Entry mob, EntityType<? extends Mob> type, BlockPos pos, @Nullable Rule rule) {
+        public boolean structure() {
+            return rule != null && rule.structure();
+        }
+
+        /** Counts toward the biome's Teeming share, so the share cap applies. */
+        public boolean shared() {
+            return rule == null || rule.shared();
+        }
+    }
+
     private TeemingSpawner() {}
 
     // ---- the tick -------------------------------------------------------------------------------------------------
@@ -120,42 +167,153 @@ public final class TeemingSpawner {
         if (level.dimension() != Level.NETHER && level.dimension() != Level.END) return;
         List<ServerPlayer> players = level.players();
         for (ServerPlayer player : players) {
-            if (player.isSpectator() || (level.getGameTime() + player.getId()) % EVERY != 0) continue;
-            attempt(level, player, level.getRandom());
+            if (player.isSpectator()) continue;
+            long time = level.getGameTime() + player.getId();
+            if (time % EVERY == 0) attempt(level, player, level.getRandom(), false);
+            else if (time % CAPPED_EVERY == 0 && level.getBiome(player.blockPosition()).is(SHARE_CAPPED)) attempt(level, player, level.getRandom(), true);
         }
     }
 
-    /** One attempt near the player; returns the spawned mob or null. Public as a test and command hook. */
+    /** One attempt near the player, every rule; returns the spawned mob or null. Public as a test and command hook. */
     public static @Nullable Mob attempt(ServerLevel level, ServerPlayer player, RandomSource random) {
-        List<Entry> candidates = new ArrayList<>();
-        int total = 0;
+        return attempt(level, player, random, false);
+    }
+
+    /** One attempt near the player; {@code sharedOnly} leaves out structure and End rules. */
+    public static @Nullable Mob attempt(ServerLevel level, ServerPlayer player, RandomSource random, boolean sharedOnly) {
+        for (int i = 0; i < COLUMNS; i++) {
+            double angle = random.nextDouble() * Mth.TWO_PI;
+            double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
+            int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
+            int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
+            if (!level.hasChunkAt(new BlockPos(x, player.getBlockY(), z))) continue;
+            List<Candidate> found = candidatesAt(level, x, player.getBlockY(), z, random, sharedOnly);
+            if (found.isEmpty()) continue;
+            Candidate pick = pick(found, random);
+            MobCategory category = TeemingSpawns.category(pick.mob());
+            if (pick.shared()) {
+                // the share cap keeps Teeming to its share on top of vanilla's mobs, so the category cap is lifted by that share
+                if (!underCategoryCap(level, player, category, 1.0 / (1.0 - SpawnTable.TARGET_SHARE))) return null;
+                if (category == MobCategory.MONSTER && !shareAllows(level, player)) return null;
+            } else if (!underCategoryCap(level, player, category, 1.0)) {
+                return null;
+            }
+            return spawn(level, pick.mob(), pick.type(), pick.pos(), random);
+        }
+        return null;
+    }
+
+    /**
+     * Every mob that may take a spot in the column at x, z near height {@code y}, with that spot: the spot first, then
+     * only the mobs whose rule accepts it. A mob placed only by the spawner goes only where its biome tag says, when the
+     * tag holds anything. Public for the GameTests.
+     */
+    public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly) {
+        List<Candidate> out = new ArrayList<>();
+        Map<Rule, Optional<BlockPos>> spots = new EnumMap<>(Rule.class);
         for (Entry mob : RosterStats.ALL) {
             Rule rule = Rule.of(mob.spawner());
-            if (rule == null || rule.dimension != level.dimension() || TeemingSpawns.type(mob).isEmpty()) continue;
-            candidates.add(mob);
-            total += Math.max(1, mob.weight());
+            if (rule == null || rule.dimension != level.dimension() || (sharedOnly && !rule.shared())) continue;
+            Optional<EntityType<? extends Mob>> type = TeemingSpawns.type(mob);
+            if (type.isEmpty()) continue;
+            BlockPos pos = spots.computeIfAbsent(rule, r -> Optional.ofNullable(r.find(level, x, y, z, random))).orElse(null);
+            if (pos == null) continue;
+            if (!mob.biomeSpawns() && !inTagOrUntagged(level, mob, pos)) continue;
+            out.add(new Candidate(mob, type.get(), pos, rule));
         }
-        if (candidates.isEmpty()) return null;
-        int roll = random.nextInt(total);
-        Entry mob = candidates.getLast();
-        for (Entry c : candidates) {
-            roll -= Math.max(1, c.weight());
-            if (roll < 0) {
-                mob = c;
-                break;
-            }
-        }
-        EntityType<? extends Mob> type = TeemingSpawns.type(mob).orElseThrow();
-        MobCategory category = TeemingSpawns.category(mob);
-        if (!underCategoryCap(level, player, category)) return null;
-        double angle = random.nextDouble() * Mth.TWO_PI;
-        double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
-        int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
-        int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
-        if (!level.hasChunkAt(new BlockPos(x, 0, z))) return null;
-        BlockPos pos = Rule.of(mob.spawner()).find(level, x, player.getBlockY(), z, random);
-        return pos == null ? null : spawn(level, mob, type, pos, random);
+        shareCappedCandidates(level, x, y, z, random, out);
+        return out;
     }
+
+    /** A spot in the column whose biome is share-capped, with its biome. */
+    private record Spot(BlockPos pos, Holder<Biome> biome) {}
+
+    /**
+     * The biome-list monsters of a share-capped biome: each one whose tag holds the spot's biome, at a random spot in
+     * the column that its placement accepts and that has room for it.
+     */
+    private static void shareCappedCandidates(ServerLevel level, int x, int y, int z, RandomSource random, List<Candidate> out) {
+        List<Spot> column = null;
+        for (Entry mob : RosterStats.ALL) {
+            if (!mob.biomeSpawns() || mob.passive()) continue;
+            Optional<EntityType<? extends Mob>> type = TeemingSpawns.type(mob);
+            if (type.isEmpty()) continue;
+            if (column == null) column = cappedColumn(level, x, y, z);
+            if (column.isEmpty()) return;
+            TagKey<Biome> home = TeemingSpawns.tag(mob.id());
+            List<BlockPos> fit = new ArrayList<>();
+            for (Spot spot : column) {
+                if (!spot.biome().is(home) || !TeemingSpawns.placeOk(mob, type.get(), level, spot.pos())) continue;
+                if (!level.noCollision(type.get().getSpawnAABB(spot.pos().getX() + 0.5, spot.pos().getY(), spot.pos().getZ() + 0.5))) continue;
+                fit.add(spot.pos());
+            }
+            if (!fit.isEmpty()) out.add(new Candidate(mob, type.get(), fit.get(random.nextInt(fit.size())), null));
+        }
+    }
+
+    /** The open (air or fluid) blocks of the column near {@code y} whose biome is share-capped. */
+    private static List<Spot> cappedColumn(ServerLevel level, int x, int y, int z) {
+        List<Spot> out = new ArrayList<>();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
+        for (int dy = -SCAN; dy <= SCAN; dy++) {
+            pos.setY(y + dy);
+            if (pos.getY() <= level.getMinY() || pos.getY() >= level.getMaxY()) continue;
+            if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) continue;
+            Holder<Biome> biome = level.getBiome(pos);
+            if (biome.is(SHARE_CAPPED)) out.add(new Spot(pos.immutable(), biome));
+        }
+        return out;
+    }
+
+    /** Weighted pick among the candidates (weight 0 counts as 1); a structure's spot goes to that structure's mobs. */
+    public static Candidate pick(List<Candidate> found, RandomSource random) {
+        List<Candidate> pool = found.stream().anyMatch(Candidate::structure) ? found.stream().filter(Candidate::structure).toList() : found;
+        int total = 0;
+        for (Candidate c : pool) total += Math.max(1, c.mob().weight());
+        int roll = random.nextInt(total);
+        for (Candidate c : pool) {
+            roll -= Math.max(1, c.mob().weight());
+            if (roll < 0) return c;
+        }
+        return pool.getLast();
+    }
+
+    /** Whether the spot's biome is in the mob's tag; an empty tag places it wherever its rule fits. */
+    private static boolean inTagOrUntagged(ServerLevel level, Entry mob, BlockPos pos) {
+        TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
+        int size = level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag).map(set -> set.size()).orElse(0);
+        return size == 0 || level.getBiome(pos).is(tag);
+    }
+
+    // ---- the share cap -------------------------------------------------------------------------------------------
+
+    /** The monsters within {@link #SHARE_RADIUS} of the spot: {Teeming, other}. Public for the GameTests. */
+    public static int[] monstersAround(ServerLevel level, BlockPos center) {
+        int[] count = new int[2];
+        AABB around = new AABB(center).inflate(SHARE_RADIUS);
+        for (Mob mob : level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == MobCategory.MONSTER)) {
+            boolean teeming = mob.getType().builtInRegistryHolder().key().identifier().getNamespace().equals(TeemingMod.MODID);
+            count[teeming ? 0 : 1]++;
+        }
+        return count;
+    }
+
+    private static boolean shareAllows(ServerLevel level, ServerPlayer player) {
+        int[] count = monstersAround(level, player.blockPosition());
+        return shareAllows(count[0], count[1]);
+    }
+
+    /**
+     * The share cap: one more Teeming monster only if that brings the Teeming share of the monsters around nearer the
+     * target. With no other monster around none is added, and the share settles on the whole number nearest the target.
+     */
+    public static boolean shareAllows(int teeming, int others) {
+        double now = teeming + others == 0 ? 0.0 : (double) teeming / (teeming + others);
+        double next = (teeming + 1.0) / (teeming + others + 1.0);
+        return Math.abs(next - SpawnTable.TARGET_SHARE) < Math.abs(now - SpawnTable.TARGET_SHARE);
+    }
+
+    // ---- spawning ------------------------------------------------------------------------------------------------
 
     /** Spawns the mob at a spot its rule found, if the natural-spawn predicate agrees. */
     public static @Nullable Mob spawn(ServerLevel level, Entry mob, EntityType<? extends Mob> type, BlockPos pos, RandomSource random) {
@@ -169,10 +327,11 @@ public final class TeemingSpawner {
         return created;
     }
 
-    /** The vanilla per-player cap of the category (70 monsters, 10 creatures) within the despawn range. */
-    static boolean underCategoryCap(ServerLevel level, ServerPlayer player, MobCategory category) {
+    /** The vanilla per-player cap of the category (70 monsters, 10 creatures) within the despawn range, times {@code lift}. */
+    static boolean underCategoryCap(ServerLevel level, ServerPlayer player, MobCategory category, double lift) {
         AABB around = player.getBoundingBox().inflate(category.getDespawnDistance());
-        return level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == category).size() < category.getMaxInstancesPerChunk();
+        int count = level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == category).size();
+        return count < category.getMaxInstancesPerChunk() * lift;
     }
 
     // ---- the main-island gate ------------------------------------------------------------------------------------

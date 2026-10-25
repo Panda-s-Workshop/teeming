@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/cindermoth_swarm",
+      [
+        "minecraft:soul_sand_valley"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:cindermoth_swarm",
+      "weight": 4,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

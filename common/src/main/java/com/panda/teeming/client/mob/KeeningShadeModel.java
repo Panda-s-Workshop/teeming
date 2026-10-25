@@ -5,12 +5,13 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 
 /**
- * Keening Shade: it drifts a hand's breadth above the ground, bobbing slowly, its ragged shroud and the veil down its
- * back swaying a beat behind; moving, it leans in and the tatters trail. Tell: it draws breath: its chest caves in, its
- * shoulders hunch and its arms draw back, its head tips back and the jaw parts on the soul glow in its throat, and it
- * rises a little as the breath fills it. Wail: the jaw drops wide and long, its head thrusts forward and shakes, its
- * arms fling out with their torn drapes hanging beneath like ragged sails, and the shroud and veil are blown back.
- * Voiceless: it sinks to the ground, head bowed and turned aside, the jaw hanging slack and crooked, arms limp.
+ * Keening Shade: it drifts clear of the ground, bobbing slowly, hunched with its head hung forward on a leaning neck,
+ * its trailing shroud and the veil down its back swaying a beat behind; moving, it leans in and the tatters stream out
+ * behind. Tell: it draws breath: its chest caves in, its shoulders hunch and its arms draw back, its head tips back and
+ * the jaw parts on the soul glow in its throat, and it rises a little as the breath fills it. Wail: the jaw drops wide
+ * and long, its head comes up to face ahead and shakes, its arms fling out with their torn drapes hanging beneath like
+ * ragged sails, and the shroud and veil are blown back. Voiceless: it sinks until its tatters drag on the ground, head
+ * bowed and turned aside, the jaw hanging slack and crooked, arms limp.
  */
 public class KeeningShadeModel extends TeemingModel {
     /** How far it hangs and bobs above its rest height, in pixels. */
@@ -94,7 +95,7 @@ public class KeeningShadeModel extends TeemingModel {
             body.y -= 1.0F * fill * e;                                          // and it rises a little
             body.xRot -= 0.1F * k * e;
             neck.xRot -= 0.15F * k * e;
-            head.xRot = Mth.lerp(k * e, head.xRot, -0.55F - 0.1F * fill);       // head tipped back
+            head.xRot = Mth.lerp(k * e, head.xRot, -0.85F - 0.1F * fill);       // head tipped back past the neck's lean
             head.yRot *= 1.0F - k;
             head.zRot = 0.0F;
             jaw.xRot = 0.04F + (0.3F + 0.15F * fill) * k * e;                   // the jaw parts on the glow in its throat
@@ -117,8 +118,7 @@ public class KeeningShadeModel extends TeemingModel {
             jaw.yScale = 1.0F + 0.45F * a;                                      // ...and long
             jaw.zScale = 1.0F + 0.1F * a;
             mouth(1.0F, 1.35F * a);                                             // the long, gaping mouth of the keen
-            neck.xRot += 0.2F * a;
-            head.xRot = Mth.lerp(a, head.xRot, 0.15F) + shake;                  // thrust forward, shaking
+            head.xRot = Mth.lerp(a, head.xRot, -0.3F) + shake;                  // up to face ahead, shaking
             head.yRot *= 1.0F - a;
             head.zRot = shake;
             chest.zScale = 1.0F + 0.15F * a;
@@ -142,7 +142,7 @@ public class KeeningShadeModel extends TeemingModel {
             float k = smooth(tm / 8.0F) * envelope(s.progress, 0.0F, 0.05F);
             body.y += (SINK - bob * BOB * 0.8F) * k;                            // sunk to the ground, hardly bobbing
             body.xRot += 0.15F * k;
-            head.xRot = Mth.lerp(k, head.xRot, 0.6F);                           // head bowed and turned aside
+            head.xRot = Mth.lerp(k, head.xRot, 0.35F);                          // head bowed and turned aside
             head.yRot = Mth.lerp(k, head.yRot, 0.25F);
             head.zRot = 0.18F * k;
             jaw.xRot = 0.04F + 0.45F * k;                                       // the jaw hanging slack, crooked

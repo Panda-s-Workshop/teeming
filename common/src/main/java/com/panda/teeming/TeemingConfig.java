@@ -18,6 +18,9 @@ public final class TeemingConfig {
 
         /** Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide (1..100). */
         int killsToReveal();
+
+        /** False: no mob places even temporary blocks (the Gloomweaver raises no walls and only bites). */
+        boolean temporaryBlocks();
     }
 
     public static final Source DEFAULTS = new Source() {
@@ -26,6 +29,7 @@ public final class TeemingConfig {
         @Override public double spawnChance(String id) { return 1.0; }
         @Override public boolean endMainIslandAfterDragon() { return true; }
         @Override public int killsToReveal() { return 3; }
+        @Override public boolean temporaryBlocks() { return true; }
     };
 
     private static Source source = DEFAULTS;
@@ -54,5 +58,9 @@ public final class TeemingConfig {
 
     public static int killsToReveal() {
         return Math.clamp(source.killsToReveal(), 1, 100);
+    }
+
+    public static boolean temporaryBlocks() {
+        return source.temporaryBlocks();
     }
 }

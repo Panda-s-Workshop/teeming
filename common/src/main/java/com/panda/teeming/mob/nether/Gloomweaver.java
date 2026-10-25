@@ -1,6 +1,7 @@
 package com.panda.teeming.mob.nether;
 
 import com.mojang.serialization.Codec;
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
@@ -71,9 +72,9 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>The walls are real blocks (warped wart, or nether wart for the Crimson Weaver), so that they truly block paths,
  * sight and projectiles for every mob and player. They are kept by {@link Walls}, a self-contained section: placed into
- * air only, never into anything living, only where the mob griefing rule allows; every block recorded and removed when
- * its wall ends, when the weaver dies or leaves the level, and, for any still standing after a save, on its first tick
- * after loading. It never leaves a block behind.
+ * air only, never into anything living, only where the server's temporary-blocks setting and the mob griefing rule
+ * allow; every block recorded and removed when its wall ends, when the weaver dies or leaves the level, and, for any
+ * still standing after a save, on its first tick after loading. It never leaves a block behind.
  */
 public class Gloomweaver extends TeemingMonster {
     /** At rest or walking, the spin (tell), the weave as the wall goes up, its threads snapped. */
@@ -208,7 +209,7 @@ public class Gloomweaver extends TeemingMonster {
 
     /**
      * True when it may start spinning a wall at {@code target} now: idle (not spinning, weaving or snapped), ready, on
-     * the ground, fewer than 2 walls up, the mob griefing rule on, and its target 4 to 12 blocks across the ground and
+     * the ground, fewer than 2 walls up, temporary blocks and the mob griefing rule both allowed, and its target 4 to 12 blocks across the ground and
      * in sight.
      */
     public boolean canSpin(@Nullable LivingEntity target) {
@@ -217,9 +218,13 @@ public class Gloomweaver extends TeemingMonster {
         return d >= SPIN_MIN && d <= SPIN_RANGE && getSensing().hasLineOfSight(target);
     }
 
-    /** Whether it may raise another wall at all: fewer than 2 up, and the mob griefing rule lets mobs change blocks. */
+    /**
+     * Whether it may raise another wall at all: fewer than 2 up, the server's temporary-blocks setting on, and the mob
+     * griefing rule letting mobs change blocks. Otherwise it never spins and only bites.
+     */
     private boolean mayWeave() {
-        return level() instanceof ServerLevel level && walls.size() < MAX_WALLS && Services.PLATFORM.canGrief(level, this);
+        return level() instanceof ServerLevel level && walls.size() < MAX_WALLS && TeemingConfig.temporaryBlocks()
+                && Services.PLATFORM.canGrief(level, this);
     }
 
     @Override
@@ -244,7 +249,7 @@ public class Gloomweaver extends TeemingMonster {
 
     /**
      * Starts the spin at {@code target}: 20 ticks, then the wall. True if it started. Ignores the cooldown and the
-     * range, but never starts with 2 walls up or with the mob griefing rule off. Public as a test hook.
+     * range, but never starts with 2 walls up, with temporary blocks turned off, or with the mob griefing rule off. Public as a test hook.
      */
     public boolean spin(@Nullable LivingEntity target) {
         if (level().isClientSide() || !core().idle() || !mayWeave()) return false;
@@ -299,7 +304,7 @@ public class Gloomweaver extends TeemingMonster {
 
     /**
      * Raises a wall across the path to {@code target} now (see {@link #wallCells}): every block of it that can go into
-     * air. Null if it may not (2 walls up, the mob griefing rule off, the step cancelled) or no block could go in.
+     * air. Null if it may not (2 walls up, temporary blocks or the mob griefing rule off, the step cancelled) or no block could go in.
      * Public as a test hook.
      */
     public Walls.@Nullable Wall raiseWall(ServerLevel level, LivingEntity target) {

@@ -88,7 +88,7 @@ public final class MobRenderers {
         out.register(ModMobs.SOULFIRE_SEER.get(), ctx -> new TeemingRenderer<>(ctx, new SoulfireSeerModel(ctx.bakeLayer(CreatureLayers.SOULFIRE_SEER)), "soulfire_seer",
                 Set.of("base", "bone_seer"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.CINDERMOTH_SWARM.get(), ctx -> new TeemingRenderer<>(ctx, new CindermothSwarmModel(ctx.bakeLayer(CreatureLayers.CINDERMOTH_SWARM)), "cindermoth_swarm",
-                Set.of("base", "soul_moths"), 0.3F, 1.0F, 1, false));
+                Set.of("base", "soul_moths"), 0.3F, 1.0F, 2, false));
         out.register(ModMobs.SOULWARD_REVENANT.get(), ctx -> new TeemingRenderer<>(ctx, new SoulwardRevenantModel(ctx.bakeLayer(CreatureLayers.SOULWARD_REVENANT)), "soulward_revenant",
                 Set.of("base", "gilded_revenant"), 0.55F, 1.0F, 4, true));
         out.register(ModMobs.BASALT_BEHEMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new BasaltBehemothModel(ctx.bakeLayer(CreatureLayers.BASALT_BEHEMOTH)), "basalt_behemoth",

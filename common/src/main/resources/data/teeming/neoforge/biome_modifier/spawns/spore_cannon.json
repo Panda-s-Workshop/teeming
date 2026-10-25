@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/spore_cannon",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/spore_cannon",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:spore_cannon",

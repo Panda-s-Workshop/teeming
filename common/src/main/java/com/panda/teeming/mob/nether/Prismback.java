@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  * it home). Its belly is bare: a shot rising into it from below its belly line is not turned.
  *
  * <p>Every 120 ticks its prisms flash for 20 ticks. The tell: for the 10 ticks before, they glimmer, with a crystalline
- * chime and a shower of sparks; then they blaze white-violet and it braces, standing still and biting nothing. A melee
+ * chime and a shower of sparks; then they blaze white-hot and it braces, standing still and biting nothing. A melee
  * blow during the flash is halved, and the other half goes back to the attacker as thorns damage.
  *
  * <p>Counter: hold your blows while it shines. A flash that turns nothing (no blow, no shot) burns its light out: for
@@ -75,10 +75,10 @@ public class Prismback extends TeemingMonster {
     /** What its prisms turn; packs extend the tag. */
     public static final TagKey<EntityType<?>> REFLECTABLE = TagKey.create(Registries.ENTITY_TYPE, TeemingMod.id("reflectable"));
 
-    /** The flash's white-violet: kept well off the weak-point gold, since a flash means "stop hitting". */
-    public static final int FLASH_COLOR = 0xEDE4FF;
+    /** The flash's warm white-hot: kept well off the weak-point gold, since a flash means "stop hitting". */
+    public static final int FLASH_COLOR = 0xFFF3E9;
     private static final DustParticleOptions FLASH_DUST = new DustParticleOptions(FLASH_COLOR, 0.8F);
-    private static final DustParticleOptions SPARK_DUST = new DustParticleOptions(0xC8B4FF, 0.7F);
+    private static final DustParticleOptions SPARK_DUST = new DustParticleOptions(0xFFE6D2, 0.7F);
 
     private static final int GLOW_REST = 0, GLOW_GLIMMER = 1, GLOW_FLASH = 2, GLOW_SPENT = 3;
 

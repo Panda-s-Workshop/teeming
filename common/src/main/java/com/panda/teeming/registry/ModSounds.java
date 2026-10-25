@@ -13,6 +13,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_AMBIENT = sound("ash_jackal.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_HURT = sound("ash_jackal.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_DEATH = sound("ash_jackal.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_SNIFF = sound("ash_jackal.sniff");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_BITE = sound("ash_jackal.bite");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_SNATCH = sound("ash_jackal.snatch");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_CACKLE = sound("ash_jackal.cackle");
@@ -54,6 +55,7 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_HURT = sound("cindermoth_swarm.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_DEATH = sound("cindermoth_swarm.death");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_DRAWN = sound("cindermoth_swarm.drawn");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_FLARE = sound("cindermoth_swarm.flare");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_BURN = sound("cindermoth_swarm.burn");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_LURED = sound("cindermoth_swarm.lured");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_BORED = sound("cindermoth_swarm.bored");

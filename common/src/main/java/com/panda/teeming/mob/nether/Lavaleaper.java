@@ -545,8 +545,16 @@ public class Lavaleaper extends TeemingMonster {
         }
     }
 
+    /** Fishing rods from any mod: the common rod tag both loaders share, or anything built on the vanilla item. */
+    private static final net.minecraft.tags.TagKey<net.minecraft.world.item.Item> RODS = net.minecraft.tags.TagKey.create(
+            net.minecraft.core.registries.Registries.ITEM, net.minecraft.resources.Identifier.fromNamespaceAndPath("c", "tools/fishing_rod"));
+
+    private static boolean rod(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(RODS) || stack.getItem() instanceof FishingRodItem;
+    }
+
     private static boolean holdsRod(Player p) {
-        return p.getMainHandItem().getItem() instanceof FishingRodItem || p.getOffhandItem().getItem() instanceof FishingRodItem;
+        return rod(p.getMainHandItem()) || rod(p.getOffhandItem());
     }
 
     /** The bobber hooked on it now, or null (server side). */

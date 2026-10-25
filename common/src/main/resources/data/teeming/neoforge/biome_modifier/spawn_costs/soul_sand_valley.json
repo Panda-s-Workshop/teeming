@@ -1,0 +1,19 @@
+{
+  "type": "neoforge:add_spawn_costs",
+  "biomes": [
+    "minecraft:soul_sand_valley"
+  ],
+  "entity_types": [
+    "teeming:ash_jackal",
+    "teeming:ossuary_wyrm",
+    "teeming:keening_shade",
+    "teeming:soulfire_seer",
+    "teeming:cindermoth_swarm",
+    "teeming:soulward_revenant",
+    "teeming:lavaleaper"
+  ],
+  "spawn_cost": {
+    "charge": 0.7,
+    "energy_budget": 0.15
+  }
+}

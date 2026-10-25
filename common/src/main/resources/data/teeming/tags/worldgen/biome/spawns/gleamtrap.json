@@ -1,3 +1,6 @@
 {
-  "values": []
+  "values": [
+    "minecraft:crimson_forest",
+    "minecraft:warped_forest"
+  ]
 }

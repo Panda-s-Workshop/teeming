@@ -26,7 +26,7 @@ class PrismbackNumbersTest {
         assertEquals(10, Prismback.GLIMMER_TICKS);
         assertEquals(40, Prismback.SPENT_TICKS);
         assertEquals(0.2, Prismback.BELLY);
-        assertEquals(0xEDE4FF, Prismback.FLASH_COLOR);
+        assertEquals(0xFFF3E9, Prismback.FLASH_COLOR);
     }
 
     @Test
@@ -34,7 +34,7 @@ class PrismbackNumbersTest {
         // a tell lasts at least 8 ticks; the glimmer, the flash and a spent spell all fit inside one cycle
         assertTrue(Prismback.FLASH_TICKS >= 8 && Prismback.GLIMMER_TICKS >= 8);
         assertTrue(Prismback.GLIMMER_TICKS + Prismback.FLASH_TICKS + Prismback.SPENT_TICKS < Prismback.FLASH_EVERY);
-        // the flash's white-violet is no weak-point gold (#ffd36b): its blue channel is high, gold's is low
+        // the flash's white-hot is no weak-point gold (#ffd36b): its blue channel is high, gold's is low
         assertTrue((Prismback.FLASH_COLOR & 0xFF) > 0xC0);
     }
 }

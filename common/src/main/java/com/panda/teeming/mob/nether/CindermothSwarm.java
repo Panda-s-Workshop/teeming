@@ -42,8 +42,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Cindermoth Swarm: a drifting cloud of small glowing moths, one mob drawn as many. It is drawn to light and to nothing
  * else. It drifts slowly toward the brightest light within 12 blocks: a light-giving item someone holds, or one lying
- * on the ground. Whatever it touches burns: its attack damage (1) as fire, once a second, with flames showing on the
- * victim while it does.
+ * on the ground. Reaching whoever carries its light, it flares, then engulfs them: while it engulfs, whatever it
+ * touches burns, its attack damage (1) as fire, once a second, with flames showing on the victim while it does.
  *
  * <p>What gives light: any item that places a block which gives light (torches, lanterns, glowstone, shroomlights, sea
  * lanterns, campfires, froglights, end rods...), as bright as that block. Brightest wins; between two equally bright
@@ -56,18 +56,26 @@ import org.jspecify.annotations.Nullable;
  * scatters the cloud for 40 ticks: it is thrown back, burns no one and forgets its light. Payoff: the swarm loses its
  * light and its burn while lured or scattered. A cloud is easy to cut: a sweeping sword swing takes double.
  *
- * <p>No tell: it simply drifts at the light, its moths streaming out ahead of the cloud. It never places or breaks a
- * block, and it never takes the light: a dropped torch stays where it lies.
+ * <p>Tell: the flare. Touching the one it seeks, it stops where it is for 12 ticks: the moths pull together into a
+ * tight knot and glow brighter, with a rising flutter and ember sparks. Nothing burns during the flare. Then it
+ * engulfs them, if they are still in it; stepped out of it, it drifts after them and flares again when it touches them.
+ * It never places or breaks a block, and it never takes the light: a dropped torch stays where it lies.
  */
 public class CindermothSwarm extends TeemingMonster {
-    /** IDLE drifting, SEEK flying at a light, HOVER circling a light on the ground, ENGULF wrapped round a carrier, SCATTER after a blow. */
-    public enum Step implements Phase { IDLE, SEEK, HOVER, ENGULF, SCATTER }
+    /**
+     * IDLE drifting, SEEK flying at a light, HOVER circling a light on the ground, TELL the flare before it engulfs,
+     * ENGULF wrapped round a carrier, SCATTER after a blow.
+     */
+    public enum Step implements Phase { IDLE, SEEK, HOVER, TELL, ENGULF, SCATTER }
+
+    /** The flare before it engulfs: 0.6 s. */
+    public static final int TELL_TICKS = 12;
 
     /** It seeks the brightest light within this many blocks of the middle of the cloud. */
     public static final double SEEK_RANGE = 12.0;
     /** A light lying on the ground holds it this long, circling it; then that light bores it for good. */
     public static final int HOVER_TICKS = 200;
-    /** Whatever it touches burns once every this many ticks: its attack damage, as fire. */
+    /** While it engulfs, whatever it touches burns once every this many ticks: its attack damage, as fire. */
     public static final int BURN_INTERVAL = 20;
     /**
      * Flames set on whoever it burns. Vanilla fire hurts only when its timer passes a multiple of 20, so 19 ticks of
@@ -233,13 +241,14 @@ public class CindermothSwarm extends TeemingMonster {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         setNoGravity(true);
+        core().setStage(core().in(Step.TELL) ? 1 : 0);                 // the flare's brighter glow, and only the flare's
         if (burnCooldown > 0) burnCooldown--;
         if (core().in(Step.SCATTER)) {
             steerSelf();
             setDeltaMovement(getDeltaMovement().scale(0.85));      // the moths drift apart, slowing
             return;
         }
-        burnTouching(level);
+        if (core().in(Step.ENGULF)) burnTouching(level);
         if (core().in(Step.HOVER)) {
             hover(level);
             return;
@@ -247,6 +256,10 @@ public class CindermothSwarm extends TeemingMonster {
         if ((light != null && !live(light)) || (level.getGameTime() + getId()) % LOOK_TICKS == 0) choose(level);
         if (light == null) return;
         steerSelf();
+        if (core().in(Step.TELL)) {
+            flareTick(level);
+            return;
+        }
         if (light.item() != null) {
             seekItem(level, light.item());
         } else {
@@ -261,7 +274,7 @@ public class CindermothSwarm extends TeemingMonster {
             light = null;
             chasing = 0;
             super.setTarget(null);
-            if (core().in(Step.SEEK) || core().in(Step.ENGULF)) core().end();
+            if (core().in(Step.SEEK) || core().in(Step.TELL) || core().in(Step.ENGULF)) core().end();
             return;
         }
         if (pick.same(light)) {
@@ -303,12 +316,45 @@ public class CindermothSwarm extends TeemingMonster {
         fly(over, SEEK_SPEED);
     }
 
-    /** Flies at a carrier's chest; wrapped round them, it is engulfing them. */
+    /**
+     * Flies at a carrier's chest. Touching them it flares, and only after the flare does it engulf them; engulfing, it
+     * stays wrapped round them, and seeks them again once they are out of it.
+     */
     private void seekCarrier(ServerLevel level, LivingEntity carrier) {
         boolean touching = touches(carrier);
-        Step want = touching ? Step.ENGULF : Step.SEEK;
-        if (!core().in(want) && !startPhase(want, 0, carrier)) return;
+        if (core().in(Step.ENGULF) && touching) {
+            fly(light.at(), SEEK_SPEED);
+            return;
+        }
+        if (touching && flare(level, carrier)) return;
+        if (!core().in(Step.SEEK) && !startPhase(Step.SEEK, 0, carrier)) return;
         fly(light.at(), SEEK_SPEED);
+    }
+
+    /**
+     * The flare: it stops where it is for {@link #TELL_TICKS}, the moths drawn into a tight, bright knot, a flutter and
+     * a burst of ember sparks; the engulf follows. False if the step was vetoed. Public as a test hook.
+     */
+    public boolean flare(ServerLevel level, LivingEntity carrier) {
+        if (!startPhase(Step.TELL, TELL_TICKS, carrier)) return false;
+        core().setStage(1);
+        setDeltaMovement(Vec3.ZERO);
+        face(carrier.position().subtract(position()));
+        playSound(ModSounds.CINDERMOTH_SWARM_FLARE.get(), 0.8F, 0.85F);
+        level.sendParticles(soul() ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME,
+                getX(), getY() + getBbHeight() * 0.5, getZ(), 10, 0.35, 0.3, 0.35, 0.03);
+        return true;
+    }
+
+    /** The flare held: it hangs still, ember sparks fly off the knot, and the flutter rises halfway through. */
+    private void flareTick(ServerLevel level) {
+        setDeltaMovement(Vec3.ZERO);
+        int t = core().elapsed();
+        if (t % 2 == 0) {
+            level.sendParticles(soul() ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME,
+                    getX(), getY() + getBbHeight() * 0.5, getZ(), 3, 0.15, 0.15, 0.15, 0.05);
+        }
+        if (t == TELL_TICKS / 2) playSound(ModSounds.CINDERMOTH_SWARM_FLARE.get(), 1.0F, 1.25F);
     }
 
     /** Circles a light on the ground; picked up or burnt away, it looks round afresh. */
@@ -340,6 +386,11 @@ public class CindermothSwarm extends TeemingMonster {
 
     @Override
     public void onPhaseEnd(Phase ended) {
+        if (ended == Step.TELL && level() instanceof ServerLevel level) {
+            core().setStage(0);
+            afterFlare(level);
+            return;
+        }
         if (ended == Step.HOVER && lure != null) {
             bored.add(lure.getUUID());                              // that light bores it now, for good
             playSound(ModSounds.CINDERMOTH_SWARM_BORED.get(), 0.8F, 0.95F + random.nextFloat() * 0.1F);
@@ -350,6 +401,24 @@ public class CindermothSwarm extends TeemingMonster {
         core().end();
     }
 
+    /**
+     * The flare is over: with the carrier still in the cloud (and still its light) it engulfs them and burns at once;
+     * otherwise it seeks them again.
+     */
+    private void afterFlare(ServerLevel level) {
+        LivingEntity carrier = light != null ? light.carrier() : null;
+        if (carrier == null || !live(light)) {
+            light = null;
+            core().end();
+            return;
+        }
+        if (touches(carrier) && startPhase(Step.ENGULF, 0, carrier)) {
+            burnTouching(level);
+            return;
+        }
+        if (!startPhase(Step.SEEK, 0, carrier)) core().end();
+    }
+
     /** Drops lights it got bored of that are gone from the world, so the list never grows without end. */
     private void forgetBored() {
         if (bored.size() <= 16 || !(level() instanceof ServerLevel level)) return;
@@ -358,7 +427,7 @@ public class CindermothSwarm extends TeemingMonster {
 
     // ---- the burn ----------------------------------------------------------------------------------------------------
 
-    /** Burns everyone it touches, once every {@link #BURN_INTERVAL} ticks: its attack damage as fire, and flames. */
+    /** While it engulfs: burns everyone it touches, once every {@link #BURN_INTERVAL} ticks, its attack damage as fire, and flames. */
     private void burnTouching(ServerLevel level) {
         if (burnCooldown > 0) return;
         List<LivingEntity> touching = level.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(TOUCH_REACH), this::burnable);
@@ -470,8 +539,9 @@ public class CindermothSwarm extends TeemingMonster {
     @Override
     public void aiStep() {
         super.aiStep();
-        // soul flames are big next to the small flames: fewer of them
-        if (level().isClientSide() && isAlive() && random.nextInt(soul() ? 12 : 4) == 0) {
+        // soul flames are big next to the small flames: fewer of them; while it flares, many more
+        boolean flaring = core().in(Step.TELL);
+        if (level().isClientSide() && isAlive() && random.nextInt(soul() ? (flaring ? 3 : 12) : (flaring ? 1 : 4)) == 0) {
             level().addParticle(soul() ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME,
                     getRandomX(0.6), getY() + random.nextDouble() * getBbHeight(), getRandomZ(0.6), 0.0, -0.01, 0.0);
         }
@@ -479,6 +549,12 @@ public class CindermothSwarm extends TeemingMonster {
 
     private Vec3 centre() {
         return position().add(0, getBbHeight() * 0.5, 0);
+    }
+
+    /** Two glows: its usual one, and the brighter one of the flare. */
+    @Override
+    public int visualStages() {
+        return 2;
     }
 
     private void face(Vec3 dir) {
@@ -516,6 +592,11 @@ public class CindermothSwarm extends TeemingMonster {
      */
     public void confine(@Nullable AABB box) {
         confine = box;
+    }
+
+    /** True while it touches {@code e}. Public as a test hook. */
+    public boolean touching(LivingEntity e) {
+        return touches(e);
     }
 
     /** The light it is flying at, or null. Public as a test hook. */

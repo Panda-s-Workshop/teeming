@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/mire_gulper",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/mire_gulper",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:mire_gulper",

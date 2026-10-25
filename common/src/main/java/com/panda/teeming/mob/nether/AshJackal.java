@@ -4,6 +4,7 @@ import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
+import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.platform.Services;
 import com.panda.teeming.registry.ModSounds;
 import com.mojang.math.Transformation;
@@ -16,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
@@ -54,16 +56,20 @@ import org.jspecify.annotations.Nullable;
  * Ash Jackal: a lean scavenger dog of the Nether wastes that hunts in packs of two or three.
  *
  * <p>Each jackal with an empty mouth goes for the nearest dropped item stack within 10 blocks (one stack each: the
- * nearest free jackal gets each one, and a nearer one takes over a stack another is after), dips its head for 6 ticks
- * and takes the whole stack in its jaws, then runs off with it for 200 ticks, away from the nearest player. It keeps
- * carrying it after that and never despawns while it does; killed (or removed for good any other way) it drops what
+ * nearest free jackal gets each one, and a nearer one takes over a stack another is after), sniffs at it, dips its head
+ * for 6 ticks and takes the whole stack in its jaws, then runs off with it for 200 ticks, away from the nearest player.
+ * It keeps carrying it after that and never despawns while it does; killed (or removed for good any other way) it drops what
  * it carried. Its packmates leave a stack a dead
  * jackal dropped alone for 200 ticks, so the player who killed it can take it back. It only takes items lying on the
  * ground, never from players or containers, and only where mobs may pick items up at all (the mob griefing rule).
  *
  * <p>In a fight it goes for whoever has the lowest health fraction within 16 blocks and in sight: any survival player,
  * or another mob that is already hurt; every 10 ticks it switches to a weaker one if it sees one. Hit, it turns on its
- * attacker and calls the pack. It has no tell: its bites are plain attacks for its attack damage.
+ * attacker and calls the pack. Its bites are for its attack damage, at most one every 20 ticks.
+ *
+ * <p>Tell: before every snatch and every bite it stops dead and sniffs for 10 ticks, its nose lifted toward the item
+ * or its target and its ears up, with a sniffing sound and puffs of ash at its nose. Nothing is bitten or taken during
+ * the sniff; the dip or the bite follows it.
  *
  * <p>Counter: kill the carrier before it gets away; it drops the stack it took. Failing it: the stack is gone with
  * the jackal.
@@ -72,8 +78,13 @@ import org.jspecify.annotations.Nullable;
  * mouth while it carries something, kept in step with the carried stack and removed with it.
  */
 public class AshJackal extends TeemingMonster {
-    /** IDLE, the dip that takes an item, running off with it. */
-    public enum Step implements Phase { IDLE, SNATCH, FLEE }
+    /** IDLE, the sniff before a snatch or a bite (tell), the dip that takes an item, running off with it. */
+    public enum Step implements Phase { IDLE, TELL, SNATCH, FLEE }
+
+    /** The sniff before every snatch and every bite: 0.5 s. */
+    public static final int TELL_TICKS = 10;
+    /** Ticks from a bite to the next sniff, so with the sniff it bites at most once every 20 ticks. */
+    public static final int BITE_REST = 10;
 
     /** It goes for dropped items this close (blocks). */
     public static final double ITEM_RANGE = 10.0;
@@ -101,6 +112,9 @@ public class AshJackal extends TeemingMonster {
     /** {@code MobCore} flag bit set while it carries something, so clients hold its jaw on the item. */
     public static final int CARRY_FLAG = 0;
 
+    /** The puffs of ash at the start of its sniff. */
+    private static final Telegraph SNIFF_PUFF = Telegraph.particles(ParticleTypes.WHITE_ASH, 10, 0.3, 0.6);
+
     /** Marks the item display that shows what it carries, and the stacks dead jackals dropped. */
     private static final String CARRY_TAG = "teeming.jackal_carry";
     private static final String DROPPED_TAG = "teeming.jackal_dropped";
@@ -116,6 +130,8 @@ public class AshJackal extends TeemingMonster {
     private Vec3 fleeSpot = Vec3.ZERO;
     private int fleeRepath;
     private @Nullable AABB confine;
+    private boolean sniffingItem;
+    private int biteRest;
     private int snatches;
     private int bites;
 
@@ -143,6 +159,12 @@ public class AshJackal extends TeemingMonster {
             @Override
             public boolean canContinueToUse() {
                 return core().idle() && super.canContinueToUse();
+            }
+
+            /** In reach, it sniffs instead of biting at once: the bite follows the sniff. */
+            @Override
+            protected void checkAndPerformAttack(LivingEntity target) {
+                if (biteRest == 0 && canPerformAttack(target)) sniff(target, false);
             }
         });
         goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8) {
@@ -205,10 +227,7 @@ public class AshJackal extends TeemingMonster {
             getLookControl().setLookAt(item, 30.0F, 30.0F);
             if (inReach(item)) {
                 getNavigation().stop();
-                if (!startPhase(Step.SNATCH, SNATCH_TICKS, null)) {   // vetoed: leave this one and look again later
-                    itemTarget = null;
-                    nextItemLook = level().getGameTime() + GIVE_UP_TICKS;
-                }
+                if (!sniff(null, true)) leaveItem();          // vetoed: leave this one and look again later
                 return;
             }
             // the last stretch goes straight at the stack: a path ends once it stands in the stack's block, which can
@@ -224,7 +243,7 @@ public class AshJackal extends TeemingMonster {
 
         @Override
         public void stop() {
-            if (core().idle()) itemTarget = null;      // a dip keeps it: the dip takes this item
+            if (core().idle()) itemTarget = null;      // a sniff or a dip keeps it: the dip takes this item
             getNavigation().stop();
         }
     }
@@ -290,6 +309,58 @@ public class AshJackal extends TeemingMonster {
         return e.getMaxHealth() > 0.0F ? e.getHealth() / e.getMaxHealth() : 1.0F;
     }
 
+    /**
+     * Stops and sniffs for {@link #TELL_TICKS}, at {@code target} (a bite follows) or, with {@code forItem}, at the item
+     * it is going for (the dip follows). False if it can't or the step was vetoed. Public as a test hook.
+     */
+    public boolean sniff(@Nullable LivingEntity target, boolean forItem) {
+        if (!core().idle() || !(level() instanceof ServerLevel level) || !startPhase(Step.TELL, TELL_TICKS, target)) return false;
+        sniffingItem = forItem;
+        holdStill();
+        Vec3 n = nose();
+        level.playSound(null, n.x, n.y, n.z, ModSounds.ASH_JACKAL_SNIFF.get(), getSoundSource(), 1.0F, getVoicePitch());
+        SNIFF_PUFF.play(this);
+        return true;
+    }
+
+    /** The sniff: it stands still, nose to what it sniffs at, and puffs ash from its nose. */
+    private void sniffTick(ServerLevel level) {
+        holdStill();
+        Entity at = sniffingItem ? itemTarget : core().target();
+        if (at != null) getLookControl().setLookAt(at, 30.0F, 60.0F);
+        int t = core().elapsed();
+        if (t % 3 == 1) {
+            Vec3 n = nose();
+            level.sendParticles(ParticleTypes.WHITE_ASH, n.x, n.y, n.z, 3, 0.08, 0.05, 0.08, 0.01);
+        }
+        if (t == TELL_TICKS / 2) {
+            Vec3 n = nose();
+            level.playSound(null, n.x, n.y, n.z, ModSounds.ASH_JACKAL_SNIFF.get(), getSoundSource(), 0.7F, getVoicePitch() * 1.2F);
+        }
+    }
+
+    /** The bite at the end of the sniff: a target still in reach takes its attack damage; anything else is a snap at the air. */
+    private void bite(ServerLevel level, @Nullable LivingEntity target) {
+        core().end();
+        biteRest = BITE_REST;
+        if (target == null || !target.isAlive() || target.level() != level() || !canAttack(target) || !isWithinMeleeAttackRange(target)) return;
+        swingForAttack(InteractionHand.MAIN_HAND);
+        doHurtTarget(level, target);
+    }
+
+    /** Where its nose is: just ahead of its head, at about two thirds of its height. */
+    private Vec3 nose() {
+        Vec3 f = Vec3.directionFromRotation(0.0F, getYHeadRot());
+        double reach = 0.85 * getScale();
+        return position().add(f.x * reach, 0.6 * getScale(), f.z * reach);
+    }
+
+    private void holdStill() {
+        getNavigation().stop();
+        getMoveControl().setWait();
+        setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
+    }
+
     /** A plain bite for its attack damage. */
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
@@ -335,9 +406,27 @@ public class AshJackal extends TeemingMonster {
         return Math.hypot(item.getX() - getX(), item.getZ() - getZ()) <= SNATCH_REACH && Math.abs(item.getY() - getY()) <= 1.5;
     }
 
+    /** Gives up the stack it was going for and looks for another only after {@link #GIVE_UP_TICKS}. */
+    private void leaveItem() {
+        itemTarget = null;
+        nextItemLook = level().getGameTime() + GIVE_UP_TICKS;
+    }
+
     @Override
     public void onPhaseEnd(Phase ended) {
-        if (ended == Step.SNATCH && level() instanceof ServerLevel level) {
+        if (ended == Step.TELL && level() instanceof ServerLevel level) {
+            if (!sniffingItem) {
+                bite(level, core().target());
+                return;
+            }
+            core().end();
+            ItemEntity item = itemTarget;
+            if (item == null || !item.isAlive() || item.getItem().isEmpty() || !carried.isEmpty() || !inReach(item)) {
+                itemTarget = null;
+            } else if (!startPhase(Step.SNATCH, SNATCH_TICKS, null)) {
+                leaveItem();
+            }
+        } else if (ended == Step.SNATCH && level() instanceof ServerLevel level) {
             ItemEntity item = itemTarget;
             itemTarget = null;
             core().end();
@@ -392,14 +481,17 @@ public class AshJackal extends TeemingMonster {
     @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
+        if (biteRest > 0) biteRest--;
         if (core().in(Step.FLEE)) {
             fleeTick();
             return;
         }
+        if (core().in(Step.TELL)) {
+            sniffTick(level);
+            return;
+        }
         if (core().in(Step.SNATCH)) {
-            getNavigation().stop();
-            getMoveControl().setWait();
-            setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
+            holdStill();
             if (itemTarget != null) getLookControl().setLookAt(itemTarget, 30.0F, 60.0F);
             return;
         }
@@ -500,6 +592,11 @@ public class AshJackal extends TeemingMonster {
     /** Bites that landed so far. Public as a test hook. */
     public int bites() {
         return bites;
+    }
+
+    /** True while its sniff is at an item (a dip follows), false while it is at a target (a bite follows). Public as a test hook. */
+    public boolean sniffingItem() {
+        return sniffingItem;
     }
 
     // ---- the carried item on show (a self-contained carry display: an item display riding at the mouth) ----------

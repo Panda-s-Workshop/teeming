@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/veinleech",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/veinleech",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:share_capped"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:veinleech",

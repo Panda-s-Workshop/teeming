@@ -1,6 +1,25 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/lavaleaper",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/lavaleaper",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:nether_wastes",
+              "minecraft:soul_sand_valley",
+              "minecraft:basalt_deltas"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:lavaleaper",

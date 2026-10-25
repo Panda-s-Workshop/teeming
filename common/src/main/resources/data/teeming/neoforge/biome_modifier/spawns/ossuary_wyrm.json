@@ -1,6 +1,23 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/ossuary_wyrm",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/ossuary_wyrm",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:soul_sand_valley"
+            ]
+          ]
+        }
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:ossuary_wyrm",

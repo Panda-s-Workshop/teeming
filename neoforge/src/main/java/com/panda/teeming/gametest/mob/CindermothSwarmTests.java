@@ -3,6 +3,7 @@ package com.panda.teeming.gametest.mob;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
+import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.nether.CindermothSwarm;
 import com.panda.teeming.mob.nether.CindermothSwarm.Step;
@@ -36,9 +37,9 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Cindermoth Swarm: health 10, armour 0, a 1.0 x 1.0 hitbox, no tell; it seeks the brightest light within 12 blocks (a
- * held light item, or a light lying on the ground, which holds it 200 ticks), then whoever carries one; whatever it
- * touches burns 1 a second. A blow scatters it for 40 ticks; a sweeping sword swing takes double. Every number is
+ * Cindermoth Swarm: health 10, armour 0, a 1.0 x 1.0 hitbox, a 12-tick flare before it engulfs; it seeks the brightest
+ * light within 12 blocks (a held light item, or a light lying on the ground, which holds it 200 ticks), then whoever
+ * carries one; while it engulfs, whatever it touches burns 1 a second. A blow scatters it for 40 ticks; a sweeping sword swing takes double. Every number is
  * checked against a plain value.
  *
  * <p>Every swarm here is confined to its own arena (lights, carriers and victims elsewhere don't count), so it never
@@ -51,6 +52,8 @@ public final class CindermothSwarmTests {
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("cindermoth_swarm_tell", CindermothSwarmTests::tell);
         TeemingGameTests.timeLimit("cindermoth_swarm_tell", 140);
+        out.accept("cindermoth_swarm_tell_cancel", CindermothSwarmTests::tellCancel);
+        TeemingGameTests.timeLimit("cindermoth_swarm_tell_cancel", 140);
         out.accept("cindermoth_swarm_counter", CindermothSwarmTests::counter);
         TeemingGameTests.timeLimit("cindermoth_swarm_counter", 400);
         out.accept("cindermoth_swarm_failure", CindermothSwarmTests::failure);
@@ -106,28 +109,86 @@ public final class CindermothSwarmTests {
     // ---- tell, counter, failure --------------------------------------------------------------------------------------
 
     /**
-     * No tell: a survival player holding a torch 6 blocks off. The swarm turns to the light within 10 ticks (its look
-     * round), goes straight from idle to seeking with no other phase before it reaches them, and the first touch
-     * burns exactly 1.
+     * The flare: a survival player holding a torch 6 blocks off. The swarm turns to the light within 10 ticks (its look
+     * round) and flies to them; touching them it flares for exactly 12 ticks, hanging still (it moves less than 0.01
+     * blocks) while the player loses nothing; on the tick the flare ends it engulfs them and the first burn takes exactly
+     * 1. Only idle, seeking and the flare come before the burn.
      */
     private static void tell(GameTestHelper helper) {
         ServerPlayer p = holding(helper, new Vec3(2.5, 1, 5.5), new ItemStack(Items.TORCH));
         CindermothSwarm s = swarm(helper, 8.5, 1.5, 5.5);
         float before = p.getHealth();
-        int[] seekAt = {-1};
+        int[] seekAt = {-1}, ticks = {0}, endedAt = {-1}, burntAt = {-1}, tick = {0};
+        boolean[] quiet = {true}, touchedAtStart = {false}, engulfing = {false};
         float[] first = {0.0F};
+        Vec3[] start = {null};
+        double[] moved = {0.0};
         Set<Phase> seen = new HashSet<>();
         helper.onEachTick(() -> {
             p.doTick();
+            tick[0]++;
             if (seekAt[0] < 0 && s.core().in(Step.SEEK)) seekAt[0] = (int) helper.getTick();
-            if (first[0] == 0.0F && p.getHealth() < before) first[0] = before - p.getHealth();
+            if (s.core().in(Step.TELL)) {
+                if (start[0] == null) {
+                    start[0] = s.position();
+                    touchedAtStart[0] = s.touching(p);
+                }
+                ticks[0]++;
+                moved[0] = Math.max(moved[0], s.position().distanceTo(start[0]));
+                if (p.getHealth() < before) quiet[0] = false;
+            } else if (ticks[0] > 0 && endedAt[0] < 0) {
+                endedAt[0] = tick[0];
+            }
+            if (first[0] == 0.0F && p.getHealth() < before) {
+                first[0] = before - p.getHealth();
+                burntAt[0] = tick[0];
+                engulfing[0] = s.core().in(Step.ENGULF);
+            }
             if (first[0] == 0.0F) seen.add(s.phase());
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(first[0] > 0.0F, "it reached the player and burned them, phase " + s.phase());
+            helper.assertTrue(first[0] > 0.0F, "it reached the player, flared and burned them, phase " + s.phase());
             helper.assertTrue(seekAt[0] >= 0 && seekAt[0] <= 11, "it turned to the light within 10 ticks, at tick " + seekAt[0]);
-            helper.assertTrue(Set.of(Step.IDLE, Step.SEEK, Step.ENGULF).containsAll(seen), "no tell or other phase before the burn, saw " + seen);
-            helper.assertTrue(Math.abs(first[0] - 1.0F) < 0.01F, "the first touch burns 1, took " + first[0]);
+            helper.assertTrue(touchedAtStart[0], "it flares on touching the player");
+            helper.assertTrue(ticks[0] == 12, "the flare lasts 12 ticks, " + ticks[0]);
+            helper.assertTrue(moved[0] < 0.01, "it hangs still while it flares, moved " + moved[0]);
+            helper.assertTrue(quiet[0], "nothing burns while it flares");
+            helper.assertTrue(burntAt[0] == endedAt[0] && engulfing[0], "it engulfs and burns as the flare ends, at tick " + burntAt[0]
+                    + ", the flare ended at " + endedAt[0] + ", engulfing " + engulfing[0]);
+            helper.assertTrue(Set.of(Step.IDLE, Step.SEEK, Step.TELL).containsAll(seen), "only drifting, seeking and the flare before the burn, saw " + seen);
+            helper.assertTrue(Math.abs(first[0] - 1.0F) < 0.01F, "the first burn takes 1, took " + first[0]);
+        });
+    }
+
+    /**
+     * A listener that cancels the "tell" step: the swarm reaches a survival player holding a torch 3 blocks off and stays
+     * on them, but never flares or engulfs, and they lose nothing in 100 ticks.
+     */
+    private static void tellCancel(GameTestHelper helper) {
+        ServerPlayer p = holding(helper, new Vec3(5.5, 1, 4.5), new ItemStack(Items.TORCH));
+        CindermothSwarm s = swarm(helper, 5.5, 1.5, 7.5);
+        float before = p.getHealth();
+        int[] vetoed = {0}, touched = {0};
+        Consumer<MechanicEvent> veto = e -> {
+            if (e.mob() == s && e.step().equals("tell")) {
+                e.cancel();
+                vetoed[0]++;
+            }
+        };
+        MechanicEvent.listen(veto);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
+        Set<Phase> seen = new HashSet<>();
+        helper.onEachTick(() -> {
+            p.doTick();
+            seen.add(s.phase());
+            if (s.touching(p)) touched[0]++;
+        });
+        helper.runAtTickTime(100, () -> {
+            helper.assertTrue(touched[0] >= 20 && vetoed[0] >= 20, "it reached the player and tried to flare, touching " + touched[0]
+                    + " ticks, " + vetoed[0] + " vetoed");
+            helper.assertTrue(Set.of(Step.IDLE, Step.SEEK).containsAll(seen), "it never flares or engulfs, saw " + seen);
+            helper.assertTrue(p.getHealth() == before, "the player loses nothing, " + before + " -> " + p.getHealth());
+            helper.succeed();
         });
     }
 
@@ -363,14 +424,15 @@ public final class CindermothSwarmTests {
     /**
      * A blow scatters it: hit in melee by a survival player holding a torch, it is thrown back at least 0.4 blocks a
      * tick, forgets the light and scatters for exactly 40 ticks. Held in the middle of the player all that time, it burns
-     * nothing; once it gathers again it burns them within 15 ticks.
+     * nothing; once it gathers again it flares and burns them within 25 ticks (its look round, at most 10, the 12-tick
+     * flare, and a few ticks of drift).
      */
     private static void scatter(GameTestHelper helper) {
         ServerPlayer p = holding(helper, new Vec3(5.5, 1, 4.5), new ItemStack(Items.TORCH));
         CindermothSwarm s = swarm(helper, 5.5, 1.5, 7.0);
         float before = p.getHealth();
         int[] scattered = {0};
-        long[] over = {-1}, burnt = {-1};
+        long[] over = {-1}, burnt = {-1}, flared = {-1};
         boolean[] thrown = {false};
         float[] lostInScatter = {0.0F};
         helper.runAtTickTime(2, () -> {
@@ -389,6 +451,7 @@ public final class CindermothSwarmTests {
             } else if (scattered[0] > 0 && over[0] < 0) {
                 over[0] = now;
             }
+            if (over[0] >= 0 && flared[0] < 0 && s.core().in(Step.TELL)) flared[0] = now;
             if (over[0] >= 0 && burnt[0] < 0 && p.getHealth() < before) burnt[0] = now;
         });
         helper.succeedWhen(() -> {
@@ -396,7 +459,8 @@ public final class CindermothSwarmTests {
             helper.assertTrue(over[0] >= 0, "the scatter ended, " + scattered[0] + " ticks so far");
             helper.assertTrue(Math.abs(scattered[0] - 40) <= 1, "it scatters for 40 ticks, scattered " + scattered[0]);
             helper.assertTrue(lostInScatter[0] == 0.0F, "scattered, it burns nothing, the player lost " + lostInScatter[0]);
-            helper.assertTrue(burnt[0] >= 0 && burnt[0] - over[0] <= 15, "gathered again, it burns them within 15 ticks, at " + (burnt[0] - over[0]));
+            helper.assertTrue(burnt[0] >= 0 && burnt[0] - over[0] <= 25, "gathered again, it burns them within 25 ticks, at " + (burnt[0] - over[0]));
+            helper.assertTrue(flared[0] >= 0 && burnt[0] - flared[0] == 12, "after a 12-tick flare, flared at " + flared[0] + ", burnt at " + burnt[0]);
         });
     }
 

@@ -6,8 +6,9 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 
 /**
- * Ash Jackal: a light, springy trot with the big ears pricked and the brush low; a quick bob of the head as it bites;
- * the dip of the snatch (forelegs braced, nose to the ground, jaw open); and the getaway, a stretched-out gallop with
+ * Ash Jackal: a light, springy trot with the big ears pricked and the brush low; the sniff before every snatch and
+ * bite (standing square, chest up, nose lifted and twitching, ears pricked straight up); a quick bob of the head as it
+ * bites; the dip of the snatch (forelegs braced, nose to the ground, jaw open); and the getaway, a stretched-out gallop with
  * the head held high and level (so the item in its jaws stays in view), ears flat back and the brush streaming behind.
  * While it carries something its jaw stays a little open on it.
  *
@@ -59,7 +60,25 @@ public class AshJackalModel extends TeemingModel {
             head.xRot = Math.min(head.xRot, 0.1F);                         // and the head kept up
         }
 
-        if (s.phase == Step.SNATCH.ordinal()) {
+        if (s.phase == Step.TELL.ordinal()) {
+            float k = smooth(s.phaseTime / 3.0F);                          // up within 3 ticks, held to the end
+            frontRight.xRot = -0.08F * k;                                  // standing square and still, forelegs planted
+            frontLeft.xRot = -0.08F * k;
+            backRight.xRot = 0.05F * k;
+            backLeft.xRot = 0.05F * k;
+            body.xRot -= 5.0F * DEG * k;                                   // chest up
+            head.xRot = Math.min(head.xRot, 0.35F) - 24.0F * DEG * k       // nose lifted toward what it smells
+                    + Mth.sin(t * 2.6F) * 0.05F * k;                       // and twitching as it sniffs
+            head.y -= 0.8F * k;
+            head.z -= 0.6F * k;
+            jaw.xRot -= 0.1F * k;                                          // mouth shut
+            earRight.xRot += 0.3F * k;                                     // ears pricked straight up
+            earLeft.xRot += 0.3F * k;
+            earRight.zRot += 11.0F * DEG * k;
+            earLeft.zRot -= 11.0F * DEG * k;
+            tail.xRot -= 0.15F * k;                                        // the brush held still and low
+            tail.zRot *= 1.0F - k;
+        } else if (s.phase == Step.SNATCH.ordinal()) {
             float k = envelope(s.progress, 0.45F, 0.25F);                  // down, grab, and back up
             head.xRot = 38.0F * DEG * k;                                   // nose to the ground
             head.y += 4.0F * k;

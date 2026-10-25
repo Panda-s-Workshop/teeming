@@ -622,8 +622,9 @@ public final class PhantasmLanternTests {
     }
 
     /**
-     * Home: the warped forest only, a monster, spawn weight 10 in groups of exactly 1. The Crimson Lantern is its second
-     * look.
+     * Home: the warped and crimson forests only, a monster, spawn weight 10 in groups of exactly 1; both forests are
+     * share-capped, so its biome-list spawns leave them out and the Teeming spawner places it there. The Crimson Lantern
+     * is its second look, the one of the crimson forest.
      */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
@@ -631,7 +632,8 @@ public final class PhantasmLanternTests {
         var tag = biomes.get(TeemingSpawns.tag("phantasm_lantern"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
         helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.WARPED_FOREST)), "its home holds the warped forest");
-        for (var other : List.of(Biomes.CRIMSON_FOREST, Biomes.NETHER_WASTES, Biomes.SOUL_SAND_VALLEY, Biomes.BASALT_DELTAS, Biomes.PLAINS)) {
+        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.CRIMSON_FOREST)), "its home holds the crimson forest");
+        for (var other : List.of(Biomes.NETHER_WASTES, Biomes.SOUL_SAND_VALLEY, Biomes.BASALT_DELTAS, Biomes.PLAINS)) {
             helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
         }
         RosterStats.Entry row = RosterStats.get("phantasm_lantern");
@@ -644,6 +646,10 @@ public final class PhantasmLanternTests {
                 .filter(w -> w.value().type() == ModMobs.PHANTASM_LANTERN.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
         helper.assertTrue(entry.weight() == 10, "spawn weight 10, got " + entry.weight());
+        var forests = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).biomes();
+        var biomeLookup = access.lookupOrThrow(Registries.BIOME);
+        helper.assertTrue(!forests.contains(biomeLookup.getOrThrow(Biomes.WARPED_FOREST)) && !forests.contains(biomeLookup.getOrThrow(Biomes.CRIMSON_FOREST)),
+                "its biome-list spawns leave out the share-capped forests, where the Teeming spawner places it");
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "groups of 1, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         List<LookDef> looks = Looks.of("phantasm_lantern");
