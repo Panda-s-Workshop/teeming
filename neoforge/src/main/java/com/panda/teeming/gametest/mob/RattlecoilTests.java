@@ -1,30 +1,19 @@
 package com.panda.teeming.gametest.mob;
 
-import com.mojang.authlib.GameProfile;
+import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.overworld.Rattlecoil;
 import com.panda.teeming.mob.overworld.Rattlecoil.Step;
 import com.panda.teeming.registry.ModMobs;
-import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.gametest.framework.GameTestInfo;
-import net.minecraft.gametest.framework.GameTestListener;
-import net.minecraft.gametest.framework.GameTestRunner;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -62,20 +51,8 @@ public final class RattlecoilTests {
 
     /** A real survival player {@code d} blocks from the snake (along the arena's diagonal), removed when the test ends. */
     private static ServerPlayer survivor(GameTestHelper helper, double d) {
-        ServerLevel level = helper.getLevel();
-        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "rattle-test"), false);
-        ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
-        Connection connection = new Connection(PacketFlow.SERVERBOUND);
-        new EmbeddedChannel(connection);
-        level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
-        player.setGameMode(GameType.SURVIVAL);
-        // until its client says it loaded, the server ignores hits on a player
-        if (!player.connection.hasClientLoaded()) player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
-        player.getFoodData().setFoodLevel(17);     // below 18: no natural healing to blur a damage reading
-        player.getFoodData().setSaturation(0.0F);
-        place(helper, player, d);
-        whenDone(helper, () -> level.getServer().getPlayerList().remove(player));
-        return player;
+        double k = d / Math.sqrt(2.0);
+        return TestPlayers.survivor(helper, AT.add(k, 0, k));
     }
 
     private static void place(GameTestHelper helper, ServerPlayer player, double d) {
@@ -88,27 +65,6 @@ public final class RattlecoilTests {
         Pig pig = helper.spawn(EntityTypes.PIG, AT.add(k, 0, k));
         pig.setNoAi(true);
         return pig;
-    }
-
-    /** Runs {@code cleanup} once the test passes or fails. */
-    private static void whenDone(GameTestHelper helper, Runnable cleanup) {
-        helper.testInfo.addListener(new GameTestListener() {
-            @Override
-            public void testStructureLoaded(GameTestInfo info) {}
-
-            @Override
-            public void testPassed(GameTestInfo info, GameTestRunner runner) {
-                cleanup.run();
-            }
-
-            @Override
-            public void testFailed(GameTestInfo info, GameTestRunner runner) {
-                cleanup.run();
-            }
-
-            @Override
-            public void testAddedForRerun(GameTestInfo old, GameTestInfo fresh, GameTestRunner runner) {}
-        });
     }
 
     private static boolean harmed(ServerPlayer p) {
@@ -317,7 +273,7 @@ public final class RattlecoilTests {
             if (e.mob() == snake && e.step().equals("venom")) e.cancel();
         };
         MechanicEvent.listen(veto);
-        whenDone(helper, () -> MechanicEvent.unlisten(veto));
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
         float before = pig.getHealth();
         helper.runAtTickTime(1, () -> snake.hurtServer(helper.getLevel(), snake.damageSources().mobAttack(pig), 1.0F));
         helper.succeedWhen(() -> {

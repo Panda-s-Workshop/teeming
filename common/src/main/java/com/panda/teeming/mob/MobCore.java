@@ -67,7 +67,7 @@ public final class MobCore {
     public boolean start(Phase phase, int length, @Nullable LivingEntity target) {
         if (phase.ordinal() != 0 && !MechanicEvent.post(mob, phase.step(), target)) return false;
         this.target = target;
-        clock.start(phase.ordinal(), length);
+        clock.start(phase.ordinal(), length, now());
         restarts = (restarts + 1) & 0xF;
         mob.getEntityData().set(phaseKey, pack(phase.ordinal(), restarts, clock.length()));
         return true;
@@ -80,16 +80,14 @@ public final class MobCore {
 
     /** Both sides, every tick. Returns the phase that just ran out (server only), or null. */
     public @Nullable Phase tick() {
-        Phase current = phase();
-        boolean ranOut = clock.tick();
-        return ranOut && !mob.level().isClientSide() ? current : null;
+        return clock.ranOut(now()) && !mob.level().isClientSide() ? phase() : null;
     }
 
     /** Client: a new phase value arrived. */
     public void onSynced(EntityDataAccessor<?> key) {
         if (!key.equals(phaseKey) || !mob.level().isClientSide()) return;
         int packed = mob.getEntityData().get(phaseKey);
-        clock.start(Math.min(packed & 0xFF, phases.length - 1), packed >>> 12);
+        clock.start(Math.min(packed & 0xFF, phases.length - 1), packed >>> 12, now());
     }
 
     /** The mob's phases, idle first. */
@@ -109,8 +107,9 @@ public final class MobCore {
         return clock.phase() == phase.ordinal();
     }
 
+    /** Whole ticks since the current phase started, read at any point in the tick. */
     public int elapsed() {
-        return clock.elapsed();
+        return clock.elapsed(now());
     }
 
     public int length() {
@@ -118,7 +117,11 @@ public final class MobCore {
     }
 
     public float progress(float partialTick) {
-        return clock.progress(partialTick);
+        return clock.progress(now(), partialTick);
+    }
+
+    private long now() {
+        return mob.level().getGameTime();
     }
 
     /** Who the current phase is aimed at (server only; null on clients). */

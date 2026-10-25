@@ -5,7 +5,6 @@ import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.registry.ModSounds;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -26,7 +25,6 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -96,12 +94,6 @@ public class Rattlecoil extends TeemingMonster {
                 return core().idle() && super.canUse();
             }
         });
-    }
-
-    /** It basks in the open in any light, so the light level doesn't steer where it goes or where it may spawn. */
-    @Override
-    public float getWalkTargetValue(BlockPos pos, LevelReader level) {
-        return 0.0F;
     }
 
     // ---- the warning -------------------------------------------------------------------------------------------------

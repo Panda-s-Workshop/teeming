@@ -7,7 +7,9 @@ import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
 import com.panda.teeming.registry.ModTabs;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +30,9 @@ public final class TeemingGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
             DeferredRegister.create(Registries.TEST_FUNCTION, TeemingMod.MODID);
     private static final Identifier ARENA = TeemingMod.id("test_arena");
+    /** Ticks a test may run before it fails; most finish well inside this. */
+    private static final int DEFAULT_TICKS = 100;
+    private static final Map<String, Integer> TIME_LIMITS = new HashMap<>();
 
     static {
         FUNCTIONS.register("mod_loaded", () -> TeemingGameTests::modLoaded);
@@ -45,6 +50,14 @@ public final class TeemingGameTests {
 
     private TeemingGameTests() {}
 
+    /**
+     * Gives one test longer than the default 100 ticks, for mechanics that need it (a cooldown timed through to the
+     * next attack, two shots 40 ticks apart). Call it next to the test's registration.
+     */
+    public static void timeLimit(String name, int ticks) {
+        TIME_LIMITS.put(name, ticks);
+    }
+
     public static void register(IEventBus modBus) {
         FUNCTIONS.register(modBus);
         modBus.addListener(TeemingGameTests::registerTests);
@@ -54,7 +67,8 @@ public final class TeemingGameTests {
         Holder<TestEnvironmentDefinition<?>> env = event.registerEnvironment(TeemingMod.id("default"));
         for (var entry : FUNCTIONS.getEntries()) {
             ResourceKey<Consumer<GameTestHelper>> key = ResourceKey.create(Registries.TEST_FUNCTION, entry.getId());
-            event.registerTest(key.identifier(), new FunctionGameTestInstance(key, new TestData<>(env, ARENA, 100, 0, true)));
+            event.registerTest(key.identifier(), new FunctionGameTestInstance(key, new TestData<>(env, ARENA,
+                    TIME_LIMITS.getOrDefault(entry.getId().getPath(), DEFAULT_TICKS), 0, true)));
         }
     }
 

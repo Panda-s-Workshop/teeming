@@ -1,6 +1,9 @@
 package com.panda.teeming.mob;
 
 import com.panda.teeming.fieldguide.FieldGuide;
+import com.panda.teeming.roster.RosterStats;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -54,6 +58,16 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (core != null) core.onSynced(key); // null while the Entity constructor defines the data
+    }
+
+    /**
+     * Mobs the roster lets spawn in any light ignore light when they pick where to walk. Natural spawning asks the
+     * same question and refuses a negative answer, which the monster default gives anywhere lit.
+     */
+    @Override
+    public float getWalkTargetValue(BlockPos pos, LevelReader level) {
+        RosterStats.Entry row = RosterStats.BY_ID.get(BuiltInRegistries.ENTITY_TYPE.getKey(getType()).getPath());
+        return row != null && row.anyLight() ? 0.0F : super.getWalkTargetValue(pos, level);
     }
 
     @Override

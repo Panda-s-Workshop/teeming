@@ -7,43 +7,56 @@ import org.junit.jupiter.api.Test;
 /** The phase machine's timing: what the server's mechanics and the clients' animations both run on. */
 class PhaseClockTest {
     @Test
-    void aTimedPhaseRunsOutOnItsLastTick() {
+    void aTimedPhaseRunsOutAfterItsLength() {
         PhaseClock clock = new PhaseClock();
-        clock.start(1, 20);
-        for (int i = 1; i < 20; i++) assertFalse(clock.tick(), "still running at tick " + i);
-        assertTrue(clock.tick(), "runs out on tick 20");
-        assertEquals(20, clock.elapsed());
+        clock.start(1, 20, 1000);
+        for (long t = 1000; t < 1020; t++) assertFalse(clock.ranOut(t), "still running at game time " + t);
+        assertTrue(clock.ranOut(1020), "runs out 20 ticks after it started");
+        assertEquals(20, clock.elapsed(1020));
+    }
+
+    @Test
+    void itLastsItsLengthWhereverInTheTickItStarted() {
+        // started at game time 50, whether by the mob's own AI step or by a hit during another entity's tick:
+        // the end-of-tick check sees it on ticks 50..59 and not on 60
+        PhaseClock clock = new PhaseClock();
+        clock.start(1, 10, 50);
+        int shown = 0;
+        for (long t = 50; t < 80; t++) {
+            if (clock.ranOut(t)) clock.reset(t);
+            if (!clock.idle()) shown++;
+        }
+        assertEquals(10, shown);
     }
 
     @Test
     void idleAndOpenEndedPhasesNeverRunOut() {
         PhaseClock clock = new PhaseClock();
-        for (int i = 0; i < 100; i++) assertFalse(clock.tick());
+        for (long t = 0; t < 100; t++) assertFalse(clock.ranOut(t));
         assertTrue(clock.idle());
-        clock.start(2, 0);
-        for (int i = 0; i < 100; i++) assertFalse(clock.tick());
-        assertEquals(0.0F, clock.progress(0.5F), "an open-ended phase has no progress");
+        assertEquals(0, clock.elapsed(500), "idle has no elapsed time");
+        clock.start(2, 0, 100);
+        for (long t = 100; t < 200; t++) assertFalse(clock.ranOut(t));
+        assertEquals(0.0F, clock.progress(150, 0.5F), "an open-ended phase has no progress");
     }
 
     @Test
     void progressIsSmoothAndClamped() {
         PhaseClock clock = new PhaseClock();
-        clock.start(1, 10);
-        assertEquals(0.05F, clock.progress(0.5F), 1e-6);
-        for (int i = 0; i < 5; i++) clock.tick();
-        assertEquals(0.5F, clock.progress(0.0F), 1e-6);
-        for (int i = 0; i < 20; i++) clock.tick();
-        assertEquals(1.0F, clock.progress(0.9F), 1e-6);
+        clock.start(1, 10, 0);
+        assertEquals(0.05F, clock.progress(0, 0.5F), 1e-6);
+        assertEquals(0.5F, clock.progress(5, 0.0F), 1e-6);
+        assertEquals(1.0F, clock.progress(25, 0.9F), 1e-6);
     }
 
     @Test
     void restartingResetsTheClock() {
         PhaseClock clock = new PhaseClock();
-        clock.start(1, 10);
-        for (int i = 0; i < 7; i++) clock.tick();
-        clock.start(1, 10);
-        assertEquals(0, clock.elapsed());
-        clock.reset();
+        clock.start(1, 10, 0);
+        assertEquals(7, clock.elapsed(7));
+        clock.start(1, 10, 7);
+        assertEquals(0, clock.elapsed(7));
+        clock.reset(8);
         assertTrue(clock.idle());
     }
 

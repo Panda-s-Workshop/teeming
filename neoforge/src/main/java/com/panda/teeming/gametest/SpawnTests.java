@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.block.Blocks;
 
 /**
@@ -30,6 +31,7 @@ final class SpawnTests {
         out.accept("placement_underside", SpawnTests::underside);
         out.accept("spawner_main_island_gate", SpawnTests::mainIslandGate);
         out.accept("spawner_spawns", SpawnTests::spawnerSpawns);
+        out.accept("spawn_any_light", SpawnTests::anyLight);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -44,6 +46,25 @@ final class SpawnTests {
         helper.assertTrue(ok(helper, id, new BlockPos(3, 2, 3)), id + " accepts a spot on " + block);
         helper.assertTrue(!ok(helper, id, new BlockPos(8, 1, 8)), id + " refuses the plain floor");
         helper.succeed();
+    }
+
+    /**
+     * Next to a glowstone (block light 15), an any-light monster (Rattlecoil) still rates the spot 0, so natural
+     * spawning accepts it there; a monster without the flag (Slagheart Golem) rates it below 0, as vanilla's do.
+     */
+    private static void anyLight(GameTestHelper helper) {
+        BlockPos at = new BlockPos(2, 1, 2);
+        helper.setBlock(at.east(), Blocks.GLOWSTONE);
+        BlockPos abs = helper.absolutePos(at);
+        PathfinderMob snake = helper.spawnWithNoFreeWill(ModMobs.RATTLECOIL.get(), at);
+        PathfinderMob golem = helper.spawnWithNoFreeWill(ModMobs.SLAGHEART_GOLEM.get(), at.north(2));
+        helper.runAtTickTime(2, () -> {
+            float snakeValue = snake.getWalkTargetValue(abs, helper.getLevel());
+            float golemValue = golem.getWalkTargetValue(abs, helper.getLevel());
+            helper.assertTrue(snakeValue == 0.0F, "an any-light monster rates a lit spot 0, got " + snakeValue);
+            helper.assertTrue(golemValue < 0.0F, "a light-bound monster rates a lit spot below 0, got " + golemValue);
+            helper.succeed();
+        });
     }
 
     private static void lava(GameTestHelper helper) {
