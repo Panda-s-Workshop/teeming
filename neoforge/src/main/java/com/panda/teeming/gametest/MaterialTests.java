@@ -5,6 +5,7 @@ import com.panda.teeming.item.MaterialItem;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModMaterials;
+import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
@@ -15,11 +16,13 @@ import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +33,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.crafting.BrewingInput;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -46,6 +50,7 @@ final class MaterialTests {
         out.accept("materials_have_uses", MaterialTests::haveUses);
         out.accept("materials_field_guide_recipe", MaterialTests::fieldGuideRecipe);
         out.accept("materials_drop", MaterialTests::drop);
+        out.accept("materials_looting", MaterialTests::looting);
     }
 
     private static Item item(String id) {
@@ -165,6 +170,42 @@ final class MaterialTests {
             mob.discard();
         }
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+        helper.succeed();
+    }
+
+    /**
+     * Looting adds to the signature material the vanilla way: each level adds 0 or 1 at random, so with Looting III a
+     * death drops 1 to 4 and 2.5 on average.
+     */
+    private static void looting(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        ItemStack sword = new ItemStack(Items.DIAMOND_SWORD);
+        sword.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.LOOTING), 3);
+        player.setItemInHand(InteractionHand.MAIN_HAND, sword);
+        Mob mob = helper.spawn(ModMobs.THORNHORN.get(), new Vec3(5.5, 1, 5.5));
+        mob.setNoAi(true);
+        LootTable table = helper.getLevel().getServer().reloadableRegistries().getLootTable(mob.getType().getDefaultLootTable().orElseThrow());
+        LootParams params = new LootParams.Builder(helper.getLevel())
+                .withParameter(LootContextParams.THIS_ENTITY, mob)
+                .withParameter(LootContextParams.ORIGIN, mob.position())
+                .withParameter(LootContextParams.DAMAGE_SOURCE, mob.damageSources().playerAttack(player))
+                .withParameter(LootContextParams.ATTACKING_ENTITY, player)
+                .withParameter(LootContextParams.LAST_DAMAGE_PLAYER, player)
+                .create(LootContextParamSets.ENTITY);
+        RandomSource random = RandomSource.create(20261025L);
+        Item want = item("teeming:tough_hide");
+        int rolls = 400, min = Integer.MAX_VALUE, max = 0, total = 0;
+        for (int i = 0; i < rolls; i++) {
+            int count = 0;
+            for (ItemStack stack : table.getRandomItems(params, random)) if (stack.is(want)) count += stack.getCount();
+            min = Math.min(min, count);
+            max = Math.max(max, count);
+            total += count;
+        }
+        double mean = total / (double) rolls;
+        mob.discard();
+        helper.assertTrue(min == 1 && max == 4, "Looting III drops 1 to 4 tough hide, saw " + min + " to " + max);
+        helper.assertTrue(Math.abs(mean - 2.5) <= 0.15, "and 2.5 on average, saw " + mean);
         helper.succeed();
     }
 }
