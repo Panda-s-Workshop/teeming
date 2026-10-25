@@ -85,13 +85,17 @@ public final class ThornhornTests {
         });
     }
 
-    /** The charge covers 0.45 blocks a tick, knocks the target back hard (1.6) and is followed by a 100-tick rest. */
+    /**
+     * The charge covers 0.45 blocks a tick, knocks the target back hard (1.6) and is followed by a 100-tick rest. The
+     * still pig keeps whatever motion it is given and the charger's body bumps it on the ticks after the hit, so the
+     * knockback is read on the tick of the hit.
+     */
     private static void chargeNumbers(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
         Thornhorn horn = setUp(helper, pig);
         List<Double> steps = new ArrayList<>();
         double[] last = {Double.NaN};
-        double[] pigSpeed = {0.0};
+        double[] pigSpeed = {Double.NaN};
         int[] cooldown = {0};
         helper.onEachTick(() -> {
             if (horn.core().in(Step.CHARGE)) {
@@ -100,7 +104,7 @@ public final class ThornhornTests {
             } else {
                 last[0] = Double.NaN;
             }
-            pigSpeed[0] = Math.max(pigSpeed[0], pig[0].getDeltaMovement().horizontalDistance());
+            if (Double.isNaN(pigSpeed[0]) && pig[0].getHealth() < pig[0].getMaxHealth()) pigSpeed[0] = pig[0].getDeltaMovement().horizontalDistance();
             cooldown[0] = Math.max(cooldown[0], horn.cooldown());
         });
         helper.succeedWhen(() -> {
@@ -109,9 +113,10 @@ public final class ThornhornTests {
             helper.assertTrue(steps.size() >= 3, "it charged for at least 3 ticks, saw " + steps.size());
             double mean = steps.subList(1, steps.size()).stream().mapToDouble(Double::doubleValue).average().orElse(0);
             helper.assertTrue(Math.abs(mean - Thornhorn.CHARGE_SPEED) < 0.05, "the charge covers 0.45 blocks a tick, mean " + mean);
-            // measured 2.0: the gore's 1.6 on top of the hit's own vanilla knockback (a plain value, so a wrong constant fails)
-            helper.assertTrue(Math.abs(pigSpeed[0] - 2.0) <= 0.1,
-                    "the gore knocks the target back at 1.6, its speed peaked at " + pigSpeed[0]);
+            // 1.8: the gore's 1.6 on top of the hit's own vanilla knockback of 0.4, which the gore halves (a plain
+            // value, so a wrong constant fails)
+            helper.assertTrue(Math.abs(pigSpeed[0] - 1.8) <= 0.05,
+                    "the gore knocks the target back at 1.6, its speed on the hit was " + pigSpeed[0]);
         });
     }
 

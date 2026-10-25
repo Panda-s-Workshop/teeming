@@ -117,6 +117,8 @@ public class Gloamhound extends TeemingMonster {
     private Vec3 dartDir = Vec3.ZERO;
     private @Nullable LivingEntity fleeFrom;
     private Vec3 fleeSpot = Vec3.ZERO;
+    /** Ticks until a fleeing hound picks a new spot to run to. */
+    private int fleeRepath;
     private int bites;
     private int howls;
 
@@ -501,6 +503,7 @@ public class Gloamhound extends TeemingMonster {
         if (!startPhase(Step.FLEE, FLEE_TICKS, from)) return false;
         fleeFrom = from;
         fleeSpot = fromSpot;
+        fleeRepath = 0;
         setTarget(null);
         getNavigation().stop();
         if (level() instanceof ServerLevel level) {
@@ -511,11 +514,12 @@ public class Gloamhound extends TeemingMonster {
 
     private void fleeTick() {
         setTarget(null);
-        if (core().elapsed() % 10 != 0) return;
+        // a new spot every 10 ticks or on arrival; with none found (a cramped spot) it tries again next tick
+        if (--fleeRepath > 0 && !getNavigation().isDone()) return;
         Vec3 threat = fleeFrom != null && fleeFrom.isAlive() ? fleeFrom.position() : fleeSpot;
         Vec3 away = DefaultRandomPos.getPosAway(this, 16, 7, threat);
         if (away == null) away = DefaultRandomPos.getPosAway(this, 6, 3, threat);   // cornered: a short run beats none
-        if (away != null) getNavigation().moveTo(away.x, away.y, away.z, FLEE_SPEED);
+        fleeRepath = away != null && getNavigation().moveTo(away.x, away.y, away.z, FLEE_SPEED) ? 10 : 0;
     }
 
     private void holdStill() {
