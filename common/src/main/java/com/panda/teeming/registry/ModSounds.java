@@ -10,6 +10,13 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TeemingMod.MODID);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_AMBIENT = sound("ash_jackal.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_HURT = sound("ash_jackal.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_DEATH = sound("ash_jackal.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_BITE = sound("ash_jackal.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_SNATCH = sound("ash_jackal.snatch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_CACKLE = sound("ash_jackal.cackle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_DROP = sound("ash_jackal.drop");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASALT_BEHEMOTH_AMBIENT = sound("basalt_behemoth.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASALT_BEHEMOTH_HURT = sound("basalt_behemoth.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> BASALT_BEHEMOTH_DEATH = sound("basalt_behemoth.death");
@@ -147,6 +154,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> PHANTASM_LANTERN_RELEASE = sound("phantasm_lantern.release");
     public static final DeferredHolder<SoundEvent, SoundEvent> PHANTASM_LANTERN_POP = sound("phantasm_lantern.pop");
     public static final DeferredHolder<SoundEvent, SoundEvent> PHANTASM_LANTERN_GUTTER = sound("phantasm_lantern.gutter");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_AMBIENT = sound("prismback.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_HURT = sound("prismback.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_DEATH = sound("prismback.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_GLIMMER = sound("prismback.glimmer");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_FLASH = sound("prismback.flash");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_REFLECT = sound("prismback.reflect");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_REFLECT_BLOW = sound("prismback.reflect_blow");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PRISMBACK_SPENT = sound("prismback.spent");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_AMBIENT = sound("puffcap_shepherd.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_HURT = sound("puffcap_shepherd.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_DEATH = sound("puffcap_shepherd.death");
@@ -189,6 +204,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> SHIVERWRAITH_TETHER = sound("shiverwraith.tether");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHIVERWRAITH_DRAIN = sound("shiverwraith.drain");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHIVERWRAITH_SNAP = sound("shiverwraith.snap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_AMBIENT = sound("shredjaw_beetle.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_HURT = sound("shredjaw_beetle.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_DEATH = sound("shredjaw_beetle.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_STEP = sound("shredjaw_beetle.step");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_TELL = sound("shredjaw_beetle.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_BITE = sound("shredjaw_beetle.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_SUNDER = sound("shredjaw_beetle.sunder");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHREDJAW_BEETLE_BLOCKED = sound("shredjaw_beetle.blocked");
     public static final DeferredHolder<SoundEvent, SoundEvent> SKREEL_AMBIENT = sound("skreel.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> SKREEL_HURT = sound("skreel.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> SKREEL_DEATH = sound("skreel.death");
@@ -259,6 +282,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_RAM = sound("thornhorn.ram");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_STUNNED = sound("thornhorn.stunned");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_HORN_CRACK = sound("thornhorn.horn_crack");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_AMBIENT = sound("veinleech.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_HURT = sound("veinleech.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_DEATH = sound("veinleech.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_TELL = sound("veinleech.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_LATCH = sound("veinleech.latch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_DRAIN = sound("veinleech.drain");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VEINLEECH_SNAP = sound("veinleech.snap");
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_AMBIENT = sound("vinedrop_strangler.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_HURT = sound("vinedrop_strangler.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_DEATH = sound("vinedrop_strangler.death");

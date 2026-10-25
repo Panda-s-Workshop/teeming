@@ -23,9 +23,13 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> PETAL_DUST = ITEMS.registerItem("petal_dust", MaterialItem::new);
     public static final DeferredItem<MaterialItem> GRAVE_ASH = ITEMS.registerItem("grave_ash", MaterialItem::new);
     public static final DeferredItem<MaterialItem> GALE_ESSENCE = ITEMS.registerItem("gale_essence", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> PRISM_SHARD = ITEMS.registerItem("prism_shard", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SLAG_GLAND = ITEMS.registerItem("slag_gland", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> ASH_PELT = ITEMS.registerItem("ash_pelt", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SOOT_PLUME = ITEMS.registerItem("soot_plume", MaterialItem::new);
     public static final DeferredItem<MaterialItem> MAGMA_SCUTE = ITEMS.registerItem("magma_scute", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> VEIN_SAC = ITEMS.registerItem("vein_sac", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> CHITIN_PLATE = ITEMS.registerItem("chitin_plate", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SIPHON_GEL = ITEMS.registerItem("siphon_gel", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SOUL_VERTEBRA = ITEMS.registerItem("soul_vertebra", MaterialItem::new);
     public static final DeferredItem<MaterialItem> MOLTEN_HEART = ITEMS.registerItem("molten_heart", MaterialItem::new);
@@ -33,7 +37,7 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> CHAIN_LINK = ITEMS.registerItem("chain_link", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHORUS_SILK = ITEMS.registerItem("chorus_silk", MaterialItem::new);
 
-    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, SLAG_GLAND, SOOT_PLUME, MAGMA_SCUTE, SIPHON_GEL, SOUL_VERTEBRA, MOLTEN_HEART, EMBER_WING, CHAIN_LINK, CHORUS_SILK);
+    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, SOUL_VERTEBRA, MOLTEN_HEART, EMBER_WING, CHAIN_LINK, CHORUS_SILK);
 
     /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
@@ -49,9 +53,13 @@ public final class ModMaterials {
             Map.entry("petal_dust", List.of("craft 1 minecraft:pink_dye 4")),
             Map.entry("grave_ash", List.of("craft 1 minecraft:bone_meal 3")),
             Map.entry("gale_essence", List.of("craft 1 minecraft:wind_charge 2")),
+            Map.entry("prism_shard", List.of("craft 1 minecraft:quartz 4")),
             Map.entry("slag_gland", List.of("craft 1 minecraft:magma_cream 2")),
+            Map.entry("ash_pelt", List.of("craft 1 minecraft:leather 2")),
             Map.entry("soot_plume", List.of("craft 1 minecraft:ink_sac 2")),
             Map.entry("magma_scute", List.of("brew minecraft:long_fire_resistance")),
+            Map.entry("vein_sac", List.of("brew minecraft:healing")),
+            Map.entry("chitin_plate", List.of("craft 4 minecraft:armadillo_scute 1")),
             Map.entry("siphon_gel", List.of("craft 1 minecraft:glowstone_dust 2")),
             Map.entry("soul_vertebra", List.of("craft 1 minecraft:bone_meal 3")),
             Map.entry("molten_heart", List.of("craft 1 minecraft:magma_block 8")),

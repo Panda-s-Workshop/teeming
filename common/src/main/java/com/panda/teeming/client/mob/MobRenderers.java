@@ -49,14 +49,22 @@ public final class MobRenderers {
                 Set.of("base", "red_dust"), 0.45F, 1.0F, 2, true));
         out.register(ModMobs.SKREEL.get(), ctx -> new TeemingRenderer<>(ctx, new SkreelModel(ctx.bakeLayer(CreatureLayers.SKREEL)), "skreel",
                 Set.of(), 0.5F, 1.0F, 1, true));
+        out.register(ModMobs.PRISMBACK.get(), ctx -> new TeemingRenderer<>(ctx, new PrismbackModel(ctx.bakeLayer(CreatureLayers.PRISMBACK)), "prismback",
+                Set.of("base", "smoky_prismback"), 0.6F, 1.0F, 4, false));
         out.register(ModMobs.SLAGSPITTER.get(), ctx -> new TeemingRenderer<>(ctx, new SlagspitterModel(ctx.bakeLayer(CreatureLayers.SLAGSPITTER)), "slagspitter",
                 Set.of("basalt_spitter", "base"), 0.5F, 1.0F, 2, false));
+        out.register(ModMobs.ASH_JACKAL.get(), ctx -> new TeemingRenderer<>(ctx, new AshJackalModel(ctx.bakeLayer(CreatureLayers.ASH_JACKAL)), "ash_jackal",
+                Set.of("base", "soul_jackal"), 0.45F, 1.0F, 1, false));
         out.register(ModMobs.SLAGHEART_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new SlagheartGolemModel(ctx.bakeLayer(CreatureLayers.SLAGHEART_GOLEM)), "slagheart_golem",
                 Set.of("base", "cooled_golem"), 0.9F, 1.15F, 4, true));
         out.register(ModMobs.SOOT_MANTA.get(), ctx -> new TeemingRenderer<>(ctx, new SootMantaModel(ctx.bakeLayer(CreatureLayers.SOOT_MANTA)), "soot_manta",
                 Set.of("ember_manta"), 0.9F, 1.0F, 1, false));
         out.register(ModMobs.MAGMA_TORTOISE.get(), ctx -> new TeemingRenderer<>(ctx, new MagmaTortoiseModel(ctx.bakeLayer(CreatureLayers.MAGMA_TORTOISE)), "magma_tortoise",
                 Set.of("base", "old_tortoise"), 1.2F, 1.0F, 1, false));
+        out.register(ModMobs.VEINLEECH.get(), ctx -> new TeemingRenderer<>(ctx, new VeinleechModel(ctx.bakeLayer(CreatureLayers.VEINLEECH)), "veinleech",
+                Set.of(), 0.4F, 1.0F, 1, false));
+        out.register(ModMobs.SHREDJAW_BEETLE.get(), ctx -> new TeemingRenderer<>(ctx, new ShredjawBeetleModel(ctx.bakeLayer(CreatureLayers.SHREDJAW_BEETLE)), "shredjaw_beetle",
+                Set.of("base", "warped_shredjaw"), 0.7F, 1.0F, 1, false));
         out.register(ModMobs.GLEAMTRAP.get(), ctx -> new TeemingRenderer<>(ctx, new GleamtrapModel(ctx.bakeLayer(CreatureLayers.GLEAMTRAP)), "gleamtrap",
                 Set.of("base", "warped_gleamtrap"), 0.0F, 1.0F, 3, false));
         out.register(ModMobs.PHANTASM_LANTERN.get(), ctx -> new TeemingRenderer<>(ctx, new PhantasmLanternModel(ctx.bakeLayer(CreatureLayers.PHANTASM_LANTERN)), "phantasm_lantern",

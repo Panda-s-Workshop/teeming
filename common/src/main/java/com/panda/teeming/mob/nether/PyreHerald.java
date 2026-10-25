@@ -41,6 +41,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -87,6 +88,10 @@ public class PyreHerald extends TeemingMonster {
     public static final double ARRIVED = 1.0;
     /** With nobody to hide behind, it backs away from survival players this close. */
     public static final double FLEE_RANGE = 6.0;
+    /** Each step it backs off takes it at least this much further from the player, in blocks; a smaller one isn't taken. */
+    public static final double BACK_OFF_GAIN = 1.0;
+    /** How many spots it weighs each time it looks for a way to back off. */
+    private static final int BACK_OFF_TRIES = 3;
     /** A target this close has cornered it: it swats with the brazier pole. */
     public static final double CORNERED_RANGE = 2.0;
     /** How often it looks for a new hiding spot, in ticks. */
@@ -218,7 +223,8 @@ public class PyreHerald extends TeemingMonster {
                     double a = Math.toRadians(turn);
                     Vec3 d = new Vec3(dir.x * Math.cos(a) - dir.z * Math.sin(a), 0.0, dir.x * Math.sin(a) + dir.z * Math.cos(a));
                     Vec3 at = shield.position().add(d.scale(back));
-                    if (at.distanceToSqr(position()) <= ARRIVED * ARRIVED) return at;
+                    // already there, if it is a place it can stand: a spot inside a wall it stands beside is no spot
+                    if (at.distanceToSqr(position()) <= ARRIVED * ARRIVED && level.noCollision(this, getBoundingBox().move(at.subtract(position())))) return at;
                     Path path = getNavigation().createPath(BlockPos.containing(at), 0);
                     if (path != null && path.canReach()) return at;
                 }
@@ -291,10 +297,34 @@ public class PyreHerald extends TeemingMonster {
             if (!core().idle() || spot != null) return false;
             from = nearestThreat();
             if (from == null) return false;
+            for (int i = 0; i < BACK_OFF_TRIES; i++) {
+                Path path = retreat(from);
+                if (path != null) return getNavigation().moveTo(path, 1.25);
+            }
+            return false;
+        }
+
+        /**
+         * A path away from {@code from} that ends at least {@link #BACK_OFF_GAIN} further from it and never passes
+         * closer to it than it starts, or null.
+         */
+        private @Nullable Path retreat(Player from) {
             Vec3 away = DefaultRandomPos.getPosAway(PyreHerald.this, 16, 7, from.position());
             if (away == null) away = DefaultRandomPos.getPosAway(PyreHerald.this, 6, 3, from.position());   // by a wall: a short step beats none
-            if (away == null || away.distanceToSqr(from.position()) <= distanceToSqr(from)) return false;
-            return getNavigation().moveTo(away.x, away.y, away.z, 1.25);
+            if (away == null || away.distanceToSqr(from.position()) <= distanceToSqr(from)) return null;
+            // a spot it can't stand on (on top of a wall, past a fence) gives a path that stops short of it, and that
+            // can end no further from the player than it is now: what counts is where the path really ends
+            Path path = getNavigation().createPath(away.x, away.y, away.z, 1);
+            Node end = path == null ? null : path.getEndNode();
+            if (end == null) return null;
+            double gain = Vec3.atBottomCenterOf(end.asBlockPos()).distanceTo(from.position()) - distanceTo(from);
+            if (gain < BACK_OFF_GAIN) return null;
+            // backing off never walks it past the player: a way round a wall that crosses in front of them is no retreat
+            double start = Vec3.atBottomCenterOf(path.getNodePos(0)).distanceTo(from.position());
+            for (int i = 1; i < path.getNodeCount(); i++) {
+                if (Vec3.atBottomCenterOf(path.getNodePos(i)).distanceTo(from.position()) < start) return null;
+            }
+            return path;
         }
 
         @Override

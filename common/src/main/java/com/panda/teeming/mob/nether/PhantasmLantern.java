@@ -827,7 +827,9 @@ public class PhantasmLantern extends TeemingMonster {
             m.setSpeed(walk ? (float) m.getAttributeValue(Attributes.MOVEMENT_SPEED) : 0.0F);
             if (walk && m.horizontalCollision && m.onGround()) m.jumpFromGround();
             m.travel(new Vec3(m.xxa, m.yya, m.zza));
-            if (chase && !walk && (m.tickCount + m.getId()) % SWING_EVERY == 0) {
+            // in reach it swings, even while it still shuffles toward its flank: the crowd round the target (the
+            // other illusions, the target itself) can keep it from ever standing exactly on its flank
+            if (chase && d.horizontalDistance() <= reach && (m.tickCount + m.getId()) % SWING_EVERY == 0) {
                 m.swingForAttack(InteractionHand.MAIN_HAND);                    // the swing, and nothing behind it
                 if (m instanceof HoglinBase) level.broadcastEntityEvent(m, (byte) 4);
             }

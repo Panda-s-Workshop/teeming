@@ -82,6 +82,11 @@ public class Hushwing extends TeemingMonster {
 
     /** Each flock member closes in from its own side: this far off the noise, in blocks. */
     private static final double SPREAD = 0.6;
+    /**
+     * For the last ticks of its bite cooldown it stops circling and dives back at the spot, so a victim still standing
+     * there is in reach the tick the cooldown ends: its searching loop runs at the edge of its reach.
+     */
+    private static final int DIVE_TICKS = 5;
     private static final ShriekParticleOption RING = new ShriekParticleOption(0);
 
     private enum Kind { SPRINT, COMBAT, MINING, TOLD, DECOY }
@@ -331,11 +336,15 @@ public class Hushwing extends TeemingMonster {
         fly(goal(now));
     }
 
-    /** Where it steers: the noise, from its own side of it; once there, small searching loops round the spot. */
+    /**
+     * Where it steers: the noise, from its own side of it; once there, small searching loops round the spot, except
+     * that it dives back at the spot as its bite cooldown runs out.
+     */
     private Vec3 goal(long now) {
         double side = (getId() * 2.399) % (Math.PI * 2);           // each flock member its own angle
         Vec3 at = noiseAt;
-        if (at.distanceTo(centre()) > 1.5) return at.add(Math.cos(side) * SPREAD, 0.0, Math.sin(side) * SPREAD);
+        boolean diving = biteCooldown > 0 && biteCooldown <= DIVE_TICKS;
+        if (diving || at.distanceTo(centre()) > 1.5) return at.add(Math.cos(side) * SPREAD, 0.0, Math.sin(side) * SPREAD);
         double a = side + now * 0.25;
         return at.add(Math.cos(a) * 1.0, 0.3 + Math.sin(now * 0.31 + side) * 0.3, Math.sin(a) * 1.0);
     }

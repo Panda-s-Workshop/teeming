@@ -178,11 +178,12 @@ public final class LavaleaperTests {
         double[] moved = {0.0}, before = {Double.NaN}, risen = {Double.NEGATIVE_INFINITY}, last = {Double.NaN};
         Vec3[] start = {null};
         helper.onEachTick(() -> {
-            if (p[0] == null || at.containsKey("leap")) return;                               // the first tell only
+            if (at.containsKey("leap")) return;                                               // the first tell only
             if (!l.core().in(Step.TELL)) {
                 last[0] = l.getBoundingBox().maxY - surface(helper);  // its back on the tick before the tell rises
                 return;
             }
+            if (p[0] == null) return;
             if (start[0] == null) {
                 start[0] = l.position();
                 before[0] = last[0];

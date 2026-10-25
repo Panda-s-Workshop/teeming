@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:chitin_plate",
+    "teeming:chitin_plate",
+    "teeming:chitin_plate",
+    "teeming:chitin_plate"
+  ],
+  "result": {
+    "id": "minecraft:armadillo_scute",
+    "count": 1
+  }
+}

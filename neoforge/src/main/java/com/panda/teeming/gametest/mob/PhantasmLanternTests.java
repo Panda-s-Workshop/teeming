@@ -324,7 +324,8 @@ public final class PhantasmLanternTests {
 
     /**
      * No damage: the illusions walk up to the pig and swing at it, and the pig is never hurt, 10 health after 60
-     * ticks of it with no attacker on record.
+     * ticks of it with no attacker on record. They are copies of the pig, the only mob of this arena it may copy (the
+     * arenas sit closer together than its copy reach, so the kinds next door are left out).
      */
     private static void harmless(GameTestHelper helper) {
         PhantasmLantern l = lantern(helper, AT);
@@ -334,7 +335,7 @@ public final class PhantasmLanternTests {
         Vec3[] start = {null};
         double[] walked = {0.0};
         helper.runAtTickTime(2, () -> {
-            l.release(helper.getLevel());
+            l.release(helper.getLevel(), here(helper, l.sources(helper.getLevel(), null)));
             start[0] = l.illusions().live().getFirst().position();
         });
         helper.onEachTick(() -> {

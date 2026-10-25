@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#teeming:spawns/shredjaw_beetle",
+  "spawners": [
+    {
+      "type": "teeming:shredjaw_beetle",
+      "weight": 12,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}
