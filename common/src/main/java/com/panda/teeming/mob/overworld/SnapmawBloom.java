@@ -3,13 +3,10 @@ package com.panda.teeming.mob.overworld;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
+import com.panda.teeming.mob.Shot;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.registry.ModSounds;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -24,11 +21,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -70,7 +63,13 @@ public class SnapmawBloom extends TeemingMonster {
     private static final DustParticleOptions SEED_DUST = new DustParticleOptions(SEED_COLOR, 1.6F);
     private static final DustParticleOptions SAC_GOLD = new DustParticleOptions(0xFFD36B, 1.2F);
 
-    private final List<Seed> seeds = new ArrayList<>();
+    /**
+     * Seeds in flight. A seed is not an entity: the plant moves it {@link #SEED_SPEED} along a straight line each tick,
+     * stops it at the first block or hitbox on that stretch, and draws it with particles. So it can be dodged, it never
+     * homes, and it ends at {@link #RANGE}. Seeds are not saved; a reload drops the ones in the air.
+     */
+    private final Shot.Volley seeds = new Shot.Volley(this, SEED_RADIUS, new Shot.Rules(this::seedCanHit, this::trail,
+            (level, shot, victim, at) -> strike(level, victim, at), (level, shot, at, blocked) -> burst(level, at)));
     private int cooldown;
     private @Nullable LivingEntity pendingTell;
 
@@ -205,7 +204,7 @@ public class SnapmawBloom extends TeemingMonster {
             }
         }
         phaseParticles(level);
-        flySeeds(level);
+        seeds.tick(level);
     }
 
     /** The tell's glow at the mouth and the spit's spray: from the phase alone, so they show however the phase began. */
@@ -266,7 +265,7 @@ public class SnapmawBloom extends TeemingMonster {
             pitch = Mth.clamp(Math.atan2(target.getY(0.5) - m.y, flat), -MAX_PITCH, MAX_PITCH);
         }
         Vec3 f = forward();
-        seeds.add(new Seed(m, new Vec3(f.x * Math.cos(pitch), Math.sin(pitch), f.z * Math.cos(pitch))));
+        seeds.fire(Shot.Path.line(m, new Vec3(f.x * Math.cos(pitch), Math.sin(pitch), f.z * Math.cos(pitch)), SEED_SPEED, RANGE));
         level.playSound(null, m.x, m.y, m.z, ModSounds.SNAPMAW_BLOOM_SPIT.get(), getSoundSource(), 1.0F, 1.0F);
         return true;
     }
@@ -277,63 +276,6 @@ public class SnapmawBloom extends TeemingMonster {
     }
 
     // ---- seeds -----------------------------------------------------------------------------------------------------
-
-    /**
-     * A seed in flight. It is not an entity: the plant moves it {@link #SEED_SPEED} along a straight line each tick,
-     * stops it at the first block or hitbox on that stretch, and draws it with particles. So it can be dodged, it never
-     * homes, and it ends at {@link #RANGE}. Seeds are not saved; a reload drops the ones in the air.
-     */
-    private static final class Seed {
-        private Vec3 pos;
-        private final Vec3 dir;
-        private double travelled;
-
-        private Seed(Vec3 pos, Vec3 dir) {
-            this.pos = pos;
-            this.dir = dir.normalize();
-        }
-    }
-
-    private void flySeeds(ServerLevel level) {
-        for (Iterator<Seed> it = seeds.iterator(); it.hasNext(); ) {
-            if (fly(level, it.next())) it.remove();
-        }
-    }
-
-    /** Moves one seed one tick; true when it is spent. */
-    private boolean fly(ServerLevel level, Seed seed) {
-        double step = Math.min(SEED_SPEED, RANGE - seed.travelled);
-        Vec3 from = seed.pos;
-        Vec3 to = from.add(seed.dir.scale(step));
-        BlockHitResult wall = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-        boolean blocked = wall.getType() != HitResult.Type.MISS;
-        if (blocked) to = wall.getLocation();
-        LivingEntity victim = null;
-        Vec3 at = to;
-        double best = Double.MAX_VALUE;
-        AABB sweep = new AABB(from, to).inflate(SEED_RADIUS + 0.1);
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, sweep, this::seedCanHit)) {
-            AABB box = e.getBoundingBox().inflate(SEED_RADIUS);
-            Optional<Vec3> hit = box.contains(from) ? Optional.of(from) : box.clip(from, to);
-            if (hit.isPresent() && from.distanceToSqr(hit.get()) < best) {
-                best = from.distanceToSqr(hit.get());
-                victim = e;
-                at = hit.get();
-            }
-        }
-        trail(level, from, at);
-        if (victim != null) {
-            strike(level, victim, at);
-            return true;
-        }
-        seed.pos = to;
-        seed.travelled += step;
-        if (blocked || seed.travelled >= RANGE - 1.0E-6) {
-            burst(level, to);
-            return true;
-        }
-        return false;
-    }
 
     private boolean seedCanHit(LivingEntity e) {
         return e != this && !(e instanceof SnapmawBloom) && e.canBeHitByProjectile() && !e.isSpectator();
@@ -352,7 +294,7 @@ public class SnapmawBloom extends TeemingMonster {
 
     private void strike(ServerLevel level, LivingEntity victim, Vec3 at) {
         if (MechanicEvent.post(this, "seed_hit", victim)) {
-            victim.hurtServer(level, damageSources().mobProjectile(this, this), SEED_DAMAGE);
+            victim.hurtServer(level, Shot.damage(this), SEED_DAMAGE);
         }
         level.sendParticles(SEED_DUST, at.x, at.y, at.z, 10, 0.15, 0.15, 0.15, 0.0);
         level.playSound(null, at.x, at.y, at.z, ModSounds.SNAPMAW_BLOOM_SEED_HIT.get(), getSoundSource(), 1.0F, 1.0F);

@@ -5,8 +5,8 @@ import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
+import com.panda.teeming.mob.Zone;
 import com.panda.teeming.registry.ModSounds;
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -100,6 +100,8 @@ public class SootManta extends TeemingMonster {
     private static final Telegraph BURST = Telegraph.particles(ParticleTypes.SQUID_INK, 16, 0.6, 0.5).withSpeed(0.1);
     private static final Telegraph BOLT = Telegraph.particles(ParticleTypes.LARGE_SMOKE, 10, 0.6, 0.5).withSpeed(0.04);
     private static final int SHELL_POINTS = 8;
+    /** The cooldown outlasts a cloud, so there is one at a time; this caps the clouds a test hook can stack. */
+    private static final int MAX_CLOUDS = 4;
 
     private int cooldown;
     private int biteCooldown;
@@ -261,7 +263,7 @@ public class SootManta extends TeemingMonster {
         cooldown = COOLDOWN;
         if (!MechanicEvent.post(this, "soot_cloud", core().target())) return null;
         Vec3 at = centre();
-        clouds.add(new SootCloud(at, level.getGameTime() + CLOUD_TICKS));
+        clouds.open(level, at, CLOUD_TICKS);
         BURST.withSound(ModSounds.SOOT_MANTA_SHED.get(), 1.2F, 1.0F).play(this);
         level.sendParticles(ParticleTypes.SMOKE, at.x, at.y, at.z, 24, 1.0, 0.8, 1.0, 0.02);
         return at;
@@ -397,46 +399,37 @@ public class SootManta extends TeemingMonster {
         return position().add(0, getBbHeight() * 0.5, 0);
     }
 
-    // ---- the soot clouds (a self-contained zone: a ball of air with an effect inside, no blocks) ----------------------
+    // ---- the soot clouds: balls of air with an effect inside, never blocks ----------------------------------------
 
-    /** One cloud: where its middle is and the game time it clears. */
-    private record SootCloud(Vec3 at, long end) {
-        /** Whether any part of {@code e} is inside the ball. */
-        boolean holds(LivingEntity e) {
-            return e.getBoundingBox().distanceToSqr(at) <= CLOUD_RADIUS * CLOUD_RADIUS;
-        }
-    }
-
-    private final List<SootCloud> clouds = new ArrayList<>();
+    private final Zone clouds = new Zone(Zone.Shape.ball(CLOUD_RADIUS), MAX_CLOUDS)
+            .affects(e -> !(e instanceof SootManta) && e.isAlive() && EntitySelector.NO_SPECTATORS.test(e), this::soot)
+            .drawn(this::drawCloud);
 
     /** The clouds keep working while it dies, and go with it. */
     @Override
     public void tick() {
         super.tick();
-        if (level() instanceof ServerLevel level && !clouds.isEmpty()) tickClouds(level);
+        if (level() instanceof ServerLevel level) clouds.tick(level);
     }
 
-    private void tickClouds(ServerLevel level) {
-        long now = level.getGameTime();
-        clouds.removeIf(c -> now >= c.end());
-        for (SootCloud cloud : clouds) {
-            Vec3 at = cloud.at();
-            level.sendParticles(ParticleTypes.SQUID_INK, at.x, at.y, at.z, 2, 1.0, 0.8, 1.0, 0.005);
-            if (tickCount % 3 == 0) {
-                for (int i = 0; i < SHELL_POINTS; i++) {                      // the edge of the ball, so its size shows
-                    Vec3 d = new Vec3(random.nextGaussian(), random.nextGaussian() * 0.8, random.nextGaussian());
-                    if (d.lengthSqr() < 1.0E-4) continue;
-                    Vec3 p = at.add(d.normalize().scale(CLOUD_RADIUS));
-                    level.sendParticles(SOOT, p.x, p.y, p.z, 1, 0.0, 0.0, 0.0, 0.0);
-                }
-            }
-            if (tickCount % 4 == 0) level.sendParticles(ParticleTypes.LARGE_SMOKE, at.x, at.y, at.z, 1, 0.9, 0.7, 0.9, 0.005);
-            AABB box = new AABB(at, at).inflate(CLOUD_RADIUS);
-            for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, e -> !(e instanceof SootManta) && e.isAlive()
-                    && EntitySelector.NO_SPECTATORS.test(e) && cloud.holds(e))) {
-                soot(e);
+    @Override
+    public void onRemoval(RemovalReason reason) {
+        clouds.clear();
+        super.onRemoval(reason);
+    }
+
+    /** Ink-black puffs through the ball, flecks of soot on its edge so its size shows, and a slow smoke. */
+    private void drawCloud(ServerLevel level, Vec3 at) {
+        level.sendParticles(ParticleTypes.SQUID_INK, at.x, at.y, at.z, 2, 1.0, 0.8, 1.0, 0.005);
+        if (tickCount % 3 == 0) {
+            for (int i = 0; i < SHELL_POINTS; i++) {
+                Vec3 d = new Vec3(random.nextGaussian(), random.nextGaussian() * 0.8, random.nextGaussian());
+                if (d.lengthSqr() < 1.0E-4) continue;
+                Vec3 p = at.add(d.normalize().scale(CLOUD_RADIUS));
+                level.sendParticles(SOOT, p.x, p.y, p.z, 1, 0.0, 0.0, 0.0, 0.0);
             }
         }
+        if (tickCount % 4 == 0) level.sendParticles(ParticleTypes.LARGE_SMOKE, at.x, at.y, at.z, 1, 0.9, 0.7, 0.9, 0.005);
     }
 
     /** Blindness and Darkness for {@link #BLIND_TICKS}, topped up whenever less than {@link #REFRESH_BELOW} is left. */
@@ -449,7 +442,7 @@ public class SootManta extends TeemingMonster {
 
     /** The middles of its clouds still in the air. Public as a test hook. */
     public List<Vec3> clouds() {
-        return clouds.stream().map(SootCloud::at).toList();
+        return clouds.centres();
     }
 
     // ---- test hooks --------------------------------------------------------------------------------------------------

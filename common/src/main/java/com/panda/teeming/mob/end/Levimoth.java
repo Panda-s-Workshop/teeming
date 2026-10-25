@@ -5,6 +5,7 @@ import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
+import com.panda.teeming.mob.Zone;
 import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -62,7 +63,8 @@ public class Levimoth extends TeemingMonster {
     private static final int RING_POINTS = 28;
 
     private int cooldown;
-    private @Nullable AreaEffectCloud cloud;
+    // the vanilla cloud times and applies the levitation; this traces its edge for as long as it lasts
+    private final Zone dust = new Zone(Zone.Shape.disc(CLOUD_RADIUS, 0.5), 1).drawn(this::traceRing);
 
     public Levimoth(EntityType<? extends Levimoth> type, Level level) {
         super(type, level, Step.values());
@@ -121,7 +123,7 @@ public class Levimoth extends TeemingMonster {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         if (cooldown > 0) cooldown--;
-        traceRing(level);
+        dust.tick(level);
         if (core().in(Step.TELL)) {
             getNavigation().stop();
             setDeltaMovement(getDeltaMovement().scale(0.6));
@@ -151,7 +153,7 @@ public class Levimoth extends TeemingMonster {
     }
 
     /** Shakes out the dust cloud on the ground below; returns it, or null if an event cancelled it. Public as a test hook. */
-    public AreaEffectCloud release(ServerLevel level) {
+    public @Nullable AreaEffectCloud release(ServerLevel level) {
         if (!MechanicEvent.post(this, "dust", getTarget())) return null;
         AreaEffectCloud cloud = new AreaEffectCloud(level, getX(), groundY(level), getZ());
         cloud.setRadius(CLOUD_RADIUS);
@@ -163,24 +165,25 @@ public class Levimoth extends TeemingMonster {
         cloud.setOwner(this);
         level.addFreshEntity(cloud);
         PUFF.play(this);
-        this.cloud = cloud;
+        dust.carried(cloud);
         return cloud;
     }
 
     /** Traces the edge of its cloud with a ring of dust every few ticks, so the border shows on any ground. */
-    private void traceRing(ServerLevel level) {
-        if (cloud == null) return;
-        if (!cloud.isAlive()) {
-            cloud = null;
-            return;
-        }
+    private void traceRing(ServerLevel level, Vec3 at) {
         if (tickCount % 4 != 0) return;
         double turn = tickCount * 0.02;
         for (int i = 0; i < RING_POINTS; i++) {
             double a = turn + i * (Math.PI * 2 / RING_POINTS);
-            level.sendParticles(DUST, cloud.getX() + Math.cos(a) * CLOUD_RADIUS, cloud.getY() + 0.15,
-                    cloud.getZ() + Math.sin(a) * CLOUD_RADIUS, 1, 0.0, 0.05, 0.0, 0.0);
+            level.sendParticles(DUST, at.x + Math.cos(a) * CLOUD_RADIUS, at.y + 0.15,
+                    at.z + Math.sin(a) * CLOUD_RADIUS, 1, 0.0, 0.05, 0.0, 0.0);
         }
+    }
+
+    @Override
+    public void onRemoval(RemovalReason reason) {
+        dust.clear();
+        super.onRemoval(reason);
     }
 
     /** The top of the first solid block within 6 below it, or its own height over the void. */

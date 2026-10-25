@@ -4,10 +4,10 @@ import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
+import com.panda.teeming.mob.Shot;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.registry.ModSounds;
-import java.util.Optional;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +30,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -90,8 +89,11 @@ public class FortressJailer extends TeemingMonster {
 
     private final Grab grab = new Grab(MAX_PREY_WIDTH, MAX_PREY_HEIGHT, ESCAPE_RANGE);
     private int cooldown;
-    // the chain head in flight: a fixed line from the fist, and how far along it the head is
-    private boolean flying;
+    // the chain head in flight (null when it is not): a shot along a fixed line from the fist
+    private @Nullable Shot chain;
+    private final Shot.Rules chainRules = new Shot.Rules(this::chainCanHit,
+            (level, from, at) -> level.sendParticles(IRON, at.x, at.y, at.z, 1, 0.02, 0.02, 0.02, 0.0),
+            this::hit, this::stopped);
     private Vec3 chainFrom = Vec3.ZERO;
     private Vec3 chainDir = new Vec3(0, 0, 1);
     private double travelled;
@@ -298,7 +300,7 @@ public class FortressJailer extends TeemingMonster {
             LivingEntity target = core().target();
             if (!throwChain(level, valid(target) ? target.getBoundingBox().getCenter() : null)) finish();
         } else if (ended == Step.THROW) {
-            flying = false;
+            chain = null;
             reel(level, travelled, false);
         } else if (ended == Step.PULL) {
             letGo();
@@ -309,7 +311,7 @@ public class FortressJailer extends TeemingMonster {
     }
 
     private void finish() {
-        flying = false;
+        chain = null;
         letGo();
         hideChain();
         core().end();
@@ -328,7 +330,7 @@ public class FortressJailer extends TeemingMonster {
         chainFrom = from;
         chainDir = dir;
         travelled = 0.0;
-        flying = true;
+        chain = new Shot(Shot.Path.line(from, dir, CHAIN_SPEED, RANGE));
         // clients draw the chain growing at CHAIN_SPEED up to the first wall on its line
         BlockHitResult wall = level.clip(new ClipContext(from, from.add(dir.scale(RANGE)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
         showChain(wall.getType() == HitResult.Type.MISS ? RANGE : from.distanceTo(wall.getLocation()), p);
@@ -347,46 +349,30 @@ public class FortressJailer extends TeemingMonster {
         super.tick();
         if (!(level() instanceof ServerLevel level) || isNoAi()) return;
         // after its own move this tick, like any projectile
-        if (core().in(Step.THROW) && flying) fly(level);
+        if (core().in(Step.THROW) && chain != null) fly(level, chain);
         else if (core().in(Step.PULL)) pullTick(level);
         else if (core().in(Step.STRIKE) && !struck && core().elapsed() >= STRIKE_HIT_TICK) land(level);
     }
 
     /** Moves the chain head one tick along its line; stops it at the first block or hitbox, or at the end of its reach. */
-    private void fly(ServerLevel level) {
-        double step = Math.min(CHAIN_SPEED, RANGE - travelled);
-        Vec3 from = chainFrom.add(chainDir.scale(travelled));
-        Vec3 to = from.add(chainDir.scale(step));
-        BlockHitResult wall = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-        boolean blocked = wall.getType() != HitResult.Type.MISS;
-        if (blocked) to = wall.getLocation();
-        LivingEntity victim = null;
-        Vec3 at = to;
-        double best = Double.MAX_VALUE;
-        AABB sweep = new AABB(from, to).inflate(CHAIN_RADIUS + 0.1);
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, sweep, this::chainCanHit)) {
-            AABB box = e.getBoundingBox().inflate(CHAIN_RADIUS);
-            Optional<Vec3> hit = box.contains(from) ? Optional.of(from) : box.clip(from, to);
-            if (hit.isPresent() && from.distanceToSqr(hit.get()) < best) {
-                best = from.distanceToSqr(hit.get());
-                victim = e;
-                at = hit.get();
-            }
-        }
-        level.sendParticles(IRON, at.x, at.y, at.z, 1, 0.02, 0.02, 0.02, 0.0);
-        if (victim != null) {
-            flying = false;
-            travelled = chainFrom.distanceTo(at);
-            catchOn(level, victim, at);
-            return;
-        }
-        travelled += from.distanceTo(to);
-        if (blocked || travelled >= RANGE - 1.0E-6) {
-            flying = false;
-            level.sendParticles(ParticleTypes.CRIT, to.x, to.y, to.z, 6, 0.1, 0.1, 0.1, 0.2);
-            if (blocked) level.sendParticles(SPARK, to.x, to.y, to.z, 4, 0.1, 0.1, 0.1, 0.0);
-            reel(level, travelled, true);
-        }
+    private void fly(ServerLevel level, Shot head) {
+        if (!head.step(level, this, CHAIN_RADIUS, chainRules)) travelled = head.travelled();
+    }
+
+    /** The head reached a hitbox. */
+    private void hit(ServerLevel level, Shot head, LivingEntity victim, Vec3 at) {
+        chain = null;
+        travelled = chainFrom.distanceTo(at);
+        catchOn(level, victim, at);
+    }
+
+    /** The head hit a block, or nothing out to the end of its reach: the chain drops and is reeled in. */
+    private void stopped(ServerLevel level, Shot head, Vec3 at, boolean blocked) {
+        chain = null;
+        travelled = head.travelled();
+        level.sendParticles(ParticleTypes.CRIT, at.x, at.y, at.z, 6, 0.1, 0.1, 0.1, 0.2);
+        if (blocked) level.sendParticles(SPARK, at.x, at.y, at.z, 4, 0.1, 0.1, 0.1, 0.0);
+        reel(level, travelled, true);
     }
 
     private boolean chainCanHit(LivingEntity e) {
@@ -422,7 +408,7 @@ public class FortressJailer extends TeemingMonster {
      * coming from the jailer like any mob's projectile (so the shield has to face it).
      */
     private boolean shieldBlocks(ServerLevel level, LivingEntity victim) {
-        return victim.applyItemBlocking(level, damageSources().mobProjectile(this, this), SHIELD_WEIGHT) > 0.0F;
+        return victim.applyItemBlocking(level, Shot.damage(this), SHIELD_WEIGHT) > 0.0F;
     }
 
     /** Drags the hooked victim one tick closer; once it stands next to the jailer, it is struck. */
@@ -481,7 +467,7 @@ public class FortressJailer extends TeemingMonster {
 
     /** A loose chain, missed, blocked or let go: it comes back in at REEL_SPEED, then the jailer is free again. */
     private void reel(ServerLevel level, double length, boolean dropped) {
-        flying = false;
+        chain = null;
         length = Mth.clamp(length, 0.0, RANGE);
         int ticks = Math.max(MIN_REEL_TICKS, Mth.ceil(length / REEL_SPEED));
         if (!startPhase(Step.REEL, ticks, null)) {
@@ -537,7 +523,7 @@ public class FortressJailer extends TeemingMonster {
 
     /** True while the chain head is in flight. */
     public boolean chainFlying() {
-        return flying;
+        return chain != null;
     }
 
     /** How far the chain head has gone from its fist on this throw, in blocks. */
