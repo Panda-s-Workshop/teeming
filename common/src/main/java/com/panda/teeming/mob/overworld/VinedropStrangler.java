@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -111,7 +112,7 @@ public class VinedropStrangler extends TeemingMonster {
     private int stuck;
     private @Nullable Vec3 hangPos;
     private @Nullable Vec3 lastClimb;
-    private @Nullable LivingEntity victim;
+    private final Grab grab = new Grab(MAX_PREY_WIDTH, MAX_PREY_HEIGHT, ESCAPE_RANGE);
 
     public VinedropStrangler(EntityType<? extends VinedropStrangler> type, Level level) {
         super(type, level, Step.values());
@@ -176,8 +177,8 @@ public class VinedropStrangler extends TeemingMonster {
         if (!(level() instanceof ServerLevel)) return;
         setNoGravity(aloft());
         // after the victim's own move this tick, so it stays coiled wherever they went
-        LivingEntity v = victim;
-        if (v != null && core().in(Step.WRAP) && !isNoAi() && holding(v)) coil(v);
+        LivingEntity v = grab.victim();
+        if (v != null && core().in(Step.WRAP) && !isNoAi() && grab.holding(this, position())) coil(v);
     }
 
     @Override
@@ -428,23 +429,20 @@ public class VinedropStrangler extends TeemingMonster {
     }
 
     // ---- grab: coiled round a victim -------------------------------------------------------------------------------
-    // Self-contained: the strangler moves itself onto its victim after the victim's move each tick and holds no state
-    // on it but the Slowness, applied for exactly the wrap's length. Every way the wrap ends runs release(), which
+    // The strangler moves itself onto its victim after the victim's move each tick (the Grab says whether it still
+    // holds them) and leaves no state on it but the Slowness, applied for exactly the wrap's length. Every way the wrap ends runs release(), which
     // takes the Slowness off; a strangler that vanishes without it leaves at most the rest of 4 s of Slowness.
 
     /** Prey it can wrap: alive, here, small enough, and not a player in creative or spectator. */
     public boolean prey(@Nullable LivingEntity e) {
-        if (e == null || !e.isAlive() || e.isRemoved() || e == this || e instanceof VinedropStrangler || e.level() != level()) return false;
-        if (e instanceof Player p && (p.isCreative() || p.isSpectator())) return false;
-        return e.getBbWidth() <= MAX_PREY_WIDTH && e.getBbHeight() <= MAX_PREY_HEIGHT;
+        return !(e instanceof VinedropStrangler) && grab.fits(this, e);
     }
 
     /** Wraps {@code prey} at once, without the shadow or the drop; true if it did. Public as a test hook. */
     public boolean wrap(@Nullable LivingEntity prey) {
         if (level().isClientSide() || !prey(prey) || core().in(Step.WRAP)) return false;
         if (!startPhase(Step.WRAP, WRAP_TICKS, prey)) return false;
-        victim = prey;
-        prey.stopRiding();
+        grab.take(prey);
         prey.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, WRAP_TICKS, SLOWNESS_LEVEL), this);
         coil(prey);
         if (level() instanceof ServerLevel level) {
@@ -453,13 +451,6 @@ public class VinedropStrangler extends TeemingMonster {
             rustle(level, position().add(0, 1.2, 0), 10);
         }
         return true;
-    }
-
-    /** Still holding {@code v}: alive, here, not gone creative, and not got away. */
-    private boolean holding(LivingEntity v) {
-        if (!v.isAlive() || v.isRemoved() || v.level() != level()) return false;
-        if (v instanceof Player p && (p.isCreative() || p.isSpectator())) return false;
-        return v.position().distanceToSqr(position()) <= ESCAPE_RANGE * ESCAPE_RANGE;
     }
 
     /** Onto its victim, facing the way they face, so it is coiled round them from behind. */
@@ -474,8 +465,8 @@ public class VinedropStrangler extends TeemingMonster {
     }
 
     private void wrapTick(ServerLevel level) {
-        LivingEntity v = victim;
-        if (v == null || !holding(v)) {
+        LivingEntity v = grab.victim();
+        if (v == null || !grab.holding(this, position())) {
             release();
             climbBack(level);
             return;
@@ -489,8 +480,7 @@ public class VinedropStrangler extends TeemingMonster {
     /** One squeeze: 1 damage, landing in full whatever hit the victim just before. */
     private void squeeze(ServerLevel level, LivingEntity v) {
         if (!MechanicEvent.post(this, "squeeze", v)) return;
-        v.damageCooldownTime = 0;                             // the hurt cooldown would otherwise eat a squeeze now and then
-        v.hurtServer(level, damageSources().mobAttack(this), SQUEEZE_DAMAGE);
+        Grab.hurt(level, v, damageSources().mobAttack(this), SQUEEZE_DAMAGE);
         coil(v);                                              // the squeeze's knockback doesn't free it
         level.playSound(null, getX(), getY(), getZ(), ModSounds.VINEDROP_STRANGLER_SQUEEZE.get(), getSoundSource(), 1.0F, 0.9F + random.nextFloat() * 0.2F);
         level.sendParticles(SHREDS, getX(), getY() + 0.9, getZ(), 6, 0.35, 0.3, 0.35, 0.05);
@@ -498,8 +488,7 @@ public class VinedropStrangler extends TeemingMonster {
 
     /** Lets go of the victim, if any, and takes its Slowness off. */
     private @Nullable LivingEntity release() {
-        LivingEntity v = victim;
-        victim = null;
+        LivingEntity v = grab.release();
         if (v != null) {
             MobEffectInstance slow = v.getEffect(MobEffects.SLOWNESS);
             if (slow != null && slow.getAmplifier() == SLOWNESS_LEVEL && slow.getDuration() <= WRAP_TICKS) v.removeEffect(MobEffects.SLOWNESS);
@@ -591,12 +580,12 @@ public class VinedropStrangler extends TeemingMonster {
     // its own victim neither pushes it nor is pushed by it
     @Override
     public void push(Entity other) {
-        if (other != victim) super.push(other);
+        if (!grab.holds(other)) super.push(other);
     }
 
     @Override
     protected void doPush(Entity other) {
-        if (other != victim) super.doPush(other);
+        if (!grab.holds(other)) super.doPush(other);
     }
 
     @Override
@@ -690,7 +679,7 @@ public class VinedropStrangler extends TeemingMonster {
 
     /** Who it is wrapped round, or null. */
     public @Nullable LivingEntity victim() {
-        return victim;
+        return grab.victim();
     }
 
     /** Where it hangs (or will hang once it has climbed back), or null. */

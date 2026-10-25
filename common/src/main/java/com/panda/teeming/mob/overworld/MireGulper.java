@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -80,7 +81,7 @@ public class MireGulper extends TeemingMonster {
 
     private int cooldown;
     private int hits;
-    private @Nullable LivingEntity victim;
+    private final Grab grab = new Grab(MAX_PREY_WIDTH, MAX_PREY_HEIGHT, ESCAPE_RANGE);
 
     public MireGulper(EntityType<? extends MireGulper> type, Level level) {
         super(type, level, Step.values());
@@ -188,8 +189,8 @@ public class MireGulper extends TeemingMonster {
         boolean under = isAlive() && isUnderWater() && (core().idle() || core().in(Step.TELL));
         core().setFlag(SUBMERGED, under);
         // after its own move this tick, so a victim is where its mouth ended up (knocked back, falling, walking)
-        LivingEntity v = victim;
-        if (v != null && core().in(Step.SWALLOW) && !isNoAi() && holding(v)) holdInMouth(v, false);
+        LivingEntity v = grab.victim();
+        if (v != null && core().in(Step.SWALLOW) && !isNoAi() && grab.holding(this, mouth())) holdInMouth(v, false);
     }
 
     // ---- the ambush ------------------------------------------------------------------------------------------------
@@ -216,9 +217,7 @@ public class MireGulper extends TeemingMonster {
 
     /** Prey it can swallow: alive, small enough to fit in its mouth, and not a player in creative or spectator. */
     public boolean swallowable(@Nullable LivingEntity e) {
-        if (e == null || !e.isAlive() || e.isRemoved() || e == this || e instanceof MireGulper || e.level() != level()) return false;
-        if (e instanceof Player p && (p.isCreative() || p.isSpectator())) return false;
-        return e.getBbHeight() <= MAX_PREY_HEIGHT && e.getBbWidth() <= MAX_PREY_WIDTH;
+        return !(e instanceof MireGulper) && grab.fits(this, e);
     }
 
     private boolean canAmbush(@Nullable LivingEntity target) {
@@ -305,18 +304,16 @@ public class MireGulper extends TeemingMonster {
     }
 
     // ---- grab and carry: holding a victim in its mouth --------------------------------------------------------------
-    // Self-contained: the victim is put back at the mouth whenever it drifts, its motion zeroed, so it is rooted and
-    // carried wherever the gulper goes. Nothing is stored on the victim, and every way the hold can end (the hold runs
-    // out, the counter, the victim dying or getting away, the gulper dying or unloading) simply stops putting it back.
+    // The victim is put back at the mouth whenever it drifts, its motion zeroed, so it is rooted and carried wherever
+    // the gulper goes; the Grab says whether it still holds them.
 
     /** Swallows {@code prey} at once, without the tell; true if it did. Public as a test hook. */
     public boolean swallow(@Nullable LivingEntity prey) {
         if (level().isClientSide() || !swallowable(prey) || core().in(Step.SWALLOW)) return false;
         if (!startPhase(Step.SWALLOW, HOLD_TICKS, prey)) return false;
-        victim = prey;
+        grab.take(prey);
         hits = 0;
         cooldown = COOLDOWN;
-        prey.stopRiding();
         holdInMouth(prey, true);
         if (level() instanceof ServerLevel level) {
             level.playSound(null, getX(), getY(), getZ(), ModSounds.MIRE_GULPER_GULP.get(), getSoundSource(), 1.2F, 1.0F);
@@ -333,17 +330,10 @@ public class MireGulper extends TeemingMonster {
         return position().add(-Mth.sin(yaw) * MOUTH_FORWARD, MOUTH_UP, Mth.cos(yaw) * MOUTH_FORWARD);
     }
 
-    /** Still holding {@code v}: alive, in this level, not gone creative, and not got away. */
-    private boolean holding(LivingEntity v) {
-        if (!v.isAlive() || v.isRemoved() || v.level() != level()) return false;
-        if (v instanceof Player p && (p.isCreative() || p.isSpectator())) return false;
-        return v.position().distanceToSqr(mouth()) <= ESCAPE_RANGE * ESCAPE_RANGE;
-    }
-
     private void holdTick(ServerLevel level) {
-        LivingEntity v = victim;
-        if (v == null || !holding(v)) {
-            victim = null;
+        LivingEntity v = grab.victim();
+        if (v == null || !grab.holding(this, mouth())) {
+            grab.release();
             if (!startPhase(Step.RECOVER, RECOVER_TICKS, null)) core().end();
             return;
         }
@@ -373,8 +363,7 @@ public class MireGulper extends TeemingMonster {
     /** One chew: half its attack damage, landing in full whatever hit the victim just before. */
     private void chew(ServerLevel level, LivingEntity v) {
         if (!MechanicEvent.post(this, "chew", v)) return;
-        v.damageCooldownTime = 0;                             // the hurt cooldown would otherwise eat a chew now and then
-        v.hurtServer(level, damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE_HIT);
+        Grab.hurt(level, v, damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE_HIT);
         holdInMouth(v, true);                                 // the chew's knockback doesn't free it
         level.playSound(null, getX(), getY(), getZ(), ModSounds.MIRE_GULPER_CHEW.get(), getSoundSource(), 1.0F, 0.9F + random.nextFloat() * 0.2F);
         Vec3 m = mouth();
@@ -383,8 +372,7 @@ public class MireGulper extends TeemingMonster {
 
     /** Lets go of the victim, if any, pushing it out of its mouth at {@code speed} blocks a tick (and up a little). */
     private @Nullable LivingEntity release(double speed) {
-        LivingEntity v = victim;
-        victim = null;
+        LivingEntity v = grab.release();
         hits = 0;
         if (v != null && v.isAlive() && !v.isRemoved()) {
             float yaw = yBodyRot * Mth.DEG_TO_RAD;
@@ -444,12 +432,12 @@ public class MireGulper extends TeemingMonster {
     // its own victim neither pushes it nor is pushed by it
     @Override
     public void push(Entity other) {
-        if (other != victim) super.push(other);
+        if (!grab.holds(other)) super.push(other);
     }
 
     @Override
     protected void doPush(Entity other) {
-        if (other != victim) super.doPush(other);
+        if (!grab.holds(other)) super.doPush(other);
     }
 
     @Override
@@ -460,7 +448,7 @@ public class MireGulper extends TeemingMonster {
 
     @Override
     public void onRemoval(RemovalReason reason) {
-        victim = null;
+        grab.release();
         super.onRemoval(reason);
     }
 
@@ -482,7 +470,7 @@ public class MireGulper extends TeemingMonster {
 
     /** Who it holds in its mouth, or null. */
     public @Nullable LivingEntity victim() {
-        return victim;
+        return grab.victim();
     }
 
     /** Hits taken during the current hold. */
