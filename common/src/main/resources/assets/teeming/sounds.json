@@ -303,6 +303,142 @@
       }
     ]
   },
+  "dustwhirl.ambient": {
+    "subtitle": "subtitles.teeming.dustwhirl.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.idle_ground",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.sand.step",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "dustwhirl.hurt": {
+    "subtitle": "subtitles.teeming.dustwhirl.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.hurt",
+        "type": "event",
+        "pitch": 0.75
+      },
+      {
+        "name": "minecraft:block.sand.hit",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "dustwhirl.death": {
+    "subtitle": "subtitles.teeming.dustwhirl.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.death",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "dustwhirl.spin": {
+    "subtitle": "subtitles.teeming.dustwhirl.spin",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.charge",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.breeze.inhale",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      }
+    ]
+  },
+  "dustwhirl.whistle": {
+    "subtitle": "subtitles.teeming.dustwhirl.whistle",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.whirl",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dustwhirl.gust": {
+    "subtitle": "subtitles.teeming.dustwhirl.gust",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.wind_burst",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.breeze.shoot",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "dustwhirl.slow": {
+    "subtitle": "subtitles.teeming.dustwhirl.slow",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.slide",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "dustwhirl.steal": {
+    "subtitle": "subtitles.teeming.dustwhirl.steal",
+    "sounds": [
+      {
+        "name": "minecraft:entity.item.pickup",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.breeze.inhale",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "dustwhirl.core_hit": {
+    "subtitle": "subtitles.teeming.dustwhirl.core_hit",
+    "sounds": [
+      {
+        "name": "minecraft:entity.breeze.deflect",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_block.hit",
+        "type": "event",
+        "pitch": 1.2
+      }
+    ]
+  },
   "gloamhound.ambient": {
     "subtitle": "subtitles.teeming.gloamhound.ambient",
     "sounds": [
@@ -413,6 +549,109 @@
         "type": "event",
         "pitch": 0.8,
         "volume": 1.5
+      }
+    ]
+  },
+  "hollow_mourner.ambient": {
+    "subtitle": "subtitles.teeming.hollow_mourner.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie_villager.ambient",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.soul_sand.step",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      }
+    ]
+  },
+  "hollow_mourner.hurt": {
+    "subtitle": "subtitles.teeming.hollow_mourner.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie_villager.hurt",
+        "type": "event",
+        "pitch": 0.65
+      },
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "hollow_mourner.death": {
+    "subtitle": "subtitles.teeming.hollow_mourner.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie_villager.death",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      }
+    ]
+  },
+  "hollow_mourner.chant": {
+    "subtitle": "subtitles.teeming.hollow_mourner.chant",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker.prepare_summon",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.8
+      }
+    ]
+  },
+  "hollow_mourner.raise": {
+    "subtitle": "subtitles.teeming.hollow_mourner.raise",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker.cast_spell",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.rooted_dirt.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:particle.soul_escape",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.2
+      }
+    ]
+  },
+  "hollow_mourner.stagger": {
+    "subtitle": "subtitles.teeming.hollow_mourner.stagger",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker.hurt",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.soul_sand.break",
+        "type": "event",
+        "pitch": 0.8
       }
     ]
   },
@@ -826,6 +1065,107 @@
         "name": "minecraft:block.fungus.break",
         "type": "event",
         "pitch": 0.5
+      }
+    ]
+  },
+  "petalkin.ambient": {
+    "subtitle": "subtitles.teeming.petalkin.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.allay.ambient_without_item",
+        "type": "event",
+        "pitch": 1.35,
+        "volume": 0.4
+      },
+      {
+        "name": "minecraft:block.pink_petals.step",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "petalkin.hurt": {
+    "subtitle": "subtitles.teeming.petalkin.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.allay.hurt",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.cherry_leaves.break",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.6
+      }
+    ]
+  },
+  "petalkin.death": {
+    "subtitle": "subtitles.teeming.petalkin.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.allay.death",
+        "type": "event",
+        "pitch": 1.1,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.cherry_leaves.break",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "petalkin.blink": {
+    "subtitle": "subtitles.teeming.petalkin.blink",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.mirror_move",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.cherry_leaves.fall",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.9
+      }
+    ]
+  },
+  "petalkin.pop": {
+    "subtitle": "subtitles.teeming.petalkin.pop",
+    "sounds": [
+      {
+        "name": "minecraft:block.pink_petals.break",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.illusioner.cast_spell",
+        "type": "event",
+        "pitch": 1.9,
+        "volume": 0.35
+      }
+    ]
+  },
+  "petalkin.peck": {
+    "subtitle": "subtitles.teeming.petalkin.peck",
+    "sounds": [
+      {
+        "name": "minecraft:block.cherry_sapling.hit",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.allay.item_taken",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.4
       }
     ]
   },

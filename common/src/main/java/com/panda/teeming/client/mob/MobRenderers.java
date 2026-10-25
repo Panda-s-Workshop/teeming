@@ -41,6 +41,12 @@ public final class MobRenderers {
                 Set.of(), 0.3F, 1.0F, 1, false));
         out.register(ModMobs.MYCELITE_SHAMBLER.get(), ctx -> new TeemingRenderer<>(ctx, new MyceliteShamblerModel(ctx.bakeLayer(CreatureLayers.MYCELITE_SHAMBLER)), "mycelite_shambler",
                 Set.of(), 0.6F, 1.0F, 1, false));
+        out.register(ModMobs.PETALKIN.get(), ctx -> new TeemingRenderer<>(ctx, new PetalkinModel(ctx.bakeLayer(CreatureLayers.PETALKIN)), "petalkin",
+                Set.of(), 0.35F, 1.0F, 1, false));
+        out.register(ModMobs.HOLLOW_MOURNER.get(), ctx -> new TeemingRenderer<>(ctx, new HollowMournerModel(ctx.bakeLayer(CreatureLayers.HOLLOW_MOURNER)), "hollow_mourner",
+                Set.of(), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.DUSTWHIRL.get(), ctx -> new TeemingRenderer<>(ctx, new DustwhirlModel(ctx.bakeLayer(CreatureLayers.DUSTWHIRL)), "dustwhirl",
+                Set.of("base", "red_dust"), 0.45F, 1.0F, 2, true));
         out.register(ModMobs.SKREEL.get(), ctx -> new TeemingRenderer<>(ctx, new SkreelModel(ctx.bakeLayer(CreatureLayers.SKREEL)), "skreel",
                 Set.of(), 0.5F, 1.0F, 1, true));
         out.register(ModMobs.SLAGHEART_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new SlagheartGolemModel(ctx.bakeLayer(CreatureLayers.SLAGHEART_GOLEM)), "slagheart_golem",

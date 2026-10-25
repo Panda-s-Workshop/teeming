@@ -24,6 +24,9 @@ public final class MobBounds {
             Map.entry("dripfang", new float[] {1.863F, 1.620F, 1.863F}),
             Map.entry("hushwing", new float[] {2.007F, 0.883F, 0.779F}),
             Map.entry("mycelite_shambler", new float[] {1.168F, 1.893F, 1.187F}),
+            Map.entry("petalkin", new float[] {0.805F, 0.990F, 0.766F}),
+            Map.entry("hollow_mourner", new float[] {1.005F, 2.629F, 0.895F}),
+            Map.entry("dustwhirl", new float[] {0.875F, 1.562F, 0.987F}),
             Map.entry("skreel", new float[] {2.740F, 0.834F, 1.592F}),
             Map.entry("slagheart_golem", new float[] {2.300F, 2.300F, 1.545F}),
             Map.entry("levimoth", new float[] {1.805F, 0.815F, 1.001F})

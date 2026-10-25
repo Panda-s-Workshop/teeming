@@ -7,10 +7,13 @@ import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.mob.overworld.Dripfang;
 import com.panda.teeming.mob.overworld.Dunefin;
+import com.panda.teeming.mob.overworld.Dustwhirl;
 import com.panda.teeming.mob.overworld.Gloamhound;
+import com.panda.teeming.mob.overworld.HollowMourner;
 import com.panda.teeming.mob.overworld.Hushwing;
 import com.panda.teeming.mob.overworld.MireGulper;
 import com.panda.teeming.mob.overworld.MyceliteShambler;
+import com.panda.teeming.mob.overworld.Petalkin;
 import com.panda.teeming.mob.overworld.PuffcapShepherd;
 import com.panda.teeming.mob.overworld.Rattlecoil;
 import com.panda.teeming.mob.overworld.ShellguardCrab;
@@ -68,6 +71,12 @@ public final class ModMobs {
             b -> b.sized(0.5F, 0.5F).eyeHeight(0.3F).clientTrackingRange(10));
     public static final Supplier<EntityType<MyceliteShambler>> MYCELITE_SHAMBLER = ENTITIES.registerEntityType("mycelite_shambler", MyceliteShambler::new, MobCategory.MONSTER,
             b -> b.sized(1.0F, 1.8F).eyeHeight(1.45F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Petalkin>> PETALKIN = ENTITIES.registerEntityType("petalkin", Petalkin::new, MobCategory.CREATURE,
+            b -> b.sized(0.5F, 0.9F).eyeHeight(0.62F).clientTrackingRange(10));
+    public static final Supplier<EntityType<HollowMourner>> HOLLOW_MOURNER = ENTITIES.registerEntityType("hollow_mourner", HollowMourner::new, MobCategory.MONSTER,
+            b -> b.sized(0.7F, 2.0F).eyeHeight(1.7F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Dustwhirl>> DUSTWHIRL = ENTITIES.registerEntityType("dustwhirl", Dustwhirl::new, MobCategory.MONSTER,
+            b -> b.sized(0.8F, 1.6F).eyeHeight(1.0F).clientTrackingRange(10));
     public static final Supplier<EntityType<Skreel>> SKREEL = ENTITIES.registerEntityType("skreel", Skreel::new, MobCategory.MONSTER,
             b -> b.sized(0.9F, 0.7F).eyeHeight(0.5F).clientTrackingRange(10));
     public static final Supplier<EntityType<SlagheartGolem>> SLAGHEART_GOLEM = ENTITIES.registerEntityType("slagheart_golem", SlagheartGolem::new, MobCategory.MONSTER,
@@ -91,12 +100,15 @@ public final class ModMobs {
     public static final DeferredItem<Item> DRIPFANG_SPAWN_EGG = ITEMS.registerItem("dripfang_spawn_egg", Item::new, p -> p.spawnEgg(DRIPFANG.get()));
     public static final DeferredItem<Item> HUSHWING_SPAWN_EGG = ITEMS.registerItem("hushwing_spawn_egg", Item::new, p -> p.spawnEgg(HUSHWING.get()));
     public static final DeferredItem<Item> MYCELITE_SHAMBLER_SPAWN_EGG = ITEMS.registerItem("mycelite_shambler_spawn_egg", Item::new, p -> p.spawnEgg(MYCELITE_SHAMBLER.get()));
+    public static final DeferredItem<Item> PETALKIN_SPAWN_EGG = ITEMS.registerItem("petalkin_spawn_egg", Item::new, p -> p.spawnEgg(PETALKIN.get()));
+    public static final DeferredItem<Item> HOLLOW_MOURNER_SPAWN_EGG = ITEMS.registerItem("hollow_mourner_spawn_egg", Item::new, p -> p.spawnEgg(HOLLOW_MOURNER.get()));
+    public static final DeferredItem<Item> DUSTWHIRL_SPAWN_EGG = ITEMS.registerItem("dustwhirl_spawn_egg", Item::new, p -> p.spawnEgg(DUSTWHIRL.get()));
     public static final DeferredItem<Item> SKREEL_SPAWN_EGG = ITEMS.registerItem("skreel_spawn_egg", Item::new, p -> p.spawnEgg(SKREEL.get()));
     public static final DeferredItem<Item> SLAGHEART_GOLEM_SPAWN_EGG = ITEMS.registerItem("slagheart_golem_spawn_egg", Item::new, p -> p.spawnEgg(SLAGHEART_GOLEM.get()));
     public static final DeferredItem<Item> LEVIMOTH_SPAWN_EGG = ITEMS.registerItem("levimoth_spawn_egg", Item::new, p -> p.spawnEgg(LEVIMOTH.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, SKREEL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -118,6 +130,9 @@ public final class ModMobs {
         sink.accept(DRIPFANG.get(), Dripfang.createAttributes().build());
         sink.accept(HUSHWING.get(), Hushwing.createAttributes().build());
         sink.accept(MYCELITE_SHAMBLER.get(), MyceliteShambler.createAttributes().build());
+        sink.accept(PETALKIN.get(), Petalkin.createAttributes().build());
+        sink.accept(HOLLOW_MOURNER.get(), HollowMourner.createAttributes().build());
+        sink.accept(DUSTWHIRL.get(), Dustwhirl.createAttributes().build());
         sink.accept(SKREEL.get(), Skreel.createAttributes().build());
         sink.accept(SLAGHEART_GOLEM.get(), SlagheartGolem.createAttributes().build());
         sink.accept(LEVIMOTH.get(), Levimoth.createAttributes().build());

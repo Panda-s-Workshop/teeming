@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "teeming:item/hollow_mourner_spawn_egg"
+  }
+}

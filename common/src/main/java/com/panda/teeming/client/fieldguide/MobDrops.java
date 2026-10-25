@@ -24,6 +24,9 @@ public final class MobDrops {
             Map.entry("dripfang", List.of("teeming:venom_fang", "minecraft:pointed_dripstone", "teeming:trophy")),
             Map.entry("hushwing", List.of("teeming:echo_membrane", "teeming:trophy")),
             Map.entry("mycelite_shambler", List.of("teeming:spore_sac", "minecraft:brown_mushroom", "teeming:trophy")),
+            Map.entry("petalkin", List.of("teeming:petal_dust", "minecraft:pink_petals", "teeming:trophy")),
+            Map.entry("hollow_mourner", List.of("teeming:grave_ash", "minecraft:bone", "minecraft:string", "teeming:trophy")),
+            Map.entry("dustwhirl", List.of("teeming:gale_essence", "minecraft:stick", "teeming:trophy")),
             Map.entry("skreel", List.of("teeming:gale_essence", "minecraft:feather", "teeming:trophy")),
             Map.entry("slagheart_golem", List.of("teeming:slag_gland", "minecraft:basalt", "minecraft:coal", "teeming:trophy")),
             Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy"))
