@@ -17,9 +17,13 @@ public final class MobBounds {
             Map.entry("snowroller", new float[] {0.938F, 1.250F, 1.250F}),
             Map.entry("shiverwraith", new float[] {1.341F, 2.018F, 0.863F}),
             Map.entry("gloamhound", new float[] {0.625F, 1.038F, 1.956F}),
+            Map.entry("vinedrop_strangler", new float[] {0.915F, 1.568F, 0.562F}),
             Map.entry("snapmaw_bloom", new float[] {1.256F, 1.585F, 1.195F}),
             Map.entry("stormeel", new float[] {0.463F, 0.438F, 1.492F}),
             Map.entry("shellguard_crab", new float[] {1.735F, 0.835F, 1.555F}),
+            Map.entry("dripfang", new float[] {1.863F, 1.620F, 1.863F}),
+            Map.entry("hushwing", new float[] {2.007F, 0.883F, 0.779F}),
+            Map.entry("mycelite_shambler", new float[] {1.168F, 1.893F, 1.187F}),
             Map.entry("skreel", new float[] {2.740F, 0.834F, 1.592F}),
             Map.entry("slagheart_golem", new float[] {2.300F, 2.300F, 1.545F}),
             Map.entry("levimoth", new float[] {1.805F, 0.815F, 1.001F})

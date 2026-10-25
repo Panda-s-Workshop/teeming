@@ -17,9 +17,13 @@ public final class MobDrops {
             Map.entry("snowroller", List.of("teeming:frost_core", "minecraft:snowball", "teeming:trophy")),
             Map.entry("shiverwraith", List.of("teeming:frost_core", "minecraft:snowball", "teeming:trophy")),
             Map.entry("gloamhound", List.of("teeming:tough_hide", "minecraft:bone", "teeming:trophy")),
+            Map.entry("vinedrop_strangler", List.of("teeming:heartwood", "minecraft:vine", "minecraft:stick", "teeming:trophy")),
             Map.entry("snapmaw_bloom", List.of("teeming:heartwood", "minecraft:wheat_seeds", "teeming:trophy")),
             Map.entry("stormeel", List.of("teeming:storm_coil", "minecraft:cod", "minecraft:prismarine_crystals", "teeming:trophy")),
             Map.entry("shellguard_crab", List.of("teeming:sand_scale", "teeming:trophy")),
+            Map.entry("dripfang", List.of("teeming:venom_fang", "minecraft:pointed_dripstone", "teeming:trophy")),
+            Map.entry("hushwing", List.of("teeming:echo_membrane", "teeming:trophy")),
+            Map.entry("mycelite_shambler", List.of("teeming:spore_sac", "minecraft:brown_mushroom", "teeming:trophy")),
             Map.entry("skreel", List.of("teeming:gale_essence", "minecraft:feather", "teeming:trophy")),
             Map.entry("slagheart_golem", List.of("teeming:slag_gland", "minecraft:basalt", "minecraft:coal", "teeming:trophy")),
             Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy"))

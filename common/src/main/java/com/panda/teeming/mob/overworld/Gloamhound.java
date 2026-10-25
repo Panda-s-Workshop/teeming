@@ -514,6 +514,7 @@ public class Gloamhound extends TeemingMonster {
         if (core().elapsed() % 10 != 0) return;
         Vec3 threat = fleeFrom != null && fleeFrom.isAlive() ? fleeFrom.position() : fleeSpot;
         Vec3 away = DefaultRandomPos.getPosAway(this, 16, 7, threat);
+        if (away == null) away = DefaultRandomPos.getPosAway(this, 6, 3, threat);   // cornered: a short run beats none
         if (away != null) getNavigation().moveTo(away.x, away.y, away.z, FLEE_SPEED);
     }
 

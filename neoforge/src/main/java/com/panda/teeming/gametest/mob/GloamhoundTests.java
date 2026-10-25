@@ -59,6 +59,7 @@ public final class GloamhoundTests {
         TeemingGameTests.timeLimit("gloamhound_howl", 280);
         out.accept("gloamhound_flee_length", GloamhoundTests::fleeLength);
         TeemingGameTests.timeLimit("gloamhound_flee_length", 260);
+        out.accept("gloamhound_flee_near_wall", GloamhoundTests::fleeNearWall);
         out.accept("gloamhound_pack_spawn", GloamhoundTests::packSpawn);
         out.accept("gloamhound_settle", GloamhoundTests::settle);
         out.accept("gloamhound_save_load", GloamhoundTests::saveLoad);
@@ -341,6 +342,22 @@ public final class GloamhoundTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(over[0] && over[1], "the flight ends, " + fled[0] + " and " + fled[1] + " ticks so far");
             helper.assertTrue(Math.abs(fled[0] - 200) <= 1 && Math.abs(fled[1] - 200) <= 1, "they flee for 200 ticks, fled " + fled[0] + " and " + fled[1]);
+        });
+    }
+
+    /** With a wall 3 blocks behind it and no room for a long run, a fleeing hound still gets away from the spot. */
+    private static void fleeNearWall(GameTestHelper helper) {
+        Gloamhound hound = hound(helper, 3.5, 6.5);
+        Vec3 spot = helper.absoluteVec(new Vec3(7.5, 1, 6.5));
+        double[] start = {0};
+        helper.runAtTickTime(2, () -> {
+            helper.assertTrue(hound.flee(null, spot), "it flees");
+            start[0] = hound.position().distanceTo(spot);
+        });
+        helper.runAtTickTime(42, () -> {
+            double gain = hound.position().distanceTo(spot) - start[0];
+            helper.assertTrue(gain > 1.0, "it ran from the spot by " + gain);
+            helper.succeed();
         });
     }
 

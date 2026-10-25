@@ -94,11 +94,13 @@ final class SpawnTests {
 
     private static void ceiling(GameTestHelper helper) {
         helper.assertTrue(RosterStats.get("dripfang").place() == Place.CEILING, "dripfang should be a ceiling mob");
+        // a 1.4-tall mob needs two air blocks under the ceiling, or the spawner's box check refuses it
         helper.setBlock(new BlockPos(3, 5, 3), Blocks.STONE);
-        helper.assertTrue(ok(helper, "dripfang", new BlockPos(3, 4, 3)), "accepts air under stone");
-        helper.assertTrue(!ok(helper, "dripfang", new BlockPos(8, 4, 8)), "refuses open air");
+        helper.assertTrue(ok(helper, "dripfang", new BlockPos(3, 3, 3)), "accepts two air blocks under stone");
+        helper.assertTrue(!ok(helper, "dripfang", new BlockPos(3, 4, 3)), "refuses the one block right under it, too short");
+        helper.assertTrue(!ok(helper, "dripfang", new BlockPos(8, 3, 8)), "refuses open air");
         helper.setBlock(new BlockPos(5, 5, 5), Blocks.OAK_FENCE);
-        helper.assertTrue(!ok(helper, "dripfang", new BlockPos(5, 4, 5)), "refuses a fence, whose underside isn't sturdy");
+        helper.assertTrue(!ok(helper, "dripfang", new BlockPos(5, 3, 5)), "refuses a fence, whose underside isn't sturdy");
         helper.succeed();
     }
 

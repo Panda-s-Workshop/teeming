@@ -104,6 +104,17 @@ public final class TeemingSpawns {
     }
 
     /**
+     * Room for the whole mob in the air below a sturdy underside. The spawner checks the mob's full box at the spot, so
+     * a ceiling mob taller than one block needs that many air blocks under the ceiling; it grips it on its first tick.
+     */
+    private static boolean underCeiling(ServerLevelAccessor level, EntityType<?> type, BlockPos pos) {
+        int rows = Math.max(1, (int) Math.ceil(type.getHeight()));
+        for (int i = 0; i < rows; i++) if (!level.getBlockState(pos.above(i)).isAir()) return false;
+        BlockPos ceiling = pos.above(rows);
+        return level.getBlockState(ceiling).isFaceSturdy(level, ceiling, Direction.DOWN);
+    }
+
+    /**
      * Water one or two deep over a solid floor, open to the air: a swamp pool or a mangrove puddle, never a lake bed or
      * an ocean floor.
      */
@@ -129,7 +140,7 @@ public final class TeemingSpawns {
             case WATER -> level.getFluidState(pos).is(FluidTags.WATER) && level.getFluidState(pos.above()).is(FluidTags.WATER);
             case SHALLOW -> shallowWater(level, pos);
             case LAVA -> level.getFluidState(pos).is(FluidTags.LAVA) && level.getBlockState(pos.above()).isAir();
-            case CEILING -> level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isFaceSturdy(level, pos.above(), Direction.DOWN);
+            case CEILING -> underCeiling(level, type, pos);
             case AIR, NONE -> level.getBlockState(pos).isAir();
         };
     }

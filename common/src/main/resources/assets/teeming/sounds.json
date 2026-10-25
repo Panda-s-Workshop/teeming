@@ -1,4 +1,169 @@
 {
+  "dripfang.ambient": {
+    "subtitle": "subtitles.teeming.dripfang.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.spider.ambient",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.4
+      },
+      {
+        "name": "minecraft:block.pointed_dripstone.hit",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dripfang.hurt": {
+    "subtitle": "subtitles.teeming.dripfang.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.hit",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.silverfish.hurt",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.7
+      }
+    ]
+  },
+  "dripfang.death": {
+    "subtitle": "subtitles.teeming.dripfang.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.break",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.spider.death",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dripfang.step": {
+    "subtitle": "subtitles.teeming.dripfang.step",
+    "sounds": [
+      {
+        "name": "minecraft:entity.spider.step",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.4
+      },
+      {
+        "name": "minecraft:block.dripstone_block.step",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.4
+      }
+    ]
+  },
+  "dripfang.tell": {
+    "subtitle": "subtitles.teeming.dripfang.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.drip_water",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 2.0
+      },
+      {
+        "name": "minecraft:block.pointed_dripstone.drip_water",
+        "type": "event",
+        "pitch": 1.25,
+        "volume": 2.0
+      }
+    ]
+  },
+  "dripfang.drop": {
+    "subtitle": "subtitles.teeming.dripfang.drop",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.fall",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:entity.phantom.swoop",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dripfang.impale": {
+    "subtitle": "subtitles.teeming.dripfang.impale",
+    "sounds": [
+      {
+        "name": "minecraft:item.trident.hit",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.pointed_dripstone.land",
+        "type": "event",
+        "pitch": 1.1
+      }
+    ]
+  },
+  "dripfang.miss": {
+    "subtitle": "subtitles.teeming.dripfang.miss",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.land",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:item.trident.hit_ground",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "dripfang.free": {
+    "subtitle": "subtitles.teeming.dripfang.free",
+    "sounds": [
+      {
+        "name": "minecraft:block.dripstone_block.break",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.spider.ambient",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dripfang.hang": {
+    "subtitle": "subtitles.teeming.dripfang.hang",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.place",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.spider.step",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.5
+      }
+    ]
+  },
   "dunefin.ambient": {
     "subtitle": "subtitles.teeming.dunefin.ambient",
     "sounds": [
@@ -251,6 +416,106 @@
       }
     ]
   },
+  "hushwing.ambient": {
+    "subtitle": "subtitles.teeming.hushwing.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.ambient",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.35
+      },
+      {
+        "name": "minecraft:block.sculk_sensor.clicking",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.3
+      }
+    ]
+  },
+  "hushwing.hurt": {
+    "subtitle": "subtitles.teeming.hushwing.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.hurt",
+        "type": "event",
+        "pitch": 0.85
+      },
+      {
+        "name": "minecraft:entity.vex.hurt",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.5
+      }
+    ]
+  },
+  "hushwing.death": {
+    "subtitle": "subtitles.teeming.hushwing.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.bat.death",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.sculk_sensor.clicking_stop",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.7
+      }
+    ]
+  },
+  "hushwing.hear": {
+    "subtitle": "subtitles.teeming.hushwing.hear",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.tendril_clicks",
+        "type": "event",
+        "pitch": 1.9,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.bat.takeoff",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ]
+  },
+  "hushwing.bite": {
+    "subtitle": "subtitles.teeming.hushwing.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.bite",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.bat.hurt",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.4
+      }
+    ]
+  },
+  "hushwing.decoy": {
+    "subtitle": "subtitles.teeming.hushwing.decoy",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.listening",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.bat.ambient",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.5
+      }
+    ]
+  },
   "levimoth.ambient": {
     "subtitle": "subtitles.teeming.levimoth.ambient",
     "sounds": [
@@ -481,6 +746,86 @@
         "type": "event",
         "pitch": 0.7,
         "volume": 0.8
+      }
+    ]
+  },
+  "mycelite_shambler.ambient": {
+    "subtitle": "subtitles.teeming.mycelite_shambler.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.fungus.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.9
+      }
+    ]
+  },
+  "mycelite_shambler.hurt": {
+    "subtitle": "subtitles.teeming.mycelite_shambler.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie.hurt",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.shroomlight.break",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "mycelite_shambler.death": {
+    "subtitle": "subtitles.teeming.mycelite_shambler.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zombie.death",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.fungus.break",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "mycelite_shambler.burst": {
+    "subtitle": "subtitles.teeming.mycelite_shambler.burst",
+    "sounds": [
+      {
+        "name": "minecraft:entity.puffer_fish.blow_out",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.slime.squish",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "mycelite_shambler.scorch": {
+    "subtitle": "subtitles.teeming.mycelite_shambler.scorch",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.fungus.break",
+        "type": "event",
+        "pitch": 0.5
       }
     ]
   },
@@ -1718,6 +2063,168 @@
         "type": "event",
         "pitch": 0.6,
         "volume": 0.8
+      }
+    ]
+  },
+  "vinedrop_strangler.ambient": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.azalea_leaves.step",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.creaking.ambient",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.5
+      }
+    ]
+  },
+  "vinedrop_strangler.hurt": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.vine.break",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.creaking.twitch",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  },
+  "vinedrop_strangler.death": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.mangrove_roots.break",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.creaking.death",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.8
+      }
+    ]
+  },
+  "vinedrop_strangler.rustle": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.rustle",
+    "sounds": [
+      {
+        "name": "minecraft:block.azalea_leaves.fall",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.4
+      },
+      {
+        "name": "minecraft:block.big_dripleaf.tilt_down",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "vinedrop_strangler.drop": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.drop",
+    "sounds": [
+      {
+        "name": "minecraft:block.cave_vines.fall",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:entity.phantom.swoop",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "vinedrop_strangler.wrap": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.wrap",
+    "sounds": [
+      {
+        "name": "minecraft:block.mangrove_roots.place",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:entity.slime.squish",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "vinedrop_strangler.squeeze": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.squeeze",
+    "sounds": [
+      {
+        "name": "minecraft:block.mangrove_roots.step",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.creaking.twitch",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "vinedrop_strangler.freed": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.freed",
+    "sounds": [
+      {
+        "name": "minecraft:item.shears.snip",
+        "type": "event",
+        "pitch": 0.9
+      },
+      {
+        "name": "minecraft:block.vine.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      }
+    ]
+  },
+  "vinedrop_strangler.land": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.land",
+    "sounds": [
+      {
+        "name": "minecraft:block.moss.fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.mangrove_roots.fall",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "vinedrop_strangler.climb": {
+    "subtitle": "subtitles.teeming.vinedrop_strangler.climb",
+    "sounds": [
+      {
+        "name": "minecraft:block.vine.step",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.hanging_roots.step",
+        "type": "event",
+        "pitch": 1.2
       }
     ]
   }

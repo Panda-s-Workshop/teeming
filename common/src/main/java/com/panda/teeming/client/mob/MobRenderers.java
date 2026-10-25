@@ -27,12 +27,20 @@ public final class MobRenderers {
                 Set.of("base", "hoarfrost"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.GLOAMHOUND.get(), ctx -> new TeemingRenderer<>(ctx, new GloamhoundModel(ctx.bakeLayer(CreatureLayers.GLOAMHOUND)), "gloamhound",
                 Set.of(), 0.5F, 1.0F, 1, false));
+        out.register(ModMobs.VINEDROP_STRANGLER.get(), ctx -> new TeemingRenderer<>(ctx, new VinedropStranglerModel(ctx.bakeLayer(CreatureLayers.VINEDROP_STRANGLER)), "vinedrop_strangler",
+                Set.of(), 0.45F, 1.0F, 1, true));
         out.register(ModMobs.SNAPMAW_BLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new SnapmawBloomModel(ctx.bakeLayer(CreatureLayers.SNAPMAW_BLOOM)), "snapmaw_bloom",
                 Set.of("azalea_bloom", "base"), 0.55F, 1.0F, 1, true));
         out.register(ModMobs.STORMEEL.get(), ctx -> new TeemingRenderer<>(ctx, new StormeelModel(ctx.bakeLayer(CreatureLayers.STORMEEL)), "stormeel",
                 Set.of("abyssal_eel", "base"), 0.35F, 1.0F, 3, false));
         out.register(ModMobs.SHELLGUARD_CRAB.get(), ctx -> new TeemingRenderer<>(ctx, new ShellguardCrabModel(ctx.bakeLayer(CreatureLayers.SHELLGUARD_CRAB)), "shellguard_crab",
                 Set.of(), 0.6F, 1.0F, 1, true));
+        out.register(ModMobs.DRIPFANG.get(), ctx -> new TeemingRenderer<>(ctx, new DripfangModel(ctx.bakeLayer(CreatureLayers.DRIPFANG)), "dripfang",
+                Set.of(), 0.3F, 1.0F, 1, true));
+        out.register(ModMobs.HUSHWING.get(), ctx -> new TeemingRenderer<>(ctx, new HushwingModel(ctx.bakeLayer(CreatureLayers.HUSHWING)), "hushwing",
+                Set.of(), 0.3F, 1.0F, 1, false));
+        out.register(ModMobs.MYCELITE_SHAMBLER.get(), ctx -> new TeemingRenderer<>(ctx, new MyceliteShamblerModel(ctx.bakeLayer(CreatureLayers.MYCELITE_SHAMBLER)), "mycelite_shambler",
+                Set.of(), 0.6F, 1.0F, 1, false));
         out.register(ModMobs.SKREEL.get(), ctx -> new TeemingRenderer<>(ctx, new SkreelModel(ctx.bakeLayer(CreatureLayers.SKREEL)), "skreel",
                 Set.of(), 0.5F, 1.0F, 1, true));
         out.register(ModMobs.SLAGHEART_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new SlagheartGolemModel(ctx.bakeLayer(CreatureLayers.SLAGHEART_GOLEM)), "slagheart_golem",

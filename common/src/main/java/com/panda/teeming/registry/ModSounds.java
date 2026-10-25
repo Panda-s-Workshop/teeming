@@ -10,6 +10,16 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TeemingMod.MODID);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_AMBIENT = sound("dripfang.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_HURT = sound("dripfang.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_DEATH = sound("dripfang.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_STEP = sound("dripfang.step");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_TELL = sound("dripfang.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_DROP = sound("dripfang.drop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_IMPALE = sound("dripfang.impale");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_MISS = sound("dripfang.miss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_FREE = sound("dripfang.free");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_HANG = sound("dripfang.hang");
     public static final DeferredHolder<SoundEvent, SoundEvent> DUNEFIN_AMBIENT = sound("dunefin.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> DUNEFIN_HURT = sound("dunefin.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> DUNEFIN_DEATH = sound("dunefin.death");
@@ -26,6 +36,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> GLOAMHOUND_BITE = sound("gloamhound.bite");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLOAMHOUND_HOWL = sound("gloamhound.howl");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLOAMHOUND_ROUT = sound("gloamhound.rout");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_AMBIENT = sound("hushwing.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_HURT = sound("hushwing.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_DEATH = sound("hushwing.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_HEAR = sound("hushwing.hear");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_BITE = sound("hushwing.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_DECOY = sound("hushwing.decoy");
     public static final DeferredHolder<SoundEvent, SoundEvent> LEVIMOTH_AMBIENT = sound("levimoth.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> LEVIMOTH_HURT = sound("levimoth.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> LEVIMOTH_DEATH = sound("levimoth.death");
@@ -42,6 +58,11 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_SPIT = sound("mire_gulper.spit");
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_STUNNED = sound("mire_gulper.stunned");
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_LET_GO = sound("mire_gulper.let_go");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_AMBIENT = sound("mycelite_shambler.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_HURT = sound("mycelite_shambler.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_DEATH = sound("mycelite_shambler.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_BURST = sound("mycelite_shambler.burst");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_SCORCH = sound("mycelite_shambler.scorch");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_AMBIENT = sound("puffcap_shepherd.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_HURT = sound("puffcap_shepherd.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> PUFFCAP_SHEPHERD_DEATH = sound("puffcap_shepherd.death");
@@ -123,6 +144,16 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_RAM = sound("thornhorn.ram");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_STUNNED = sound("thornhorn.stunned");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_HORN_CRACK = sound("thornhorn.horn_crack");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_AMBIENT = sound("vinedrop_strangler.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_HURT = sound("vinedrop_strangler.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_DEATH = sound("vinedrop_strangler.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_RUSTLE = sound("vinedrop_strangler.rustle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_DROP = sound("vinedrop_strangler.drop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_WRAP = sound("vinedrop_strangler.wrap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_SQUEEZE = sound("vinedrop_strangler.squeeze");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_FREED = sound("vinedrop_strangler.freed");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_LAND = sound("vinedrop_strangler.land");
+    public static final DeferredHolder<SoundEvent, SoundEvent> VINEDROP_STRANGLER_CLIMB = sound("vinedrop_strangler.climb");
 
     private ModSounds() {}
 
