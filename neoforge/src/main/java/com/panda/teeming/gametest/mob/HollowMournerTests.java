@@ -21,12 +21,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -40,6 +43,8 @@ import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
@@ -63,6 +68,7 @@ public final class HollowMournerTests {
         out.accept("hollow_mourner_counter", HollowMournerTests::hitBreaksChant);
         out.accept("hollow_mourner_failure", HollowMournerTests::deadRise);
         TeemingGameTests.timeLimit("hollow_mourner_failure", 140);
+        out.accept("hollow_mourner_raised_reload", HollowMournerTests::raisedReload);
         out.accept("hollow_mourner_stagger", HollowMournerTests::stagger);
         out.accept("hollow_mourner_range", HollowMournerTests::range);
         out.accept("hollow_mourner_memory", HollowMournerTests::memory);
@@ -262,46 +268,88 @@ public final class HollowMournerTests {
         });
     }
 
+    /**
+     * A raised mob saved and loaded again still gives no experience: the skip isn't in its saved data, so it is set
+     * again when the loaded mob joins the level. A plain husk loaded the same way still gives experience.
+     */
+    private static void raisedReload(GameTestHelper helper) {
+        HollowMourner m = mourner(helper);
+        ServerLevel level = helper.getLevel();
+        LivingEntity raised = m.raise(level, grave(level, helper.absoluteVec(around(3.0, 90)), 0));
+        helper.assertTrue(raised != null, "the husk rises");
+        Husk control = husk(helper, around(3.0, 270));
+        LivingEntity loaded = reload(helper, raised);
+        LivingEntity loadedControl = reload(helper, control);
+        helper.assertTrue(loaded.entityTags().contains(HollowMourner.RAISED_TAG), "the loaded husk is still marked as raised");
+        helper.assertTrue(loaded.wasExperienceConsumed(), "the loaded raised husk gives no experience");
+        helper.assertTrue(!loadedControl.wasExperienceConsumed(), "a loaded plain husk still gives experience");
+        helper.succeed();
+    }
+
+    /** The mob saved, removed, and a fresh one of its kind loaded from that save in its place, as a chunk load does. */
+    private static LivingEntity reload(GameTestHelper helper, LivingEntity mob) {
+        ServerLevel level = helper.getLevel();
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+        mob.saveWithoutId(out);
+        CompoundTag tag = out.buildResult();
+        mob.discard();
+        LivingEntity fresh = (LivingEntity) mob.getType().create(level, EntitySpawnReason.LOAD);
+        helper.assertTrue(fresh != null, "a fresh " + mob.getType());
+        fresh.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+        helper.assertTrue(!fresh.wasExperienceConsumed(), "the saved data alone doesn't carry the skip");
+        level.addFreshEntity(fresh);
+        TestPlayers.whenDone(helper, fresh::discard);
+        return fresh;
+    }
+
     // ---- the numbers -----------------------------------------------------------------------------------------------
 
     /**
-     * Any hit staggers it for 40 ticks, chant or no chant: a hit while idle starts 40 ticks of stagger; a second hit 20
-     * ticks in starts it again, 40 ticks from that hit. A fall is not a hit and staggers nothing.
+     * A hit staggers it for 40 ticks, and steady blows can't keep it down: a fall staggers nothing; a hit while idle
+     * staggers it; a second hit 20 ticks in doesn't make it longer, so it stands up 40 ticks after the first; a hit
+     * 10 ticks after that doesn't stagger it; but a hit during a chant inside those 40 ticks still breaks the chant.
      */
     private static void stagger(GameTestHelper helper) {
         HollowMourner m = mourner(helper);
-        m.setUntilChant(100000);                                              // no chant until the second hit
+        m.setUntilChant(100000);                                              // no chant until the grave below
         Pig pig = pig(helper);
         Map<String, List<Integer>> time = steps(helper, m, true);
-        int[] held = {0};
-        int[] secondAt = {-1};
+        int[] firstAt = {-1};
+        Runnable hit = () -> {
+            m.damageCooldownTime = 0;                                         // the last hit's cooldown would refuse an equal one
+            helper.assertTrue(m.hurtServer(helper.getLevel(), m.damageSources().mobAttack(pig), 1.0F), "the hit lands");
+        };
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(m.hurtServer(helper.getLevel(), m.damageSources().fall(), 1.0F), "the fall hurts it");
             helper.assertTrue(m.core().idle(), "a fall doesn't stagger it, phase " + m.phase());
         });
         helper.runAtTickTime(4, () -> {
-            m.damageCooldownTime = 0;                                         // the fall's hurt cooldown would refuse an equal hit
-            helper.assertTrue(m.hurtServer(helper.getLevel(), m.damageSources().mobAttack(pig), 1.0F), "the hit lands");
+            hit.run();
+            firstAt[0] = (int) helper.getLevel().getGameTime();
             helper.assertTrue(m.core().in(Step.STAGGER), "a hit while idle staggers it, phase " + m.phase());
         });
         helper.runAtTickTime(24, () -> {
+            hit.run();
             helper.assertTrue(m.core().in(Step.STAGGER), "still staggered 20 ticks on, phase " + m.phase());
-            m.damageCooldownTime = 0;
-            helper.assertTrue(m.hurtServer(helper.getLevel(), m.damageSources().mobAttack(pig), 1.0F), "the second hit lands");
-            secondAt[0] = (int) helper.getLevel().getGameTime();
-            // a grave to chant over and no wait: the chant starts the very tick the stagger ends
+        });
+        helper.runAtTickTime(42, () -> helper.assertTrue(m.core().in(Step.STAGGER), "staggered until 40 ticks after the first hit, phase " + m.phase()));
+        helper.runAtTickTime(46, () -> helper.assertTrue(m.core().idle(), "up again 40 ticks after the first hit, not the second, phase " + m.phase()));
+        helper.runAtTickTime(54, () -> {
+            hit.run();
+            helper.assertTrue(m.core().idle(), "a hit 10 ticks after the stagger doesn't stagger it, phase " + m.phase());
             m.remember(grave(helper.getLevel(), helper.absoluteVec(around(2.0, 0)), 0));
             m.setUntilChant(0);
         });
-        helper.onEachTick(() -> {
-            if (secondAt[0] >= 0 && m.core().in(Step.STAGGER)) held[0]++;
+        helper.runAtTickTime(64, () -> {
+            helper.assertTrue(m.core().in(Step.CHANT), "it chants over the grave, phase " + m.phase());
+            hit.run();
+            helper.assertTrue(m.core().in(Step.STAGGER), "a hit during the chant breaks it, even so soon, phase " + m.phase());
         });
-        helper.succeedWhen(() -> {
-            helper.assertTrue(time.getOrDefault("stagger", List.of()).size() == 2, "two hits, two staggers: " + time);
-            helper.assertTrue(time.containsKey("chant"), "the stagger ends");
-            int lasted = time.get("chant").getFirst() - secondAt[0];
-            helper.assertTrue(lasted == 40, "it ends 40 ticks after the last hit, measured " + lasted);
-            helper.assertTrue(Math.abs(held[0] - 40) <= 1, "staggered 40 ticks from the second hit, held " + held[0]);
+        helper.runAtTickTime(66, () -> {
+            List<Integer> staggers = time.getOrDefault("stagger", List.of());
+            helper.assertTrue(staggers.size() == 2, "two staggers, at the first hit and the chant: " + time);
+            helper.assertTrue(staggers.getFirst() == firstAt[0], "the first at the first hit: " + time);
+            helper.succeed();
         });
     }
 

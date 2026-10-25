@@ -51,8 +51,9 @@ import org.jspecify.annotations.Nullable;
  * then raises it: a fresh mob of the same kind stands up where the old one fell and joins its fight. The raised dead
  * carry nothing worth taking: they drop no loot, no equipment and no experience.
  *
- * <p>Counter: any hit staggers it for 2 s, and a hit during the chant breaks it, so nothing rises; the grave is still
- * remembered, and it chants again once it recovers. The long chant is there to be interrupted. It never raises players
+ * <p>Counter: a hit staggers it for 2 s, and a hit during the chant breaks it, so nothing rises; the grave is still
+ * remembered, and it chants again once it recovers. Hits during a stagger don't make it longer, and for 2 s after one
+ * it shrugs hits off (a chant still breaks), so steady blows can't keep it down. The long chant is there to be interrupted. It never raises players
  * or anything that isn't undead, and never a boss.
  */
 public class HollowMourner extends TeemingMonster {
@@ -67,8 +68,10 @@ public class HollowMourner extends TeemingMonster {
     public static final double GRAVE_RANGE = 8.0;
     /** And remembers each for 30 s. */
     public static final int GRAVE_TICKS = 600;
-    /** Any hit staggers it for 2 s. */
+    /** A hit staggers it for 2 s. */
     public static final int STAGGER_TICKS = 40;
+    /** After a stagger ends, hits don't stagger it again for 2 s, unless it is chanting. */
+    public static final int STAGGER_GRACE = 40;
     /** The raising itself: the grave erupts and the dead stand up. */
     public static final int RAISE_TICKS = 12;
     /** It remembers at most this many graves at once; a new one pushes out the oldest. */
@@ -90,6 +93,8 @@ public class HollowMourner extends TeemingMonster {
     private @Nullable Grave chanting;
     /** Ticks until it may raise again. A fresh mourner may chant as soon as it remembers a grave. */
     private int untilChant;
+    /** Its tick count when the last stagger began: long ago for a fresh mourner. */
+    private int staggeredAt = Integer.MIN_VALUE / 2;
     /** Set in registerGoals, which runs inside the Mob constructor, so it has no initializer. */
     private @Nullable WaterAvoidingRandomStrollGoal stroll;
 
@@ -274,6 +279,14 @@ public class HollowMourner extends TeemingMonster {
      * raised, with no loot, no equipment drops and no experience, set on the mourner's target. The grave is used up.
      * Returns the mob, or null if there was no room or it couldn't be made. Public as a test hook.
      */
+    /**
+     * A raised mob gives no experience. The skip isn't saved with the mob (its empty loot table is), so it is set again
+     * each time the mob joins a level, loaded from disk included.
+     */
+    public static void onJoin(Entity entity) {
+        if (entity instanceof LivingEntity living && living.entityTags().contains(RAISED_TAG)) living.skipDropExperience();
+    }
+
     public @Nullable Mob raise(ServerLevel level, Grave g) {
         graves.removeIf(x -> x.id().equals(g.id()));
         if (!level.noCollision(g.type().getSpawnAABB(g.pos()))) return null;
@@ -317,8 +330,9 @@ public class HollowMourner extends TeemingMonster {
     // ---- the counter: any hit staggers it ---------------------------------------------------------------------------
 
     /**
-     * Any hit from something (a blow, an arrow, a thrown potion) staggers it for 40 ticks, from that hit: a chant in
-     * progress breaks and nothing rises. Falls, fire and the like don't count as hits.
+     * A hit from something (a blow, an arrow, a thrown potion) staggers it for 40 ticks: a chant in progress breaks and
+     * nothing rises. Falls, fire and the like don't count as hits. A hit during the stagger doesn't start it again, and
+     * a hit in the 40 ticks after it ends staggers it only if it is chanting.
      */
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
@@ -331,7 +345,10 @@ public class HollowMourner extends TeemingMonster {
 
     private void stagger(ServerLevel level, @Nullable LivingEntity by) {
         boolean broke = core().in(Step.CHANT);
+        if (core().in(Step.STAGGER)) return;
+        if (!broke && tickCount - staggeredAt < STAGGER_TICKS + STAGGER_GRACE) return;
         if (!startPhase(Step.STAGGER, STAGGER_TICKS, by)) return;               // a vetoed stagger leaves it as it was
+        staggeredAt = tickCount;
         chanting = null;
         double y = getY() + getBbHeight() * 0.85;
         level.sendParticles(ParticleTypes.POOF, getX(), y, getZ(), broke ? 14 : 6, 0.3, 0.25, 0.3, 0.03);

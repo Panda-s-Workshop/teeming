@@ -2,6 +2,7 @@ package com.panda.teeming;
 
 import com.mojang.logging.LogUtils;
 import com.panda.teeming.fieldguide.FieldGuide;
+import com.panda.teeming.mob.overworld.HollowMourner;
 import com.panda.teeming.registry.ModBlockEntities;
 import com.panda.teeming.registry.ModBlocks;
 import com.panda.teeming.registry.ModComponents;
@@ -14,6 +15,7 @@ import com.panda.teeming.registry.ModTabs;
 import com.panda.teeming.spawn.TeemingSpawner;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 
@@ -44,6 +46,11 @@ public final class TeemingMod {
     public static void onLevelTick(ServerLevel level) {
         TeemingSpawner.tick(level);
         FieldGuide.tick(level);
+    }
+
+    /** Server, whenever an entity joins a level, spawned or loaded from disk (both loaders). */
+    public static void onEntityJoin(Entity entity) {
+        HollowMourner.onJoin(entity);
     }
 
     public static Identifier id(String path) {

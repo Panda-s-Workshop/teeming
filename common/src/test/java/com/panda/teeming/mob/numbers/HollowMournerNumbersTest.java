@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The Hollow Mourner's numbers against its roster row, written out as plain values: HP 26, Atk 3, Arm 2, 0.7 x 2.0;
- * a 60 t chant that raises one undead that died within 8 blocks in the last 30 s, every 200 t; any hit staggers it
- * for 40 t; Overworld land at night, weight 5, groups of 1; the Bog Mourner second look; grave ash. The GameTests check
- * the numbers are applied; this checks they are the right numbers.
+ * a 60 t chant that raises one undead that died within 8 blocks in the last 30 s, every 200 t; a hit staggers it
+ * for 40 t, then for 40 t only a hit on a chant staggers it; Overworld land at night, weight 5, groups of 1; the Bog
+ * Mourner second look; grave ash. The GameTests check the numbers are applied; this checks they are the right numbers.
  */
 class HollowMournerNumbersTest {
     @Test
@@ -20,6 +20,7 @@ class HollowMournerNumbersTest {
         assertEquals(8.0, HollowMourner.GRAVE_RANGE);
         assertEquals(600, HollowMourner.GRAVE_TICKS);
         assertEquals(40, HollowMourner.STAGGER_TICKS);
+        assertEquals(40, HollowMourner.STAGGER_GRACE);
     }
 
     @Test

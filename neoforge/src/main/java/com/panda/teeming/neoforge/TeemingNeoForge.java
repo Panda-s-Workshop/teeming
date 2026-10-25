@@ -20,6 +20,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
@@ -39,6 +40,9 @@ public final class TeemingNeoForge {
         modBus.addListener((EntityAttributeCreationEvent e) -> ModMobs.attributes(e::put));
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof ServerLevel level) TeemingMod.onLevelTick(level);
+        });
+        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
+            if (!e.getLevel().isClientSide()) TeemingMod.onEntityJoin(e.getEntity());
         });
         modBus.addListener((RegisterSpawnPlacementsEvent e) -> TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override

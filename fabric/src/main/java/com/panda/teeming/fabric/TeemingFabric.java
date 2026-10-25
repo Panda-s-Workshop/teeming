@@ -13,6 +13,7 @@ import java.util.List;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
@@ -51,6 +52,7 @@ public final class TeemingFabric implements ModInitializer {
         ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(Looks.ID, new Looks());
         ModMobs.attributes(FabricDefaultAttributeRegistry::register);
         ServerTickEvents.END_LEVEL_TICK.register(TeemingMod::onLevelTick);
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> TeemingMod.onEntityJoin(entity));
         TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override
             public <T extends Mob> void set(EntityType<T> type, SpawnPlacementType placement, Heightmap.Types heightmap,
