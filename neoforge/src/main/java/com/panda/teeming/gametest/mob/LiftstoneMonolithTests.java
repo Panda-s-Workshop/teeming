@@ -9,6 +9,7 @@ import com.panda.teeming.mob.end.LiftstoneMonolith;
 import com.panda.teeming.mob.end.LiftstoneMonolith.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * up 6 blocks over 20 ticks, held 10, and slammed back down for 12, with no fall damage on top; a solid block within 3
  * over a head stops that lift; it rises again 160 ticks after it last rose; a pull that caught on a roof splits the
  * capstone for 80 ticks with armour 0. Health 250, attack 12, armour 12, a 1.6 x 4.0 hitbox, 100 experience, one in 128
- * blocks, placed alone on the End's main island by the Teeming spawner once the dragon is dead. Every number is checked
- * against a plain value.
+ * blocks, placed alone on the End's main island once the dragon is dead by the Teeming spawner's rare apex rule, never
+ * within 256 blocks of another. Every number is checked against a plain value.
  *
  * <p>Every Monolith stands at the arena's middle, so its 6-block reach stays inside the arena. Those that must stay
  * unaware have their goals cleared and a follow range of 1, so they never notice a survival player in a neighbouring
@@ -571,15 +572,22 @@ public final class LiftstoneMonolithTests {
     }
 
     /**
-     * Home: the End's main island, placed only by the Teeming spawner's main-island rule, which stays shut until the
-     * dragon has been killed (no dragon was ever killed in this level); on no biome list, so no biome modifier; alone
-     * (groups of 1), weight 0; an apex.
+     * Home: the End's main island, placed only by the Teeming spawner's main-island apex rule: only after a won apex
+     * roll (1 in 80 attempts), with room for its whole body, none within 256 blocks, and shut until the dragon has been
+     * killed (no dragon was ever killed in this level). That rule takes the main island's ground as the plain
+     * main-island rule does; it is not that rule, so the Monolith is no longer one of its weighted picks. On no biome
+     * list, so no biome modifier; alone (groups of 1), weight 0; an apex. The rule at work is spawner_apex_island.
      */
     private static void home(GameTestHelper helper) {
         RosterStats.Entry row = RosterStats.get("liftstone_monolith");
         helper.assertTrue(row.apex() && row.dim() == RosterStats.Dim.END, "an End apex");
         TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(row.spawner());
-        helper.assertTrue(rule == TeemingSpawner.Rule.MAIN_ISLAND && rule.dimension == Level.END, "the main-island rule places it, got '" + row.spawner() + "'");
+        helper.assertTrue(rule == TeemingSpawner.Rule.APEX_ISLAND && rule.apex() && rule.dimension == Level.END,
+                "the main-island apex rule places it, got '" + row.spawner() + "'");
+        helper.assertTrue(!TeemingSpawner.Rule.MAIN_ISLAND.apex(), "the plain main-island rule stays an ordinary weighted rule");
+        helper.assertTrue(Math.abs(SpawnTable.APEX_CHANCE - 1.0 / 80.0) < 1.0E-9, "a won roll 1 attempt in 80, got " + SpawnTable.APEX_CHANCE);
+        helper.assertTrue(SpawnTable.APEX_RADIUS == 256 && SpawnTable.APEX_RADIUS >= 2 * LiftstoneMonolith.CAP_RADIUS,
+                "none within 256 blocks, twice its local cap, got " + SpawnTable.APEX_RADIUS);
         if (TeemingConfig.endMainIslandAfterDragon()) {
             helper.assertTrue(!TeemingSpawner.mainIslandOpen(helper.getLevel()), "the main island stays shut while no dragon has been killed");
         }
@@ -596,8 +604,9 @@ public final class LiftstoneMonolithTests {
 
     /**
      * Local cap: one in 128 blocks. With one here a second is refused 127 blocks above it and allowed 133 above (its
-     * 4-block body then clears the 128-block box), both by its own rule and by the natural-spawn predicate's cap.
-     * Straight up, so no other arena's mobs are in either box.
+     * 4-block body then clears the 128-block box), both by its own rule and by the natural-spawn predicate's cap. The
+     * spawner's apex rule keeps them further apart: it refuses a second 255 blocks above and allows one 262 above (clear
+     * of the 256-block box). Straight up, so no other arena's mobs are in any box.
      */
     private static void cap(GameTestHelper helper) {
         LiftstoneMonolith m = unaware(helper);
@@ -611,6 +620,9 @@ public final class LiftstoneMonolithTests {
             helper.assertTrue(LiftstoneMonolith.roomFor(helper.getLevel(), at.above(133)), "a second 133 blocks off may spawn");
             helper.assertTrue(!TeemingSpawns.underCap(row, type, helper.getLevel(), at.above(127)), "the spawn predicate refuses 127 off too");
             helper.assertTrue(TeemingSpawns.underCap(row, type, helper.getLevel(), at.above(133)), "and allows 133 off");
+            helper.assertTrue(!TeemingSpawner.apexClear(helper.getLevel(), type, at.above(133)), "the spawner's apex rule refuses 133 off");
+            helper.assertTrue(!TeemingSpawner.apexClear(helper.getLevel(), type, at.above(255)), "and 255 off");
+            helper.assertTrue(TeemingSpawner.apexClear(helper.getLevel(), type, at.above(262)), "and allows 262 off");
             helper.succeed();
         });
     }

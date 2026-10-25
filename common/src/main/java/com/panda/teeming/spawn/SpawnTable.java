@@ -71,9 +71,10 @@ public final class SpawnTable {
             new Cost("minecraft:soul_sand_valley", 0.7, 0.15));
 
     /**
-     * Apex mobs on open ground stay off the biome lists: each full spawner attempt wins an apex roll with this chance
-     * (one attempt per player every 200 ticks: a roll won about every 13.3 minutes), and a won roll places the apex
-     * only where none stands within {@link #APEX_RADIUS} blocks. Apex mobs count in neither side of the share cap.
+     * Apex mobs (on open Nether ground, and on the End's main island once the dragon is dead) stay off the biome lists:
+     * each full spawner attempt wins an apex roll with this chance (one attempt per player every 200 ticks: a roll won
+     * about every 13.3 minutes), and a won roll places the apex only where its whole body has room and none
+     * of its kind stands within {@link #APEX_RADIUS} blocks. Apex mobs count in neither side of the share cap.
      */
     public static final double APEX_CHANCE = 0.0125;
     public static final int APEX_RADIUS = 256;

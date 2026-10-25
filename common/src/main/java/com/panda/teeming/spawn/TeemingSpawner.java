@@ -67,7 +67,7 @@ public final class TeemingSpawner {
     /** Where a spawner mob appears. The rule names are the {@code spawner} values in the roster. */
     public enum Rule {
         FORTRESS(Level.NETHER), BASTION(Level.NETHER), LAVA_SEA_AIR(Level.NETHER), FUNGUS_CAP(Level.NETHER), APEX_GROUND(Level.NETHER),
-        MAIN_ISLAND(Level.END), UNDERSIDE(Level.END), VOID_AIR(Level.END), VOID_BELOW(Level.END), SKY(Level.END);
+        MAIN_ISLAND(Level.END), APEX_ISLAND(Level.END), UNDERSIDE(Level.END), VOID_AIR(Level.END), VOID_BELOW(Level.END), SKY(Level.END);
 
         public final ResourceKey<Level> dimension;
 
@@ -93,9 +93,12 @@ public final class TeemingSpawner {
             return this == LAVA_SEA_AIR || this == FUNGUS_CAP;
         }
 
-        /** An apex on open ground: only after a won apex roll, and only with no other of its kind near (SpawnTable). */
+        /**
+         * An apex, on open Nether ground or on the End's main island once the dragon is dead: only after a won apex roll,
+         * only with room for its whole body, and only with no other of its kind near (SpawnTable).
+         */
         public boolean apex() {
-            return this == APEX_GROUND;
+            return this == APEX_GROUND || this == APEX_ISLAND;
         }
 
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
@@ -107,7 +110,7 @@ public final class TeemingSpawner {
                 case FUNGUS_CAP -> air(level, pos.above()) && level.getBlockState(pos.below()).is(BlockTags.WART_BLOCKS);
                 case APEX_GROUND -> floor(level, pos);
                 case LAVA_SEA_AIR -> pos.getY() > level.getSeaLevel() + 1 && lavaBelow(level, pos);
-                case MAIN_ISLAND -> floor(level, pos) && mainIsland(level, pos) && mainIslandOpen(level);
+                case MAIN_ISLAND, APEX_ISLAND -> floor(level, pos) && mainIsland(level, pos) && mainIslandOpen(level);
                 case UNDERSIDE -> !mainIsland(level, pos) && level.getBlockState(pos.above()).isFaceSturdy(level, pos.above(), Direction.DOWN)
                         && openBelow(level, pos);
                 case VOID_AIR -> !mainIsland(level, pos) && air(level, pos.above()) && openBelow(level, pos) && edgeNear(level, pos);
@@ -234,7 +237,7 @@ public final class TeemingSpawner {
             Optional<EntityType<? extends Mob>> type = TeemingSpawns.type(mob);
             if (type.isEmpty()) continue;
             if (rule.apex()) {
-                BlockPos pos = apexSpot(level, mob, type.get(), x, y, z, random);
+                BlockPos pos = apexSpot(level, rule, mob, type.get(), x, y, z, random);
                 if (pos != null) out.add(new Candidate(mob, type.get(), pos, rule));
                 continue;
             }
@@ -253,15 +256,17 @@ public final class TeemingSpawner {
     }
 
     /**
-     * An apex's spot in the column: open ground its placement accepts with room for its body, in its biome tag, and no
-     * other of its kind within {@link SpawnTable#APEX_RADIUS} blocks. A random one of those in the column, or null.
+     * An apex's spot in the column: ground its rule accepts (open Nether ground; the main island once the dragon is dead)
+     * and its placement accepts, with room for its whole body, in its biome tag, and no other of its kind within
+     * {@link SpawnTable#APEX_RADIUS} blocks. A random one of those in the column, or null.
      */
-    private static @Nullable BlockPos apexSpot(ServerLevel level, Entry mob, EntityType<? extends Mob> type, int x, int y, int z, RandomSource random) {
+    private static @Nullable BlockPos apexSpot(ServerLevel level, Rule rule, Entry mob, EntityType<? extends Mob> type, int x, int y, int z,
+                                               RandomSource random) {
         List<BlockPos> fit = new ArrayList<>();
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y, z);
         for (int dy = -SCAN; dy <= SCAN; dy++) {
             pos.setY(y + dy);
-            if (pos.getY() <= level.getMinY() || pos.getY() >= level.getMaxY() || !Rule.APEX_GROUND.fits(level, pos)) continue;
+            if (pos.getY() <= level.getMinY() || pos.getY() >= level.getMaxY() || !rule.fits(level, pos)) continue;
             if (!TeemingSpawns.placeOk(mob, type, level, pos) || !inTagOrUntagged(level, mob, pos)) continue;
             if (!level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))) continue;
             fit.add(pos.immutable());

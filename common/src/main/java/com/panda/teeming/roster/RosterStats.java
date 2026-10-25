@@ -105,7 +105,7 @@ public final class RosterStats {
             e(49, "flamewright", Dim.NETHER, Cat.MONSTER, false, 30F, 4F, 2F, 0.7F, 2F, 20, 0F, 30F, 4F, 0, 1, 1, "soul_wright", "ember_wing", Place.NONE, false, Integer.MAX_VALUE, "fortress"),
             e(50, "aurovore", Dim.NETHER, Cat.MONSTER, false, 24F, 4F, 4F, 0.9F, 0.7F, 10, 0F, 24F, 4F, 6, 1, 1, "gilded_aurovore", "gilded_gizzard", Place.GROUND, false, Integer.MAX_VALUE, "bastion"),
             e(51, "mending_crystalling", Dim.END, Cat.MONSTER, false, 4F, 0F, 0F, 0.5F, 0.8F, 0, 0F, 4F, 0F, 0, 1, 2, "rose_crystalling", "void_crystal", Place.NONE, false, Integer.MAX_VALUE, "main_island"),
-            e(52, "liftstone_monolith", Dim.END, Cat.MONSTER, true, 250F, 12F, 12F, 1.6F, 4F, 20, 12F, 250F, 12F, 0, 1, 1, "", "gravity_stone", Place.NONE, false, Integer.MAX_VALUE, "main_island"),
+            e(52, "liftstone_monolith", Dim.END, Cat.MONSTER, true, 250F, 12F, 12F, 1.6F, 4F, 20, 12F, 250F, 12F, 0, 1, 1, "", "gravity_stone", Place.NONE, false, Integer.MAX_VALUE, "apex_island"),
             e(53, "astral_augur", Dim.END, Cat.MONSTER, false, 34F, 4F, 2F, 0.7F, 2.1F, 24, 9F, 34F, 4F, 4, 1, 1, "dusk_augur", "star_mote", Place.GROUND, false, Integer.MAX_VALUE, "main_island"),
             e(54, "nullcantor", Dim.END, Cat.MONSTER, false, 40F, 6F, 4F, 0.7F, 2F, 0, 0F, 40F, 6F, 3, 1, 1, "pale_cantor", "void_ichor", Place.GROUND, false, Integer.MAX_VALUE, "main_island"),
             e(55, "chorus_grazer", Dim.END, Cat.CREATURE, false, 24F, 0F, 0F, 1.1F, 1.3F, 0, 0F, 24F, 0F, 6, 2, 4, "pale_grazer", "purpur_fleece", Place.GROUND, true, Integer.MAX_VALUE, ""),

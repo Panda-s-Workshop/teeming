@@ -1,9 +1,11 @@
 package com.panda.teeming.gametest;
 
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
+import com.panda.teeming.neoforge.NeoForgeConfig;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Place;
@@ -31,6 +33,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
@@ -41,6 +44,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The special placements (sand, lava, ceiling, leaves, void air, underside) accept their spot and refuse a
@@ -65,6 +69,7 @@ final class SpawnTests {
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
         out.accept("spawner_apex", SpawnTests::apex);
+        out.accept("spawner_apex_island", SpawnTests::apexIsland);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -440,6 +445,194 @@ final class SpawnTests {
             if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
             helper.succeed();
         });
+    }
+
+    /**
+     * Runs {@code body} with the main island open (the dragon gate's setting off), and puts the loader's own setting back
+     * before returning, within the same tick, so no other test sees it.
+     */
+    private static void islandOpen(Runnable body) {
+        NeoForgeConfig loader = new NeoForgeConfig();
+        TeemingConfig.use(new TeemingConfig.Source() {
+            @Override public double spawningDensity() { return loader.spawningDensity(); }
+            @Override public boolean mobEnabled(String id) { return loader.mobEnabled(id); }
+            @Override public double spawnChance(String id) { return loader.spawnChance(id); }
+            @Override public boolean endMainIslandAfterDragon() { return false; }
+            @Override public int killsToReveal() { return loader.killsToReveal(); }
+            @Override public boolean temporaryBlocks() { return loader.temporaryBlocks(); }
+        });
+        try {
+            body.run();
+        } finally {
+            TeemingConfig.use(loader);
+        }
+    }
+
+    /** An end stone floor 9 by 9 round the column at y {@code floor}, with 10 empty blocks over it. */
+    private static void islandFloor(ServerLevel end, int x, int floor, int z) {
+        for (int dx = -4; dx <= 4; dx++) {
+            for (int dz = -4; dz <= 4; dz++) {
+                end.setBlockAndUpdate(new BlockPos(x + dx, floor, z + dz), Blocks.END_STONE.defaultBlockState());
+                for (int dy = 1; dy <= 10; dy++) end.setBlockAndUpdate(new BlockPos(x + dx, floor + dy, z + dz), Blocks.AIR.defaultBlockState());
+            }
+        }
+    }
+
+    /** The Monolith's candidate among those found, or null. */
+    private static @Nullable Candidate monolith(List<Candidate> found) {
+        return found.stream().filter(c -> c.mob().id().equals("liftstone_monolith")).findFirst().orElse(null);
+    }
+
+    /**
+     * The main-island apex rule, for the Liftstone Monolith. Built in the GameTest server's End on an end stone floor at
+     * (600, 120, 600), inside the main island's region and over open void, and on one at (1300, 120, 600), past it. The
+     * main island is opened by a setting without the dragon gate, swapped in and back within each tick.
+     *
+     * <p>The gate: with the dragon gate on and no dragon killed, a won roll offers no Monolith; past the main island
+     * (1300 out) none either. The roll: a column without a won roll offers it nowhere; 4800 seeded attempts as the
+     * spawner makes them (roll, candidates, pick) give the Monolith exactly on the won rolls, 1 in 80 within three
+     * standard deviations (37 to 83; its old weight-0-as-1 pick among the main-island mobs made it about 1 in 9). The
+     * other main-island mobs are unaffected: the Astral Augur takes the same main-island spot with or without the roll,
+     * and on the attempts without one it wins its own weight's part of the picks (within four standard deviations).
+     * The whole box: 3 blocks of headroom under a slab refuse the Monolith's 4.0-block body and 4 accept it; a block
+     * beside its feet, inside its 1.6-wide box, refuses it while the Augur still takes the spot, and a block 2 off
+     * doesn't. The distance: a Monolith 200 blocks off keeps a second away, one 262 blocks off doesn't (none within 256,
+     * twice its 128-block local cap, as for the Basalt Behemoth).
+     */
+    private static void apexIsland(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerLevel end = server.getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        RosterStats.Entry row = RosterStats.get("liftstone_monolith");
+        var type = ModMobs.LIFTSTONE_MONOLITH.get();
+        int x = 600;
+        int z = 600;
+        int floor = 120;
+        int y = floor + 1;
+        BlockPos spot = new BlockPos(x, y, z);
+        int[] standingX = {x - 200, x - 262};
+        for (int sx : standingX) {
+            end.getChunk(sx >> 4, z >> 4);
+            end.setChunkForced(sx >> 4, z >> 4, true);
+        }
+        end.setChunkForced(x >> 4, z >> 4, true);
+        end.getChunk(1300 >> 4, z >> 4);
+        islandFloor(end, x, floor, z);
+        islandFloor(end, 1300, floor, z);
+        List<String> wrong = new ArrayList<>();
+        Rule rule = Rule.of(row.spawner());
+        if (rule != Rule.APEX_ISLAND || !rule.apex() || rule.dimension != Level.END) wrong.add("the Monolith's rule is '" + row.spawner() + "'");
+
+        if (TeemingConfig.endMainIslandAfterDragon() && !TeemingSpawner.mainIslandOpen(end)) {
+            List<Candidate> shut = TeemingSpawner.candidatesAt(end, x, y, z, RandomSource.create(3), false, true);
+            if (monolith(shut) != null) wrong.add("with no dragon killed a won roll offered the Monolith");
+        }
+        islandOpen(() -> {
+            RandomSource random = RandomSource.create(17);
+            List<Candidate> noRoll = TeemingSpawner.candidatesAt(end, x, y, z, random, false, false);
+            List<Candidate> rolled = TeemingSpawner.candidatesAt(end, x, y, z, random, false, true);
+            if (monolith(noRoll) != null) wrong.add("without a won roll the main island offered the Monolith: " + ids(noRoll));
+            Candidate m = monolith(rolled);
+            if (m == null) {
+                wrong.add("a won roll on open main-island ground should offer the Monolith: " + ids(rolled));
+            } else {
+                if (m.rule() != Rule.APEX_ISLAND || !m.apex() || !m.pos().equals(spot)) wrong.add("the Monolith came by " + m.rule() + " at " + m.pos().toShortString());
+                if (!end.noCollision(type.getSpawnAABB(m.pos().getX() + 0.5, m.pos().getY(), m.pos().getZ() + 0.5))) wrong.add("no room for its body at its spot");
+            }
+            checkAccepted(end, rolled, wrong);
+            Candidate augur = noRoll.stream().filter(c -> c.mob().id().equals("astral_augur")).findFirst().orElse(null);
+            Candidate augurRolled = rolled.stream().filter(c -> c.mob().id().equals("astral_augur")).findFirst().orElse(null);
+            if (augur == null || augur.rule() != Rule.MAIN_ISLAND || !augur.pos().equals(spot)) wrong.add("the Augur should take the main-island spot: " + ids(noRoll));
+            if (augurRolled == null || !augurRolled.pos().equals(spot)) wrong.add("the Augur should take it on a won roll too: " + ids(rolled));
+            if (TeemingSpawner.candidatesAt(end, 1300, y, z, random, false, true).stream().anyMatch(c -> c.mob() == row))
+                wrong.add("1300 blocks out, past the main island, offered the Monolith");
+
+            // the roll, as the spawner makes it: one roll per attempt, then the candidates, then the pick
+            int total = 0;
+            for (Candidate c : noRoll) total += Math.max(1, c.mob().weight());
+            double augurPart = augur == null || total == 0 ? 0.0 : Math.max(1, augur.mob().weight()) / (double) total;
+            RandomSource attempts = RandomSource.create(5);
+            int won = 0, monoliths = 0, plain = 0, augurs = 0;
+            for (int i = 0; i < 4800; i++) {
+                boolean apex = TeemingSpawner.rollsApex(attempts);
+                List<Candidate> found = TeemingSpawner.candidatesAt(end, x, y, z, attempts, false, apex);
+                if (found.isEmpty()) {
+                    wrong.add("an attempt found no candidate on open main-island ground");
+                    break;
+                }
+                Candidate pick = TeemingSpawner.pick(found, attempts);
+                if (apex) won++;
+                else plain++;
+                if (pick.mob() == row) {
+                    monoliths++;
+                    if (!apex) wrong.add("an attempt without a won roll picked the Monolith");
+                } else if (apex) {
+                    wrong.add("a won roll on open ground went to " + pick.mob().id());
+                }
+                if (!apex && pick.mob().id().equals("astral_augur")) augurs++;
+            }
+            if (monoliths < 37 || monoliths > 83) wrong.add("4800 attempts gave " + monoliths + " Monoliths, want 1 in 80 (37 to 83)");
+            if (monoliths != won) wrong.add(monoliths + " Monoliths from " + won + " won rolls");
+            double mean = plain * augurPart;
+            double sd = Math.sqrt(plain * augurPart * (1.0 - augurPart));
+            if (Math.abs(augurs - mean) > 4.0 * sd) wrong.add(String.format(Locale.ROOT, "the Augur won %d of %d plain picks, want %.0f (its part %.3f)", augurs, plain, mean, augurPart));
+
+            // the whole box: 4.0 tall, 1.6 wide
+            BlockPos head = spot.above(3);
+            end.setBlockAndUpdate(head, Blocks.END_STONE_BRICK_SLAB.defaultBlockState());
+            if (monolith(TeemingSpawner.candidatesAt(end, x, y, z, random, false, true)) != null) wrong.add("3 blocks of headroom took its 4-block body");
+            end.setBlockAndUpdate(head, Blocks.AIR.defaultBlockState());
+            end.setBlockAndUpdate(spot.above(4), Blocks.END_STONE_BRICK_SLAB.defaultBlockState());
+            Candidate fourHigh = monolith(TeemingSpawner.candidatesAt(end, x, y, z, random, false, true));
+            if (fourHigh == null || !fourHigh.pos().equals(spot)) wrong.add("4 blocks of headroom should take its body");
+            end.setBlockAndUpdate(spot.above(4), Blocks.AIR.defaultBlockState());
+            end.setBlockAndUpdate(spot.east().above(), Blocks.END_STONE.defaultBlockState());
+            List<Candidate> beside = TeemingSpawner.candidatesAt(end, x, y, z, random, false, true);
+            if (monolith(beside) != null) wrong.add("a block beside its feet, inside its 1.6-wide box, took it: " + ids(beside));
+            if (beside.stream().noneMatch(c -> c.mob().id().equals("astral_augur") && c.pos().equals(spot)))
+                wrong.add("the Augur's narrower body should still take the spot: " + ids(beside));
+            end.setBlockAndUpdate(spot.east().above(), Blocks.AIR.defaultBlockState());
+            end.setBlockAndUpdate(spot.east(2).above(), Blocks.END_STONE.defaultBlockState());
+            if (monolith(TeemingSpawner.candidatesAt(end, x, y, z, random, false, true)) == null) wrong.add("a block 2 off is outside its box");
+            end.setBlockAndUpdate(spot.east(2).above(), Blocks.AIR.defaultBlockState());
+        });
+
+        // the distance: a Monolith 200 blocks off keeps the spot clear of a second, one 262 blocks off doesn't
+        Mob[] standing = {stand(end, type, standingX[0], y, z)};
+        helper.runAtTickTime(5, () -> {
+            if (TeemingSpawner.apexClear(end, type, spot)) wrong.add("a Monolith 200 blocks off should keep the spot clear of a second");
+            islandOpen(() -> {
+                if (monolith(TeemingSpawner.candidatesAt(end, x, y, z, RandomSource.create(9), false, true)) != null)
+                    wrong.add("a won roll 200 blocks from a Monolith offered a second");
+            });
+            standing[0].discard();
+            standing[0] = stand(end, type, standingX[1], y, z);
+        });
+        helper.runAtTickTime(10, () -> {
+            if (!TeemingSpawner.apexClear(end, type, spot)) wrong.add("a Monolith 262 blocks off should leave the spot free");
+            islandOpen(() -> {
+                if (monolith(TeemingSpawner.candidatesAt(end, x, y, z, RandomSource.create(9), false, true)) == null)
+                    wrong.add("a won roll 262 blocks from a Monolith should offer one");
+            });
+            standing[0].discard();
+            for (int sx : standingX) end.setChunkForced(sx >> 4, z >> 4, false);
+            end.setChunkForced(x >> 4, z >> 4, false);
+            if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+            helper.succeed();
+        });
+    }
+
+    /** A mob standing still at x, y, z, kept from despawning. */
+    private static Mob stand(ServerLevel level, EntityType<? extends Mob> type, int x, int y, int z) {
+        Mob mob = type.create(level, EntitySpawnReason.COMMAND);
+        mob.snapTo(x + 0.5, y, z + 0.5);
+        mob.setNoAi(true);
+        mob.setPersistenceRequired();
+        level.addFreshEntity(mob);
+        return mob;
     }
 
     /** Every candidate's own rule (or, for a biome-list mob, its placement) accepts its spot, inside its biome tag. */
