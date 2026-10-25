@@ -64,9 +64,18 @@ public final class TeemingGameTests {
         modBus.addListener(TeemingGameTests::registerTests);
     }
 
+    /**
+     * Test names to run, as comma-separated prefixes from the {@code teeming.gametests} system property (for example
+     * {@code chorus_grazer_,spawn_}); empty or unset runs every test.
+     */
+    private static final java.util.List<String> ONLY = java.util.Arrays.stream(System.getProperty("teeming.gametests", "").split(","))
+            .map(String::trim).filter(prefix -> !prefix.isEmpty()).toList();
+
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> env = event.registerEnvironment(TeemingMod.id("default"));
         for (var entry : FUNCTIONS.getEntries()) {
+            String name = entry.getId().getPath();
+            if (!ONLY.isEmpty() && ONLY.stream().noneMatch(name::startsWith)) continue;
             ResourceKey<Consumer<GameTestHelper>> key = ResourceKey.create(Registries.TEST_FUNCTION, entry.getId());
             event.registerTest(key.identifier(), new FunctionGameTestInstance(key, new TestData<>(env, ARENA,
                     TIME_LIMITS.getOrDefault(entry.getId().getPath(), DEFAULT_TICKS), 0, true)));

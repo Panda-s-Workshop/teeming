@@ -11,9 +11,11 @@ loom {
     accessWidenerPath = project(":common").loom.accessWidenerPath
 
     // In the dev runs common's classes and resources (data and assets) belong to the teeming mod
-    // itself, not to a library beside it: one module, no split packages.
+    // itself, not to a library beside it: one module, no split packages. The group is named main, as Loom's own
+    // group is: a second group named after the mod makes NeoForge see two teeming mods and pick one at random,
+    // sometimes the one without common's resources (then the mixin config is missing).
     mods {
-        teeming {
+        main {
             sourceSet sourceSets.main
             sourceSet project(":common").sourceSets.main
         }
@@ -64,6 +66,8 @@ loom {
             mainClass = "net.neoforged.fml.startup.GameTestServer"
             property "neoforge.enableGameTest", "true"
             property "neoforge.enabledGameTestNamespaces", "teeming"
+            // -PteemingTests=a_,b_ runs only the tests whose names start with one of those prefixes
+            property "teeming.gametests", (project.findProperty("teemingTests") ?: "").toString()
         }
     }
 }
