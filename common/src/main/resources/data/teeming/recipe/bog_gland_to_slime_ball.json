@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:bog_gland"
+  ],
+  "result": {
+    "id": "minecraft:slime_ball",
+    "count": 2
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#teeming:spawns/gloamhound",
+  "spawners": [
+    {
+      "type": "teeming:gloamhound",
+      "weight": 15,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 4
+      }
+    }
+  ]
+}

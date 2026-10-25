@@ -15,9 +15,17 @@ public final class MobRenderers {
                 Set.of(), 0.6F, 1.0F, 1, false));
         out.register(ModMobs.PUFFCAP_SHEPHERD.get(), ctx -> new TeemingRenderer<>(ctx, new PuffcapShepherdModel(ctx.bakeLayer(CreatureLayers.PUFFCAP_SHEPHERD)), "puffcap_shepherd",
                 Set.of("glowcap"), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.MIRE_GULPER.get(), ctx -> new TeemingRenderer<>(ctx, new MireGulperModel(ctx.bakeLayer(CreatureLayers.MIRE_GULPER)), "mire_gulper",
+                Set.of(), 0.75F, 1.0F, 1, true));
         out.register(ModMobs.DUNEFIN.get(), ctx -> new TeemingRenderer<>(ctx, new DunefinModel(ctx.bakeLayer(CreatureLayers.DUNEFIN)), "dunefin",
                 Set.of(), 0.6F, 1.0F, 1, true));
         out.register(ModMobs.RATTLECOIL.get(), ctx -> new TeemingRenderer<>(ctx, new RattlecoilModel(ctx.bakeLayer(CreatureLayers.RATTLECOIL)), "rattlecoil",
+                Set.of(), 0.5F, 1.0F, 1, false));
+        out.register(ModMobs.SNOWROLLER.get(), ctx -> new TeemingRenderer<>(ctx, new SnowrollerModel(ctx.bakeLayer(CreatureLayers.SNOWROLLER)), "snowroller",
+                Set.of(), 0.55F, 1.0F, 1, true));
+        out.register(ModMobs.SHIVERWRAITH.get(), ctx -> new TeemingRenderer<>(ctx, new ShiverwraithModel(ctx.bakeLayer(CreatureLayers.SHIVERWRAITH)), "shiverwraith",
+                Set.of("base", "hoarfrost"), 0.4F, 1.0F, 1, false));
+        out.register(ModMobs.GLOAMHOUND.get(), ctx -> new TeemingRenderer<>(ctx, new GloamhoundModel(ctx.bakeLayer(CreatureLayers.GLOAMHOUND)), "gloamhound",
                 Set.of(), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.SNAPMAW_BLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new SnapmawBloomModel(ctx.bakeLayer(CreatureLayers.SNAPMAW_BLOOM)), "snapmaw_bloom",
                 Set.of("azalea_bloom", "base"), 0.55F, 1.0F, 1, true));

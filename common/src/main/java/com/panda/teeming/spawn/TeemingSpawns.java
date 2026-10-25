@@ -72,12 +72,12 @@ public final class TeemingSpawns {
     private static <T extends Mob> void register(Placements out, EntityType<T> type, Entry mob) {
         SpawnPlacementType placement = switch (mob.place()) {
             case GROUND, SAND, LEAVES -> SpawnPlacementTypes.ON_GROUND;
-            case WATER -> SpawnPlacementTypes.IN_WATER;
+            case WATER, SHALLOW -> SpawnPlacementTypes.IN_WATER;
             case LAVA -> SpawnPlacementTypes.IN_LAVA;
             case CEILING, AIR, NONE -> SpawnPlacementTypes.NO_RESTRICTIONS;
         };
         Heightmap.Types heightmap = switch (mob.place()) {
-            case WATER -> Heightmap.Types.OCEAN_FLOOR;
+            case WATER, SHALLOW -> Heightmap.Types.OCEAN_FLOOR;
             case LEAVES -> Heightmap.Types.MOTION_BLOCKING;
             default -> Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
         };
@@ -103,6 +103,23 @@ public final class TeemingSpawns {
         return underCap(mob, type, level, pos);
     }
 
+    /**
+     * Water one or two deep over a solid floor, open to the air: a swamp pool or a mangrove puddle, never a lake bed or
+     * an ocean floor.
+     */
+    private static boolean shallowWater(ServerLevelAccessor level, BlockPos pos) {
+        if (!level.getFluidState(pos).is(FluidTags.WATER)) return false;
+        BlockPos floor = level.getFluidState(pos.below()).is(FluidTags.WATER) ? pos.below(2) : pos.below();
+        if (!level.getBlockState(floor).isFaceSturdy(level, floor, Direction.UP)) return false;
+        BlockPos above = pos.above();
+        int water = pos.getY() - floor.getY();                  // water blocks from the floor up to pos
+        while (level.getFluidState(above).is(FluidTags.WATER) && water < 3) {
+            water++;
+            above = above.above();
+        }
+        return water <= 2 && level.getBlockState(above).isAir();
+    }
+
     /** Whether the mob's placement kind accepts the spot (no light, height or caps). Public for the placement GameTests. */
     public static boolean placeOk(Entry mob, EntityType<?> type, ServerLevelAccessor level, BlockPos pos) {
         return switch (mob.place()) {
@@ -110,6 +127,7 @@ public final class TeemingSpawns {
             case SAND -> level.getBlockState(pos.below()).is(BlockTags.SAND);
             case LEAVES -> level.getBlockState(pos.below()).is(BlockTags.LEAVES);
             case WATER -> level.getFluidState(pos).is(FluidTags.WATER) && level.getFluidState(pos.above()).is(FluidTags.WATER);
+            case SHALLOW -> shallowWater(level, pos);
             case LAVA -> level.getFluidState(pos).is(FluidTags.LAVA) && level.getBlockState(pos.above()).isAir();
             case CEILING -> level.getBlockState(pos).isAir() && level.getBlockState(pos.above()).isFaceSturdy(level, pos.above(), Direction.DOWN);
             case AIR, NONE -> level.getBlockState(pos).isAir();

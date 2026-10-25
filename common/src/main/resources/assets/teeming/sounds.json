@@ -138,6 +138,119 @@
       }
     ]
   },
+  "gloamhound.ambient": {
+    "subtitle": "subtitles.teeming.gloamhound.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_big.pant",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.wolf_grumpy.ambient",
+        "type": "event",
+        "pitch": 0.75,
+        "volume": 0.8
+      }
+    ]
+  },
+  "gloamhound.hurt": {
+    "subtitle": "subtitles.teeming.gloamhound.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_big.hurt",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.wolf_grumpy.hurt",
+        "type": "event",
+        "pitch": 0.85
+      }
+    ]
+  },
+  "gloamhound.death": {
+    "subtitle": "subtitles.teeming.gloamhound.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_big.death",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.wolf_sad.death",
+        "type": "event",
+        "pitch": 0.75
+      }
+    ]
+  },
+  "gloamhound.growl": {
+    "subtitle": "subtitles.teeming.gloamhound.growl",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_angry.growl",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:entity.wolf_big.growl",
+        "type": "event",
+        "pitch": 0.75,
+        "volume": 1.3
+      }
+    ]
+  },
+  "gloamhound.bite": {
+    "subtitle": "subtitles.teeming.gloamhound.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.fox.bite",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:entity.fox.bite",
+        "type": "event",
+        "pitch": 0.72,
+        "volume": 1.3
+      }
+    ]
+  },
+  "gloamhound.howl": {
+    "subtitle": "subtitles.teeming.gloamhound.howl",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_sad.whine",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 3.0
+      },
+      {
+        "name": "minecraft:entity.wolf_big.whine",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 3.0
+      }
+    ]
+  },
+  "gloamhound.rout": {
+    "subtitle": "subtitles.teeming.gloamhound.rout",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wolf_sad.whine",
+        "type": "event",
+        "volume": 1.5
+      },
+      {
+        "name": "minecraft:entity.wolf_cute.whine",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 1.5
+      }
+    ]
+  },
   "levimoth.ambient": {
     "subtitle": "subtitles.teeming.levimoth.ambient",
     "sounds": [
@@ -203,6 +316,171 @@
         "type": "event",
         "pitch": 1.6,
         "volume": 0.6
+      }
+    ]
+  },
+  "mire_gulper.ambient": {
+    "subtitle": "subtitles.teeming.mire_gulper.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.frog.ambient",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.sniffer.idle",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ]
+  },
+  "mire_gulper.hurt": {
+    "subtitle": "subtitles.teeming.mire_gulper.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.frog.hurt",
+        "type": "event",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:entity.slime.hurt",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "mire_gulper.death": {
+    "subtitle": "subtitles.teeming.mire_gulper.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.frog.death",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.slime.death",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.7
+      }
+    ]
+  },
+  "mire_gulper.tell": {
+    "subtitle": "subtitles.teeming.mire_gulper.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.bubble_column.upwards_ambient",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.bubble_column.bubble_pop",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "mire_gulper.gulp": {
+    "subtitle": "subtitles.teeming.mire_gulper.gulp",
+    "sounds": [
+      {
+        "name": "minecraft:entity.frog.eat",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:entity.player.splash",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.9
+      }
+    ]
+  },
+  "mire_gulper.chew": {
+    "subtitle": "subtitles.teeming.mire_gulper.chew",
+    "sounds": [
+      {
+        "name": "minecraft:entity.generic.eat",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.mud.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "mire_gulper.miss": {
+    "subtitle": "subtitles.teeming.mire_gulper.miss",
+    "sounds": [
+      {
+        "name": "minecraft:entity.frog.tongue",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.generic.splash",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "mire_gulper.spit": {
+    "subtitle": "subtitles.teeming.mire_gulper.spit",
+    "sounds": [
+      {
+        "name": "minecraft:entity.llama.spit",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.1
+      },
+      {
+        "name": "minecraft:entity.player.splash",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.8
+      }
+    ]
+  },
+  "mire_gulper.stunned": {
+    "subtitle": "subtitles.teeming.mire_gulper.stunned",
+    "sounds": [
+      {
+        "name": "minecraft:entity.ravager.stunned",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.frog.hurt",
+        "type": "event",
+        "pitch": 0.4
+      }
+    ]
+  },
+  "mire_gulper.let_go": {
+    "subtitle": "subtitles.teeming.mire_gulper.let_go",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.burp",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.generic.splash",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
       }
     ]
   },
@@ -521,6 +799,124 @@
         "name": "minecraft:entity.armadillo.land",
         "type": "event",
         "pitch": 0.9
+      }
+    ]
+  },
+  "shiverwraith.ambient": {
+    "subtitle": "subtitles.teeming.shiverwraith.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.vex.ambient",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.stray.ambient",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ]
+  },
+  "shiverwraith.hurt": {
+    "subtitle": "subtitles.teeming.shiverwraith.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.vex.hurt",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "shiverwraith.death": {
+    "subtitle": "subtitles.teeming.shiverwraith.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.vex.death",
+        "type": "event",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.break",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.9
+      }
+    ]
+  },
+  "shiverwraith.beam": {
+    "subtitle": "subtitles.teeming.shiverwraith.beam",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.prepare_blindness",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "shiverwraith.tether": {
+    "subtitle": "subtitles.teeming.shiverwraith.tether",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.player.hurt_freeze",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "shiverwraith.drain": {
+    "subtitle": "subtitles.teeming.shiverwraith.drain",
+    "sounds": [
+      {
+        "name": "minecraft:block.powder_snow.step",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.4
+      }
+    ]
+  },
+  "shiverwraith.snap": {
+    "subtitle": "subtitles.teeming.shiverwraith.snap",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.5
       }
     ]
   },
@@ -990,6 +1386,136 @@
         "name": "minecraft:block.chorus_flower.death",
         "type": "event",
         "pitch": 1.5
+      }
+    ]
+  },
+  "snowroller.ambient": {
+    "subtitle": "subtitles.teeming.snowroller.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.polar_bear.ambient",
+        "type": "event",
+        "pitch": 1.35,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.armadillo.ambient",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "snowroller.hurt": {
+    "subtitle": "subtitles.teeming.snowroller.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.polar_bear.hurt",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:entity.snow_golem.hurt",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "snowroller.death": {
+    "subtitle": "subtitles.teeming.snowroller.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.polar_bear.death",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:block.snow.break",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "snowroller.tuck": {
+    "subtitle": "subtitles.teeming.snowroller.tuck",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.roll",
+        "type": "event",
+        "pitch": 0.75,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.powder_snow.step",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "snowroller.roll": {
+    "subtitle": "subtitles.teeming.snowroller.roll",
+    "sounds": [
+      {
+        "name": "minecraft:block.snow.fall",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.powder_snow.fall",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "snowroller.slam": {
+    "subtitle": "subtitles.teeming.snowroller.slam",
+    "sounds": [
+      {
+        "name": "minecraft:block.snow.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:entity.player.hurt_freeze",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "snowroller.stunned": {
+    "subtitle": "subtitles.teeming.snowroller.stunned",
+    "sounds": [
+      {
+        "name": "minecraft:entity.ravager.stunned",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.powder_snow.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      }
+    ]
+  },
+  "snowroller.unroll": {
+    "subtitle": "subtitles.teeming.snowroller.unroll",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.unroll_finish",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.snow.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
       }
     ]
   },

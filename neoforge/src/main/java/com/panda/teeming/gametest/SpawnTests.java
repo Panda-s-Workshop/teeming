@@ -26,6 +26,7 @@ final class SpawnTests {
         out.accept("placement_sand", h -> place(h, "dunefin", Place.SAND, Blocks.SAND));
         out.accept("placement_leaves", h -> place(h, "vinedrop_strangler", Place.LEAVES, Blocks.JUNGLE_LEAVES));
         out.accept("placement_lava", SpawnTests::lava);
+        out.accept("placement_shallow", SpawnTests::shallow);
         out.accept("placement_ceiling", SpawnTests::ceiling);
         out.accept("placement_void_air", SpawnTests::voidAir);
         out.accept("placement_underside", SpawnTests::underside);
@@ -65,6 +66,20 @@ final class SpawnTests {
             helper.assertTrue(golemValue < 0.0F, "a light-bound monster rates a lit spot below 0, got " + golemValue);
             helper.succeed();
         });
+    }
+
+    /** Shallow water: one or two deep over a floor and open above is accepted; dry floor and water three deep are not. */
+    private static void shallow(GameTestHelper helper) {
+        helper.assertTrue(RosterStats.get("mire_gulper").place() == Place.SHALLOW, "mire_gulper should be a shallow-water mob");
+        helper.setBlock(new BlockPos(2, 1, 2), Blocks.WATER);
+        helper.assertTrue(ok(helper, "mire_gulper", new BlockPos(2, 1, 2)), "accepts water one deep");
+        helper.setBlock(new BlockPos(5, 1, 2), Blocks.WATER);
+        helper.setBlock(new BlockPos(5, 2, 2), Blocks.WATER);
+        helper.assertTrue(ok(helper, "mire_gulper", new BlockPos(5, 1, 2)), "accepts water two deep at the bottom");
+        for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(8, y, 2), Blocks.WATER);
+        helper.assertTrue(!ok(helper, "mire_gulper", new BlockPos(8, 1, 2)), "refuses water three deep");
+        helper.assertTrue(!ok(helper, "mire_gulper", new BlockPos(2, 1, 6)), "refuses the dry floor");
+        helper.succeed();
     }
 
     private static void lava(GameTestHelper helper) {

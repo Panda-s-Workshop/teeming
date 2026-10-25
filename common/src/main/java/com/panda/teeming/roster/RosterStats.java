@@ -43,7 +43,7 @@ public final class RosterStats {
     }
 
     /** Where a spawn position is valid; NONE = no biome spawns, only the Teeming spawner places it. */
-    public enum Place { GROUND, WATER, LAVA, SAND, LEAVES, CEILING, AIR, NONE }
+    public enum Place { GROUND, WATER, SHALLOW, LAVA, SAND, LEAVES, CEILING, AIR, NONE }
 
     private static Entry e(int number, String id, Dim dim, Cat cat, boolean apex, float health, float attack, float armor,
                            float width, float height, int tellTicks, float blow, float balanceHealth, float balanceAttack,
@@ -57,7 +57,7 @@ public final class RosterStats {
             e(1, "thornhorn", Dim.OVERWORLD, Cat.CREATURE_NEUTRAL, false, 24F, 5F, 2F, 1.3F, 1.4F, 20, 7.5F, 24F, 5F, 8, 2, 4, "sunflower", "tough_hide", Place.GROUND, true, Integer.MAX_VALUE, ""),
             e(2, "snagwood", Dim.OVERWORLD, Cat.MONSTER, false, 30F, 5F, 6F, 0.9F, 2.6F, 12, 6F, 30F, 5F, 15, 1, 1, "birch_snag", "heartwood", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(3, "puffcap_shepherd", Dim.OVERWORLD, Cat.MONSTER, false, 16F, 2F, 0F, 0.7F, 1.1F, 16, 0F, 16F, 2F, 15, 1, 1, "glowcap", "spore_sac", Place.GROUND, false, Integer.MAX_VALUE, ""),
-            e(4, "mire_gulper", Dim.OVERWORLD, Cat.MONSTER, false, 28F, 4F, 2F, 1.4F, 0.9F, 20, 0F, 28F, 4F, 15, 1, 1, "mangrove_gulper", "bog_gland", Place.GROUND, false, Integer.MAX_VALUE, ""),
+            e(4, "mire_gulper", Dim.OVERWORLD, Cat.MONSTER, false, 28F, 4F, 2F, 1.4F, 0.9F, 20, 0F, 28F, 4F, 15, 1, 1, "mangrove_gulper", "bog_gland", Place.SHALLOW, false, Integer.MAX_VALUE, ""),
             e(5, "dunefin", Dim.OVERWORLD, Cat.MONSTER, false, 22F, 5F, 2F, 1.2F, 0.8F, 15, 7F, 22F, 5F, 20, 1, 2, "red_dunefin", "sand_scale", Place.SAND, true, Integer.MAX_VALUE, ""),
             e(6, "rattlecoil", Dim.OVERWORLD, Cat.NEUTRAL, false, 14F, 4F, 0F, 0.8F, 0.4F, 30, 0F, 14F, 4F, 15, 1, 2, "sidewinder", "venom_fang", Place.GROUND, true, Integer.MAX_VALUE, ""),
             e(7, "snowroller", Dim.OVERWORLD, Cat.MONSTER, false, 26F, 4F, 4F, 1F, 1F, 16, 10F, 26F, 4F, 15, 1, 2, "frostbitten", "frost_core", Place.GROUND, false, Integer.MAX_VALUE, ""),

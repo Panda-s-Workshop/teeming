@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#teeming:spawns/snowroller",
+  "spawners": [
+    {
+      "type": "teeming:snowroller",
+      "weight": 15,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}
