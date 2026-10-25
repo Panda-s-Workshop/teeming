@@ -58,11 +58,16 @@ public final class MobBounds {
             Map.entry("fortress_jailer", new float[] {1.188F, 2.656F, 0.562F}),
             Map.entry("flamewright", new float[] {1.472F, 2.398F, 1.323F}),
             Map.entry("aurovore", new float[] {1.125F, 1.233F, 2.276F}),
+            Map.entry("mending_crystalling", new float[] {0.670F, 1.062F, 0.640F}),
             Map.entry("liftstone_monolith", new float[] {1.844F, 4.062F, 1.688F}),
             Map.entry("astral_augur", new float[] {0.954F, 2.438F, 0.875F}),
+            Map.entry("nullcantor", new float[] {1.000F, 2.185F, 1.059F}),
             Map.entry("chorus_grazer", new float[] {1.000F, 1.938F, 1.818F}),
             Map.entry("levimoth", new float[] {1.805F, 0.815F, 1.001F}),
-            Map.entry("riftjackal", new float[] {0.449F, 1.262F, 1.841F})
+            Map.entry("warpseed_bloom", new float[] {1.011F, 1.569F, 0.967F}),
+            Map.entry("glimmerless", new float[] {1.127F, 1.977F, 1.390F}),
+            Map.entry("riftjackal", new float[] {0.449F, 1.262F, 1.841F}),
+            Map.entry("chorus_husk", new float[] {1.192F, 2.415F, 0.988F})
     );
 
     public static float @Nullable [] of(String mob) {

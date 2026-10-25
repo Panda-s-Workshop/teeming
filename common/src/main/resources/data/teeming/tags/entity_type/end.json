@@ -1,10 +1,15 @@
 {
   "replace": false,
   "values": [
+    "teeming:mending_crystalling",
     "teeming:liftstone_monolith",
     "teeming:astral_augur",
+    "teeming:nullcantor",
     "teeming:chorus_grazer",
     "teeming:levimoth",
-    "teeming:riftjackal"
+    "teeming:warpseed_bloom",
+    "teeming:glimmerless",
+    "teeming:riftjackal",
+    "teeming:chorus_husk"
   ]
 }

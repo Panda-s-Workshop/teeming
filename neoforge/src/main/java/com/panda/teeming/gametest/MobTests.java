@@ -50,11 +50,16 @@ import com.panda.teeming.gametest.mob.PyreHeraldTests;
 import com.panda.teeming.gametest.mob.FortressJailerTests;
 import com.panda.teeming.gametest.mob.FlamewrightTests;
 import com.panda.teeming.gametest.mob.AurovoreTests;
+import com.panda.teeming.gametest.mob.MendingCrystallingTests;
 import com.panda.teeming.gametest.mob.LiftstoneMonolithTests;
 import com.panda.teeming.gametest.mob.AstralAugurTests;
+import com.panda.teeming.gametest.mob.NullcantorTests;
 import com.panda.teeming.gametest.mob.ChorusGrazerTests;
 import com.panda.teeming.gametest.mob.LevimothTests;
+import com.panda.teeming.gametest.mob.WarpseedBloomTests;
+import com.panda.teeming.gametest.mob.GlimmerlessTests;
 import com.panda.teeming.gametest.mob.RiftjackalTests;
+import com.panda.teeming.gametest.mob.ChorusHuskTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -114,10 +119,15 @@ final class MobTests {
         FortressJailerTests.register(out);
         FlamewrightTests.register(out);
         AurovoreTests.register(out);
+        MendingCrystallingTests.register(out);
         LiftstoneMonolithTests.register(out);
         AstralAugurTests.register(out);
+        NullcantorTests.register(out);
         ChorusGrazerTests.register(out);
         LevimothTests.register(out);
+        WarpseedBloomTests.register(out);
+        GlimmerlessTests.register(out);
         RiftjackalTests.register(out);
+        ChorusHuskTests.register(out);
     }
 }

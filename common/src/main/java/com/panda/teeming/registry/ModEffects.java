@@ -2,6 +2,7 @@ package com.panda.teeming.registry;
 
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.effect.HeavyEffect;
+import com.panda.teeming.effect.NulledEffect;
 import com.panda.teeming.effect.SilencedEffect;
 import com.panda.teeming.effect.SunderEffect;
 import com.panda.teeming.effect.SwallowedEffect;
@@ -23,6 +24,7 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, SilencedEffect> SILENCED = EFFECTS.register("silenced", SilencedEffect::new);
     public static final DeferredHolder<MobEffect, VoidRotEffect> VOID_ROT = EFFECTS.register("void_rot", VoidRotEffect::new);
     public static final DeferredHolder<MobEffect, HeavyEffect> HEAVY = EFFECTS.register("heavy", HeavyEffect::new);
+    public static final DeferredHolder<MobEffect, NulledEffect> NULLED = EFFECTS.register("nulled", NulledEffect::new);
     public static final DeferredHolder<MobEffect, SwallowedEffect> SWALLOWED = EFFECTS.register("swallowed", SwallowedEffect::new);
 
     private ModEffects() {}

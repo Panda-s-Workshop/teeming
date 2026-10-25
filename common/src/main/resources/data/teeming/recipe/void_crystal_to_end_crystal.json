@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:void_crystal",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:glass",
+    "minecraft:ender_eye"
+  ],
+  "result": {
+    "id": "minecraft:end_crystal",
+    "count": 1
+  }
+}

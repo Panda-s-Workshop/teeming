@@ -109,15 +109,25 @@ public final class MobRenderers {
                 Set.of("base", "soul_wright"), 0.45F, 1.0F, 2, true));
         out.register(ModMobs.AUROVORE.get(), ctx -> new TeemingRenderer<>(ctx, new AurovoreModel(ctx.bakeLayer(CreatureLayers.AUROVORE)), "aurovore",
                 Set.of("base", "gilded_aurovore"), 0.5F, 1.0F, 1, false));
+        out.register(ModMobs.MENDING_CRYSTALLING.get(), ctx -> new TeemingRenderer<>(ctx, new MendingCrystallingModel(ctx.bakeLayer(CreatureLayers.MENDING_CRYSTALLING)), "mending_crystalling",
+                Set.of("base", "rose_crystalling"), 0.25F, 1.0F, 1, false));
         out.register(ModMobs.LIFTSTONE_MONOLITH.get(), ctx -> new TeemingRenderer<>(ctx, new LiftstoneMonolithModel(ctx.bakeLayer(CreatureLayers.LIFTSTONE_MONOLITH)), "liftstone_monolith",
                 Set.of("base"), 1.2F, 1.0F, 5, true));
         out.register(ModMobs.ASTRAL_AUGUR.get(), ctx -> new TeemingRenderer<>(ctx, new AstralAugurModel(ctx.bakeLayer(CreatureLayers.ASTRAL_AUGUR)), "astral_augur",
                 Set.of("base", "dusk_augur"), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.NULLCANTOR.get(), ctx -> new TeemingRenderer<>(ctx, new NullcantorModel(ctx.bakeLayer(CreatureLayers.NULLCANTOR)), "nullcantor",
+                Set.of("base", "pale_cantor"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.CHORUS_GRAZER.get(), ctx -> new TeemingRenderer<>(ctx, new ChorusGrazerModel(ctx.bakeLayer(CreatureLayers.CHORUS_GRAZER)), "chorus_grazer",
                 Set.of(), 0.65F, 1.0F, 1, false));
         out.register(ModMobs.LEVIMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new LevimothModel(ctx.bakeLayer(CreatureLayers.LEVIMOTH)), "levimoth",
                 Set.of("base", "pale_levimoth"), 0.35F, 1.0F, 1, false));
+        out.register(ModMobs.WARPSEED_BLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new WarpseedBloomModel(ctx.bakeLayer(CreatureLayers.WARPSEED_BLOOM)), "warpseed_bloom",
+                Set.of("base", "violet_bloom"), 0.5F, 1.0F, 2, false));
+        out.register(ModMobs.GLIMMERLESS.get(), ctx -> new TeemingRenderer<>(ctx, new GlimmerlessModel(ctx.bakeLayer(CreatureLayers.GLIMMERLESS)), "glimmerless",
+                Set.of("base", "shimmering"), 0.45F, 1.0F, 1, false));
         out.register(ModMobs.RIFTJACKAL.get(), ctx -> new TeemingRenderer<>(ctx, new RiftjackalModel(ctx.bakeLayer(CreatureLayers.RIFTJACKAL)), "riftjackal",
                 Set.of("base", "starbitten"), 0.45F, 1.0F, 2, false));
+        out.register(ModMobs.CHORUS_HUSK.get(), ctx -> new TeemingRenderer<>(ctx, new ChorusHuskModel(ctx.bakeLayer(CreatureLayers.CHORUS_HUSK)), "chorus_husk",
+                Set.of("base", "blooming_husk"), 0.5F, 1.0F, 2, false));
     }
 }
