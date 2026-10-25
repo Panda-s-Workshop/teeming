@@ -26,7 +26,7 @@ public final class MobRenderers {
         out.register(ModMobs.SHIVERWRAITH.get(), ctx -> new TeemingRenderer<>(ctx, new ShiverwraithModel(ctx.bakeLayer(CreatureLayers.SHIVERWRAITH)), "shiverwraith",
                 Set.of("base", "hoarfrost"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.GLOAMHOUND.get(), ctx -> new TeemingRenderer<>(ctx, new GloamhoundModel(ctx.bakeLayer(CreatureLayers.GLOAMHOUND)), "gloamhound",
-                Set.of(), 0.5F, 1.0F, 1, false));
+                Set.of("base", "snowpelt"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.VINEDROP_STRANGLER.get(), ctx -> new TeemingRenderer<>(ctx, new VinedropStranglerModel(ctx.bakeLayer(CreatureLayers.VINEDROP_STRANGLER)), "vinedrop_strangler",
                 Set.of(), 0.45F, 1.0F, 1, true));
         out.register(ModMobs.SNAPMAW_BLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new SnapmawBloomModel(ctx.bakeLayer(CreatureLayers.SNAPMAW_BLOOM)), "snapmaw_bloom",
