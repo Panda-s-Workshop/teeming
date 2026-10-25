@@ -15,10 +15,14 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 @SuppressWarnings("unused")
 public final class CreatureLayers {
     public static final ModelLayerLocation THORNHORN = new ModelLayerLocation(TeemingMod.id("thornhorn"), "main");
+    public static final ModelLayerLocation SNAGWOOD = new ModelLayerLocation(TeemingMod.id("snagwood"), "main");
+    public static final ModelLayerLocation PUFFCAP_SHEPHERD = new ModelLayerLocation(TeemingMod.id("puffcap_shepherd"), "main");
+    public static final ModelLayerLocation DUNEFIN = new ModelLayerLocation(TeemingMod.id("dunefin"), "main");
     public static final ModelLayerLocation RATTLECOIL = new ModelLayerLocation(TeemingMod.id("rattlecoil"), "main");
     public static final ModelLayerLocation SNAPMAW_BLOOM = new ModelLayerLocation(TeemingMod.id("snapmaw_bloom"), "main");
     public static final ModelLayerLocation STORMEEL = new ModelLayerLocation(TeemingMod.id("stormeel"), "main");
     public static final ModelLayerLocation SHELLGUARD_CRAB = new ModelLayerLocation(TeemingMod.id("shellguard_crab"), "main");
+    public static final ModelLayerLocation SKREEL = new ModelLayerLocation(TeemingMod.id("skreel"), "main");
     public static final ModelLayerLocation SLAGHEART_GOLEM = new ModelLayerLocation(TeemingMod.id("slagheart_golem"), "main");
     public static final ModelLayerLocation LEVIMOTH = new ModelLayerLocation(TeemingMod.id("levimoth"), "main");
 
@@ -26,10 +30,14 @@ public final class CreatureLayers {
 
     public static void register(ClientSinks.Layers out) {
         out.register(THORNHORN, CreatureLayers::thornhorn);
+        out.register(SNAGWOOD, CreatureLayers::snagwood);
+        out.register(PUFFCAP_SHEPHERD, CreatureLayers::puffcapShepherd);
+        out.register(DUNEFIN, CreatureLayers::dunefin);
         out.register(RATTLECOIL, CreatureLayers::rattlecoil);
         out.register(SNAPMAW_BLOOM, CreatureLayers::snapmawBloom);
         out.register(STORMEEL, CreatureLayers::stormeel);
         out.register(SHELLGUARD_CRAB, CreatureLayers::shellguard_crab);
+        out.register(SKREEL, CreatureLayers::skreel);
         out.register(SLAGHEART_GOLEM, CreatureLayers::slagheartGolem);
         out.register(LEVIMOTH, CreatureLayers::levimoth);
     }
@@ -51,6 +59,61 @@ public final class CreatureLayers {
         return LayerDefinition.create(mesh, 128, 64);
     }
     public static final Map<String, String[]> THORNHORN_ONLY = Map.of();
+
+    public static LayerDefinition snagwood() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        root.addOrReplaceChild("leg_right", CubeListBuilder.create().texOffs(48, 30).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 7.0F, 4.0F).texOffs(0, 24).addBox(-3.0F, 7.0F, -3.0F, 6.0F, 3.0F, 6.0F).texOffs(0, 44).addBox(-1.0F, 8.0F, -6.0F, 2.0F, 2.0F, 4.0F).texOffs(12, 53).addBox(-4.0F, 8.0F, -1.0F, 3.0F, 2.0F, 2.0F).texOffs(52, 55).addBox(-1.0F, 9.0F, 2.0F, 2.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(-2.5F, 14.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_left", CubeListBuilder.create().texOffs(0, 33).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 7.0F, 4.0F).texOffs(24, 30).addBox(-3.0F, 7.0F, -3.0F, 6.0F, 3.0F, 6.0F).texOffs(0, 50).addBox(-1.0F, 8.0F, -6.0F, 2.0F, 2.0F, 4.0F).texOffs(0, 56).addBox(1.0F, 8.0F, -1.0F, 3.0F, 2.0F, 2.0F).texOffs(22, 56).addBox(-1.0F, 9.0F, 2.0F, 2.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(2.5F, 14.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -17.0F, -3.5F, 8.0F, 17.0F, 7.0F).texOffs(30, 18).addBox(-4.5F, -4.0F, -4.0F, 9.0F, 4.0F, 8.0F).texOffs(52, 50).addBox(-6.0F, -8.0F, -2.0F, 2.0F, 1.0F, 4.0F).texOffs(32, 56).addBox(-6.0F, -11.0F, 0.0F, 2.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 14.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("stub", CubeListBuilder.create().texOffs(28, 52).addBox(0.0F, -1.0F, -1.0F, 4.0F, 2.0F, 2.0F), PartPose.offsetAndRotation(3.5F, -12.0F, 0.0F, 0.0F, 0.0F, -0.6981F));
+        PartDefinition p_crown = p_body.addOrReplaceChild("crown", CubeListBuilder.create().texOffs(30, 0).addBox(-3.5F, -12.0F, -3.0F, 7.0F, 12.0F, 6.0F).texOffs(40, 50).addBox(-3.5F, -15.0F, -3.0F, 3.0F, 3.0F, 3.0F).texOffs(40, 41).addBox(0.5F, -18.0F, -1.0F, 3.0F, 6.0F, 3.0F).texOffs(56, 11).addBox(-2.0F, -14.0F, 1.0F, 2.0F, 2.0F, 2.0F), PartPose.offsetAndRotation(0.0F, -17.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_crown.addOrReplaceChild("eyes", CubeListBuilder.create().texOffs(42, 59).addBox(-3.5F, -1.0F, -0.15F, 7.0F, 2.0F, 0.0F), PartPose.offsetAndRotation(0.0F, -9.0F, -3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_arm_right = p_crown.addOrReplaceChild("arm_right", CubeListBuilder.create().texOffs(16, 39).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 11.0F, 3.0F), PartPose.offsetAndRotation(-5.0F, -9.0F, 0.0F, -0.2443F, 0.0F, 0.2793F));
+        p_arm_right.addOrReplaceChild("arm_right_twig", CubeListBuilder.create().texOffs(20, 33).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(-1.2F, 4.95F, 0.0F, 0.0F, 0.0F, 0.9599F));
+        PartDefinition p_forearm_right = p_arm_right.addOrReplaceChild("forearm_right", CubeListBuilder.create().texOffs(56, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 9.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 10.0F, 0.0F, -0.2094F, 0.0F, -0.1047F));
+        p_forearm_right.addOrReplaceChild("twig_right_0", CubeListBuilder.create().texOffs(60, 41).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 8.5F, 0.0F, -0.007F, 0.0F, -0.5585F));
+        p_forearm_right.addOrReplaceChild("twig_right_1", CubeListBuilder.create().texOffs(24, 24).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 5.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 8.5F, 0.0F, -0.1745F, 0.0F, 0.0F));
+        p_forearm_right.addOrReplaceChild("twig_right_2", CubeListBuilder.create().texOffs(12, 44).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 8.5F, 0.0F, -0.007F, 0.0F, 0.5585F));
+        PartDefinition p_arm_left = p_crown.addOrReplaceChild("arm_left", CubeListBuilder.create().texOffs(28, 39).addBox(-1.5F, -1.0F, -1.5F, 3.0F, 10.0F, 3.0F), PartPose.offsetAndRotation(5.0F, -9.0F, 0.0F, -0.2443F, 0.0F, -0.2793F));
+        p_arm_left.addOrReplaceChild("arm_left_twig", CubeListBuilder.create().texOffs(10, 57).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(1.2F, 4.5F, 0.0F, 0.0F, 0.0F, -0.9599F));
+        PartDefinition p_forearm_left = p_arm_left.addOrReplaceChild("forearm_left", CubeListBuilder.create().texOffs(52, 41).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 9.0F, 0.0F, -0.2094F, 0.0F, 0.1047F));
+        p_forearm_left.addOrReplaceChild("twig_left_0", CubeListBuilder.create().texOffs(14, 57).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 6.5F, 0.0F, -0.0908F, 0.0F, -0.2793F));
+        p_forearm_left.addOrReplaceChild("twig_left_1", CubeListBuilder.create().texOffs(16, 33).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 5.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 6.5F, 0.0F, -0.0908F, 0.0F, 0.2793F));
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+    public static final Map<String, String[]> SNAGWOOD_ONLY = Map.of();
+
+    public static LayerDefinition puffcapShepherd() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        root.addOrReplaceChild("leg_right", CubeListBuilder.create().texOffs(48, 0).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 4.0F, 3.0F), PartPose.offsetAndRotation(-1.7F, 20.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_left", CubeListBuilder.create().texOffs(48, 7).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 4.0F, 3.0F), PartPose.offsetAndRotation(1.7F, 20.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(36, 15).addBox(-3.0F, -9.0F, -2.5F, 6.0F, 9.0F, 5.0F).texOffs(0, 26).addBox(-3.5F, -5.0F, -3.0F, 7.0F, 3.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 21.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("sac", CubeListBuilder.create().texOffs(46, 29).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 3.0F), PartPose.offsetAndRotation(1.0F, -2.5F, 2.7F, 0.0F, 0.2618F, 0.0F));
+        p_body.addOrReplaceChild("cap", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -3.0F, -6.0F, 12.0F, 3.0F, 12.0F).texOffs(0, 15).addBox(-4.5F, -5.0F, -4.5F, 9.0F, 2.0F, 9.0F).texOffs(26, 29).addBox(-2.5F, -6.0F, -2.5F, 5.0F, 1.0F, 5.0F), PartPose.offsetAndRotation(0.0F, -8.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_arm_right = p_body.addOrReplaceChild("arm_right", CubeListBuilder.create().texOffs(0, 35).addBox(-1.7F, -0.5F, -1.0F, 2.0F, 5.0F, 2.0F), PartPose.offsetAndRotation(-3.6F, -4.0F, 0.0F, 0.0F, 0.0F, 0.5236F));
+        p_arm_right.addOrReplaceChild("crook", CubeListBuilder.create().texOffs(60, 0).addBox(-0.5F, -10.5F, -0.5F, 1.0F, 14.0F, 1.0F).texOffs(16, 35).addBox(-0.5F, -11.2F, -3.5F, 1.0F, 1.0F, 4.0F).texOffs(58, 15).addBox(-0.35F, -10.4F, -3.5F, 1.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(-0.7F, 4.2F, 0.0F, 0.0F, 0.0F, -0.5236F));
+        p_body.addOrReplaceChild("arm_left", CubeListBuilder.create().texOffs(8, 35).addBox(-0.3F, -0.5F, -1.0F, 2.0F, 5.0F, 2.0F), PartPose.offsetAndRotation(3.6F, -4.0F, 0.0F, 0.0F, 0.0F, -0.1745F));
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+    public static final Map<String, String[]> PUFFCAP_SHEPHERD_ONLY = Map.of();
+
+    public static LayerDefinition dunefin() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -4.0F, -5.0F, 8.0F, 7.0F, 10.0F).texOffs(0, 17).addBox(-3.0F, 3.0F, -5.0F, 6.0F, 1.0F, 10.0F), PartPose.offsetAndRotation(0.0F, 20.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(36, 0).addBox(-3.5F, -3.5F, -6.0F, 7.0F, 6.0F, 6.0F, new CubeDeformation(0.15F)).texOffs(48, 32).addBox(-2.5F, -2.5F, -8.0F, 5.0F, 4.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 0.0F, -5.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("jaw", CubeListBuilder.create().texOffs(32, 24).addBox(-3.0F, 0.0F, -6.0F, 6.0F, 2.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 2.35F, -0.5F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("fin", CubeListBuilder.create().texOffs(18, 32).addBox(-1.0F, -2.0F, -3.0F, 2.0F, 2.0F, 6.0F).texOffs(34, 32).addBox(-1.0F, -4.0F, -2.0F, 2.0F, 2.0F, 5.0F).texOffs(52, 38).addBox(-1.0F, -6.0F, -1.0F, 2.0F, 2.0F, 4.0F).texOffs(18, 40).addBox(-1.0F, -8.0F, 0.0F, 2.0F, 2.0F, 3.0F).texOffs(18, 28).addBox(-1.0F, -10.0F, 1.5F, 2.0F, 2.0F, 2.0F), PartPose.offsetAndRotation(0.0F, -4.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("fin_right", CubeListBuilder.create().texOffs(0, 37).addBox(-5.0F, 0.0F, 0.0F, 5.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(-4.0F, 2.0F, -2.0F, 0.0F, 0.384F, -0.5236F));
+        p_body.addOrReplaceChild("fin_left", CubeListBuilder.create().texOffs(34, 39).addBox(0.0F, 0.0F, 0.0F, 5.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(4.0F, 2.0F, -2.0F, 0.0F, -0.384F, 0.5236F));
+        PartDefinition p_tail1 = p_body.addOrReplaceChild("tail1", CubeListBuilder.create().texOffs(36, 12).addBox(-3.0F, -3.0F, -1.0F, 6.0F, 6.0F, 6.0F, new CubeDeformation(0.15F)), PartPose.offsetAndRotation(0.0F, -0.5F, 5.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tail2 = p_tail1.addOrReplaceChild("tail2", CubeListBuilder.create().texOffs(0, 28).addBox(-2.0F, -2.0F, -1.0F, 4.0F, 4.0F, 5.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 5.0F, 0.0F, 0.0F, 0.0F));
+        p_tail2.addOrReplaceChild("tail_fin", CubeListBuilder.create().texOffs(56, 24).addBox(-0.5F, -4.0F, -1.0F, 1.0F, 4.0F, 3.0F).texOffs(0, 42).addBox(-0.5F, -7.0F, 1.0F, 1.0F, 3.0F, 3.0F).texOffs(8, 42).addBox(-0.5F, 0.0F, -1.0F, 1.0F, 3.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+    public static final Map<String, String[]> DUNEFIN_ONLY = Map.of();
 
     public static LayerDefinition rattlecoil() {
         MeshDefinition mesh = new MeshDefinition();
@@ -165,6 +228,23 @@ public final class CreatureLayers {
         return LayerDefinition.create(mesh, 64, 64);
     }
     public static final Map<String, String[]> SHELLGUARD_CRAB_ONLY = Map.of();
+
+    public static LayerDefinition skreel() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-3.0F, -3.0F, -5.0F, 6.0F, 6.0F, 10.0F).texOffs(36, 26).addBox(-3.5F, -3.6F, -4.0F, 7.0F, 1.0F, 7.0F), PartPose.offsetAndRotation(0.0F, 16.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(104, 0).addBox(-2.5F, -3.0F, -4.5F, 5.0F, 5.0F, 5.0F).texOffs(104, 10).addBox(-1.5F, -3.85F, -1.0F, 3.0F, 1.0F, 4.0F).texOffs(118, 10).addBox(-1.0F, -1.5F, -7.0F, 2.0F, 2.0F, 3.0F).texOffs(104, 15).addBox(-0.5F, 0.35F, -7.5F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -1.5F, -5.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("jaw", CubeListBuilder.create().texOffs(108, 23).addBox(-0.5F, 0.15F, -2.2F, 1.0F, 1.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 0.5F, -4.5F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(64, 26).addBox(-3.0F, 0.0F, 0.0F, 6.0F, 0.0F, 8.0F).texOffs(92, 26).addBox(-3.0F, 0.25F, 0.0F, 6.0F, 0.0F, 8.0F), PartPose.offsetAndRotation(0.0F, -1.5F, 5.0F, -0.0873F, 0.0F, 0.0F));
+        PartDefinition p_wing_right = p_body.addOrReplaceChild("wing_right", CubeListBuilder.create().texOffs(32, 0).addBox(-9.0F, 0.0F, -3.0F, 9.0F, 0.0F, 9.0F).texOffs(68, 0).addBox(-9.0F, 0.25F, -3.0F, 9.0F, 0.0F, 9.0F), PartPose.offsetAndRotation(-3.0F, -2.3F, -1.0F, 0.0F, 0.0F, 0.1047F));
+        p_wing_right.addOrReplaceChild("wing_right_tip", CubeListBuilder.create().texOffs(0, 18).addBox(-10.0F, 0.0F, -3.0F, 10.0F, 0.0F, 8.0F).texOffs(36, 18).addBox(-10.0F, 0.25F, -3.0F, 10.0F, 0.0F, 8.0F), PartPose.offsetAndRotation(-9.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("leg_right", CubeListBuilder.create().texOffs(108, 19).addBox(-1.0F, -1.0F, -1.0F, 2.0F, 2.0F, 2.0F).texOffs(124, 0).addBox(-0.5F, 0.5F, -0.5F, 1.0F, 4.0F, 1.0F).texOffs(108, 15).addBox(-1.0F, 4.0F, -1.5F, 2.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(-1.5F, 3.0F, 1.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_wing_left = p_body.addOrReplaceChild("wing_left", CubeListBuilder.create().texOffs(32, 9).addBox(0.0F, 0.0F, -3.0F, 9.0F, 0.0F, 9.0F).texOffs(68, 9).addBox(0.0F, 0.25F, -3.0F, 9.0F, 0.0F, 9.0F), PartPose.offsetAndRotation(3.0F, -2.3F, -1.0F, 0.0F, 0.0F, -0.1047F));
+        p_wing_left.addOrReplaceChild("wing_left_tip", CubeListBuilder.create().texOffs(72, 18).addBox(0.0F, 0.0F, -3.0F, 10.0F, 0.0F, 8.0F).texOffs(0, 26).addBox(0.0F, 0.25F, -3.0F, 10.0F, 0.0F, 8.0F), PartPose.offsetAndRotation(9.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("leg_left", CubeListBuilder.create().texOffs(116, 19).addBox(-1.0F, -1.0F, -1.0F, 2.0F, 2.0F, 2.0F).texOffs(124, 5).addBox(-0.5F, 0.5F, -0.5F, 1.0F, 4.0F, 1.0F).texOffs(118, 15).addBox(-1.0F, 4.0F, -1.5F, 2.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(1.5F, 3.0F, 1.0F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 128, 64);
+    }
+    public static final Map<String, String[]> SKREEL_ONLY = Map.of();
 
     public static LayerDefinition slagheartGolem() {
         MeshDefinition mesh = new MeshDefinition();

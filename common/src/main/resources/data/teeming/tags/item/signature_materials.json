@@ -1,10 +1,12 @@
 {
   "values": [
     "teeming:tough_hide",
-    "teeming:venom_fang",
     "teeming:heartwood",
-    "teeming:storm_coil",
+    "teeming:spore_sac",
     "teeming:sand_scale",
+    "teeming:venom_fang",
+    "teeming:storm_coil",
+    "teeming:gale_essence",
     "teeming:slag_gland",
     "teeming:chorus_silk"
   ]

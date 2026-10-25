@@ -8,6 +8,7 @@
     {
       "id": "#c:is_badlands",
       "required": false
-    }
+    },
+    "#minecraft:is_badlands"
   ]
 }

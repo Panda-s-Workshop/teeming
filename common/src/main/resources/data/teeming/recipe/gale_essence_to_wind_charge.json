@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:gale_essence"
+  ],
+  "result": {
+    "id": "minecraft:wind_charge",
+    "count": 2
+  }
+}

@@ -1,3 +1,4 @@
 {
-  "weight": 20
+  "weight": 240,
+  "biomes": "#c:is_birch_forest"
 }
