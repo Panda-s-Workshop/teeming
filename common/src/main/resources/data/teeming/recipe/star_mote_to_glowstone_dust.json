@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:star_mote"
+  ],
+  "result": {
+    "id": "minecraft:glowstone_dust",
+    "count": 2
+  }
+}

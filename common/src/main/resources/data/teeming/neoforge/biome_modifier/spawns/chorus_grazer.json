@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#teeming:spawns/chorus_grazer",
+  "spawners": [
+    {
+      "type": "teeming:chorus_grazer",
+      "weight": 6,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 2,
+        "max_inclusive": 4
+      }
+    }
+  ]
+}

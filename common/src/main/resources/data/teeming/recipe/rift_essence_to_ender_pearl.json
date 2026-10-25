@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:rift_essence",
+    "teeming:rift_essence",
+    "teeming:rift_essence",
+    "teeming:rift_essence"
+  ],
+  "result": {
+    "id": "minecraft:ender_pearl",
+    "count": 1
+  }
+}

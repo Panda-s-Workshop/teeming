@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:purpur_fleece"
+  ],
+  "result": {
+    "id": "minecraft:purple_wool",
+    "count": 1
+  }
+}

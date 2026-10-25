@@ -58,7 +58,11 @@ public final class MobDrops {
             Map.entry("fortress_jailer", List.of("teeming:chain_link", "minecraft:iron_nugget", "teeming:trophy")),
             Map.entry("flamewright", List.of("teeming:ember_wing", "minecraft:blaze_powder", "teeming:trophy")),
             Map.entry("aurovore", List.of("teeming:gilded_gizzard", "minecraft:gold_nugget", "teeming:trophy")),
-            Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy"))
+            Map.entry("liftstone_monolith", List.of("teeming:gravity_stone", "minecraft:end_stone", "minecraft:obsidian", "teeming:trophy")),
+            Map.entry("astral_augur", List.of("teeming:star_mote", "minecraft:chorus_fruit", "teeming:trophy")),
+            Map.entry("chorus_grazer", List.of("teeming:purpur_fleece", "minecraft:chorus_fruit", "teeming:trophy")),
+            Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy")),
+            Map.entry("riftjackal", List.of("teeming:rift_essence", "minecraft:chorus_fruit", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {

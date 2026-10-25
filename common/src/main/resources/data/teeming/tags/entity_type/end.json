@@ -1,6 +1,10 @@
 {
   "replace": false,
   "values": [
-    "teeming:levimoth"
+    "teeming:liftstone_monolith",
+    "teeming:astral_augur",
+    "teeming:chorus_grazer",
+    "teeming:levimoth",
+    "teeming:riftjackal"
   ]
 }

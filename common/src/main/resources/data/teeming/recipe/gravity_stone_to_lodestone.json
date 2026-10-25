@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:gravity_stone",
+    "teeming:gravity_stone",
+    "teeming:gravity_stone",
+    "teeming:gravity_stone",
+    "minecraft:chiseled_stone_bricks",
+    "minecraft:chiseled_stone_bricks",
+    "minecraft:chiseled_stone_bricks",
+    "minecraft:chiseled_stone_bricks",
+    "minecraft:iron_ingot"
+  ],
+  "result": {
+    "id": "minecraft:lodestone",
+    "count": 1
+  }
+}
