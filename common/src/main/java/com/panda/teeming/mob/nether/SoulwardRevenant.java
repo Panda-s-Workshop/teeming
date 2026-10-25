@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.mob.Gauge;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -76,7 +77,24 @@ public class SoulwardRevenant extends TeemingMonster {
     private static final Telegraph BRIGHT = Telegraph.particles(ParticleTypes.SOUL, 12, 0.5, 0.6).withSpeed(0.04);
     private static final Telegraph CRACK = Telegraph.particles(ParticleTypes.SOUL, 16, 0.4, 0.6).withSpeed(0.06);
 
-    private float gauge;
+    /**
+     * The soul gauge: health lost fills it, twice over once bright; it fills and glows only while idle (full during the
+     * kneel, sealed while the breastplate is cracked). Turning bright warns; full, it kneels; the nova empties it.
+     */
+    private final Gauge gauge = new Gauge(this, "Gauge", GAUGE_MAX)
+            .stages(SoulwardRevenant::stageFor)
+            .glowsWhen(() -> core().idle())
+            .sealedWhen(() -> !core().idle())
+            .rate(v -> v >= GAUGE_MAX * BRIGHT_SHARE ? BRIGHT_FILL : 1.0F)
+            .onChange(before -> {
+                if (Gauge.rose(before, gauge(), GAUGE_MAX * BRIGHT_SHARE) && core().idle()) {
+                    BRIGHT.play(this);                           // the warning: from here on it fills twice as fast
+                    playSound(ModSounds.SOULWARD_REVENANT_GLOW.get(), 1.0F, 1.0F);
+                }
+            })
+            .releaseAt(GAUGE_MAX, () -> {
+                if (core().idle()) kneel();
+            });
     private boolean wasted;
 
     public SoulwardRevenant(EntityType<? extends SoulwardRevenant> type, Level level) {
@@ -134,19 +152,19 @@ public class SoulwardRevenant extends TeemingMonster {
     @Override
     public boolean startPhase(Phase phase, int length, @Nullable LivingEntity target) {
         if (!core().start(phase, length, target)) return false;
-        core().setStage(phase == Step.TELL ? 3 : phase == Step.IDLE ? stageFor(gauge) : 0);
+        core().setStage(phase == Step.TELL ? 3 : phase == Step.IDLE ? gauge.stage() : 0);
         return true;
     }
 
     // ---- the gauge ---------------------------------------------------------------------------------------------------
 
     public float gauge() {
-        return gauge;
+        return gauge.value();
     }
 
     /** True from 80 % of the gauge: its seams burn white and damage fills it twice as fast. */
     public boolean bright() {
-        return gauge >= GAUGE_MAX * BRIGHT_SHARE;
+        return gauge() >= GAUGE_MAX * BRIGHT_SHARE;
     }
 
     /** The glow stage for a gauge: dark when empty, then soul-blue, cyan, and white once bright. */
@@ -158,15 +176,7 @@ public class SoulwardRevenant extends TeemingMonster {
 
     /** Sets the gauge (0..25) and its glow; full, while idle, it kneels for the nova. Public as a test hook. */
     public void setGauge(float value) {
-        boolean wasBright = bright();
-        gauge = Math.clamp(value, 0.0F, GAUGE_MAX);
-        if (level().isClientSide()) return;
-        if (core().idle()) core().setStage(stageFor(gauge));
-        if (bright() && !wasBright && core().idle() && level() instanceof ServerLevel) {
-            BRIGHT.play(this);                                   // the warning: from here on it fills twice as fast
-            playSound(ModSounds.SOULWARD_REVENANT_GLOW.get(), 1.0F, 1.0F);
-        }
-        if (gauge >= GAUGE_MAX && core().idle()) kneel();
+        gauge.set(value);
     }
 
     /**
@@ -174,8 +184,8 @@ public class SoulwardRevenant extends TeemingMonster {
      * sealed while the breastplate is cracked. Public as a test hook.
      */
     public void fill(float lost) {
-        if (lost <= 0.0F || !core().idle() || !MechanicEvent.post(this, "fill", null)) return;
-        setGauge(gauge + lost * (bright() ? BRIGHT_FILL : 1.0F));
+        if (lost <= 0.0F || gauge.sealed() || !MechanicEvent.post(this, "fill", null)) return;
+        gauge.fill(lost);
     }
 
     /** Kneels to gather the nova, if it is free to; true if it did. Public as a test hook. */
@@ -264,7 +274,7 @@ public class SoulwardRevenant extends TeemingMonster {
     /** Back to idle, glowing as its gauge says. */
     private void settle() {
         core().end();
-        core().setStage(stageFor(gauge));
+        gauge.show();
     }
 
     /**
@@ -282,7 +292,7 @@ public class SoulwardRevenant extends TeemingMonster {
             throwOut(victim);
         }
         wasted = !caught;
-        setGauge(0.0F);
+        gauge.reset();
         core().setStage(0);
         burst(level);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.SOULWARD_REVENANT_NOVA.get(), getSoundSource(), 2.0F, 1.0F);
@@ -354,15 +364,14 @@ public class SoulwardRevenant extends TeemingMonster {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putFloat("Gauge", gauge);
+        gauge.save(output);
     }
 
     /** The gauge survives a reload with its glow (a reload mid-kneel ends the kneel; the next hit starts it again). */
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        gauge = Math.clamp(input.getFloatOr("Gauge", 0.0F), 0.0F, GAUGE_MAX);
-        core().setStage(stageFor(gauge));
+        gauge.load(input);
     }
 
     // ---- sounds ------------------------------------------------------------------------------------------------------

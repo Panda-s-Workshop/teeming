@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.mob.Gauge;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -60,14 +61,27 @@ public class SlagheartGolem extends TeemingMonster {
     private static final Telegraph STEAM = Telegraph.particles(ParticleTypes.CLOUD, 10, 0.6, 0.6).withSound(ModSounds.SLAGHEART_GOLEM_QUENCH.get(), 1.0F, 1.0F);
     private static final Telegraph RUMBLE = Telegraph.particles(ParticleTypes.LAVA, 3, 0.5, 0.6);
 
-    private int heat = 3;
-    private int heatClock;
+    /**
+     * Heat: whole steps from 3, a glow stage per 3 heat, no heat from blows while quenched. At 0 it is quenched; at 12,
+     * idle, the eruption starts; the eruption leaves it at 6.
+     */
+    private final Gauge heat = new Gauge(this, "Heat", MAX_HEAT).whole().from(3)
+            .stages(v -> Math.min(3, (int) v / 3))
+            .sealedWhen(() -> core().in(Step.QUENCHED))
+            .every(HEAT_EVERY, 1)
+            .resetTo(AFTER_ERUPTION)
+            .onChange(before -> {
+                if (heat() == 0 && !core().in(Step.QUENCHED) && startPhase(Step.QUENCHED, QUENCH_TICKS, null)) STEAM.play(this);
+            })
+            .releaseAt(MAX_HEAT, () -> {
+                if (core().idle() && startPhase(Step.TELL, TELL_TICKS, getTarget())) playSound(ModSounds.SLAGHEART_GOLEM_TELL.get(), 1.0F, 1.0F);
+            });
     private boolean inPowderSnow;
 
     public SlagheartGolem(EntityType<? extends SlagheartGolem> type, Level level) {
         super(type, level, Step.values());
         xpReward = 12;
-        core().setStage(heat / 3);
+        heat.show();
     }
 
     @Override
@@ -108,19 +122,12 @@ public class SlagheartGolem extends TeemingMonster {
     // ---- heat ------------------------------------------------------------------------------------------------------
 
     public int heat() {
-        return heat;
+        return (int) heat.value();
     }
 
     /** Sets the heat (0..12) and its glow stage; at 0 it is quenched, at 12 the eruption starts. Public as a test hook. */
     public void setHeat(int value) {
-        heat = Math.clamp(value, 0, MAX_HEAT);
-        core().setStage(Math.min(3, heat / 3));
-        if (level().isClientSide()) return;
-        if (heat == 0 && !core().in(Step.QUENCHED)) {
-            if (startPhase(Step.QUENCHED, QUENCH_TICKS, null)) STEAM.play(this);
-        } else if (heat == MAX_HEAT && core().idle()) {
-            if (startPhase(Step.TELL, TELL_TICKS, getTarget())) playSound(ModSounds.SLAGHEART_GOLEM_TELL.get(), 1.0F, 1.0F);
-        }
+        heat.set(value);
     }
 
     /** A cooling hit: lowers the heat with a hiss. */
@@ -128,7 +135,7 @@ public class SlagheartGolem extends TeemingMonster {
         if (!MechanicEvent.post(this, "cool", null)) return;
         if (!core().in(Step.QUENCHED)) STEAM.play(this);
         if (core().in(Step.TELL)) core().end();     // quenching the tell stops the eruption
-        setHeat(heat - amount);
+        setHeat(heat() - amount);
     }
 
     @Override
@@ -147,11 +154,8 @@ public class SlagheartGolem extends TeemingMonster {
             getNavigation().stop();
             return;
         }
-        if (getTarget() != null && ++heatClock >= HEAT_EVERY) {
-            heatClock = 0;
-            setHeat(heat + 1);
-        }
-        if (heat >= 6 && tickCount % 10 == 0) level.sendParticles(ParticleTypes.SMOKE, getX(), getY() + getBbHeight() * 0.8, getZ(), 2, 0.4, 0.3, 0.4, 0.01);
+        heat.tick(getTarget() != null);                   // +1 heat every 3 s while it fights
+        if (heat() >= 6 && tickCount % 10 == 0) level.sendParticles(ParticleTypes.SMOKE, getX(), getY() + getBbHeight() * 0.8, getZ(), 2, 0.4, 0.3, 0.4, 0.01);
     }
 
     @Override
@@ -161,7 +165,7 @@ public class SlagheartGolem extends TeemingMonster {
             else core().end();
         } else {
             core().end();
-            if (ended == Step.ERUPT) setHeat(AFTER_ERUPTION);
+            if (ended == Step.ERUPT) heat.reset();
         }
     }
 
@@ -199,15 +203,14 @@ public class SlagheartGolem extends TeemingMonster {
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putInt("Heat", heat);
+        heat.save(output);
     }
 
     /** The heat survives a reload; its glow stage comes back with it (a reload mid-eruption ends the eruption). */
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        heat = Math.clamp(input.getIntOr("Heat", 3), 0, MAX_HEAT);
-        core().setStage(Math.min(3, heat / 3));
+        heat.load(input);
     }
 
     // ---- hits and quenching ----------------------------------------------------------------------------------------
@@ -228,7 +231,7 @@ public class SlagheartGolem extends TeemingMonster {
             return false;
         }
         boolean hurt = super.hurtServer(level, source, core().in(Step.QUENCHED) ? amount * QUENCHED_DAMAGE : amount);
-        if (hurt && !core().in(Step.QUENCHED) && !source.is(DamageTypeTags.IS_FIRE)) setHeat(heat + 1);
+        if (hurt && !source.is(DamageTypeTags.IS_FIRE)) heat.fill(1);      // sealed while quenched
         return hurt;
     }
 
@@ -241,7 +244,7 @@ public class SlagheartGolem extends TeemingMonster {
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
         boolean hit = super.doHurtTarget(level, target);
-        if (hit && heat >= 6) target.igniteForSeconds(3.0F);
+        if (hit && heat() >= 6) target.igniteForSeconds(3.0F);
         return hit;
     }
 
