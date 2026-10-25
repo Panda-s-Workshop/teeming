@@ -33,6 +33,9 @@ import com.panda.teeming.gametest.mob.GleamtrapTests;
 import com.panda.teeming.gametest.mob.ScarletMantisTests;
 import com.panda.teeming.gametest.mob.PhantasmLanternTests;
 import com.panda.teeming.gametest.mob.WoolcapGrazerTests;
+import com.panda.teeming.gametest.mob.SiphonjellyTests;
+import com.panda.teeming.gametest.mob.SporeCannonTests;
+import com.panda.teeming.gametest.mob.GloomweaverTests;
 import com.panda.teeming.gametest.mob.OssuaryWyrmTests;
 import com.panda.teeming.gametest.mob.KeeningShadeTests;
 import com.panda.teeming.gametest.mob.SoulfireSeerTests;
@@ -40,10 +43,13 @@ import com.panda.teeming.gametest.mob.CindermothSwarmTests;
 import com.panda.teeming.gametest.mob.SoulwardRevenantTests;
 import com.panda.teeming.gametest.mob.BasaltBehemothTests;
 import com.panda.teeming.gametest.mob.QuakehopperTests;
+import com.panda.teeming.gametest.mob.AshharrierTests;
 import com.panda.teeming.gametest.mob.LavaleaperTests;
+import com.panda.teeming.gametest.mob.BlackstoneScuttlerTests;
 import com.panda.teeming.gametest.mob.PyreHeraldTests;
 import com.panda.teeming.gametest.mob.FortressJailerTests;
 import com.panda.teeming.gametest.mob.FlamewrightTests;
+import com.panda.teeming.gametest.mob.AurovoreTests;
 import com.panda.teeming.gametest.mob.LevimothTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -87,6 +93,9 @@ final class MobTests {
         ScarletMantisTests.register(out);
         PhantasmLanternTests.register(out);
         WoolcapGrazerTests.register(out);
+        SiphonjellyTests.register(out);
+        SporeCannonTests.register(out);
+        GloomweaverTests.register(out);
         OssuaryWyrmTests.register(out);
         KeeningShadeTests.register(out);
         SoulfireSeerTests.register(out);
@@ -94,10 +103,13 @@ final class MobTests {
         SoulwardRevenantTests.register(out);
         BasaltBehemothTests.register(out);
         QuakehopperTests.register(out);
+        AshharrierTests.register(out);
         LavaleaperTests.register(out);
+        BlackstoneScuttlerTests.register(out);
         PyreHeraldTests.register(out);
         FortressJailerTests.register(out);
         FlamewrightTests.register(out);
+        AurovoreTests.register(out);
         LevimothTests.register(out);
     }
 }

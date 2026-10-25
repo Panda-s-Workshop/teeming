@@ -41,6 +41,9 @@ public final class MobDrops {
             Map.entry("scarlet_mantis", List.of("teeming:chitin_plate", "minecraft:crimson_fungus", "teeming:trophy")),
             Map.entry("phantasm_lantern", List.of("teeming:siphon_gel", "minecraft:warped_fungus", "teeming:trophy")),
             Map.entry("woolcap_grazer", List.of("teeming:fungal_fleece", "minecraft:warped_roots", "teeming:trophy")),
+            Map.entry("siphonjelly", List.of("teeming:siphon_gel", "minecraft:slime_ball", "teeming:trophy")),
+            Map.entry("spore_cannon", List.of("teeming:siphon_gel", "minecraft:warped_fungus", "minecraft:warped_wart_block", "teeming:trophy")),
+            Map.entry("gloomweaver", List.of("teeming:chitin_plate", "minecraft:string", "teeming:trophy")),
             Map.entry("ossuary_wyrm", List.of("teeming:soul_vertebra", "minecraft:bone", "minecraft:soul_sand", "teeming:trophy")),
             Map.entry("keening_shade", List.of("teeming:soul_vertebra", "minecraft:soul_sand", "teeming:trophy")),
             Map.entry("soulfire_seer", List.of("teeming:soul_vertebra", "minecraft:bone", "minecraft:soul_sand", "teeming:trophy")),
@@ -48,10 +51,13 @@ public final class MobDrops {
             Map.entry("soulward_revenant", List.of("teeming:soul_vertebra", "minecraft:bone", "minecraft:iron_nugget", "teeming:trophy")),
             Map.entry("basalt_behemoth", List.of("teeming:molten_heart", "minecraft:basalt", "minecraft:blackstone", "teeming:trophy")),
             Map.entry("quakehopper", List.of("teeming:slag_gland", "minecraft:basalt", "teeming:trophy")),
+            Map.entry("ashharrier", List.of("teeming:ember_wing", "minecraft:feather", "teeming:trophy")),
             Map.entry("lavaleaper", List.of("teeming:slag_gland", "minecraft:magma_cream", "teeming:trophy")),
+            Map.entry("blackstone_scuttler", List.of("teeming:chitin_plate", "minecraft:blackstone", "teeming:trophy")),
             Map.entry("pyre_herald", List.of("teeming:ember_wing", "minecraft:charcoal", "teeming:trophy")),
             Map.entry("fortress_jailer", List.of("teeming:chain_link", "minecraft:iron_nugget", "teeming:trophy")),
             Map.entry("flamewright", List.of("teeming:ember_wing", "minecraft:blaze_powder", "teeming:trophy")),
+            Map.entry("aurovore", List.of("teeming:gilded_gizzard", "minecraft:gold_nugget", "teeming:trophy")),
             Map.entry("levimoth", List.of("teeming:chorus_silk", "minecraft:string", "teeming:trophy"))
     );
 

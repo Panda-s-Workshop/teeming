@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "teeming:item/blackstone_scuttler_spawn_egg"
+  }
+}

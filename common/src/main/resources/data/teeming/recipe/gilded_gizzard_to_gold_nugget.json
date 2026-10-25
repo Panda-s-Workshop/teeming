@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:gilded_gizzard"
+  ],
+  "result": {
+    "id": "minecraft:gold_nugget",
+    "count": 6
+  }
+}

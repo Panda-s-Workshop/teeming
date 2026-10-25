@@ -75,6 +75,12 @@ public final class MobRenderers {
                 Set.of("base", "crimson_lantern"), 0.35F, 1.0F, 1, false));
         out.register(ModMobs.WOOLCAP_GRAZER.get(), ctx -> new TeemingRenderer<>(ctx, new WoolcapGrazerModel(ctx.bakeLayer(CreatureLayers.WOOLCAP_GRAZER)), "woolcap_grazer",
                 Set.of(), 0.6F, 1.0F, 1, false));
+        out.register(ModMobs.SIPHONJELLY.get(), ctx -> new TeemingRenderer<>(ctx, new SiphonjellyModel(ctx.bakeLayer(CreatureLayers.SIPHONJELLY)), "siphonjelly",
+                Set.of("base", "crimson_jelly"), 0.4F, 1.0F, 13, false));
+        out.register(ModMobs.SPORE_CANNON.get(), ctx -> new TeemingRenderer<>(ctx, new SporeCannonModel(ctx.bakeLayer(CreatureLayers.SPORE_CANNON)), "spore_cannon",
+                Set.of(), 0.6F, 1.0F, 1, true));
+        out.register(ModMobs.GLOOMWEAVER.get(), ctx -> new TeemingRenderer<>(ctx, new GloomweaverModel(ctx.bakeLayer(CreatureLayers.GLOOMWEAVER)), "gloomweaver",
+                Set.of("base", "crimson_weaver"), 0.9F, 1.0F, 3, false));
         out.register(ModMobs.OSSUARY_WYRM.get(), ctx -> new TeemingRenderer<>(ctx, new OssuaryWyrmModel(ctx.bakeLayer(CreatureLayers.OSSUARY_WYRM)), "ossuary_wyrm",
                 Set.of("base", "bleached_wyrm"), 0.0F, 1.0F, 1, true));
         out.register(ModMobs.KEENING_SHADE.get(), ctx -> new TeemingRenderer<>(ctx, new KeeningShadeModel(ctx.bakeLayer(CreatureLayers.KEENING_SHADE)), "keening_shade",
@@ -89,14 +95,20 @@ public final class MobRenderers {
                 Set.of("base"), 1.6F, 1.75F, 3, true));
         out.register(ModMobs.QUAKEHOPPER.get(), ctx -> new TeemingRenderer<>(ctx, new QuakehopperModel(ctx.bakeLayer(CreatureLayers.QUAKEHOPPER)), "quakehopper",
                 Set.of("base", "magma_hopper"), 0.6F, 1.0F, 3, false));
+        out.register(ModMobs.ASHHARRIER.get(), ctx -> new TeemingRenderer<>(ctx, new AshharrierModel(ctx.bakeLayer(CreatureLayers.ASHHARRIER)), "ashharrier",
+                Set.of("base", "cinder_harrier"), 0.7F, 1.0F, 3, true));
         out.register(ModMobs.LAVALEAPER.get(), ctx -> new TeemingRenderer<>(ctx, new LavaleaperModel(ctx.bakeLayer(CreatureLayers.LAVALEAPER)), "lavaleaper",
                 Set.of("base", "ember_leaper"), 0.45F, 1.0F, 3, true));
+        out.register(ModMobs.BLACKSTONE_SCUTTLER.get(), ctx -> new TeemingRenderer<>(ctx, new BlackstoneScuttlerModel(ctx.bakeLayer(CreatureLayers.BLACKSTONE_SCUTTLER)), "blackstone_scuttler",
+                Set.of("base", "gilded_scuttler"), 0.75F, 1.0F, 1, false));
         out.register(ModMobs.PYRE_HERALD.get(), ctx -> new TeemingRenderer<>(ctx, new PyreHeraldModel(ctx.bakeLayer(CreatureLayers.PYRE_HERALD)), "pyre_herald",
                 Set.of("base", "soul_herald"), 0.4F, 1.0F, 1, false));
         out.register(ModMobs.FORTRESS_JAILER.get(), ctx -> new TeemingRenderer<>(ctx, new FortressJailerModel(ctx.bakeLayer(CreatureLayers.FORTRESS_JAILER)), "fortress_jailer",
                 Set.of("base", "rusted_jailer"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.FLAMEWRIGHT.get(), ctx -> new TeemingRenderer<>(ctx, new FlamewrightModel(ctx.bakeLayer(CreatureLayers.FLAMEWRIGHT)), "flamewright",
                 Set.of("base", "soul_wright"), 0.45F, 1.0F, 2, true));
+        out.register(ModMobs.AUROVORE.get(), ctx -> new TeemingRenderer<>(ctx, new AurovoreModel(ctx.bakeLayer(CreatureLayers.AUROVORE)), "aurovore",
+                Set.of("base", "gilded_aurovore"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.LEVIMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new LevimothModel(ctx.bakeLayer(CreatureLayers.LEVIMOTH)), "levimoth",
                 Set.of("base", "pale_levimoth"), 0.35F, 1.0F, 1, false));
     }

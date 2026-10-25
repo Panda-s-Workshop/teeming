@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "teeming:item/spore_cannon_spawn_egg"
+  }
+}

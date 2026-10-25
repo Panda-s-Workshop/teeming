@@ -41,6 +41,9 @@ public final class MobBounds {
             Map.entry("scarlet_mantis", new float[] {1.365F, 2.252F, 2.076F}),
             Map.entry("phantasm_lantern", new float[] {0.737F, 1.160F, 0.795F}),
             Map.entry("woolcap_grazer", new float[] {1.062F, 1.406F, 1.858F}),
+            Map.entry("siphonjelly", new float[] {0.812F, 1.125F, 0.812F}),
+            Map.entry("spore_cannon", new float[] {1.324F, 1.746F, 1.377F}),
+            Map.entry("gloomweaver", new float[] {1.808F, 0.860F, 2.558F}),
             Map.entry("ossuary_wyrm", new float[] {2.664F, 1.634F, 3.245F}),
             Map.entry("keening_shade", new float[] {1.216F, 1.788F, 0.456F}),
             Map.entry("soulfire_seer", new float[] {0.802F, 2.303F, 0.590F}),
@@ -48,10 +51,13 @@ public final class MobBounds {
             Map.entry("soulward_revenant", new float[] {1.150F, 2.383F, 1.511F}),
             Map.entry("basalt_behemoth", new float[] {3.824F, 4.493F, 2.680F}),
             Map.entry("quakehopper", new float[] {1.250F, 0.969F, 1.066F}),
+            Map.entry("ashharrier", new float[] {3.512F, 0.944F, 1.841F}),
             Map.entry("lavaleaper", new float[] {0.773F, 0.656F, 1.844F}),
+            Map.entry("blackstone_scuttler", new float[] {1.774F, 0.797F, 1.550F}),
             Map.entry("pyre_herald", new float[] {0.866F, 1.817F, 0.903F}),
             Map.entry("fortress_jailer", new float[] {1.188F, 2.656F, 0.562F}),
             Map.entry("flamewright", new float[] {1.472F, 2.398F, 1.323F}),
+            Map.entry("aurovore", new float[] {1.125F, 1.233F, 2.276F}),
             Map.entry("levimoth", new float[] {1.805F, 0.815F, 1.001F})
     );
 
