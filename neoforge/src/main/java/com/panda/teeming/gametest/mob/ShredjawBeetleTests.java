@@ -340,6 +340,7 @@ public final class ShredjawBeetleTests {
         Pig pig = pig(helper, new Vec3(6.0, 1, 5.5));
         ShredjawBeetle b = beetle(helper, new Vec3(4.5, 1, 5.5), pig);
         Log log = new Log(helper, b);
+        // callbacks due on one tick run in no fixed order, so they read the helper's tick, not one another's count
         int[] killedAt = {-1};
         boolean[] together = {true};
         helper.onEachTick(() -> {
@@ -347,12 +348,12 @@ public final class ShredjawBeetleTests {
             if (!log.sunders.isEmpty() && killedAt[0] < 0) {
                 b.setTarget(null);
                 if (!(SunderEffect.stacks(pig) == 1 && Math.abs(sunder(pig) + 4.0) < 0.01)) together[0] = false;
-                killedAt[0] = log.tick;
+                killedAt[0] = (int) helper.getTick();
                 pig.kill(helper.getLevel());
             }
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(killedAt[0] > 0 && log.tick >= killedAt[0] + 2, "the sundered pig was killed");
+            helper.assertTrue(killedAt[0] > 0 && (int) helper.getTick() >= killedAt[0] + 2, "the sundered pig was killed");
             helper.assertTrue(together[0], "the armour modifier is there exactly while the Sunder effect is");
             helper.assertTrue(sunder(pig) == 0.0 && SunderEffect.stacks(pig) == 0, "a dead victim keeps no Sunder, modifier " + sunder(pig));
         });
@@ -372,16 +373,16 @@ public final class ShredjawBeetleTests {
             if (!log.sunders.isEmpty() && b.isAlive()) {
                 whileAlive[0] = sunder(pig);
                 leftAtDeath[0] = left(pig);
-                killedAt[0] = log.tick;
+                killedAt[0] = (int) helper.getTick();
                 b.kill(helper.getLevel());
             }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(Math.abs(whileAlive[0] + 4.0) < 0.01, "the bite sundered the pig, modifier " + whileAlive[0]);
-            helper.assertTrue(!b.isAlive() && log.tick >= killedAt[0] + 20, "the beetle has been dead for 20 ticks");
+            helper.assertTrue(!b.isAlive() && (int) helper.getTick() >= killedAt[0] + 20, "the beetle has been dead for 20 ticks");
             helper.assertTrue(SunderEffect.stacks(pig) == 1 && Math.abs(sunder(pig) + 4.0) < 0.01, "its victim is still sundered, modifier " + sunder(pig));
             int ran = leftAtDeath[0] - left(pig);
-            helper.assertTrue(Math.abs(ran - (log.tick - killedAt[0])) <= 1, "and its Sunder ran down " + ran + " ticks in " + (log.tick - killedAt[0]));
+            helper.assertTrue(Math.abs(ran - ((int) helper.getTick() - killedAt[0])) <= 1, "and its Sunder ran down " + ran + " ticks in " + ((int) helper.getTick() - killedAt[0]));
         });
     }
 
