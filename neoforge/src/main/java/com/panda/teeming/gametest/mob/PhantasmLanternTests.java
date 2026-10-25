@@ -326,6 +326,11 @@ public final class PhantasmLanternTests {
      * No damage: the illusions walk up to the pig and swing at it, and the pig is never hurt, 10 health after 60
      * ticks of it with no attacker on record. They are copies of the pig, the only mob of this arena it may copy (the
      * arenas sit closer together than its copy reach, so the kinds next door are left out).
+     *
+     * <p>An illusion steps out 1.5 to 3 blocks from the lantern, at random, and walks to its own place beside the pig
+     * (one of three, 1.35 blocks from it on the lantern's side, the first 2.5 blocks from the lantern); within 0.25 of
+     * that place it stands. So one can step out almost where it will stand and barely move. Once out, each is moved to a
+     * set start 2.9 to 4 blocks from its place, clear of the lantern, so each one has to walk.
      */
     private static void harmless(GameTestHelper helper) {
         PhantasmLantern l = lantern(helper, AT);
@@ -334,9 +339,16 @@ public final class PhantasmLanternTests {
         int[] swings = {0};
         Vec3[] start = {null};
         double[] walked = {0.0};
+        Vec3[] starts = {new Vec3(1.5, 1, 7.5), new Vec3(2.5, 1, 4.5), new Vec3(9.5, 1, 7.5)};
         helper.runAtTickTime(2, () -> {
             l.release(helper.getLevel(), here(helper, l.sources(helper.getLevel(), null)));
-            start[0] = l.illusions().live().getFirst().position();
+            List<Mob> live = l.illusions().live();
+            helper.assertTrue(live.size() == 3, "3 illusions, got " + live.size());
+            for (int i = 0; i < 3; i++) {
+                Vec3 at = helper.absoluteVec(starts[i]);
+                live.get(i).snapTo(at.x, at.y, at.z);
+            }
+            start[0] = live.getFirst().position();
         });
         helper.onEachTick(() -> {
             if (start[0] == null) return;
@@ -345,7 +357,8 @@ public final class PhantasmLanternTests {
         });
         helper.runAtTickTime(64, () -> {
             helper.assertTrue(l.illusions().size() == 3, "3 illusions still, got " + l.illusions().size());
-            helper.assertTrue(walked[0] > 0.3, "they move: the first walked " + walked[0]);
+            helper.assertTrue(walked[0] > 0.3, "they move: the first walked " + walked[0] + " from " + helper.relativeVec(start[0])
+                    + ", now at " + l.illusions().live().stream().map(m -> helper.relativeVec(m.position()).toString()).toList());
             helper.assertTrue(swings[0] > 0, "they swing at the pig");
             helper.assertTrue(Math.abs(pig.getHealth() - 10.0F) < 0.01F, "the pig is never hurt: 10, got " + pig.getHealth());
             helper.assertTrue(pig.getLastHurtByMob() == null, "nothing ever hurt it");

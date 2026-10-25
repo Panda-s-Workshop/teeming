@@ -11,7 +11,9 @@ import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -49,6 +51,9 @@ import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.Team;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
@@ -61,10 +66,14 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * Grazer; purpur fleece. Expected values are written out as numbers.
  *
  * <p>A startle reaches grazers 16 blocks off, past the walls of this test's arena: every test that startles a herd keeps
- * it inside its arena (a listener vetoes the step for grazers outside it, when the threat is the test's own). Blinks run
- * east, away from a threat on the arena's west side, so the 8-block reach stays on the arena floor. Grazers have their
- * goals cleared unless a test needs them (no wandering, shying, eating or following); the blink, love and breeding
- * still run.
+ * it inside its arena (a listener vetoes the step for grazers outside it, when the threat is the test's own). The arena
+ * is 12 blocks across inside a barrier wall, with the ground round it 2 blocks below its floor. A blink that turns aside
+ * at full length (up to 90 degrees off, as it does when the way ahead is unsafe or the floor runs out) can clear the
+ * wall and land on that ground, which is a legal spot. So a test whose blink can turn aside stands on a floor raised to
+ * y 3 ({@link #raise}): the ground round the arena then lies 5 blocks down, past the 4-block drop, and every blink, of
+ * any length, lands on the raised floor. A blink straight east from x 2.5 needs no raised floor: it lands 4 to 8 blocks
+ * east, on the floor, at every length. Grazers have their goals cleared unless a test needs them (no wandering, shying,
+ * eating or following); the blink, love and breeding still run.
  */
 public final class ChorusGrazerTests {
     private ChorusGrazerTests() {}
@@ -102,28 +111,52 @@ public final class ChorusGrazerTests {
 
     // ---- set-up ----------------------------------------------------------------------------------------------------
 
+    /** The height grazers stand at on the raised floor ({@link #raise}). */
+    private static final int RAISED = 4;
+
+    /**
+     * Fills the arena with stone up to y 3, so grazers stand at y {@link #RAISED}: the ground round the arena then lies 5
+     * blocks below the floor, past the blink's 4-block drop, and no blink can land outside.
+     */
+    private static void raise(GameTestHelper helper) {
+        for (int x = 0; x < 12; x++) for (int z = 0; z < 12; z++) for (int y = 1; y < RAISED; y++) helper.setBlock(new BlockPos(x, y, z), Blocks.STONE);
+    }
+
     /** A grown, fleeced grazer of {@code look} at (x, 1, z), goals cleared, removed when the test ends. */
     private static ChorusGrazer grazer(GameTestHelper helper, double x, double z, String look) {
-        ChorusGrazer g = wild(helper, x, z);
-        g.core().setLook(look, true);
-        g.removeFreeWill();
-        return g;
+        return grazer(helper, new Vec3(x, 1, z), look);
     }
 
     private static ChorusGrazer grazer(GameTestHelper helper, double x, double z) {
         return grazer(helper, x, z, "base");
     }
 
+    /** A grown, fleeced grazer of {@code look} at {@code at}, goals cleared, removed when the test ends. */
+    private static ChorusGrazer grazer(GameTestHelper helper, Vec3 at, String look) {
+        ChorusGrazer g = wild(helper, at);
+        g.core().setLook(look, true);
+        g.removeFreeWill();
+        return g;
+    }
+
     /** A grazer that keeps its goals, removed when the test ends. */
     private static ChorusGrazer wild(GameTestHelper helper, double x, double z) {
-        ChorusGrazer g = helper.spawn(ModMobs.CHORUS_GRAZER.get(), new Vec3(x, 1, z));
+        return wild(helper, new Vec3(x, 1, z));
+    }
+
+    private static ChorusGrazer wild(GameTestHelper helper, Vec3 at) {
+        ChorusGrazer g = helper.spawn(ModMobs.CHORUS_GRAZER.get(), at);
         TestPlayers.whenDone(helper, g::discard);
         return g;
     }
 
     /** A still pig: the threat that hurts the grazers. */
     private static Pig pig(GameTestHelper helper, double x, double z) {
-        Pig pig = helper.spawn(EntityTypes.PIG, new Vec3(x, 1, z));
+        return pig(helper, new Vec3(x, 1, z));
+    }
+
+    private static Pig pig(GameTestHelper helper, Vec3 at) {
+        Pig pig = helper.spawn(EntityTypes.PIG, at);
         pig.setNoAi(true);
         return pig;
     }
@@ -150,6 +183,15 @@ public final class ChorusGrazerTests {
         };
         MechanicEvent.listen(keep);
         TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(keep));
+    }
+
+    /** Puts the given grazers on a team of their own that never pushes or is pushed, removed when the test ends. */
+    private static void noPushing(GameTestHelper helper, ChorusGrazer... herd) {
+        Scoreboard board = helper.getLevel().getScoreboard();
+        PlayerTeam team = board.addPlayerTeam("teeming_herd_" + herd[0].getStringUUID());
+        team.setCollisionRule(Team.CollisionRule.NEVER);
+        for (ChorusGrazer g : herd) board.addPlayerToTeam(g.getScoreboardName(), team);
+        TestPlayers.whenDone(helper, () -> board.removePlayerTeam(team));
     }
 
     /** Vetoes {@code step} for the given grazers for the rest of the test. */
@@ -190,25 +232,51 @@ public final class ChorusGrazerTests {
         return Math.hypot(a.x - b.x, a.z - b.z);
     }
 
+    /** One "skittish" step a grazer saw: the tick, the threat and where it stood; read as text once a listener could veto it. */
+    private record Startle(long tick, String by, MechanicEvent event) {
+        @Override
+        public String toString() {
+            return "tick " + tick + " by " + by + (event.cancelled() ? " (vetoed)" : "");
+        }
+    }
+
     /**
-     * It blinked from {@code from} to where it stands: 4 to 8 blocks across the ground, onto the arena floor (y 1),
-     * inside the arena, with ground under every block column its hitbox covers and nothing in its way.
+     * Notes each "skittish" step of the given grazers, for failure messages: the tick, the threat and where it stood
+     * (relative to this arena, so a threat from a neighbouring arena shows), and whether a listener vetoed it.
      */
-    private static void landed(GameTestHelper helper, ChorusGrazer g, Vec3 from, String who) {
-        double went = flat(g.position(), from);
-        helper.assertTrue(went >= 4.0 - 1.0E-6 && went <= 8.0 + 1.0E-6, who + " blinks 4 to 8 blocks, went " + went);
+    private static Map<ChorusGrazer, List<Startle>> startles(GameTestHelper helper, ChorusGrazer... herd) {
+        Map<ChorusGrazer, List<Startle>> seen = new HashMap<>();
+        Set<ChorusGrazer> mine = Set.of(herd);
+        Consumer<MechanicEvent> listener = e -> {
+            if (!e.step().equals("skittish") || !(e.mob() instanceof ChorusGrazer g) || !mine.contains(g)) return;
+            String by = e.target() == null ? "nothing" : e.target().getType().getDescriptionId() + " at " + helper.relativeVec(e.target().position());
+            seen.computeIfAbsent(g, k -> new ArrayList<>()).add(new Startle(helper.getTick(), by, e));
+        };
+        MechanicEvent.listen(listener);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(listener));
+        return seen;
+    }
+
+    /**
+     * It blinked from {@code from} to where it stands: 4 to 8 blocks across the ground, onto the arena floor (standing at
+     * y {@code floor}), inside the arena, with ground under every block column its hitbox covers and nothing in its way.
+     */
+    private static void landed(GameTestHelper helper, ChorusGrazer g, Vec3 from, double floor, String who, Map<ChorusGrazer, List<Startle>> log) {
         Vec3 rel = helper.relativeVec(g.position());
-        helper.assertTrue(Math.abs(rel.y - 1.0) < 0.01, who + " stands on the floor, y " + rel.y);
-        helper.assertTrue(helper.getBounds().contains(g.position()), who + " stays in the arena, at " + rel);
+        String seen = " (from " + helper.relativeVec(from) + " to " + rel + ", startled " + log.get(g) + ")";
+        double went = flat(g.position(), from);
+        helper.assertTrue(went >= 4.0 - 1.0E-6 && went <= 8.0 + 1.0E-6, who + " blinks 4 to 8 blocks, went " + went + seen);
+        helper.assertTrue(Math.abs(rel.y - floor) < 0.01, who + " stands on the floor (y " + floor + "), y " + rel.y + seen);
+        helper.assertTrue(helper.getBounds().contains(g.position()), who + " stays in the arena" + seen);
         AABB box = g.getBoundingBox();
         for (int x = Mth.floor(box.minX); x <= Mth.floor(box.maxX); x++) {
             for (int z = Mth.floor(box.minZ); z <= Mth.floor(box.maxZ); z++) {
                 BlockPos under = new BlockPos(x, Mth.floor(g.getY()) - 1, z);
                 helper.assertTrue(!helper.getLevel().getBlockState(under).getCollisionShape(helper.getLevel(), under).isEmpty(),
-                        who + " has ground under every column it covers, none at " + helper.relativePos(under));
+                        who + " has ground under every column it covers, none at " + helper.relativePos(under) + seen);
             }
         }
-        helper.assertTrue(helper.getLevel().noCollision(g), who + " is not inside a block");
+        helper.assertTrue(helper.getLevel().noCollision(g), who + " is not inside a block" + seen);
     }
 
     // ---- the tell, the counter, failing it -------------------------------------------------------------------------
@@ -286,14 +354,20 @@ public final class ChorusGrazerTests {
     /**
      * Failing it: a survival player with shears sprints up to a herd of three (2 blocks from the nearest). All three
      * blink 4-8 blocks away, each onto the floor, and are skittish for 100 ticks: the shears do nothing (and lose
-     * nothing) and chorus fruit isn't taken. Once the 100 ticks are up they are calm and the shears work again.
+     * nothing) and chorus fruit isn't taken. Once the 100 ticks are up they are calm and the shears work again. The
+     * outer two flee at an angle, so their blinks can turn aside: on the raised floor. Two blinks can land side by side,
+     * a block apart, and a grazer is 1.1 wide, so the herd stands on a team that never pushes: the landing is checked a
+     * tick after the startle, and a push in that tick would move a grazer from where its blink put it.
      */
     private static void startledHerd(GameTestHelper helper) {
-        ChorusGrazer a = grazer(helper, 2.5, 4.3);
-        ChorusGrazer b = grazer(helper, 2.5, 5.5);
-        ChorusGrazer c = grazer(helper, 2.5, 6.7);
+        raise(helper);
+        ChorusGrazer a = grazer(helper, new Vec3(2.5, RAISED, 4.3), "base");
+        ChorusGrazer b = grazer(helper, new Vec3(2.5, RAISED, 5.5), "base");
+        ChorusGrazer c = grazer(helper, new Vec3(2.5, RAISED, 6.7), "base");
         ChorusGrazer[] herd = {a, b, c};
-        ServerPlayer p = holding(helper, new Vec3(0.5, 1, 5.5), new ItemStack(Items.SHEARS));
+        noPushing(helper, herd);
+        Map<ChorusGrazer, List<Startle>> log = startles(helper, herd);
+        ServerPlayer p = holding(helper, new Vec3(0.5, RAISED, 5.5), new ItemStack(Items.SHEARS));
         contain(helper, p);
         Vec3[] from = new Vec3[3];
         long[] startled = {-1};
@@ -304,7 +378,7 @@ public final class ChorusGrazerTests {
             if (startled[0] < 0 && a.skittish() && b.skittish() && c.skittish()) {
                 startled[0] = t;
                 p.setSprinting(false);
-                for (int i = 0; i < 3; i++) landed(helper, herd[i], from[i], "grazer " + i);
+                for (int i = 0; i < 3; i++) landed(helper, herd[i], from[i], RAISED, "grazer " + i, log);
             }
             if (startled[0] > 0 && t == startled[0] + 5) {
                 InteractionResult shorn = use(b, p);
@@ -333,6 +407,8 @@ public final class ChorusGrazerTests {
     private static void blinkRange(GameTestHelper helper) {
         ChorusGrazer g = grazer(helper, 2.5, 5.5);
         Pig pig = pig(helper, 0.5, 5.5);
+        contain(helper, pig);
+        Map<ChorusGrazer, List<Startle>> log = startles(helper, g);
         Vec3 home = helper.absoluteVec(new Vec3(2.5, 1, 5.5));
         List<Double> went = new ArrayList<>();
         helper.onEachTick(() -> {
@@ -345,7 +421,7 @@ public final class ChorusGrazerTests {
             }
             Vec3 from = g.position();
             helper.assertTrue(g.startle(helper.getLevel(), pig, pig.position()) == 1, "the grazer is startled");
-            landed(helper, g, from, "trial " + went.size());
+            landed(helper, g, from, 1, "trial " + went.size(), log);
             helper.assertTrue(g.getX() - from.x > 3.99 && Math.abs(g.getZ() - from.z) < 0.01, "straight away from the pig, went " + g.position().subtract(from));
             went.add(flat(g.position(), from));
         });
@@ -418,13 +494,16 @@ public final class ChorusGrazerTests {
     /**
      * Sprinting within 3 blocks startles it; nothing else a player does near it does. A creative player sprinting 1.5
      * blocks off: calm. The same player in survival walking 1.5 off: calm. Sprinting 3.2 off: calm. Sprinting 2.8 off:
-     * it blinks away and turns skittish.
+     * it blinks away and turns skittish. From x 3.5 a long blink east would cross the arena's edge and turns aside: on
+     * the raised floor.
      */
     private static void sprintStartle(GameTestHelper helper) {
-        ChorusGrazer g = grazer(helper, 3.5, 5.5);
-        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(2.0, 1, 5.5));
+        raise(helper);
+        ChorusGrazer g = grazer(helper, new Vec3(3.5, RAISED, 5.5), "base");
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(2.0, RAISED, 5.5));
         contain(helper, p);
-        Vec3 home = helper.absoluteVec(new Vec3(3.5, 1, 5.5));
+        Map<ChorusGrazer, List<Startle>> log = startles(helper, g);
+        Vec3 home = helper.absoluteVec(new Vec3(3.5, RAISED, 5.5));
         long[] startled = {-1};
         helper.onEachTick(() -> {
             long t = helper.getTick();
@@ -437,10 +516,10 @@ public final class ChorusGrazerTests {
                 p.setSprinting(false);
             }
             if (t == 26) {
-                p.snapTo(helper.absoluteVec(new Vec3(0.3, 1, 5.5)));
+                p.snapTo(helper.absoluteVec(new Vec3(0.3, RAISED, 5.5)));
                 p.setSprinting(true);
             }
-            if (t == 38) p.snapTo(helper.absoluteVec(new Vec3(0.7, 1, 5.5)));
+            if (t == 38) p.snapTo(helper.absoluteVec(new Vec3(0.7, RAISED, 5.5)));
             if (t > 2 && t < 38) {
                 helper.assertTrue(g.core().idle() && flat(g.position(), home) < 0.01, "calm at tick " + t + ", phase " + g.phase());
                 if (t == 37) helper.assertTrue(Math.abs(p.distanceTo(g) - 3.2) < 0.01, "3.2 blocks off, got " + p.distanceTo(g));
@@ -450,7 +529,7 @@ public final class ChorusGrazerTests {
         });
         helper.runAtTickTime(44, () -> {
             helper.assertTrue(startled[0] >= 38 && startled[0] <= 40, "sprinting 2.8 off startles it, at " + startled[0]);
-            landed(helper, g, home, "the grazer");
+            landed(helper, g, home, RAISED, "the grazer", log);
             helper.assertTrue(g.getX() > home.x, "away from the sprinter (east)");
             helper.succeed();
         });
@@ -483,35 +562,41 @@ public final class ChorusGrazerTests {
     }
 
     /**
-     * Never over the void: the floor where every eastward blink would land is dug out 7 deep (past its 4-block reach,
-     * as the void is). It still blinks 4 to 8 blocks, but onto the floor beside the pit, with ground under every column
-     * it covers.
+     * Never over the void: the raised floor where every eastward blink would land is dug out 7 deep (past its 4-block
+     * reach, as the void is). It still blinks 4 to 8 blocks, but onto the floor beside the pit, with ground under every
+     * column it covers.
      */
     private static void safeVoid(GameTestHelper helper) {
-        for (int x = 5; x <= 11; x++) for (int z = 2; z <= 9; z++) for (int y = 0; y >= -6; y--) helper.setBlock(new BlockPos(x, y, z), Blocks.AIR);
-        ChorusGrazer g = grazer(helper, 2.5, 5.5);
-        Pig pig = pig(helper, 0.5, 5.5);
+        raise(helper);
+        for (int x = 5; x <= 11; x++) for (int z = 2; z <= 9; z++) for (int y = RAISED - 1; y >= RAISED - 7; y--) helper.setBlock(new BlockPos(x, y, z), Blocks.AIR);
+        ChorusGrazer g = grazer(helper, new Vec3(2.5, RAISED, 5.5), "base");
+        Pig pig = pig(helper, new Vec3(0.5, RAISED, 5.5));
+        contain(helper, pig);
+        Map<ChorusGrazer, List<Startle>> log = startles(helper, g);
         helper.runAtTickTime(2, () -> {
             Vec3 from = g.position();
             hit(helper, g, pig, 1.0F);
             helper.assertTrue(g.blinks() == 1, "it still blinks");
-            landed(helper, g, from, "the grazer");
+            landed(helper, g, from, RAISED, "the grazer", log);
             Vec3 rel = helper.relativeVec(g.position());
             helper.assertTrue(rel.x < 5.0 - 0.55 || rel.z < 2.0 - 0.55 || rel.z > 10.0 + 0.55, "clear of the pit, at " + rel);
             helper.succeed();
         });
     }
 
-    /** Lava where the blink would land: it lands elsewhere, on the floor, never in or beside the lava. */
+    /** Lava where the blink would land, in the raised floor: it lands elsewhere, on the floor, never in or beside the lava. */
     private static void safeLava(GameTestHelper helper) {
-        for (int x = 6; x <= 11; x++) for (int z = 3; z <= 8; z++) helper.setBlock(new BlockPos(x, 0, z), Blocks.LAVA);
-        ChorusGrazer g = grazer(helper, 2.5, 5.5);
-        Pig pig = pig(helper, 0.5, 5.5);
+        raise(helper);
+        for (int x = 6; x <= 11; x++) for (int z = 3; z <= 8; z++) helper.setBlock(new BlockPos(x, RAISED - 1, z), Blocks.LAVA);
+        ChorusGrazer g = grazer(helper, new Vec3(2.5, RAISED, 5.5), "base");
+        Pig pig = pig(helper, new Vec3(0.5, RAISED, 5.5));
+        contain(helper, pig);
+        Map<ChorusGrazer, List<Startle>> log = startles(helper, g);
         helper.runAtTickTime(2, () -> {
             Vec3 from = g.position();
             hit(helper, g, pig, 1.0F);
             helper.assertTrue(g.blinks() == 1, "it still blinks");
-            landed(helper, g, from, "the grazer");
+            landed(helper, g, from, RAISED, "the grazer", log);
             helper.assertTrue(!g.isInLava(), "not in lava");
             helper.succeed();
         });
@@ -525,6 +610,7 @@ public final class ChorusGrazerTests {
         g.removeFreeWill();
         g.setAge(-1000);                                       // a calf: its half-size body fits on the pillar's top
         Pig pig = pig(helper, 3.5, 5.5);
+        contain(helper, pig);
         helper.runAtTickTime(4, () -> {
             Vec3 from = g.position();
             float before = g.getHealth();
