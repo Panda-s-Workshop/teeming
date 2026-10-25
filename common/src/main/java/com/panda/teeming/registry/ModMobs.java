@@ -4,7 +4,11 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.mob.end.Levimoth;
+import com.panda.teeming.mob.nether.FortressJailer;
+import com.panda.teeming.mob.nether.Gleamtrap;
+import com.panda.teeming.mob.nether.MagmaTortoise;
 import com.panda.teeming.mob.nether.SlagheartGolem;
+import com.panda.teeming.mob.nether.SootManta;
 import com.panda.teeming.mob.overworld.Dripfang;
 import com.panda.teeming.mob.overworld.Dunefin;
 import com.panda.teeming.mob.overworld.Dustwhirl;
@@ -81,6 +85,14 @@ public final class ModMobs {
             b -> b.sized(0.9F, 0.7F).eyeHeight(0.5F).clientTrackingRange(10));
     public static final Supplier<EntityType<SlagheartGolem>> SLAGHEART_GOLEM = ENTITIES.registerEntityType("slagheart_golem", SlagheartGolem::new, MobCategory.MONSTER,
             b -> b.sized(1.2F, 2.4F).eyeHeight(1.5F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<SootManta>> SOOT_MANTA = ENTITIES.registerEntityType("soot_manta", SootManta::new, MobCategory.MONSTER,
+            b -> b.sized(2.0F, 0.6F).eyeHeight(0.3F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<MagmaTortoise>> MAGMA_TORTOISE = ENTITIES.registerEntityType("magma_tortoise", MagmaTortoise::new, MobCategory.CREATURE,
+            b -> b.sized(2.2F, 1.0F).eyeHeight(0.8F).clientTrackingRange(10).fireImmune());
+    public static final Supplier<EntityType<Gleamtrap>> GLEAMTRAP = ENTITIES.registerEntityType("gleamtrap", Gleamtrap::new, MobCategory.MONSTER,
+            b -> b.sized(1.0F, 1.0F).eyeHeight(0.5F).clientTrackingRange(10));
+    public static final Supplier<EntityType<FortressJailer>> FORTRESS_JAILER = ENTITIES.registerEntityType("fortress_jailer", FortressJailer::new, MobCategory.MONSTER,
+            b -> b.sized(0.8F, 2.2F).eyeHeight(1.95F).clientTrackingRange(10).fireImmune());
     public static final Supplier<EntityType<Levimoth>> LEVIMOTH = ENTITIES.registerEntityType("levimoth", Levimoth::new, MobCategory.MONSTER,
             b -> b.sized(0.8F, 0.6F).eyeHeight(0.35F).clientTrackingRange(10));
 
@@ -105,10 +117,14 @@ public final class ModMobs {
     public static final DeferredItem<Item> DUSTWHIRL_SPAWN_EGG = ITEMS.registerItem("dustwhirl_spawn_egg", Item::new, p -> p.spawnEgg(DUSTWHIRL.get()));
     public static final DeferredItem<Item> SKREEL_SPAWN_EGG = ITEMS.registerItem("skreel_spawn_egg", Item::new, p -> p.spawnEgg(SKREEL.get()));
     public static final DeferredItem<Item> SLAGHEART_GOLEM_SPAWN_EGG = ITEMS.registerItem("slagheart_golem_spawn_egg", Item::new, p -> p.spawnEgg(SLAGHEART_GOLEM.get()));
+    public static final DeferredItem<Item> SOOT_MANTA_SPAWN_EGG = ITEMS.registerItem("soot_manta_spawn_egg", Item::new, p -> p.spawnEgg(SOOT_MANTA.get()));
+    public static final DeferredItem<Item> MAGMA_TORTOISE_SPAWN_EGG = ITEMS.registerItem("magma_tortoise_spawn_egg", Item::new, p -> p.spawnEgg(MAGMA_TORTOISE.get()));
+    public static final DeferredItem<Item> GLEAMTRAP_SPAWN_EGG = ITEMS.registerItem("gleamtrap_spawn_egg", Item::new, p -> p.spawnEgg(GLEAMTRAP.get()));
+    public static final DeferredItem<Item> FORTRESS_JAILER_SPAWN_EGG = ITEMS.registerItem("fortress_jailer_spawn_egg", Item::new, p -> p.spawnEgg(FORTRESS_JAILER.get()));
     public static final DeferredItem<Item> LEVIMOTH_SPAWN_EGG = ITEMS.registerItem("levimoth_spawn_egg", Item::new, p -> p.spawnEgg(LEVIMOTH.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -135,6 +151,10 @@ public final class ModMobs {
         sink.accept(DUSTWHIRL.get(), Dustwhirl.createAttributes().build());
         sink.accept(SKREEL.get(), Skreel.createAttributes().build());
         sink.accept(SLAGHEART_GOLEM.get(), SlagheartGolem.createAttributes().build());
+        sink.accept(SOOT_MANTA.get(), SootManta.createAttributes().build());
+        sink.accept(MAGMA_TORTOISE.get(), MagmaTortoise.createAttributes().build());
+        sink.accept(GLEAMTRAP.get(), Gleamtrap.createAttributes().build());
+        sink.accept(FORTRESS_JAILER.get(), FortressJailer.createAttributes().build());
         sink.accept(LEVIMOTH.get(), Levimoth.createAttributes().build());
     }
 }

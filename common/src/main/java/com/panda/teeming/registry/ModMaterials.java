@@ -24,9 +24,13 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> GRAVE_ASH = ITEMS.registerItem("grave_ash", MaterialItem::new);
     public static final DeferredItem<MaterialItem> GALE_ESSENCE = ITEMS.registerItem("gale_essence", MaterialItem::new);
     public static final DeferredItem<MaterialItem> SLAG_GLAND = ITEMS.registerItem("slag_gland", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> SOOT_PLUME = ITEMS.registerItem("soot_plume", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> MAGMA_SCUTE = ITEMS.registerItem("magma_scute", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> SIPHON_GEL = ITEMS.registerItem("siphon_gel", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> CHAIN_LINK = ITEMS.registerItem("chain_link", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHORUS_SILK = ITEMS.registerItem("chorus_silk", MaterialItem::new);
 
-    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, SLAG_GLAND, CHORUS_SILK);
+    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, SLAG_GLAND, SOOT_PLUME, MAGMA_SCUTE, SIPHON_GEL, CHAIN_LINK, CHORUS_SILK);
 
     /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
@@ -43,6 +47,10 @@ public final class ModMaterials {
             Map.entry("grave_ash", List.of("craft 1 minecraft:bone_meal 3")),
             Map.entry("gale_essence", List.of("craft 1 minecraft:wind_charge 2")),
             Map.entry("slag_gland", List.of("craft 1 minecraft:magma_cream 2")),
+            Map.entry("soot_plume", List.of("craft 1 minecraft:ink_sac 2")),
+            Map.entry("magma_scute", List.of("brew minecraft:long_fire_resistance")),
+            Map.entry("siphon_gel", List.of("craft 1 minecraft:glowstone_dust 2")),
+            Map.entry("chain_link", List.of("craft 1 minecraft:iron_chain 1")),
             Map.entry("chorus_silk", List.of("brew minecraft:slow_falling")));
 
     private ModMaterials() {}

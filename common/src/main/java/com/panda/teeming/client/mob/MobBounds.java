@@ -29,6 +29,10 @@ public final class MobBounds {
             Map.entry("dustwhirl", new float[] {0.875F, 1.562F, 0.987F}),
             Map.entry("skreel", new float[] {2.740F, 0.834F, 1.592F}),
             Map.entry("slagheart_golem", new float[] {2.300F, 2.300F, 1.545F}),
+            Map.entry("soot_manta", new float[] {3.120F, 0.494F, 2.298F}),
+            Map.entry("magma_tortoise", new float[] {3.597F, 0.719F, 3.175F}),
+            Map.entry("gleamtrap", new float[] {1.000F, 1.000F, 1.000F}),
+            Map.entry("fortress_jailer", new float[] {1.188F, 2.656F, 0.562F}),
             Map.entry("levimoth", new float[] {1.805F, 0.815F, 1.001F})
     );
 

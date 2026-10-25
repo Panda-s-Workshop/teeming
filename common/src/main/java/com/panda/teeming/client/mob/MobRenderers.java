@@ -51,6 +51,14 @@ public final class MobRenderers {
                 Set.of(), 0.5F, 1.0F, 1, true));
         out.register(ModMobs.SLAGHEART_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new SlagheartGolemModel(ctx.bakeLayer(CreatureLayers.SLAGHEART_GOLEM)), "slagheart_golem",
                 Set.of("base", "cooled_golem"), 0.9F, 1.15F, 4, true));
+        out.register(ModMobs.SOOT_MANTA.get(), ctx -> new TeemingRenderer<>(ctx, new SootMantaModel(ctx.bakeLayer(CreatureLayers.SOOT_MANTA)), "soot_manta",
+                Set.of("ember_manta"), 0.9F, 1.0F, 1, false));
+        out.register(ModMobs.MAGMA_TORTOISE.get(), ctx -> new TeemingRenderer<>(ctx, new MagmaTortoiseModel(ctx.bakeLayer(CreatureLayers.MAGMA_TORTOISE)), "magma_tortoise",
+                Set.of("base", "old_tortoise"), 1.2F, 1.0F, 1, false));
+        out.register(ModMobs.GLEAMTRAP.get(), ctx -> new TeemingRenderer<>(ctx, new GleamtrapModel(ctx.bakeLayer(CreatureLayers.GLEAMTRAP)), "gleamtrap",
+                Set.of("base", "warped_gleamtrap"), 0.0F, 1.0F, 3, false));
+        out.register(ModMobs.FORTRESS_JAILER.get(), ctx -> new TeemingRenderer<>(ctx, new FortressJailerModel(ctx.bakeLayer(CreatureLayers.FORTRESS_JAILER)), "fortress_jailer",
+                Set.of("base", "rusted_jailer"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.LEVIMOTH.get(), ctx -> new TeemingRenderer<>(ctx, new LevimothModel(ctx.bakeLayer(CreatureLayers.LEVIMOTH)), "levimoth",
                 Set.of("base", "pale_levimoth"), 0.35F, 1.0F, 1, false));
     }

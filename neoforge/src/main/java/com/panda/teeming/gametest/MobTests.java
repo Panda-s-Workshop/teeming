@@ -21,6 +21,10 @@ import com.panda.teeming.gametest.mob.HollowMournerTests;
 import com.panda.teeming.gametest.mob.DustwhirlTests;
 import com.panda.teeming.gametest.mob.SkreelTests;
 import com.panda.teeming.gametest.mob.SlagheartGolemTests;
+import com.panda.teeming.gametest.mob.SootMantaTests;
+import com.panda.teeming.gametest.mob.MagmaTortoiseTests;
+import com.panda.teeming.gametest.mob.GleamtrapTests;
+import com.panda.teeming.gametest.mob.FortressJailerTests;
 import com.panda.teeming.gametest.mob.LevimothTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -52,6 +56,10 @@ final class MobTests {
         DustwhirlTests.register(out);
         SkreelTests.register(out);
         SlagheartGolemTests.register(out);
+        SootMantaTests.register(out);
+        MagmaTortoiseTests.register(out);
+        GleamtrapTests.register(out);
+        FortressJailerTests.register(out);
         LevimothTests.register(out);
     }
 }

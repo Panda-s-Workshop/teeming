@@ -30,7 +30,8 @@ class LookBiomeTest {
             Map.entry("shellguard_crab/stone_crab", "minecraft:stony_shore"),
             Map.entry("hollow_mourner/bog_mourner", "#c:is_swamp"),
             Map.entry("dustwhirl/red_dust", "minecraft:wooded_badlands"),
-            Map.entry("skreel/snowy_skreel", "minecraft:jagged_peaks"));
+            Map.entry("skreel/snowy_skreel", "minecraft:jagged_peaks"),
+            Map.entry("gleamtrap/warped_gleamtrap", "minecraft:warped_forest"));
 
     @Test
     void placeLooksAreLimitedToTheirPlace() throws IOException {

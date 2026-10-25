@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:chain_link"
+  ],
+  "result": {
+    "id": "minecraft:iron_chain",
+    "count": 1
+  }
+}

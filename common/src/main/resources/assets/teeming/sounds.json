@@ -439,6 +439,259 @@
       }
     ]
   },
+  "fortress_jailer.ambient": {
+    "subtitle": "subtitles.teeming.fortress_jailer.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:item.armor.equip_iron",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.5
+      }
+    ]
+  },
+  "fortress_jailer.hurt": {
+    "subtitle": "subtitles.teeming.fortress_jailer.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.hurt",
+        "type": "event",
+        "pitch": 0.65
+      },
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "fortress_jailer.death": {
+    "subtitle": "subtitles.teeming.fortress_jailer.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wither_skeleton.death",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.chain.break",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "fortress_jailer.tell": {
+    "subtitle": "subtitles.teeming.fortress_jailer.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.step",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:item.armor.equip_chain",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 1.2
+      }
+    ]
+  },
+  "fortress_jailer.throw": {
+    "subtitle": "subtitles.teeming.fortress_jailer.throw",
+    "sounds": [
+      {
+        "name": "minecraft:item.trident.throw",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.chain.place",
+        "type": "event",
+        "pitch": 1.2
+      }
+    ]
+  },
+  "fortress_jailer.hook": {
+    "subtitle": "subtitles.teeming.fortress_jailer.hook",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:item.trident.hit",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "fortress_jailer.clink": {
+    "subtitle": "subtitles.teeming.fortress_jailer.clink",
+    "sounds": [
+      {
+        "name": "minecraft:item.shield.block",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.chain.fall",
+        "type": "event",
+        "pitch": 1.4
+      }
+    ]
+  },
+  "fortress_jailer.rattle": {
+    "subtitle": "subtitles.teeming.fortress_jailer.rattle",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.fall",
+        "type": "event",
+        "pitch": 0.9
+      },
+      {
+        "name": "minecraft:block.chain.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "fortress_jailer.strike": {
+    "subtitle": "subtitles.teeming.fortress_jailer.strike",
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.attack",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "gleamtrap.ambient": {
+    "subtitle": "subtitles.teeming.gleamtrap.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.shroomlight.step",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.fungus.step",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "gleamtrap.hurt": {
+    "subtitle": "subtitles.teeming.gleamtrap.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.shroomlight.hit",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.slime.hurt_small",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "gleamtrap.death": {
+    "subtitle": "subtitles.teeming.gleamtrap.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.shroomlight.break",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.slime.death",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "gleamtrap.pulse": {
+    "subtitle": "subtitles.teeming.gleamtrap.pulse",
+    "sounds": [
+      {
+        "name": "minecraft:block.respawn_anchor.ambient",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.shroomlight.place",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "gleamtrap.tell": {
+    "subtitle": "subtitles.teeming.gleamtrap.tell",
+    "sounds": [
+      {
+        "name": "minecraft:entity.shulker.open",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.wart_block.break",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "gleamtrap.bite": {
+    "subtitle": "subtitles.teeming.gleamtrap.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker_fangs.attack",
+        "type": "event",
+        "pitch": 0.9
+      },
+      {
+        "name": "minecraft:entity.shulker.close",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "gleamtrap.miss": {
+    "subtitle": "subtitles.teeming.gleamtrap.miss",
+    "sounds": [
+      {
+        "name": "minecraft:entity.shulker.close",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.shroomlight.fall",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
   "gloamhound.ambient": {
     "subtitle": "subtitles.teeming.gloamhound.ambient",
     "sounds": [
@@ -819,6 +1072,88 @@
         "name": "minecraft:entity.breeze.wind_burst",
         "type": "event",
         "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "magma_tortoise.ambient": {
+    "subtitle": "subtitles.teeming.magma_tortoise.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.turtle.ambient_land",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.lava.ambient",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.4
+      }
+    ]
+  },
+  "magma_tortoise.hurt": {
+    "subtitle": "subtitles.teeming.magma_tortoise.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.turtle.hurt",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.magma_cube.hurt",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.5
+      }
+    ]
+  },
+  "magma_tortoise.death": {
+    "subtitle": "subtitles.teeming.magma_tortoise.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.turtle.death",
+        "type": "event",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:entity.magma_cube.death",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "magma_tortoise.paddle": {
+    "subtitle": "subtitles.teeming.magma_tortoise.paddle",
+    "sounds": [
+      {
+        "name": "minecraft:entity.strider.step_lava",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.lava.pop",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.4
+      }
+    ]
+  },
+  "magma_tortoise.fed": {
+    "subtitle": "subtitles.teeming.magma_tortoise.fed",
+    "sounds": [
+      {
+        "name": "minecraft:entity.strider.eat",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.strider.happy",
+        "type": "event",
+        "pitch": 0.7,
         "volume": 0.6
       }
     ]
@@ -2201,6 +2536,115 @@
         "type": "event",
         "pitch": 0.7,
         "volume": 0.8
+      }
+    ]
+  },
+  "soot_manta.ambient": {
+    "subtitle": "subtitles.teeming.soot_manta.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.flap",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:entity.elder_guardian.flop",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.35
+      }
+    ]
+  },
+  "soot_manta.hurt": {
+    "subtitle": "subtitles.teeming.soot_manta.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.hurt",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.glow_squid.hurt",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "soot_manta.death": {
+    "subtitle": "subtitles.teeming.soot_manta.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.death",
+        "type": "event",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:entity.glow_squid.death",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      }
+    ]
+  },
+  "soot_manta.ripple": {
+    "subtitle": "subtitles.teeming.soot_manta.ripple",
+    "sounds": [
+      {
+        "name": "minecraft:entity.ender_dragon.flap",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "soot_manta.shed": {
+    "subtitle": "subtitles.teeming.soot_manta.shed",
+    "sounds": [
+      {
+        "name": "minecraft:entity.glow_squid.squirt",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.breeze.wind_burst",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      }
+    ]
+  },
+  "soot_manta.bite": {
+    "subtitle": "subtitles.teeming.soot_manta.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.bite",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "soot_manta.flee": {
+    "subtitle": "subtitles.teeming.soot_manta.flee",
+    "sounds": [
+      {
+        "name": "minecraft:entity.phantom.swoop",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.bat.takeoff",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
       }
     ]
   },

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:soot_plume"
+  ],
+  "result": {
+    "id": "minecraft:ink_sac",
+    "count": 2
+  }
+}
