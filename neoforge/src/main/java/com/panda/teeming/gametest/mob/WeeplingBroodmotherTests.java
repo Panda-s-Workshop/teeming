@@ -16,8 +16,11 @@ import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
@@ -78,6 +81,7 @@ public final class WeeplingBroodmotherTests {
         out.accept("weepling_broodmother_weepling", WeeplingBroodmotherTests::weeplingNumbers);
         out.accept("weepling_broodmother_brood_drops", WeeplingBroodmotherTests::broodDrops);
         out.accept("weepling_broodmother_reload", WeeplingBroodmotherTests::reload);
+        out.accept("weepling_broodmother_brood_persistence", WeeplingBroodmotherTests::broodPersistence);
         out.accept("weepling_broodmother_family", WeeplingBroodmotherTests::family);
         out.accept("weepling_broodmother_sac_cancel", WeeplingBroodmotherTests::sacCancel);
         out.accept("weepling_broodmother_swing", WeeplingBroodmotherTests::swing);
@@ -99,7 +103,35 @@ public final class WeeplingBroodmotherTests {
         TestPlayers.whenDone(helper, () -> {
             for (WeeplingBroodmother b : m.brood()) b.discard();
         });
+        Map<WeeplingBroodmother, Long> gone = new HashMap<>();
+        GONE.put(m, gone);
+        TestPlayers.whenDone(helper, () -> GONE.remove(m));
+        helper.onEachTick(() -> {
+            for (WeeplingBroodmother b : m.brood()) gone.putIfAbsent(b, -1L);
+            gone.putIfAbsent(m, -1L);
+            gone.replaceAll((b, when) -> when < 0 && b.isRemoved() ? helper.getTick() : when);
+        });
         return m;
+    }
+
+    /** For each mother, the tick each of hers (and she) was first seen removed, -1 while there. */
+    private static final Map<WeeplingBroodmother, Map<WeeplingBroodmother, Long>> GONE = new HashMap<>();
+
+    /** A mother or brood member for a failure message: form, place, ticks, removal and whether its chunk ticks. */
+    private static String who(GameTestHelper helper, WeeplingBroodmother b) {
+        if (b == null) return "none";
+        Vec3 at = helper.relativeVec(b.position());
+        Long goneAt = null;
+        for (var g : GONE.values()) if (g.containsKey(b)) goneAt = g.get(b);
+        return String.format("%s at %.2f %.2f %.2f tickCount %d age %d orphaned %d alive %s removed %s (seen gone on %s) mother %s ticking %s",
+                b.form(), at.x, at.y, at.z, b.tickCount, b.age(), b.orphaned(), b.isAlive(), b.getRemovalReason(), goneAt,
+                b.mother() == null ? "none" : b.mother().getId(), helper.getLevel().isPositionEntityTicking(b.blockPosition()));
+    }
+
+    private static String who(GameTestHelper helper, List<WeeplingBroodmother> list) {
+        List<String> out = new ArrayList<>();
+        for (WeeplingBroodmother b : list) out.add(who(helper, b));
+        return out.toString();
     }
 
     private static Pig pig(GameTestHelper helper, Vec3 at) {
@@ -218,7 +250,8 @@ public final class WeeplingBroodmotherTests {
             helper.assertTrue(sacs.size() == 2, "2 sacs, got " + sacs.size());
             where[0] = sacs.getFirst().position();
             int before = m.untilLay();
-            helper.assertTrue(hit(helper, sacs.get(0), pig, 1.0F), "the blow lands on the first sac");
+            helper.assertTrue(hit(helper, sacs.get(0), pig, 1.0F), "the blow lands on the first sac: " + who(helper, sacs)
+                    + ", mother " + who(helper, m));
             helper.assertTrue(sacs.get(0).isRemoved() && sacs.get(0).getRemovalReason() == Entity.RemovalReason.DISCARDED,
                     "it pops at once, removed, not killed: " + sacs.get(0).getRemovalReason());
             helper.assertTrue(m.untilLay() == before, "one sac of two popped adds nothing: " + before + " -> " + m.untilLay());
@@ -275,7 +308,7 @@ public final class WeeplingBroodmotherTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(sacs.size() == 2, "2 sacs laid, got " + sacs.size());
-            helper.assertTrue(hatchedAt[0] >= 0, "a sac hatched");
+            helper.assertTrue(hatchedAt[0] >= 0, "a sac hatched: " + who(helper, sacs) + ", mother " + who(helper, m));
             long took = hatchedAt[0] - laidAt[0];
             helper.assertTrue(took == 60, "it hatched 60 ticks after the lay, measured " + took);
             helper.assertTrue(lost[0] > 0, "a weepling bites the pig");
@@ -311,7 +344,8 @@ public final class WeeplingBroodmotherTests {
                 helper.assertTrue(d >= 1.2 - 0.01 && d <= 1.8 + 0.01, "beside her, 1.2 to 1.8 blocks off, got " + d);
                 helper.assertTrue(Math.abs(s.getY() - m.getY()) < 0.01, "on the floor she stands on, y " + s.getY() + " vs " + m.getY());
                 helper.assertTrue(s.pin() == Pin.ROOTED, "rooted");
-                helper.assertTrue(s.mother() == m && m.brood().contains(s), "hers");
+                helper.assertTrue(s.mother() == m && m.brood().contains(s), "hers: " + who(helper, s) + ", mother " + m.getId() + " "
+                        + who(helper, m));
             }
         });
         helper.runAtTickTime(24, () -> {
@@ -506,7 +540,7 @@ public final class WeeplingBroodmotherTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(burstAt[0] >= 0, "the sac bursts");
             long took = burstAt[0] - goneAt[0];
-            helper.assertTrue(took == 20, "20 ticks after she left, measured " + took);
+            helper.assertTrue(took == 20, "20 ticks after she left, measured " + took + ": " + who(helper, sacs));
             for (WeeplingBroodmother s : sacs) helper.assertTrue(s.isRemoved() && s.form() == Form.SAC, "both burst unhatched");
         });
     }
@@ -553,6 +587,15 @@ public final class WeeplingBroodmotherTests {
         WeeplingBroodmother[] w = {null};
         Vec3[] where = {null};
         int[] before = {0};
+        // the orbs that appear within 4 blocks of it once it is killed, each with its value as first seen: an orb hops
+        // on its way out and can come to rest more than 3 blocks off, so a count at the end can miss it
+        Set<UUID> lying = new HashSet<>();
+        Map<UUID, Integer> dropped = new HashMap<>();
+        helper.onEachTick(() -> {
+            if (where[0] == null) return;
+            for (ExperienceOrb orb : helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(where[0], 8, 4, 8),
+                    o -> !lying.contains(o.getUUID()))) dropped.putIfAbsent(orb.getUUID(), orb.getValue());
+        });
         helper.runAtTickTime(2, () -> {
             w[0] = m.layClutch(helper.getLevel()).getFirst();
             w[0].hatch(helper.getLevel());
@@ -560,13 +603,15 @@ public final class WeeplingBroodmotherTests {
         helper.runAtTickTime(4, () -> {
             before[0] = FieldGuide.get(player).killsOf("weepling_broodmother");
             where[0] = w[0].position();
+            for (ExperienceOrb orb : helper.getLevel().getEntitiesOfClass(ExperienceOrb.class, AABB.ofSize(where[0], 8, 4, 8))) lying.add(orb.getUUID());
             helper.assertTrue(w[0].hurtServer(helper.getLevel(), w[0].damageSources().playerAttack(player), 100.0F), "the blow lands");
             helper.assertTrue(w[0].isDeadOrDying(), "the weepling dies");
         });
         helper.runAtTickTime(30, () -> {
             helper.assertTrue(items(helper, where[0]) == 0, "it drops no item");
-            int xp = orbs(helper, where[0]);
-            helper.assertTrue(xp == 1, "it drops 1 experience, got " + xp);
+            int xp = dropped.values().stream().mapToInt(Integer::intValue).sum();
+            helper.assertTrue(xp == 1, "it drops 1 experience, got " + xp + " in " + dropped.size() + " orbs (" + orbs(helper, where[0])
+                    + " still lying by it): " + who(helper, w[0]));
             int kills = FieldGuide.get(player).killsOf("weepling_broodmother") - before[0];
             helper.assertTrue(kills == 0, "no Field Guide kill of a broodmother, got " + kills);
             helper.succeed();
@@ -585,6 +630,7 @@ public final class WeeplingBroodmotherTests {
         helper.runAtTickTime(2, () -> m.layClutch(helper.getLevel()));
         helper.runAtTickTime(4, () -> {
             ServerLevel level = helper.getLevel();
+            helper.assertTrue(!m.brood().isEmpty(), "she has her sacs: " + who(helper, m) + ", seen " + GONE.get(m).keySet().stream().map(b -> who(helper, b)).toList());
             WeeplingBroodmother sac = m.brood().getFirst();
             TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
             sac.saveWithoutId(out);
@@ -604,6 +650,37 @@ public final class WeeplingBroodmotherTests {
         helper.runAtTickTime(7, () -> {
             helper.assertTrue(m.brood().contains(loaded[0]) && loaded[0].mother() == m, "she counts it again: " + m.brood().size());
             helper.assertTrue(m.brood().size() == 2, "2 in all, got " + m.brood().size());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The brood is kept from despawning while its mother is: the sacs of a mother kept in place (as every test's is)
+     * stay however far the nearest player is, and those of a mother left to despawn may despawn too.
+     */
+    private static void broodPersistence(GameTestHelper helper) {
+        WeeplingBroodmother kept = mother(helper, new Vec3(3.5, 1, 3.5));
+        WeeplingBroodmother free = helper.spawnEntity(ModMobs.WEEPLING_BROODMOTHER.get(), new Vec3(8.5, 1, 8.5)).requirePersistence(false).spawn();
+        free.stayPut();
+        free.setUntilLay(100000);
+        TestPlayers.whenDone(helper, () -> {
+            for (WeeplingBroodmother b : free.brood()) b.discard();
+            free.discard();
+        });
+        helper.runAtTickTime(2, () -> {
+            ServerLevel level = helper.getLevel();
+            helper.assertTrue(kept.isPersistenceRequired() && !free.isPersistenceRequired() && !free.requiresCustomPersistence(),
+                    "one mother kept, one free to despawn");
+            List<WeeplingBroodmother> keptSacs = kept.layClutch(level);
+            List<WeeplingBroodmother> freeSacs = free.layClutch(level);
+            helper.assertTrue(keptSacs.size() == 2 && freeSacs.size() == 2, "2 sacs each, got " + keptSacs.size() + " and " + freeSacs.size());
+            for (WeeplingBroodmother s : keptSacs) helper.assertTrue(s.requiresCustomPersistence(), "a kept mother's sac stays: " + who(helper, s));
+            for (WeeplingBroodmother s : freeSacs) helper.assertTrue(!s.requiresCustomPersistence(), "a free mother's sac may despawn: " + who(helper, s));
+            WeeplingBroodmother w = keptSacs.getFirst();
+            w.hatch(level);
+            helper.assertTrue(w.form() == Form.WEEPLING && w.requiresCustomPersistence(), "and so does her weepling");
+            kept.kill(level);
+            helper.assertTrue(!w.requiresCustomPersistence(), "with her dead it no longer stays on her account");
             helper.succeed();
         });
     }

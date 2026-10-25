@@ -88,6 +88,7 @@ public final class AshharrierTests {
     /** An Ashharrier {@code up} blocks above the arena floor at {@code x}, ready to cry, blind to other arenas. */
     private static Ashharrier harrier(GameTestHelper helper, double x, double up) {
         openRoof(helper);
+        TestPlayers.keepTicking(helper, 4);              // it circles 5 out from its target, 1.4 wide: up to 3 blocks past the edge
         Ashharrier bird = helper.spawn(ModMobs.ASHHARRIER.get(), new Vec3(x, 1 + up, 5.5));
         bird.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         bird.resetCooldown();

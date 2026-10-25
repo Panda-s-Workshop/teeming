@@ -593,6 +593,18 @@ public class WeeplingBroodmother extends TeemingMonster {
         return true;
     }
 
+    /**
+     * The brood stays as long as its mother does: while she is kept from despawning (named, or kept by whatever placed
+     * her), so are her sacs and weeplings. Otherwise they despawn like any monster, and with her gone they burst or
+     * wither on their own.
+     */
+    @Override
+    public boolean requiresCustomPersistence() {
+        WeeplingBroodmother mom = mother;
+        if (form() == Form.MOTHER || mom == null || !mom.isAlive()) return super.requiresCustomPersistence();
+        return mom.isPersistenceRequired() || mom.requiresCustomPersistence();
+    }
+
     /** The brood carries nothing worth taking. */
     @Override
     protected boolean shouldDropLoot(ServerLevel level) {

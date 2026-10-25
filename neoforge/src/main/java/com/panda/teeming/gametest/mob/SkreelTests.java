@@ -17,7 +17,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.world.BiomeModifier;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
@@ -73,26 +71,11 @@ public final class SkreelTests {
      */
     private static Skreel skreel(GameTestHelper helper, double x, double up) {
         openRoof(helper);
-        keepTicking(helper, 4);
+        TestPlayers.keepTicking(helper, 4);              // it circles 6 out from its target: 1 block past the edge, 4 after a sidestep
         Skreel bird = helper.spawn(ModMobs.SKREEL.get(), new Vec3(x, 1 + up, 5.5));
         bird.resetCooldown();
         TestPlayers.whenDone(helper, bird::discard);
         return bird;
-    }
-
-    /**
-     * Keeps mobs ticking up to {@code margin} blocks outside the arena. The test server force-loads only the chunks under
-     * each arena, and an entity in a chunk beside them stops ticking where it is; a neighbouring arena's chunks stay
-     * forced only while its own batch runs. A Skreel circles 6 blocks out from its target, which takes it past the
-     * arena's edge: 1 block over the middle of the floor, 4 over a target that stepped aside. The chunks stay forced
-     * until the batch ends, when the runner lets go of every forced chunk: letting go sooner could drop a chunk that a
-     * neighbour's bird, or the next batch's arena, still needs.
-     */
-    private static void keepTicking(GameTestHelper helper, int margin) {
-        AABB area = helper.getBounds().inflate(margin, 0, margin);
-        for (int cx = Mth.floor(area.minX) >> 4; cx <= Mth.floor(area.maxX) >> 4; cx++) {
-            for (int cz = Mth.floor(area.minZ) >> 4; cz <= Mth.floor(area.maxZ) >> 4; cz++) helper.getLevel().setChunkForced(cx, cz, true);
-        }
     }
 
     /** Clears the barrier roof over the arena (the two layers above its 8 rows), so the sky above it is open. */
