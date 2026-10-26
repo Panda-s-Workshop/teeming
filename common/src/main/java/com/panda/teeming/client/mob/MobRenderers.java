@@ -129,5 +129,11 @@ public final class MobRenderers {
                 Set.of("base", "starbitten"), 0.45F, 1.0F, 2, false));
         out.register(ModMobs.CHORUS_HUSK.get(), ctx -> new TeemingRenderer<>(ctx, new ChorusHuskModel(ctx.bakeLayer(CreatureLayers.CHORUS_HUSK)), "chorus_husk",
                 Set.of("base", "blooming_husk"), 0.5F, 1.0F, 2, false));
+        out.register(ModMobs.GATECASTER.get(), ctx -> new TeemingRenderer<>(ctx, new GatecasterModel(ctx.bakeLayer(CreatureLayers.GATECASTER)), "gatecaster",
+                Set.of("base", "mirrored_weaver"), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.PEARLGULP.get(), ctx -> new TeemingRenderer<>(ctx, new PearlgulpModel(ctx.bakeLayer(CreatureLayers.PEARLGULP)), "pearlgulp",
+                Set.of("base", "smoky_gulp"), 0.6F, 1.0F, 5, false));
+        out.register(ModMobs.BRINKRAM.get(), ctx -> new TeemingRenderer<>(ctx, new BrinkramModel(ctx.bakeLayer(CreatureLayers.BRINKRAM)), "brinkram",
+                Set.of(), 0.75F, 1.0F, 1, true));
     }
 }

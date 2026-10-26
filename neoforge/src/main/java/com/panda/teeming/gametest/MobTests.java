@@ -60,6 +60,9 @@ import com.panda.teeming.gametest.mob.WarpseedBloomTests;
 import com.panda.teeming.gametest.mob.GlimmerlessTests;
 import com.panda.teeming.gametest.mob.RiftjackalTests;
 import com.panda.teeming.gametest.mob.ChorusHuskTests;
+import com.panda.teeming.gametest.mob.GatecasterTests;
+import com.panda.teeming.gametest.mob.PearlgulpTests;
+import com.panda.teeming.gametest.mob.BrinkramTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -129,5 +132,8 @@ final class MobTests {
         GlimmerlessTests.register(out);
         RiftjackalTests.register(out);
         ChorusHuskTests.register(out);
+        GatecasterTests.register(out);
+        PearlgulpTests.register(out);
+        BrinkramTests.register(out);
     }
 }

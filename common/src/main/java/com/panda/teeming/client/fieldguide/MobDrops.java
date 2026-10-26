@@ -67,7 +67,10 @@ public final class MobDrops {
             Map.entry("warpseed_bloom", List.of("teeming:chorus_silk", "minecraft:chorus_fruit", "teeming:trophy")),
             Map.entry("glimmerless", List.of("teeming:void_ichor", "minecraft:chorus_fruit", "teeming:trophy")),
             Map.entry("riftjackal", List.of("teeming:rift_essence", "minecraft:chorus_fruit", "teeming:trophy")),
-            Map.entry("chorus_husk", List.of("teeming:chorus_silk", "minecraft:bone", "teeming:trophy"))
+            Map.entry("chorus_husk", List.of("teeming:chorus_silk", "minecraft:bone", "teeming:trophy")),
+            Map.entry("gatecaster", List.of("teeming:rift_essence", "minecraft:chorus_fruit", "teeming:trophy")),
+            Map.entry("pearlgulp", List.of("teeming:rift_essence", "teeming:trophy")),
+            Map.entry("brinkram", List.of("teeming:gravity_stone", "minecraft:end_stone", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {
