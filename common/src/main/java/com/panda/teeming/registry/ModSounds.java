@@ -125,6 +125,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> DUSTWHIRL_SLOW = sound("dustwhirl.slow");
     public static final DeferredHolder<SoundEvent, SoundEvent> DUSTWHIRL_STEAL = sound("dustwhirl.steal");
     public static final DeferredHolder<SoundEvent, SoundEvent> DUSTWHIRL_CORE_HIT = sound("dustwhirl.core_hit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_AMBIENT = sound("facet_doppel.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_HURT = sound("facet_doppel.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_DEATH = sound("facet_doppel.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_FLICKER = sound("facet_doppel.flicker");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_COPY = sound("facet_doppel.copy");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_WINDUP = sound("facet_doppel.windup");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_STRIKE = sound("facet_doppel.strike");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FACET_DOPPEL_SHATTER = sound("facet_doppel.shatter");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLAMEWRIGHT_AMBIENT = sound("flamewright.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLAMEWRIGHT_HURT = sound("flamewright.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLAMEWRIGHT_DEATH = sound("flamewright.death");

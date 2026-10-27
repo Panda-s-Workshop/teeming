@@ -135,5 +135,7 @@ public final class MobRenderers {
                 Set.of("base", "smoky_gulp"), 0.6F, 1.0F, 5, false));
         out.register(ModMobs.BRINKRAM.get(), ctx -> new TeemingRenderer<>(ctx, new BrinkramModel(ctx.bakeLayer(CreatureLayers.BRINKRAM)), "brinkram",
                 Set.of(), 0.75F, 1.0F, 1, true));
+        out.register(ModMobs.FACET_DOPPEL.get(), ctx -> new TeemingRenderer<>(ctx, new FacetDoppelModel(ctx.bakeLayer(CreatureLayers.FACET_DOPPEL)), "facet_doppel",
+                Set.of("base", "obsidian_doppel"), 0.5F, 1.0F, 2, false));
     }
 }

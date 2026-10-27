@@ -63,6 +63,7 @@ import com.panda.teeming.gametest.mob.ChorusHuskTests;
 import com.panda.teeming.gametest.mob.GatecasterTests;
 import com.panda.teeming.gametest.mob.PearlgulpTests;
 import com.panda.teeming.gametest.mob.BrinkramTests;
+import com.panda.teeming.gametest.mob.FacetDoppelTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -135,5 +136,6 @@ final class MobTests {
         GatecasterTests.register(out);
         PearlgulpTests.register(out);
         BrinkramTests.register(out);
+        FacetDoppelTests.register(out);
     }
 }

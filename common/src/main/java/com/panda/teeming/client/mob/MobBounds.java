@@ -70,7 +70,8 @@ public final class MobBounds {
             Map.entry("chorus_husk", new float[] {1.192F, 2.415F, 0.988F}),
             Map.entry("gatecaster", new float[] {0.996F, 2.158F, 0.864F}),
             Map.entry("pearlgulp", new float[] {1.375F, 0.875F, 1.928F}),
-            Map.entry("brinkram", new float[] {1.562F, 1.600F, 2.296F})
+            Map.entry("brinkram", new float[] {1.562F, 1.600F, 2.296F}),
+            Map.entry("facet_doppel", new float[] {1.290F, 2.031F, 0.530F})
     );
 
     public static float @Nullable [] of(String mob) {

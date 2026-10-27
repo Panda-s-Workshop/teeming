@@ -77,6 +77,7 @@ public final class CreatureLayers {
     public static final ModelLayerLocation GATECASTER = new ModelLayerLocation(TeemingMod.id("gatecaster"), "main");
     public static final ModelLayerLocation PEARLGULP = new ModelLayerLocation(TeemingMod.id("pearlgulp"), "main");
     public static final ModelLayerLocation BRINKRAM = new ModelLayerLocation(TeemingMod.id("brinkram"), "main");
+    public static final ModelLayerLocation FACET_DOPPEL = new ModelLayerLocation(TeemingMod.id("facet_doppel"), "main");
 
     private CreatureLayers() {}
 
@@ -144,6 +145,7 @@ public final class CreatureLayers {
         out.register(GATECASTER, CreatureLayers::gatecaster);
         out.register(PEARLGULP, CreatureLayers::pearlgulp);
         out.register(BRINKRAM, CreatureLayers::brinkram);
+        out.register(FACET_DOPPEL, CreatureLayers::facetDoppel);
     }
 
     public static LayerDefinition thornhorn() {
@@ -1868,4 +1870,39 @@ public final class CreatureLayers {
         return LayerDefinition.create(mesh, 128, 128);
     }
     public static final Map<String, String[]> BRINKRAM_ONLY = Map.of();
+
+    public static LayerDefinition facetDoppel() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        root.addOrReplaceChild("leg_right", CubeListBuilder.create().texOffs(96, 12).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F).texOffs(18, 21).addBox(-1.5F, 5.0F, -2.6F, 3.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(-2.5F, 12.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_left", CubeListBuilder.create().texOffs(112, 12).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F).texOffs(102, 34).addBox(-1.5F, 5.0F, -2.6F, 3.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(2.5F, 12.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(74, 20).addBox(-3.5F, -3.0F, -2.0F, 7.0F, 3.0F, 4.0F).texOffs(70, 0).addBox(-5.0F, -12.0F, -3.0F, 10.0F, 4.0F, 6.0F).texOffs(0, 0).addBox(-4.5F, -8.0F, -3.0F, 9.0F, 5.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 12.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("facet_chest", CubeListBuilder.create().texOffs(36, 26).addBox(-2.5F, -2.5F, -0.6F, 5.0F, 5.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -7.5F, -3.0F, 0.0F, 0.0F, 0.7854F));
+        p_body.addOrReplaceChild("scar_chest", CubeListBuilder.create().texOffs(16, 33).addBox(-2.0F, -2.0F, -0.3F, 4.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -7.5F, -3.0F, 0.0F, 0.0F, 0.7854F));
+        p_body.addOrReplaceChild("facet_back", CubeListBuilder.create().texOffs(26, 33).addBox(-2.0F, -2.0F, -0.4F, 4.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -7.0F, 3.0F, 0.0F, 0.0F, 0.7854F));
+        p_body.addOrReplaceChild("facet_shoulder_right", CubeListBuilder.create().texOffs(70, 10).addBox(-4.5F, -1.5F, -3.5F, 6.0F, 3.0F, 7.0F), PartPose.offsetAndRotation(-5.0F, -12.0F, 0.0F, 0.0F, 0.0F, -0.384F));
+        p_body.addOrReplaceChild("scar_shoulder_right", CubeListBuilder.create().texOffs(0, 21).addBox(-3.5F, -1.0F, -2.5F, 4.0F, 2.0F, 5.0F).texOffs(60, 16).addBox(-2.5F, -1.2F, -1.0F, 2.0F, 1.0F, 2.0F), PartPose.offsetAndRotation(-5.0F, -12.0F, 0.0F, 0.0F, 0.0F, -0.384F));
+        p_body.addOrReplaceChild("facet_shoulder_left", CubeListBuilder.create().texOffs(0, 11).addBox(-1.5F, -1.5F, -3.5F, 6.0F, 3.0F, 7.0F), PartPose.offsetAndRotation(5.0F, -12.0F, 0.0F, 0.0F, 0.0F, 0.384F));
+        p_body.addOrReplaceChild("scar_shoulder_left", CubeListBuilder.create().texOffs(18, 26).addBox(-0.5F, -1.0F, -2.5F, 4.0F, 2.0F, 5.0F).texOffs(118, 35).addBox(0.5F, -1.2F, -1.0F, 2.0F, 1.0F, 2.0F), PartPose.offsetAndRotation(5.0F, -12.0F, 0.0F, 0.0F, 0.0F, 0.384F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, -12.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("head_gem", CubeListBuilder.create().texOffs(102, 0).addBox(-3.0F, -6.5F, -3.0F, 6.0F, 6.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.7854F, 0.0F));
+        p_head.addOrReplaceChild("head_top", CubeListBuilder.create().texOffs(90, 28).addBox(-2.0F, -2.0F, -2.0F, 4.0F, 2.0F, 4.0F), PartPose.offsetAndRotation(0.0F, -6.5F, 0.0F, 0.0F, 0.7854F, 0.0F));
+        PartDefinition p_arm_right = p_body.addOrReplaceChild("arm_right", CubeListBuilder.create().texOffs(30, 0).addBox(-2.5F, -1.5F, -2.5F, 5.0F, 11.0F, 5.0F).texOffs(26, 16).addBox(-3.0F, 4.0F, -3.0F, 6.0F, 4.0F, 6.0F), PartPose.offsetAndRotation(-6.5F, -11.0F, 0.0F, 0.0F, 0.0F, 0.1047F));
+        PartDefinition p_hand_right = p_arm_right.addOrReplaceChild("hand_right", CubeListBuilder.create().texOffs(74, 27).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 3.0F, 4.0F), PartPose.offsetAndRotation(0.0F, 9.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_fist", CubeListBuilder.create().texOffs(60, 35).addBox(-2.5F, -0.5F, -2.8F, 5.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_sword", CubeListBuilder.create().texOffs(96, 10).addBox(-0.5F, 0.0F, -0.5F, 1.0F, 1.0F, 1.0F).texOffs(26, 11).addBox(-0.5F, -3.0F, -0.5F, 1.0F, 3.0F, 1.0F).texOffs(48, 36).addBox(-2.0F, -4.0F, -0.5F, 4.0F, 1.0F, 1.0F).texOffs(72, 34).addBox(-1.0F, -11.0F, -0.5F, 2.0F, 7.0F, 1.0F).texOffs(48, 38).addBox(-0.5F, -12.0F, -0.5F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_axe", CubeListBuilder.create().texOffs(36, 32).addBox(-0.5F, -11.0F, -0.5F, 1.0F, 12.0F, 1.0F).texOffs(78, 34).addBox(-1.0F, -10.8F, -1.8F, 2.0F, 4.0F, 2.0F).texOffs(118, 28).addBox(-1.5F, -12.0F, -2.2F, 3.0F, 6.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_pickaxe", CubeListBuilder.create().texOffs(44, 32).addBox(-0.5F, -10.0F, -0.5F, 1.0F, 11.0F, 1.0F).texOffs(60, 30).addBox(-1.0F, -11.0F, -2.0F, 2.0F, 1.0F, 4.0F).texOffs(52, 38).addBox(-0.5F, -10.0F, -2.0F, 1.0F, 1.0F, 1.0F).texOffs(56, 38).addBox(-0.5F, -10.0F, 1.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_shovel", CubeListBuilder.create().texOffs(98, 34).addBox(-0.5F, -8.0F, -0.5F, 1.0F, 9.0F, 1.0F).texOffs(110, 34).addBox(-1.5F, -12.0F, -0.5F, 3.0F, 4.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_hoe", CubeListBuilder.create().texOffs(40, 32).addBox(-0.5F, -11.0F, -0.5F, 1.0F, 12.0F, 1.0F).texOffs(50, 16).addBox(-1.0F, -12.0F, -2.0F, 2.0F, 1.0F, 3.0F).texOffs(22, 38).addBox(-1.0F, -11.0F, -2.0F, 2.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_trident", CubeListBuilder.create().texOffs(86, 34).addBox(-0.5F, -9.0F, -0.5F, 1.0F, 10.0F, 1.0F).texOffs(12, 38).addBox(-2.0F, -10.0F, -0.5F, 4.0F, 1.0F, 1.0F).texOffs(12, 35).addBox(-0.5F, -12.0F, -0.5F, 1.0F, 2.0F, 1.0F).texOffs(28, 38).addBox(-2.0F, -12.0F, -0.5F, 1.0F, 2.0F, 1.0F).texOffs(32, 38).addBox(1.0F, -12.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_mace", CubeListBuilder.create().texOffs(8, 35).addBox(-0.5F, -6.0F, -0.5F, 1.0F, 7.0F, 1.0F).texOffs(106, 28).addBox(-1.5F, -9.0F, -1.5F, 3.0F, 3.0F, 3.0F).texOffs(60, 38).addBox(-0.5F, -10.0F, -0.5F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_spear", CubeListBuilder.create().texOffs(90, 34).addBox(-0.5F, -9.0F, -0.5F, 1.0F, 10.0F, 1.0F).texOffs(0, 35).addBox(-1.0F, -12.0F, -1.0F, 2.0F, 3.0F, 2.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_rod", CubeListBuilder.create().texOffs(94, 34).addBox(-0.5F, -9.0F, -0.5F, 1.0F, 10.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_hand_right.addOrReplaceChild("copy_chunk", CubeListBuilder.create().texOffs(48, 30).addBox(-1.5F, -4.0F, -1.5F, 3.0F, 3.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 1.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_arm_left = p_body.addOrReplaceChild("arm_left", CubeListBuilder.create().texOffs(50, 0).addBox(-2.5F, -1.5F, -2.5F, 5.0F, 11.0F, 5.0F).texOffs(50, 20).addBox(-3.0F, 4.0F, -3.0F, 6.0F, 4.0F, 6.0F), PartPose.offsetAndRotation(6.5F, -11.0F, 0.0F, 0.0F, 0.0F, -0.1047F));
+        p_arm_left.addOrReplaceChild("hand_left", CubeListBuilder.create().texOffs(0, 28).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 3.0F, 4.0F), PartPose.offsetAndRotation(0.0F, 9.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 128, 64);
+    }
+    public static final Map<String, String[]> FACET_DOPPEL_ONLY = Map.of();
 }
