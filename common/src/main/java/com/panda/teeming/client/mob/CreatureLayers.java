@@ -83,6 +83,7 @@ public final class CreatureLayers {
     public static final ModelLayerLocation PHASEWALKER = new ModelLayerLocation(TeemingMod.id("phasewalker"), "main");
     public static final ModelLayerLocation ECHO_FENCER = new ModelLayerLocation(TeemingMod.id("echo_fencer"), "main");
     public static final ModelLayerLocation SWELLSHADE = new ModelLayerLocation(TeemingMod.id("swellshade"), "main");
+    public static final ModelLayerLocation CHRONOMITE = new ModelLayerLocation(TeemingMod.id("chronomite"), "main");
 
     private CreatureLayers() {}
 
@@ -156,6 +157,7 @@ public final class CreatureLayers {
         out.register(PHASEWALKER, CreatureLayers::phasewalker);
         out.register(ECHO_FENCER, CreatureLayers::echoFencer);
         out.register(SWELLSHADE, CreatureLayers::swellshade);
+        out.register(CHRONOMITE, CreatureLayers::chronomite);
     }
 
     public static LayerDefinition thornhorn() {
@@ -2094,4 +2096,26 @@ public final class CreatureLayers {
         return LayerDefinition.create(mesh, 128, 64);
     }
     public static final Map<String, String[]> SWELLSHADE_ONLY = Map.of();
+
+    public static LayerDefinition chronomite() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        root.addOrReplaceChild("leg_front_left", CubeListBuilder.create().texOffs(40, 16).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F).texOffs(40, 26).addBox(-1.5F, 2.0F, -1.5F, 3.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(5.0F, 21.0F, -4.5F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_front_right", CubeListBuilder.create().texOffs(40, 21).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F).texOffs(104, 28).addBox(-1.5F, 2.0F, -1.5F, 3.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(-5.0F, 21.0F, -4.5F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_back_left", CubeListBuilder.create().texOffs(104, 23).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F).texOffs(116, 28).addBox(-1.5F, 2.0F, -1.5F, 3.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(5.0F, 21.0F, 4.5F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("leg_back_right", CubeListBuilder.create().texOffs(116, 23).addBox(-1.5F, 0.0F, -1.5F, 3.0F, 2.0F, 3.0F).texOffs(52, 29).addBox(-1.5F, 2.0F, -1.5F, 3.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(-5.0F, 21.0F, 4.5F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(56, 0).addBox(-6.0F, -1.5F, -6.0F, 12.0F, 3.0F, 12.0F), PartPose.offsetAndRotation(0.0F, 20.5F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_shell = p_body.addOrReplaceChild("shell", CubeListBuilder.create().texOffs(0, 0).addBox(-7.0F, -2.0F, -7.0F, 14.0F, 2.0F, 14.0F).texOffs(56, 15).addBox(-6.0F, -4.0F, -6.0F, 12.0F, 2.0F, 12.0F), PartPose.offsetAndRotation(0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_shell.addOrReplaceChild("dome_top", CubeListBuilder.create().texOffs(0, 16).addBox(-5.0F, -6.0F, -5.0F, 10.0F, 2.0F, 10.0F).texOffs(104, 0).addBox(-3.0F, -7.0F, -3.0F, 6.0F, 1.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_dial = p_shell.addOrReplaceChild("dial", CubeListBuilder.create().texOffs(104, 15).addBox(-3.5F, -3.5F, -1.0F, 7.0F, 7.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -4.5F, -5.2F, -0.7854F, 0.0F, 0.0F));
+        p_dial.addOrReplaceChild("hand_hour", CubeListBuilder.create().texOffs(52, 16).addBox(-0.5F, -2.0F, -0.55F, 1.0F, 2.0F, 1.0F, new CubeDeformation(-0.3F)), PartPose.offsetAndRotation(0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F));
+        p_dial.addOrReplaceChild("hand_minute", CubeListBuilder.create().texOffs(124, 7).addBox(-0.5F, -3.0F, -0.85F, 1.0F, 3.0F, 1.0F, new CubeDeformation(-0.3F)), PartPose.offsetAndRotation(0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 0.0F));
+        p_shell.addOrReplaceChild("key", CubeListBuilder.create().texOffs(124, 11).addBox(-0.5F, -2.0F, -0.5F, 1.0F, 3.0F, 1.0F).texOffs(72, 29).addBox(-3.5F, -5.0F, -0.5F, 3.0F, 3.0F, 1.0F).texOffs(80, 29).addBox(0.5F, -5.0F, -0.5F, 3.0F, 3.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -6.0F, 3.5F, 0.0F, 0.0F, 0.0F));
+        p_shell.addOrReplaceChild("broken", CubeListBuilder.create().texOffs(120, 20).addBox(-6.0F, -6.0F, -6.0F, 3.0F, 2.0F, 1.0F).texOffs(36, 30).addBox(1.0F, -7.0F, -6.0F, 2.0F, 3.0F, 1.0F).texOffs(112, 32).addBox(4.0F, -5.0F, -5.0F, 2.0F, 1.0F, 1.0F).texOffs(120, 15).addBox(5.0F, -6.0F, -2.0F, 1.0F, 2.0F, 3.0F).texOffs(88, 29).addBox(5.0F, -7.0F, 3.0F, 1.0F, 3.0F, 2.0F).texOffs(42, 30).addBox(2.0F, -6.0F, 5.0F, 3.0F, 2.0F, 1.0F).texOffs(118, 32).addBox(-3.0F, -5.0F, 5.0F, 2.0F, 1.0F, 1.0F).texOffs(64, 29).addBox(-6.0F, -6.0F, 2.0F, 1.0F, 2.0F, 3.0F).texOffs(94, 29).addBox(-6.0F, -7.0F, -3.0F, 1.0F, 3.0F, 2.0F).texOffs(0, 28).addBox(-4.5F, -5.0F, -4.5F, 9.0F, 1.0F, 9.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(104, 7).addBox(-3.0F, -2.0F, -4.0F, 6.0F, 4.0F, 4.0F), PartPose.offsetAndRotation(0.0F, 0.0F, -5.5F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("mandible_left", CubeListBuilder.create().texOffs(100, 32).addBox(-0.5F, -0.5F, -2.0F, 1.0F, 1.0F, 2.0F), PartPose.offsetAndRotation(1.6F, 1.2F, -3.8F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("mandible_right", CubeListBuilder.create().texOffs(106, 32).addBox(-0.5F, -0.5F, -2.0F, 1.0F, 1.0F, 2.0F), PartPose.offsetAndRotation(-1.6F, 1.2F, -3.8F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 128, 64);
+    }
+    public static final Map<String, String[]> CHRONOMITE_ONLY = Map.of();
 }

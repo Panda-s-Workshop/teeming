@@ -76,7 +76,8 @@ public final class MobDrops {
             Map.entry("shardling_colossus", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("phasewalker", List.of("teeming:time_sand", "minecraft:sand", "teeming:trophy")),
             Map.entry("echo_fencer", List.of("teeming:time_sand", "minecraft:chorus_fruit", "teeming:trophy")),
-            Map.entry("swellshade", List.of("teeming:void_ichor", "teeming:trophy"))
+            Map.entry("swellshade", List.of("teeming:void_ichor", "teeming:trophy")),
+            Map.entry("chronomite", List.of("teeming:time_sand", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {

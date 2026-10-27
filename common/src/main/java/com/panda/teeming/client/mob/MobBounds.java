@@ -76,7 +76,8 @@ public final class MobBounds {
             Map.entry("shardling_colossus", new float[] {2.158F, 2.703F, 1.155F}),
             Map.entry("phasewalker", new float[] {1.062F, 2.125F, 0.438F}),
             Map.entry("echo_fencer", new float[] {1.067F, 2.000F, 2.717F}),
-            Map.entry("swellshade", new float[] {1.430F, 1.879F, 0.873F})
+            Map.entry("swellshade", new float[] {1.430F, 1.879F, 0.873F}),
+            Map.entry("chronomite", new float[] {0.875F, 0.969F, 1.144F})
     );
 
     public static float @Nullable [] of(String mob) {

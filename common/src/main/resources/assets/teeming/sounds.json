@@ -1244,6 +1244,154 @@
       }
     ]
   },
+  "chronomite.ambient": {
+    "subtitle": "subtitles.teeming.chronomite.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.ambient",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.comparator.click",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "chronomite.hurt": {
+    "subtitle": "subtitles.teeming.chronomite.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.hurt",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.5
+      }
+    ]
+  },
+  "chronomite.death": {
+    "subtitle": "subtitles.teeming.chronomite.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.death",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.comparator.click",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.6
+      }
+    ]
+  },
+  "chronomite.tick": {
+    "subtitle": "subtitles.teeming.chronomite.tick",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.hat",
+        "type": "event",
+        "pitch": 1.9,
+        "volume": 0.35
+      },
+      {
+        "name": "minecraft:block.comparator.click",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.3
+      }
+    ]
+  },
+  "chronomite.clink": {
+    "subtitle": "subtitles.teeming.chronomite.clink",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.hurt_reduced",
+        "type": "event"
+      },
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.6
+      }
+    ]
+  },
+  "chronomite.shatter": {
+    "subtitle": "subtitles.teeming.chronomite.shatter",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.armadillo.scute_drop",
+        "type": "event",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "chronomite.pour": {
+    "subtitle": "subtitles.teeming.chronomite.pour",
+    "sounds": [
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.suspicious_sand.break",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "chronomite.tell": {
+    "subtitle": "subtitles.teeming.chronomite.tell",
+    "sounds": [
+      {
+        "name": "minecraft:entity.armadillo.peek",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.tripwire.click_on",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "chronomite.bite": {
+    "subtitle": "subtitles.teeming.chronomite.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker_fangs.attack",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:entity.player.attack.weak",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      }
+    ]
+  },
   "cindermoth_swarm.ambient": {
     "subtitle": "subtitles.teeming.cindermoth_swarm.ambient",
     "sounds": [

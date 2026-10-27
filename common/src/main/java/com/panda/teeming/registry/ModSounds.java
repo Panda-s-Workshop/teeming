@@ -88,6 +88,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_HUSK_BURST = sound("chorus_husk.burst");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_HUSK_TELEPORT = sound("chorus_husk.teleport");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_HUSK_SPARED = sound("chorus_husk.spared");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_AMBIENT = sound("chronomite.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_HURT = sound("chronomite.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_DEATH = sound("chronomite.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_TICK = sound("chronomite.tick");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_CLINK = sound("chronomite.clink");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_SHATTER = sound("chronomite.shatter");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_POUR = sound("chronomite.pour");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_TELL = sound("chronomite.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHRONOMITE_BITE = sound("chronomite.bite");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_AMBIENT = sound("cindermoth_swarm.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_HURT = sound("cindermoth_swarm.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_DEATH = sound("cindermoth_swarm.death");

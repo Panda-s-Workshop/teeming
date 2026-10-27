@@ -147,5 +147,7 @@ public final class MobRenderers {
                 Set.of("base", "gilded_fencer"), 0.45F, 1.0F, 1, false));
         out.register(ModMobs.SWELLSHADE.get(), ctx -> new TeemingRenderer<>(ctx, new SwellshadeModel(ctx.bakeLayer(CreatureLayers.SWELLSHADE)), "swellshade",
                 Set.of("base", "gloom_swell"), 0.5F, 1.0F, 5, false));
+        out.register(ModMobs.CHRONOMITE.get(), ctx -> new TeemingRenderer<>(ctx, new ChronomiteModel(ctx.bakeLayer(CreatureLayers.CHRONOMITE)), "chronomite",
+                Set.of("base", "gilded_mite"), 0.5F, 1.0F, 5, false));
     }
 }
