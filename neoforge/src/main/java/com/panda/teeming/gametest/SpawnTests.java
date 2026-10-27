@@ -66,6 +66,7 @@ final class SpawnTests {
         out.accept("spawn_any_light", SpawnTests::anyLight);
         out.accept("spawn_share", SpawnTests::spawnShare);
         out.accept("spawn_share_counts", SpawnTests::shareCounts);
+        out.accept("spawn_share_end", SpawnTests::spawnShareEnd);
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
         out.accept("spawner_apex", SpawnTests::apex);
@@ -252,6 +253,46 @@ final class SpawnTests {
         if (TeemingSpawner.shareAllows(0, 0)) wrong.add("the cap adds a Teeming monster where no other monster is");
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
         TeemingMod.LOGGER.info("spawn_share: {}", String.join(", ", seen));
+        helper.succeed();
+    }
+
+    /**
+     * In each End biome, read from the live spawn lists: vanilla's monsters are unchanged, and Teeming's share of the
+     * monsters, counted as mobs (each entry's weight times its mean group, so the endermen's groups of 4 count), stays
+     * at or under {@link SpawnTable#END_SHARE_MAX}. The spawner's own End cap counts Teeming monsters alone: it has room
+     * with any number of endermen about, and stops at half the vanilla per-player cap.
+     */
+    private static void spawnShareEnd(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
+        List<String> wrong = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        for (Map.Entry<String, Integer> e : SpawnTable.VANILLA_END_MONSTER_WEIGHT.entrySet()) {
+            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, Identifier.parse(e.getKey()));
+            MobSpawnSettings settings = biomes.getOrThrow(key).value().getModifiedEnvironmentAttributes()
+                    .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
+            int vanilla = 0;
+            double oursMobs = 0.0, vanillaMobs = 0.0;
+            for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
+                var count = w.value().count();
+                double mobs = w.weight() * (count.minInclusive() + count.maxInclusive()) / 2.0;
+                if (teeming(w.value().type())) {
+                    oursMobs += mobs;
+                } else {
+                    vanilla += w.weight();
+                    vanillaMobs += mobs;
+                }
+            }
+            String name = key.identifier().getPath();
+            if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
+            double got = oursMobs + vanillaMobs > 0 ? oursMobs / (oursMobs + vanillaMobs) : 0.0;
+            if (got > SpawnTable.END_SHARE_MAX) wrong.add(String.format(Locale.ROOT, "%s: Teeming %.0f of %.0f mobs, %.1f %%", name, oursMobs, oursMobs + vanillaMobs, got * 100));
+            seen.add(String.format(Locale.ROOT, "%s %.1f %%", name, got * 100));
+        }
+        if (!TeemingSpawner.endAllows(0)) wrong.add("the End cap refuses with no Teeming monster about");
+        if (!TeemingSpawner.endAllows(34)) wrong.add("the End cap refuses at 34 Teeming monsters");
+        if (TeemingSpawner.endAllows(35)) wrong.add("the End cap allows a 36th Teeming monster, past half of 70");
+        if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+        TeemingMod.LOGGER.info("spawn_share_end: {}", String.join(", ", seen));
         helper.succeed();
     }
 

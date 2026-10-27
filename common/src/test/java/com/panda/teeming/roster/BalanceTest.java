@@ -85,6 +85,24 @@ class BalanceTest {
         assertTrue(deadly.isEmpty(), "too deadly: " + deadly);
     }
 
+    /**
+     * Inside a Nullcantor's ring the End reference player's Protection does nothing, and every End mob can share an
+     * island with one: each End mob's mechanic blow is still survived at least 3 times with the armour alone.
+     */
+    @Test
+    void theEndPlayerSurvivesMechanicBlowsInsideANullingRing() {
+        Ref nulled = new Ref(8.0F, 20, 12, 0);   // the sword's Sharpness and the set's Protection both silenced
+        List<String> deadly = new ArrayList<>();
+        for (Entry mob : RosterStats.ALL) {
+            if (mob.dim() != Dim.END) continue;
+            float strongest = Math.max(mob.blow(), mob.balanceAttack());
+            if (strongest <= 0) continue;
+            float blows = hitsToDie(strongest, nulled);
+            if (blows < 3) deadly.add("%s %.1f < 3".formatted(mob.id(), blows));
+        }
+        assertTrue(deadly.isEmpty(), "too deadly inside a nulling ring: " + deadly);
+    }
+
     @Test
     void ordinaryMobsWinTheDuelRatio() {
         List<String> lost = new ArrayList<>();

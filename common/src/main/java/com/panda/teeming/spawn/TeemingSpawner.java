@@ -210,6 +210,8 @@ public final class TeemingSpawner {
                 // the share cap keeps Teeming to its share on top of vanilla's mobs, so the category cap is lifted by that share
                 if (!underCategoryCap(level, player, category, 1.0 / (1.0 - SpawnTable.TARGET_SHARE))) return null;
                 if (category == MobCategory.MONSTER && !shareAllows(level, player)) return null;
+            } else if (level.dimension() == Level.END && category == MobCategory.MONSTER) {
+                if (!endAllows(teemingNear(level, player, category))) return null;
             } else if (!underCategoryCap(level, player, category, 1.0)) {
                 return null;
             }
@@ -400,6 +402,21 @@ public final class TeemingSpawner {
         AABB around = player.getBoundingBox().inflate(category.getDespawnDistance());
         int count = level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == category).size();
         return count < category.getMaxInstancesPerChunk() * lift;
+    }
+
+    /** Teeming mobs of the category within the despawn range of the player. */
+    static int teemingNear(ServerLevel level, ServerPlayer player, MobCategory category) {
+        AABB around = player.getBoundingBox().inflate(category.getDespawnDistance());
+        return level.getEntitiesOfClass(Mob.class, around, e -> e.getType().getCategory() == category
+                && TeemingMod.MODID.equals(e.getType().builtInRegistryHolder().key().identifier().getNamespace())).size();
+    }
+
+    /**
+     * The End's cap: room while the Teeming monsters round the player are fewer than {@link SpawnTable#END_SHARE} of the
+     * vanilla per-player monster cap. Endermen don't count, so the main island, which they keep full, still gets its own.
+     */
+    public static boolean endAllows(int teemingNearby) {
+        return teemingNearby < MobCategory.MONSTER.getMaxInstancesPerChunk() * SpawnTable.END_SHARE;
     }
 
     // ---- the main-island gate ------------------------------------------------------------------------------------

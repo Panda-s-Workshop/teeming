@@ -27,6 +27,22 @@ public final class SpawnTable {
             "minecraft:warped_forest", 1,
             "minecraft:basalt_deltas", 140);
 
+    /**
+     * The End aims at about half of all monsters, counted as mobs (endermen come four at a time). The cap the spawner
+     * keeps there counts Teeming monsters alone, against this share of the vanilla per-player cap, so the endermen that
+     * fill that cap round the main island don't shut Teeming out. No End biome's lists may go past the most.
+     */
+    public static final double END_SHARE = 0.5;
+    public static final double END_SHARE_MAX = 0.6;
+
+    /** Vanilla's monster weight in each End biome: the enderman alone, weight 10 in groups of 4. */
+    public static final Map<String, Integer> VANILLA_END_MONSTER_WEIGHT = Map.of(
+            "minecraft:the_end", 10,
+            "minecraft:end_highlands", 10,
+            "minecraft:end_midlands", 10,
+            "minecraft:end_barrens", 10,
+            "minecraft:small_end_islands", 10);
+
     /** The default contents of {@code #teeming:share_capped}: biomes whose Teeming monsters only the spawner places. */
     public static final List<String> SHARE_CAPPED = List.of("minecraft:crimson_forest", "minecraft:warped_forest");
 

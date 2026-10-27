@@ -52,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * hands, its motes spin faster and a chime climbs, and three circles of radius 1.5 open on the ground: one under the
  * target and two behind it, on the side away from the augur, each a ring of star-white light that fills in from its
  * rim to its middle as the channel runs. Then every circle strikes at once: a falling column of starlight, 9 damage
- * ({@code indirectMagic}, from the augur) to everything standing inside, once per strike however many circles it
+ * (the augur's attack, through armour) to everything standing inside, once per strike however many circles it
  * stands in, and no knockback, so a strike never throws anyone off an island.
  *
  * <p>Counter: step out of the circles (toward the augur always gets clear: the two flanks lie behind the target), or
@@ -349,9 +349,12 @@ public class AstralAugur extends TeemingMonster {
         return e != this && !(e instanceof AstralAugur) && e.isAlive() && !e.isSpectator() && !(e instanceof Player p && p.isCreative());
     }
 
-    /** One victim of the strike: 9 as indirect magic from the augur, with no knockback. */
+    /**
+     * One victim of the strike: 9 as the augur's own attack, with no knockback. It goes through armour like any blow:
+     * magic that skipped armour would leave only Protection, and a Nullcantor's ring turns that off.
+     */
     private void strikeHit(ServerLevel level, LivingEntity victim) {
-        GroundMarks.hurtInPlace(level, victim, damageSources().indirectMagic(this, this), STRIKE_DAMAGE);
+        GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), STRIKE_DAMAGE);
     }
 
     // ---- the broken channel: the counter's reward ------------------------------------------------------------------

@@ -323,7 +323,7 @@ public final class PearlgulpTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(g.eaten() == 1, "the pearl was eaten");
             helper.assertTrue(g.blinks() == 1, "and spent on a blink at the thrower, blinks " + g.blinks());
-            helper.assertTrue(g.held() == 0, "the pearl is gone for good, held " + g.held());
+            helper.assertTrue(g.held() == 0 && g.owed() == 1, "its power is spent, the pearl still owed, held " + g.held() + ", owed " + g.owed());
             double went = flat(g.position(), start[0]);
             helper.assertTrue(Math.abs(went - 8.0) < 0.01, "8 blocks, went " + went);
             helper.assertTrue(flat(g.position(), owner.position()) < 2.0, "it lands beside the thrower, " + flat(g.position(), owner.position()));
@@ -453,6 +453,9 @@ public final class PearlgulpTests {
             helper.assertTrue(!g.requiresCustomPersistence(), "empty, it may despawn");
             g.setHeld(3);
             helper.assertTrue(g.requiresCustomPersistence(), "holding pearls, it never despawns");
+            // one burnt on a blink: its power is gone, the pearl still comes back
+            helper.assertTrue(g.blinkTo(new Vec3(g.getX(), g.getY(), g.getZ() + 2.0)), "it blinks on one");
+            helper.assertTrue(g.held() == 2 && g.owed() == 3, "2 held, 3 owed, got " + g.held() + " and " + g.owed());
             for (ItemEntity item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds())) item.discard();
             g.kill(helper.getLevel());
         });
@@ -461,7 +464,7 @@ public final class PearlgulpTests {
             for (ItemEntity item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds().inflate(2.0), i -> i.getItem().is(Items.ENDER_PEARL))) {
                 pearls += item.getItem().getCount();
             }
-            helper.assertTrue(pearls == 3, "it spills its 3 pearls, found " + pearls);
+            helper.assertTrue(pearls == 3, "it spills all 3 pearls it ate, the burnt one too, found " + pearls);
             helper.succeed();
         });
     }

@@ -98,7 +98,9 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
         super.tick();
         if (core.look().isEmpty() && !level().isClientSide()) core.pickLook(level()); // spawns that skip finalizeSpawn
         Phase ended = core.tick();
-        if (ended != null) onPhaseEnd(ended);
+        // a mob that has died finishes nothing it started: no blow, spit or lift lands from the death animation
+        if (ended != null && isDeadOrDying()) core.end();
+        else if (ended != null) onPhaseEnd(ended);
     }
 
     @Override

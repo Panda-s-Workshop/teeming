@@ -73,6 +73,16 @@ public final class MobCore {
         return true;
     }
 
+
+    /**
+     * Blocks of open space between two hitboxes: the gap across the ground or the gap up or down, whichever is more, so
+     * a blow measured by it can't reach a body on a pillar or under a ledge however close it stands across.
+     */
+    public static double gap(net.minecraft.world.entity.Entity from, net.minecraft.world.entity.Entity to) {
+        double across = Math.hypot(to.getX() - from.getX(), to.getZ() - from.getZ()) - (from.getBbWidth() + to.getBbWidth()) / 2.0;
+        double up = Math.max(to.getBoundingBox().minY - from.getBoundingBox().maxY, from.getBoundingBox().minY - to.getBoundingBox().maxY);
+        return Math.max(across, up);
+    }
     /** Server: back to idle, without an event. */
     public void end() {
         start(phases[0], 0, null);

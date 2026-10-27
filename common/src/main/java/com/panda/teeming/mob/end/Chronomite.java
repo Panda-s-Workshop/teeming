@@ -3,6 +3,7 @@ package com.panda.teeming.mob.end;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.Gauge;
 import com.panda.teeming.mob.MechanicEvent;
+import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -489,10 +490,9 @@ public class Chronomite extends TeemingMonster {
                 && !(target instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
-    /** Blocks of open ground between its hitbox and {@code target}'s, across. */
+    /** Blocks between its hitbox and {@code target}'s, across or up and down, whichever is more. */
     public double gapTo(Entity target) {
-        double across = Math.hypot(target.getX() - getX(), target.getZ() - getZ());
-        return across - (getBbWidth() + target.getBbWidth()) / 2.0;
+        return MobCore.gap(this, target);
     }
 
     /** True when {@code target} stands inside the arc its bite covers. */

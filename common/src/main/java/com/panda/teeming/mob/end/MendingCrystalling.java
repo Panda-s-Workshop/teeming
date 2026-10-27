@@ -274,8 +274,9 @@ public class MendingCrystalling extends TeemingMonster {
     }
 
     /**
-     * The beam: violet dashes every other tick that flow from its core into the mob, and every few ticks a star-white
-     * mote that runs the whole beam. Full-bright trail particles, so the line shows in the End's dim light.
+     * The beam: violet dashes every other tick that flow from its core into the mob, every few ticks a star-white mote
+     * that runs the whole beam, and every half second a line of end rod sparks along it that hangs a moment. All
+     * full-bright, so the line shows in the End's dim light.
      */
     private void drawBeam(ServerLevel level, LivingEntity e) {
         Vec3 from = corePoint();
@@ -291,6 +292,12 @@ public class MendingCrystalling extends TeemingMonster {
                 Vec3 p = from.add(dir.scale(run));
                 Vec3 q = from.add(dir.scale(Math.min(length, run + BEAM_STEP)));
                 level.sendParticles(new TrailParticleOption(q, beam, 4), true, true, p.x, p.y, p.z, 1, 0.0, 0.0, 0.0, 0.0);
+            }
+        }
+        if (tickCount % 10 == 0) {                                               // a line of sparks that hangs a moment,
+            for (double run = 0.25; run < length - 0.1; run += BEAM_STEP * 1.25) {  // so the tether reads at a distance
+                Vec3 p = from.add(dir.scale(run));
+                level.sendParticles(ParticleTypes.END_ROD, true, true, p.x, p.y, p.z, 1, 0.0, 0.0, 0.0, 0.0);
             }
         }
         if (tickCount % 5 == 0) {

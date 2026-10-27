@@ -64,8 +64,9 @@ import org.jspecify.annotations.Nullable;
  * is still within {@link #BITE_HOLD}. At most one gape every {@link #BITE_EVERY} ticks.
  *
  * <p>Counter: don't throw pearls near it. If it has eaten some, stand and fight: it blinks only to reach a target far
- * off or to flee once badly hurt, and each blink burns a pearl. Killed, it spills every pearl it still holds (the
- * payoff: the pearls back). It never despawns while it holds one, and a removal that destroys it spills them too.
+ * off or to flee once badly hurt, and each blink burns a pearl's power. Killed, it spills every pearl it ate, burnt or
+ * not (the payoff: the pearls back, never lost for good). It never despawns while it owes one, and a removal that
+ * destroys it spills them too.
  */
 public class Pearlgulp extends TeemingMonster {
     /** IDLE, the throat flare before a blink (tell), the landing, the gulp, the gape before a bite, the bite. */
@@ -115,6 +116,8 @@ public class Pearlgulp extends TeemingMonster {
             .withSound(ModSounds.PEARLGULP_GAPE.get(), 1.0F, 1.0F);
 
     private int held;
+    /** Pearls burnt on blinks: their power is spent, but they are still owed back when it dies. */
+    private int spent;
     private long blinkAt = NEVER;
     private long gapeAt = NEVER;
     /** Where the blink it is flaring for will land, picked as the flare starts. */
@@ -392,6 +395,7 @@ public class Pearlgulp extends TeemingMonster {
         puff(level, to);
         level.playSound(null, to.x, to.y, to.z, sound, getSoundSource(), 1.0F, 1.15F);
         held--;
+        spent++;
         blinkAt = level.getGameTime();
         showPouch();
     }
@@ -465,18 +469,19 @@ public class Pearlgulp extends TeemingMonster {
         if (level() instanceof ServerLevel level) spill(level);
     }
 
-    /** Removed for good some other way (Peaceful, a command): it still never destroys the pearls it holds. */
+    /** Removed for good some other way (Peaceful, a command): it still never destroys the pearls it owes. */
     @Override
     public void remove(RemovalReason reason) {
-        if (level() instanceof ServerLevel level && reason.shouldDestroy() && held > 0) spill(level);
+        if (level() instanceof ServerLevel level && reason.shouldDestroy() && owed() > 0) spill(level);
         super.remove(reason);
     }
 
-    /** Spills every pearl it holds where it stands, in a little burst. */
+    /** Spills every pearl it owes (held and burnt) where it stands, in a little burst. */
     private void spill(ServerLevel level) {
-        if (held <= 0) return;
-        int n = held;
+        if (owed() <= 0) return;
+        int n = owed();
         held = 0;
+        spent = 0;
         showPouch();
         ItemEntity dropped = spawnAtLocation(level, new ItemStack(Items.ENDER_PEARL, n), (float) (getBbHeight() * 0.5));
         if (dropped != null) dropped.setDeltaMovement((random.nextDouble() - 0.5) * 0.2, 0.25, (random.nextDouble() - 0.5) * 0.2);
@@ -486,10 +491,10 @@ public class Pearlgulp extends TeemingMonster {
         level.playSound(null, getX(), getY(), getZ(), ModSounds.PEARLGULP_SPILL.get(), getSoundSource(), 1.0F, 1.0F);
     }
 
-    /** It never despawns while it holds a pearl. */
+    /** It never despawns while it owes a pearl. */
     @Override
     public boolean requiresCustomPersistence() {
-        return super.requiresCustomPersistence() || held > 0;
+        return super.requiresCustomPersistence() || owed() > 0;
     }
 
     // ---- small helpers and test hooks --------------------------------------------------------------------------------
@@ -512,15 +517,30 @@ public class Pearlgulp extends TeemingMonster {
         return Math.hypot(a.x - b.x, a.z - b.z);
     }
 
-    /** Pearls it holds now. */
+    /** Pearls it holds now, each one blink. */
     public int held() {
         return held;
+    }
+
+    /** Pearls it gives back when it dies: those it holds and those it burnt on blinks. */
+    public int owed() {
+        return held + spent;
     }
 
     /** Sets the pearls it holds (0 to {@link #MAX_HELD}). Public as a test hook. */
     public void setHeld(int pearls) {
         held = Math.clamp(pearls, 0, MAX_HELD);
         showPouch();
+    }
+
+    /** Blinks onto {@code to} now, if it is safe ground and a pearl is held, burning it. Public as a test hook. */
+    public boolean blinkTo(Vec3 to) {
+        if (!(level() instanceof ServerLevel level) || held <= 0) return false;
+        Vec3 at = SafeTeleport.InLevel.spot(level, this, to.x, to.y, to.z);
+        if (at == null) return false;
+        jump(level, at, ModSounds.PEARLGULP_BLINK.get());
+        blinks++;
+        return true;
     }
 
     /** Pearls it has eaten so far. Public as a test hook. */
@@ -560,14 +580,16 @@ public class Pearlgulp extends TeemingMonster {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("Pearls", held);
+        output.putInt("Spent", spent);
         output.putInt("BlinkCooldown", blinkCooldown());
     }
 
-    /** The pearls it holds and the blink cooldown survive a reload; a flare or gape under way does not. */
+    /** The pearls it holds and owes and the blink cooldown survive a reload; a flare or gape under way does not. */
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         held = Math.clamp(input.getIntOr("Pearls", 0), 0, MAX_HELD);
+        spent = Math.max(0, input.getIntOr("Spent", 0));
         int cooldown = Math.clamp(input.getIntOr("BlinkCooldown", 0), 0, BLINK_EVERY);
         blinkAt = cooldown > 0 ? level().getGameTime() - BLINK_EVERY + cooldown : NEVER;
         showPouch();

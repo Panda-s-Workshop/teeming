@@ -23,6 +23,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
@@ -63,6 +64,7 @@ public final class AstralAugurTests {
 
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("astral_augur_tell", AstralAugurTests::tell);
+        out.accept("astral_augur_dies_mid_tell", AstralAugurTests::diesMidTell);
         out.accept("astral_augur_counter", AstralAugurTests::counter);
         out.accept("astral_augur_failure", AstralAugurTests::failure);
         out.accept("astral_augur_circles", AstralAugurTests::circleRadius);
@@ -186,6 +188,28 @@ public final class AstralAugurTests {
     }
 
     /**
+     * Killed 8 ticks into its channel, it strikes nothing: the pig in the middle circle is unhurt well past the moment
+     * the strike would have come, through the whole death animation.
+     */
+    private static void diesMidTell(GameTestHelper helper) {
+        Pig[] pig = new Pig[1];
+        AstralAugur a = onPig(helper, pig);
+        long[] first = {-1}, killed = {-1};
+        helper.onEachTick(() -> {
+            if (first[0] < 0 && a.core().in(Step.TELL)) first[0] = helper.getTick();
+            if (first[0] >= 0 && killed[0] < 0 && helper.getTick() == first[0] + 8) {
+                a.kill(helper.getLevel());
+                killed[0] = helper.getTick();
+            }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(killed[0] >= 0 && helper.getTick() >= killed[0] + 40, "killed mid-channel, waiting out the strike");
+            helper.assertTrue(a.strikes() == 0, "no strike from a dead augur, saw " + a.strikes());
+            helper.assertTrue(pig[0].getHealth() >= 40.0F, "the pig loses nothing, has " + pig[0].getHealth());
+        });
+    }
+
+    /**
      * The counter: a blow from another mob 8 ticks into the channel breaks it. The circles are gone at once, nothing
      * strikes (the pig, standing in the middle circle, is unhurt well past the moment of the strike), one halo mote
      * cracks off (3 circles become 2) and a star mote drops in the arena.
@@ -218,7 +242,7 @@ public final class AstralAugurTests {
 
     /**
      * Failing the counter: a survival player stays in the circle under them. The strike hits them for 9 (mob damage to
-     * players scales with difficulty: 5.5 on Easy, 13.5 on Hard) as indirect magic from the augur, through armour, and
+     * players scales with difficulty: 5.5 on Easy, 13.5 on Hard) as the augur's own attack, which goes through armour, and
      * doesn't move them.
      */
     private static void failure(GameTestHelper helper) {
@@ -246,8 +270,9 @@ public final class AstralAugurTests {
             helper.assertTrue(struckAt[0] >= 0, "the circles struck, phase " + a.phase());
             float lost = before - p.getHealth();
             helper.assertTrue(Math.abs(lost - expected) < 0.01F, "the strike does " + expected + " here, the player lost " + lost);
-            helper.assertTrue(last[0] != null && last[0].is(DamageTypes.INDIRECT_MAGIC) && last[0].getEntity() == a,
-                    "indirect magic from the augur, got " + last[0]);
+            helper.assertTrue(last[0] != null && last[0].is(DamageTypes.MOB_ATTACK) && last[0].getEntity() == a,
+                    "the augur's attack, got " + last[0]);
+            helper.assertTrue(!last[0].is(DamageTypeTags.BYPASSES_ARMOR), "which armour reduces");
             helper.assertTrue(shove[0] >= 0.0 && shove[0] < 0.01, "no knockback, horizontal motion " + shove[0]);
             helper.assertTrue(p.position().distanceTo(stood) < 0.01, "the player stands where they stood");
             helper.assertTrue(a.lastStruck().contains(p), "the strike hit the player");
@@ -345,7 +370,7 @@ public final class AstralAugurTests {
     }
 
     /**
-     * No knockback: a pig struck by the circles is left with no motion, while a pig hurt by the same indirect magic
+     * No knockback: a pig struck by the circles is left with no motion, while a pig hurt by the same attack
      * straight (the control) is knocked back. A still mob keeps the motion it is given, so it can be read after the hit.
      */
     private static void noKnockback(GameTestHelper helper) {
@@ -356,7 +381,7 @@ public final class AstralAugurTests {
         helper.onEachTick(() -> {
             if (struck[0] < 0 && a.strikes() == 1) {
                 struck[0] = pig[0].getDeltaMovement().horizontalDistance();
-                control.hurtServer(helper.getLevel(), a.damageSources().indirectMagic(a, a), AstralAugur.STRIKE_DAMAGE);
+                control.hurtServer(helper.getLevel(), a.damageSources().mobAttack(a), AstralAugur.STRIKE_DAMAGE);
                 knocked[0] = control.getDeltaMovement().horizontalDistance();
             }
         });

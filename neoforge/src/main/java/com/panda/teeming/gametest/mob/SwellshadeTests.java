@@ -62,6 +62,7 @@ public final class SwellshadeTests {
         out.accept("swellshade_no_room", SwellshadeTests::noRoom);
         out.accept("swellshade_swell_cancel", SwellshadeTests::swellCancel);
         out.accept("swellshade_reach_grows", SwellshadeTests::reachGrows);
+        out.accept("swellshade_pillar", SwellshadeTests::pillar);
         out.accept("swellshade_dodge", SwellshadeTests::dodge);
         out.accept("swellshade_full_drop", SwellshadeTests::fullDrop);
         out.accept("swellshade_save_load", SwellshadeTests::saveLoad);
@@ -188,6 +189,24 @@ public final class SwellshadeTests {
             helper.assertTrue(big.strikes() == 1 && Math.abs(100.0F - bigPig.getHealth() - 8.0F) < 0.01F,
                     "the full-size blow lands for 8, the pig has " + bigPig.getHealth());
             helper.assertTrue(small.strikes() == 0 && smallPig.getHealth() >= 100.0F, "the fresh one's falls short");
+        });
+    }
+
+    /**
+     * A target on a pillar 3 high, 0.4 across from it (a gap its blow reaches on the ground), is out of reach: the
+     * blow measures the gap up and down too, and hits nothing.
+     */
+    private static void pillar(GameTestHelper helper) {
+        Swellshade s = shade(helper, new Vec3(6.5, 1, 5.0));
+        for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(6, y, 6), Blocks.STONE);
+        Pig pig = pig(helper, 6.5, 4, 6.25);
+        helper.runAtTickTime(2, () -> {
+            helper.assertTrue(s.gapTo(pig) > 1.0, "the pillar puts it out of reach, gap " + s.gapTo(pig));
+            helper.assertTrue(s.startWindup(pig), "it winds up anyway");
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(s.cooldown() > 0 || s.core().in(Step.STRIKE), "it swung");
+            helper.assertTrue(s.strikes() == 0 && pig.getHealth() >= 100.0F, "and hit nothing, the pig has " + pig.getHealth());
         });
     }
 

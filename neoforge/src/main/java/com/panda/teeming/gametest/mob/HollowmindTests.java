@@ -19,11 +19,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -34,6 +38,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.world.BiomeModifiers;
@@ -67,7 +73,9 @@ public final class HollowmindTests {
         out.accept("hollowmind_new_host", HollowmindTests::newHost);
         TeemingGameTests.timeLimit("hollowmind_new_host", 180);
         out.accept("hollowmind_on_its_own", HollowmindTests::onItsOwn);
+        out.accept("hollowmind_save_load", HollowmindTests::saveLoad);
         TeemingGameTests.timeLimit("hollowmind_on_its_own", 200);
+        TeemingGameTests.timeLimit("hollowmind_save_load", 200);
         out.accept("hollowmind_host_range", HollowmindTests::hostRange);
         out.accept("hollowmind_nip", HollowmindTests::nip);
         out.accept("hollowmind_ride_cancel", HollowmindTests::rideCancel);
@@ -382,6 +390,44 @@ public final class HollowmindTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(ended[0] >= 0 && helper.getTick() >= ended[0] + 40, "40 ticks after its search ended");
             helper.assertTrue(seeking[0] == 100, "the search lasts 100 ticks, lasted " + seeking[0]);
+            helper.assertTrue(!latched[0], "and it never latches again");
+        });
+    }
+
+    /**
+     * Saved and loaded once its search ran out (as a chunk load does), it is still on its own: an enderman set right
+     * beside the loaded one is never latched onto.
+     */
+    private static void saveLoad(GameTestHelper helper) {
+        Hollowmind h = mind(helper, new Vec3(5.5, 1, 5.5));
+        Enderman first = enderman(helper, new Vec3(5.5, 1, 5.5));
+        mount(h, first);
+        helper.runAtTickTime(3, () -> first.kill(helper.getLevel()));
+        Hollowmind[] loaded = {null};
+        long[] at = {-1};
+        boolean[] latched = {false};
+        helper.onEachTick(() -> {
+            if (loaded[0] == null && h.orphan()) {
+                ServerLevel level = helper.getLevel();
+                TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+                h.saveWithoutId(out);
+                CompoundTag tag = out.buildResult();
+                h.discard();
+                Hollowmind fresh = ModMobs.HOLLOWMIND.get().create(level, EntitySpawnReason.LOAD);
+                helper.assertTrue(fresh != null, "a fresh entity");
+                fresh.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+                helper.assertTrue(fresh.orphan(), "it loads on its own");
+                helper.assertTrue(level.addFreshEntity(fresh), "it joins");
+                TestPlayers.whenDone(helper, fresh::discard);
+                Enderman late = enderman(helper, new Vec3(9.5, 1, 9.5));
+                late.snapTo(fresh.getX() + 1.2, fresh.getY(), fresh.getZ());     // right beside it
+                loaded[0] = fresh;
+                at[0] = helper.getTick();
+            }
+            if (loaded[0] != null) latched[0] |= loaded[0].core().in(Step.TELL) || loaded[0].isPassenger();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(at[0] >= 0 && helper.getTick() >= at[0] + 40, "40 ticks after the reload");
             helper.assertTrue(!latched[0], "and it never latches again");
         });
     }
