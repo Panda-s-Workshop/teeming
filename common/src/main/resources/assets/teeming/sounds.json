@@ -5698,6 +5698,150 @@
       }
     ]
   },
+  "shardling_colossus.ambient": {
+    "subtitle": "subtitles.teeming.shardling_colossus.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.respawn_anchor.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "shardling_colossus.hurt": {
+    "subtitle": "subtitles.teeming.shardling_colossus.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.hit",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.iron_golem.damage",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.7
+      }
+    ]
+  },
+  "shardling_colossus.death": {
+    "subtitle": "subtitles.teeming.shardling_colossus.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.break",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.iron_golem.death",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "shardling_colossus.tell": {
+    "subtitle": "subtitles.teeming.shardling_colossus.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.respawn_anchor.charge",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "shardling_colossus.slam": {
+    "subtitle": "subtitles.teeming.shardling_colossus.slam",
+    "sounds": [
+      {
+        "name": "minecraft:item.mace.smash_ground_heavy",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.amethyst_block.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "shardling_colossus.split": {
+    "subtitle": "subtitles.teeming.shardling_colossus.split",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.break",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "shardling_colossus.regroup": {
+    "subtitle": "subtitles.teeming.shardling_colossus.regroup",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.7
+      }
+    ]
+  },
+  "shardling_colossus.rejoin": {
+    "subtitle": "subtitles.teeming.shardling_colossus.rejoin",
+    "sounds": [
+      {
+        "name": "minecraft:block.heavy_core.place",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "shardling_colossus.sever": {
+    "subtitle": "subtitles.teeming.shardling_colossus.sever",
+    "sounds": [
+      {
+        "name": "minecraft:block.respawn_anchor.deplete",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.break",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.8
+      }
+    ]
+  },
   "shellguard_crab.ambient": {
     "subtitle": "subtitles.teeming.shellguard_crab.ambient",
     "sounds": [

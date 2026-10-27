@@ -72,7 +72,8 @@ public final class MobBounds {
             Map.entry("hollowmind", new float[] {1.427F, 0.637F, 1.125F}),
             Map.entry("pearlgulp", new float[] {1.375F, 0.875F, 1.928F}),
             Map.entry("brinkram", new float[] {1.562F, 1.600F, 2.296F}),
-            Map.entry("facet_doppel", new float[] {1.290F, 2.031F, 0.530F})
+            Map.entry("facet_doppel", new float[] {1.290F, 2.031F, 0.530F}),
+            Map.entry("shardling_colossus", new float[] {2.158F, 2.703F, 1.155F})
     );
 
     public static float @Nullable [] of(String mob) {

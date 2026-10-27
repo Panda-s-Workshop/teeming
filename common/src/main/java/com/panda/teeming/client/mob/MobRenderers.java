@@ -139,5 +139,7 @@ public final class MobRenderers {
                 Set.of(), 0.75F, 1.0F, 1, true));
         out.register(ModMobs.FACET_DOPPEL.get(), ctx -> new TeemingRenderer<>(ctx, new FacetDoppelModel(ctx.bakeLayer(CreatureLayers.FACET_DOPPEL)), "facet_doppel",
                 Set.of("base", "obsidian_doppel"), 0.5F, 1.0F, 2, false));
+        out.register(ModMobs.SHARDLING_COLOSSUS.get(), ctx -> new TeemingRenderer<>(ctx, new ShardlingColossusModel(ctx.bakeLayer(CreatureLayers.SHARDLING_COLOSSUS)), "shardling_colossus",
+                Set.of("amethyst_colossus", "base"), 0.9F, 1.0F, 1, false));
     }
 }

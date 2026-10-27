@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "teeming:item/shardling_colossus_spawn_egg"
+  }
+}

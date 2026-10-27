@@ -364,6 +364,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_STANCE = sound("scarlet_mantis.stance");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_PARRY = sound("scarlet_mantis.parry");
     public static final DeferredHolder<SoundEvent, SoundEvent> SCARLET_MANTIS_PIERCE = sound("scarlet_mantis.pierce");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_AMBIENT = sound("shardling_colossus.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_HURT = sound("shardling_colossus.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_DEATH = sound("shardling_colossus.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_TELL = sound("shardling_colossus.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_SLAM = sound("shardling_colossus.slam");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_SPLIT = sound("shardling_colossus.split");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_REGROUP = sound("shardling_colossus.regroup");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_REJOIN = sound("shardling_colossus.rejoin");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SHARDLING_COLOSSUS_SEVER = sound("shardling_colossus.sever");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_AMBIENT = sound("shellguard_crab.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_HURT = sound("shellguard_crab.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> SHELLGUARD_CRAB_DEATH = sound("shellguard_crab.death");
