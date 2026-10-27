@@ -528,7 +528,13 @@ public final class WeeplingBroodmotherTests {
         List<WeeplingBroodmother> sacs = new ArrayList<>();
         long[] goneAt = {-1};
         long[] burstAt = {-1};
-        helper.runAtTickTime(2, () -> sacs.addAll(m.layClutch(helper.getLevel())));
+        helper.runAtTickTime(2, () -> {
+            sacs.addAll(m.layClutch(helper.getLevel()));
+            // orphans are kept only while their mother is: with her gone, a survivor in an arena far off would let
+            // them despawn before they burst, so the test keeps them itself
+            for (WeeplingBroodmother s : sacs) s.setPersistenceRequired();
+            TestPlayers.whenDone(helper, () -> sacs.forEach(WeeplingBroodmother::discard));
+        });
         helper.runAtTickTime(4, () -> {
             helper.assertTrue(sacs.size() == 2, "2 sacs, got " + sacs.size());
             m.discard();
