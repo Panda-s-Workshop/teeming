@@ -1837,6 +1837,189 @@
       }
     ]
   },
+  "echo_fencer.ambient": {
+    "subtitle": "subtitles.teeming.echo_fencer.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.ambient",
+        "type": "event",
+        "pitch": 1.25,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.3
+      }
+    ]
+  },
+  "echo_fencer.hurt": {
+    "subtitle": "subtitles.teeming.echo_fencer.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.hurt",
+        "type": "event",
+        "pitch": 1.15
+      },
+      {
+        "name": "minecraft:item.armor.equip_chain",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "echo_fencer.death": {
+    "subtitle": "subtitles.teeming.echo_fencer.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker.death",
+        "type": "event",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.9
+      }
+    ]
+  },
+  "echo_fencer.tell": {
+    "subtitle": "subtitles.teeming.echo_fencer.tell",
+    "sounds": [
+      {
+        "name": "minecraft:item.armor.equip_chain",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.player.attack.sweep",
+        "type": "event",
+        "pitch": 1.9,
+        "volume": 0.35
+      }
+    ]
+  },
+  "echo_fencer.thrust": {
+    "subtitle": "subtitles.teeming.echo_fencer.thrust",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.attack.sweep",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:item.trident.throw",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "echo_fencer.afterimage": {
+    "subtitle": "subtitles.teeming.echo_fencer.afterimage",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.mirror_move",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.5
+      }
+    ]
+  },
+  "echo_fencer.echo_tell": {
+    "subtitle": "subtitles.teeming.echo_fencer.echo_tell",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.prepare_mirror",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "echo_fencer.echo": {
+    "subtitle": "subtitles.teeming.echo_fencer.echo",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.attack.sweep",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.illusioner.mirror_move",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      }
+    ]
+  },
+  "echo_fencer.crumble": {
+    "subtitle": "subtitles.teeming.echo_fencer.crumble",
+    "sounds": [
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.break",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.3
+      }
+    ]
+  },
+  "echo_fencer.turned": {
+    "subtitle": "subtitles.teeming.echo_fencer.turned",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.illusioner.hurt",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "echo_fencer.spill": {
+    "subtitle": "subtitles.teeming.echo_fencer.spill",
+    "sounds": [
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 0.9
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.5
+      }
+    ]
+  },
   "facet_doppel.ambient": {
     "subtitle": "subtitles.teeming.facet_doppel.ambient",
     "sounds": [
@@ -4870,6 +5053,166 @@
         "type": "event",
         "pitch": 0.6,
         "volume": 0.8
+      }
+    ]
+  },
+  "phasewalker.ambient": {
+    "subtitle": "subtitles.teeming.phasewalker.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.5
+      }
+    ]
+  },
+  "phasewalker.hurt": {
+    "subtitle": "subtitles.teeming.phasewalker.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.vex.hurt",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.5
+      }
+    ]
+  },
+  "phasewalker.death": {
+    "subtitle": "subtitles.teeming.phasewalker.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      }
+    ]
+  },
+  "phasewalker.windup": {
+    "subtitle": "subtitles.teeming.phasewalker.windup",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.prepare_mirror",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "phasewalker.strike": {
+    "subtitle": "subtitles.teeming.phasewalker.strike",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.attack.sweep",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.hit",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "phasewalker.shimmer": {
+    "subtitle": "subtitles.teeming.phasewalker.shimmer",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "phasewalker.phase": {
+    "subtitle": "subtitles.teeming.phasewalker.phase",
+    "sounds": [
+      {
+        "name": "minecraft:entity.illusioner.mirror_move",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.beacon.deactivate",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "phasewalker.solid": {
+    "subtitle": "subtitles.teeming.phasewalker.solid",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.sand.break",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "phasewalker.crack": {
+    "subtitle": "subtitles.teeming.phasewalker.crack",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:entity.turtle.egg_crack",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "phasewalker.leak": {
+    "subtitle": "subtitles.teeming.phasewalker.leak",
+    "sounds": [
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.6
       }
     ]
   },

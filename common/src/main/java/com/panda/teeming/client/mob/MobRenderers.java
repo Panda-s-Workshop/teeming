@@ -141,6 +141,10 @@ public final class MobRenderers {
                 Set.of("base", "obsidian_doppel"), 0.5F, 1.0F, 2, false));
         out.register(ModMobs.SHARDLING_COLOSSUS.get(), ctx -> new TeemingRenderer<>(ctx, new ShardlingColossusModel(ctx.bakeLayer(CreatureLayers.SHARDLING_COLOSSUS)), "shardling_colossus",
                 Set.of("amethyst_colossus", "base"), 0.9F, 1.0F, 1, false));
+        out.register(ModMobs.PHASEWALKER.get(), ctx -> new TeemingRenderer<>(ctx, new PhasewalkerModel(ctx.bakeLayer(CreatureLayers.PHASEWALKER)), "phasewalker",
+                Set.of("base", "inverted_walker"), 0.4F, 1.0F, 1, false));
+        out.register(ModMobs.ECHO_FENCER.get(), ctx -> new TeemingRenderer<>(ctx, new EchoFencerModel(ctx.bakeLayer(CreatureLayers.ECHO_FENCER)), "echo_fencer",
+                Set.of("base", "gilded_fencer"), 0.45F, 1.0F, 1, false));
         out.register(ModMobs.SWELLSHADE.get(), ctx -> new TeemingRenderer<>(ctx, new SwellshadeModel(ctx.bakeLayer(CreatureLayers.SWELLSHADE)), "swellshade",
                 Set.of("base", "gloom_swell"), 0.5F, 1.0F, 5, false));
     }

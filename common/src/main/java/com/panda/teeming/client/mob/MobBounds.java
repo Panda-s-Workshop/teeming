@@ -74,6 +74,8 @@ public final class MobBounds {
             Map.entry("brinkram", new float[] {1.562F, 1.600F, 2.296F}),
             Map.entry("facet_doppel", new float[] {1.290F, 2.031F, 0.530F}),
             Map.entry("shardling_colossus", new float[] {2.158F, 2.703F, 1.155F}),
+            Map.entry("phasewalker", new float[] {1.062F, 2.125F, 0.438F}),
+            Map.entry("echo_fencer", new float[] {1.067F, 2.000F, 2.717F}),
             Map.entry("swellshade", new float[] {1.430F, 1.879F, 0.873F})
     );
 

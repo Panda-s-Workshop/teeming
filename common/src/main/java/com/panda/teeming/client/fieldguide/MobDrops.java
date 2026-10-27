@@ -74,6 +74,8 @@ public final class MobDrops {
             Map.entry("brinkram", List.of("teeming:gravity_stone", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("facet_doppel", List.of("teeming:void_ichor", "teeming:trophy")),
             Map.entry("shardling_colossus", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
+            Map.entry("phasewalker", List.of("teeming:time_sand", "minecraft:sand", "teeming:trophy")),
+            Map.entry("echo_fencer", List.of("teeming:time_sand", "minecraft:chorus_fruit", "teeming:trophy")),
             Map.entry("swellshade", List.of("teeming:void_ichor", "teeming:trophy"))
     );
 

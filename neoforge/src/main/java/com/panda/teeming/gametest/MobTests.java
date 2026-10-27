@@ -66,6 +66,8 @@ import com.panda.teeming.gametest.mob.PearlgulpTests;
 import com.panda.teeming.gametest.mob.BrinkramTests;
 import com.panda.teeming.gametest.mob.FacetDoppelTests;
 import com.panda.teeming.gametest.mob.ShardlingColossusTests;
+import com.panda.teeming.gametest.mob.PhasewalkerTests;
+import com.panda.teeming.gametest.mob.EchoFencerTests;
 import com.panda.teeming.gametest.mob.SwellshadeTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -142,6 +144,8 @@ final class MobTests {
         BrinkramTests.register(out);
         FacetDoppelTests.register(out);
         ShardlingColossusTests.register(out);
+        PhasewalkerTests.register(out);
+        EchoFencerTests.register(out);
         SwellshadeTests.register(out);
     }
 }

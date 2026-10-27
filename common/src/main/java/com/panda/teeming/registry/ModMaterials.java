@@ -44,8 +44,9 @@ public final class ModMaterials {
     public static final DeferredItem<MaterialItem> PURPUR_FLEECE = ITEMS.registerItem("purpur_fleece", MaterialItem::new);
     public static final DeferredItem<MaterialItem> CHORUS_SILK = ITEMS.registerItem("chorus_silk", MaterialItem::new);
     public static final DeferredItem<MaterialItem> RIFT_ESSENCE = ITEMS.registerItem("rift_essence", MaterialItem::new);
+    public static final DeferredItem<MaterialItem> TIME_SAND = ITEMS.registerItem("time_sand", MaterialItem::new);
 
-    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, FUNGAL_FLEECE, SOUL_VERTEBRA, EMBER_WING, MOLTEN_HEART, CHAIN_LINK, GILDED_GIZZARD, VOID_CRYSTAL, GRAVITY_STONE, STAR_MOTE, VOID_ICHOR, PURPUR_FLEECE, CHORUS_SILK, RIFT_ESSENCE);
+    public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, FUNGAL_FLEECE, SOUL_VERTEBRA, EMBER_WING, MOLTEN_HEART, CHAIN_LINK, GILDED_GIZZARD, VOID_CRYSTAL, GRAVITY_STONE, STAR_MOTE, VOID_ICHOR, PURPUR_FLEECE, CHORUS_SILK, RIFT_ESSENCE, TIME_SAND);
 
     /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
@@ -81,7 +82,8 @@ public final class ModMaterials {
             Map.entry("void_ichor", List.of("brew minecraft:invisibility")),
             Map.entry("purpur_fleece", List.of("craft 1 minecraft:purple_wool 1")),
             Map.entry("chorus_silk", List.of("brew minecraft:slow_falling")),
-            Map.entry("rift_essence", List.of("craft 4 minecraft:ender_pearl 1")));
+            Map.entry("rift_essence", List.of("craft 4 minecraft:ender_pearl 1")),
+            Map.entry("time_sand", List.of("brew minecraft:swiftness")));
 
     private ModMaterials() {}
 }

@@ -7,6 +7,7 @@ import com.panda.teeming.mob.end.AstralAugur;
 import com.panda.teeming.mob.end.Brinkram;
 import com.panda.teeming.mob.end.ChorusGrazer;
 import com.panda.teeming.mob.end.ChorusHusk;
+import com.panda.teeming.mob.end.EchoFencer;
 import com.panda.teeming.mob.end.FacetDoppel;
 import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.Glimmerless;
@@ -16,6 +17,7 @@ import com.panda.teeming.mob.end.LiftstoneMonolith;
 import com.panda.teeming.mob.end.MendingCrystalling;
 import com.panda.teeming.mob.end.Nullcantor;
 import com.panda.teeming.mob.end.Pearlgulp;
+import com.panda.teeming.mob.end.Phasewalker;
 import com.panda.teeming.mob.end.Riftjackal;
 import com.panda.teeming.mob.end.ShardlingColossus;
 import com.panda.teeming.mob.end.Swellshade;
@@ -216,6 +218,10 @@ public final class ModMobs {
             b -> b.sized(0.6F, 1.95F).eyeHeight(1.7F).clientTrackingRange(10));
     public static final Supplier<EntityType<ShardlingColossus>> SHARDLING_COLOSSUS = ENTITIES.registerEntityType("shardling_colossus", ShardlingColossus::new, MobCategory.MONSTER,
             b -> b.sized(1.4F, 2.6F).eyeHeight(2.1F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Phasewalker>> PHASEWALKER = ENTITIES.registerEntityType("phasewalker", Phasewalker::new, MobCategory.MONSTER,
+            b -> b.sized(0.7F, 2.0F).eyeHeight(1.75F).clientTrackingRange(10));
+    public static final Supplier<EntityType<EchoFencer>> ECHO_FENCER = ENTITIES.registerEntityType("echo_fencer", EchoFencer::new, MobCategory.MONSTER,
+            b -> b.sized(0.7F, 2.0F).eyeHeight(1.75F).clientTrackingRange(10));
     public static final Supplier<EntityType<Swellshade>> SWELLSHADE = ENTITIES.registerEntityType("swellshade", Swellshade::new, MobCategory.MONSTER,
             b -> b.sized(0.8F, 1.6F).eyeHeight(1.4F).clientTrackingRange(10));
 
@@ -285,10 +291,12 @@ public final class ModMobs {
     public static final DeferredItem<Item> BRINKRAM_SPAWN_EGG = ITEMS.registerItem("brinkram_spawn_egg", Item::new, p -> p.spawnEgg(BRINKRAM.get()));
     public static final DeferredItem<Item> FACET_DOPPEL_SPAWN_EGG = ITEMS.registerItem("facet_doppel_spawn_egg", Item::new, p -> p.spawnEgg(FACET_DOPPEL.get()));
     public static final DeferredItem<Item> SHARDLING_COLOSSUS_SPAWN_EGG = ITEMS.registerItem("shardling_colossus_spawn_egg", Item::new, p -> p.spawnEgg(SHARDLING_COLOSSUS.get()));
+    public static final DeferredItem<Item> PHASEWALKER_SPAWN_EGG = ITEMS.registerItem("phasewalker_spawn_egg", Item::new, p -> p.spawnEgg(PHASEWALKER.get()));
+    public static final DeferredItem<Item> ECHO_FENCER_SPAWN_EGG = ITEMS.registerItem("echo_fencer_spawn_egg", Item::new, p -> p.spawnEgg(ECHO_FENCER.get()));
     public static final DeferredItem<Item> SWELLSHADE_SPAWN_EGG = ITEMS.registerItem("swellshade_spawn_egg", Item::new, p -> p.spawnEgg(SWELLSHADE.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, HOLLOWMIND_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG, SHARDLING_COLOSSUS_SPAWN_EGG, SWELLSHADE_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, HOLLOWMIND_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG, SHARDLING_COLOSSUS_SPAWN_EGG, PHASEWALKER_SPAWN_EGG, ECHO_FENCER_SPAWN_EGG, SWELLSHADE_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -360,6 +368,8 @@ public final class ModMobs {
         sink.accept(BRINKRAM.get(), Brinkram.createAttributes().build());
         sink.accept(FACET_DOPPEL.get(), FacetDoppel.createAttributes().build());
         sink.accept(SHARDLING_COLOSSUS.get(), ShardlingColossus.createAttributes().build());
+        sink.accept(PHASEWALKER.get(), Phasewalker.createAttributes().build());
+        sink.accept(ECHO_FENCER.get(), EchoFencer.createAttributes().build());
         sink.accept(SWELLSHADE.get(), Swellshade.createAttributes().build());
     }
 }
