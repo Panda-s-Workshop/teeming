@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.panda.teeming.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["EnchantmentHelperMixin", "FoodDataMixin", "ItemStackMixin", "LivingEntityMixin"],
+  "mixins": ["EnchantmentHelperMixin", "EndermanMixin", "FoodDataMixin", "ItemStackMixin", "LivingEntityMixin"],
   "client": ["client.EntityShadowMixin"],
   "injectors": { "defaultRequire": 1 }
 }

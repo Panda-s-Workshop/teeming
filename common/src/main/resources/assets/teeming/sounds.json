@@ -3011,6 +3011,153 @@
       }
     ]
   },
+  "hollowmind.ambient": {
+    "subtitle": "subtitles.teeming.hollowmind.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.slime.squish_small",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity.squid.ambient",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      }
+    ]
+  },
+  "hollowmind.hurt": {
+    "subtitle": "subtitles.teeming.hollowmind.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.slime.hurt_small",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.squid.hurt",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.7
+      }
+    ]
+  },
+  "hollowmind.death": {
+    "subtitle": "subtitles.teeming.hollowmind.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.slime.death_small",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.glow_squid.death",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.7
+      }
+    ]
+  },
+  "hollowmind.latch": {
+    "subtitle": "subtitles.teeming.hollowmind.latch",
+    "sounds": [
+      {
+        "name": "minecraft:block.honey_block.slide",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.warden.heartbeat",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.9
+      }
+    ]
+  },
+  "hollowmind.grip": {
+    "subtitle": "subtitles.teeming.hollowmind.grip",
+    "sounds": [
+      {
+        "name": "minecraft:entity.slime.attack",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:entity.warden.tendril_clicks",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      }
+    ]
+  },
+  "hollowmind.nip": {
+    "subtitle": "subtitles.teeming.hollowmind.nip",
+    "sounds": [
+      {
+        "name": "minecraft:entity.silverfish.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.honey_block.slide",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "hollowmind.bite": {
+    "subtitle": "subtitles.teeming.hollowmind.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.fox.bite",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.slime.squish_small",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.6
+      }
+    ]
+  },
+  "hollowmind.drop": {
+    "subtitle": "subtitles.teeming.hollowmind.drop",
+    "sounds": [
+      {
+        "name": "minecraft:entity.slime.jump_small",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.squid.squirt",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  },
+  "hollowmind.freed": {
+    "subtitle": "subtitles.teeming.hollowmind.freed",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.deactivate",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.enderman.ambient",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  },
   "hushwing.ambient": {
     "subtitle": "subtitles.teeming.hushwing.ambient",
     "sounds": [

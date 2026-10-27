@@ -75,6 +75,7 @@ public final class CreatureLayers {
     public static final ModelLayerLocation RIFTJACKAL = new ModelLayerLocation(TeemingMod.id("riftjackal"), "main");
     public static final ModelLayerLocation CHORUS_HUSK = new ModelLayerLocation(TeemingMod.id("chorus_husk"), "main");
     public static final ModelLayerLocation GATECASTER = new ModelLayerLocation(TeemingMod.id("gatecaster"), "main");
+    public static final ModelLayerLocation HOLLOWMIND = new ModelLayerLocation(TeemingMod.id("hollowmind"), "main");
     public static final ModelLayerLocation PEARLGULP = new ModelLayerLocation(TeemingMod.id("pearlgulp"), "main");
     public static final ModelLayerLocation BRINKRAM = new ModelLayerLocation(TeemingMod.id("brinkram"), "main");
     public static final ModelLayerLocation FACET_DOPPEL = new ModelLayerLocation(TeemingMod.id("facet_doppel"), "main");
@@ -143,6 +144,7 @@ public final class CreatureLayers {
         out.register(RIFTJACKAL, CreatureLayers::riftjackal);
         out.register(CHORUS_HUSK, CreatureLayers::chorusHusk);
         out.register(GATECASTER, CreatureLayers::gatecaster);
+        out.register(HOLLOWMIND, CreatureLayers::hollowmind);
         out.register(PEARLGULP, CreatureLayers::pearlgulp);
         out.register(BRINKRAM, CreatureLayers::brinkram);
         out.register(FACET_DOPPEL, CreatureLayers::facetDoppel);
@@ -1829,6 +1831,36 @@ public final class CreatureLayers {
         return LayerDefinition.create(mesh, 128, 64);
     }
     public static final Map<String, String[]> GATECASTER_ONLY = Map.of();
+
+    public static LayerDefinition hollowmind() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-4.5F, -1.0F, -4.5F, 9.0F, 2.0F, 9.0F), PartPose.offsetAndRotation(0.0F, 22.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("lobe_right", CubeListBuilder.create().texOffs(36, 0).addBox(-4.0F, -4.0F, -4.0F, 4.0F, 4.0F, 8.0F).texOffs(44, 12).addBox(-3.0F, -6.0F, -3.0F, 3.0F, 2.0F, 7.0F).texOffs(18, 24).addBox(-2.0F, -7.0F, -1.0F, 2.0F, 1.0F, 5.0F), PartPose.offsetAndRotation(-0.5F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("lobe_left", CubeListBuilder.create().texOffs(0, 11).addBox(0.0F, -4.0F, -4.0F, 4.0F, 4.0F, 8.0F).texOffs(44, 21).addBox(0.0F, -6.0F, -3.0F, 3.0F, 2.0F, 7.0F).texOffs(18, 30).addBox(0.0F, -7.0F, -1.0F, 2.0F, 1.0F, 5.0F), PartPose.offsetAndRotation(0.5F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("core", CubeListBuilder.create().texOffs(24, 12).addBox(-1.0F, -4.2F, -4.2F, 2.0F, 4.0F, 8.0F).texOffs(0, 23).addBox(-1.0F, -6.2F, -3.2F, 2.0F, 2.0F, 7.0F).texOffs(32, 30).addBox(-1.0F, -7.2F, -1.2F, 2.0F, 1.0F, 5.0F), PartPose.offsetAndRotation(0.0F, -1.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("maw", CubeListBuilder.create().texOffs(30, 36).addBox(-2.0F, -1.5F, -1.0F, 4.0F, 3.0F, 1.0F), PartPose.offsetAndRotation(0.0F, -0.5F, -4.5F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_0 = p_body.addOrReplaceChild("tendril_0", CubeListBuilder.create().texOffs(32, 24).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(-4.5F, 1.5F, -1.0F, 0.0873F, -0.8727F, 0.0F));
+        PartDefinition p_tip_0 = p_tendril_0.addOrReplaceChild("tip_0", CubeListBuilder.create().texOffs(56, 30).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, -0.2618F, 0.0F));
+        p_tip_0.addOrReplaceChild("bud_0", CubeListBuilder.create().texOffs(60, 0).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_1 = p_body.addOrReplaceChild("tendril_1", CubeListBuilder.create().texOffs(46, 30).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(-4.5F, 1.5F, 2.5F, 0.0873F, -0.4363F, 0.0F));
+        PartDefinition p_tip_1 = p_tendril_1.addOrReplaceChild("tip_1", CubeListBuilder.create().texOffs(10, 32).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, -0.1309F, 0.0F));
+        p_tip_1.addOrReplaceChild("bud_1", CubeListBuilder.create().texOffs(60, 2).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_2 = p_body.addOrReplaceChild("tendril_2", CubeListBuilder.create().texOffs(0, 32).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(4.5F, 1.5F, -1.0F, 0.0873F, 0.8727F, 0.0F));
+        PartDefinition p_tip_2 = p_tendril_2.addOrReplaceChild("tip_2", CubeListBuilder.create().texOffs(56, 34).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, 0.2618F, 0.0F));
+        p_tip_2.addOrReplaceChild("bud_2", CubeListBuilder.create().texOffs(60, 4).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_3 = p_body.addOrReplaceChild("tendril_3", CubeListBuilder.create().texOffs(46, 35).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(4.5F, 1.5F, 2.5F, 0.0873F, 0.4363F, 0.0F));
+        PartDefinition p_tip_3 = p_tendril_3.addOrReplaceChild("tip_3", CubeListBuilder.create().texOffs(0, 37).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, 0.1309F, 0.0F));
+        p_tip_3.addOrReplaceChild("bud_3", CubeListBuilder.create().texOffs(60, 6).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_4 = p_body.addOrReplaceChild("tendril_4", CubeListBuilder.create().texOffs(10, 36).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(-2.0F, 1.5F, 4.5F, 0.0873F, -0.1396F, 0.0F));
+        PartDefinition p_tip_4 = p_tendril_4.addOrReplaceChild("tip_4", CubeListBuilder.create().texOffs(56, 38).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, -0.0419F, 0.0F));
+        p_tip_4.addOrReplaceChild("bud_4", CubeListBuilder.create().texOffs(60, 8).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tendril_5 = p_body.addOrReplaceChild("tendril_5", CubeListBuilder.create().texOffs(20, 36).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 4.0F), PartPose.offsetAndRotation(2.0F, 1.5F, 4.5F, 0.0873F, 0.1396F, 0.0F));
+        PartDefinition p_tip_5 = p_tendril_5.addOrReplaceChild("tip_5", CubeListBuilder.create().texOffs(30, 40).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 4.0F, 0.0698F, 0.0419F, 0.0F));
+        p_tip_5.addOrReplaceChild("bud_5", CubeListBuilder.create().texOffs(60, 10).addBox(-0.5F, -0.5F, 0.0F, 1.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 3.0F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+    public static final Map<String, String[]> HOLLOWMIND_ONLY = Map.of();
 
     public static LayerDefinition pearlgulp() {
         MeshDefinition mesh = new MeshDefinition();

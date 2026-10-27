@@ -61,6 +61,7 @@ import com.panda.teeming.gametest.mob.GlimmerlessTests;
 import com.panda.teeming.gametest.mob.RiftjackalTests;
 import com.panda.teeming.gametest.mob.ChorusHuskTests;
 import com.panda.teeming.gametest.mob.GatecasterTests;
+import com.panda.teeming.gametest.mob.HollowmindTests;
 import com.panda.teeming.gametest.mob.PearlgulpTests;
 import com.panda.teeming.gametest.mob.BrinkramTests;
 import com.panda.teeming.gametest.mob.FacetDoppelTests;
@@ -134,6 +135,7 @@ final class MobTests {
         RiftjackalTests.register(out);
         ChorusHuskTests.register(out);
         GatecasterTests.register(out);
+        HollowmindTests.register(out);
         PearlgulpTests.register(out);
         BrinkramTests.register(out);
         FacetDoppelTests.register(out);

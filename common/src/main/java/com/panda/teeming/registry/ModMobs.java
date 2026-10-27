@@ -10,6 +10,7 @@ import com.panda.teeming.mob.end.ChorusHusk;
 import com.panda.teeming.mob.end.FacetDoppel;
 import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.Glimmerless;
+import com.panda.teeming.mob.end.Hollowmind;
 import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.end.LiftstoneMonolith;
 import com.panda.teeming.mob.end.MendingCrystalling;
@@ -203,6 +204,8 @@ public final class ModMobs {
             b -> b.sized(0.7F, 2.0F).eyeHeight(1.55F).clientTrackingRange(10));
     public static final Supplier<EntityType<Gatecaster>> GATECASTER = ENTITIES.registerEntityType("gatecaster", Gatecaster::new, MobCategory.MONSTER,
             b -> b.sized(0.7F, 2.0F).eyeHeight(1.7F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Hollowmind>> HOLLOWMIND = ENTITIES.registerEntityType("hollowmind", Hollowmind::new, MobCategory.MONSTER,
+            b -> b.sized(0.5F, 0.5F).eyeHeight(0.35F).clientTrackingRange(10));
     public static final Supplier<EntityType<Pearlgulp>> PEARLGULP = ENTITIES.registerEntityType("pearlgulp", Pearlgulp::new, MobCategory.MONSTER,
             b -> b.sized(0.9F, 0.8F).eyeHeight(0.5F).clientTrackingRange(10));
     public static final Supplier<EntityType<Brinkram>> BRINKRAM = ENTITIES.registerEntityType("brinkram", Brinkram::new, MobCategory.MONSTER,
@@ -271,12 +274,13 @@ public final class ModMobs {
     public static final DeferredItem<Item> RIFTJACKAL_SPAWN_EGG = ITEMS.registerItem("riftjackal_spawn_egg", Item::new, p -> p.spawnEgg(RIFTJACKAL.get()));
     public static final DeferredItem<Item> CHORUS_HUSK_SPAWN_EGG = ITEMS.registerItem("chorus_husk_spawn_egg", Item::new, p -> p.spawnEgg(CHORUS_HUSK.get()));
     public static final DeferredItem<Item> GATECASTER_SPAWN_EGG = ITEMS.registerItem("gatecaster_spawn_egg", Item::new, p -> p.spawnEgg(GATECASTER.get()));
+    public static final DeferredItem<Item> HOLLOWMIND_SPAWN_EGG = ITEMS.registerItem("hollowmind_spawn_egg", Item::new, p -> p.spawnEgg(HOLLOWMIND.get()));
     public static final DeferredItem<Item> PEARLGULP_SPAWN_EGG = ITEMS.registerItem("pearlgulp_spawn_egg", Item::new, p -> p.spawnEgg(PEARLGULP.get()));
     public static final DeferredItem<Item> BRINKRAM_SPAWN_EGG = ITEMS.registerItem("brinkram_spawn_egg", Item::new, p -> p.spawnEgg(BRINKRAM.get()));
     public static final DeferredItem<Item> FACET_DOPPEL_SPAWN_EGG = ITEMS.registerItem("facet_doppel_spawn_egg", Item::new, p -> p.spawnEgg(FACET_DOPPEL.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, HOLLOWMIND_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -343,6 +347,7 @@ public final class ModMobs {
         sink.accept(RIFTJACKAL.get(), Riftjackal.createAttributes().build());
         sink.accept(CHORUS_HUSK.get(), ChorusHusk.createAttributes().build());
         sink.accept(GATECASTER.get(), Gatecaster.createAttributes().build());
+        sink.accept(HOLLOWMIND.get(), Hollowmind.createAttributes().build());
         sink.accept(PEARLGULP.get(), Pearlgulp.createAttributes().build());
         sink.accept(BRINKRAM.get(), Brinkram.createAttributes().build());
         sink.accept(FACET_DOPPEL.get(), FacetDoppel.createAttributes().build());

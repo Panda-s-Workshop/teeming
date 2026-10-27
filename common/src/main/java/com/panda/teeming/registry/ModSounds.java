@@ -197,6 +197,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOW_MOURNER_CHANT = sound("hollow_mourner.chant");
     public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOW_MOURNER_RAISE = sound("hollow_mourner.raise");
     public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOW_MOURNER_STAGGER = sound("hollow_mourner.stagger");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_AMBIENT = sound("hollowmind.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_HURT = sound("hollowmind.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_DEATH = sound("hollowmind.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_LATCH = sound("hollowmind.latch");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_GRIP = sound("hollowmind.grip");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_NIP = sound("hollowmind.nip");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_BITE = sound("hollowmind.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_DROP = sound("hollowmind.drop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOLLOWMIND_FREED = sound("hollowmind.freed");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_AMBIENT = sound("hushwing.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_HURT = sound("hushwing.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> HUSHWING_DEATH = sound("hushwing.death");
