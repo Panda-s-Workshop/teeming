@@ -141,5 +141,7 @@ public final class MobRenderers {
                 Set.of("base", "obsidian_doppel"), 0.5F, 1.0F, 2, false));
         out.register(ModMobs.SHARDLING_COLOSSUS.get(), ctx -> new TeemingRenderer<>(ctx, new ShardlingColossusModel(ctx.bakeLayer(CreatureLayers.SHARDLING_COLOSSUS)), "shardling_colossus",
                 Set.of("amethyst_colossus", "base"), 0.9F, 1.0F, 1, false));
+        out.register(ModMobs.SWELLSHADE.get(), ctx -> new TeemingRenderer<>(ctx, new SwellshadeModel(ctx.bakeLayer(CreatureLayers.SWELLSHADE)), "swellshade",
+                Set.of("base", "gloom_swell"), 0.5F, 1.0F, 5, false));
     }
 }

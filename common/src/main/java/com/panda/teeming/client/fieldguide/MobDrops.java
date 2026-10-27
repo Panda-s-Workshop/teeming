@@ -73,7 +73,8 @@ public final class MobDrops {
             Map.entry("pearlgulp", List.of("teeming:rift_essence", "teeming:trophy")),
             Map.entry("brinkram", List.of("teeming:gravity_stone", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("facet_doppel", List.of("teeming:void_ichor", "teeming:trophy")),
-            Map.entry("shardling_colossus", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy"))
+            Map.entry("shardling_colossus", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
+            Map.entry("swellshade", List.of("teeming:void_ichor", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {

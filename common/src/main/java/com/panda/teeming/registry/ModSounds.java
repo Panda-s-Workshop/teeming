@@ -490,6 +490,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> STORMEEL_PULSE = sound("stormeel.pulse");
     public static final DeferredHolder<SoundEvent, SoundEvent> STORMEEL_FIZZLE = sound("stormeel.fizzle");
     public static final DeferredHolder<SoundEvent, SoundEvent> STORMEEL_FLOP = sound("stormeel.flop");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_AMBIENT = sound("swellshade.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_HURT = sound("swellshade.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_DEATH = sound("swellshade.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_INHALE = sound("swellshade.inhale");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_SWELL = sound("swellshade.swell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_FULL = sound("swellshade.full");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_WINDUP = sound("swellshade.windup");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_STRIKE = sound("swellshade.strike");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SWELLSHADE_SNUFFED = sound("swellshade.snuffed");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_AMBIENT = sound("thornhorn.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_HURT = sound("thornhorn.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> THORNHORN_DEATH = sound("thornhorn.death");
