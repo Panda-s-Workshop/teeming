@@ -625,8 +625,8 @@ public final class WeeplingBroodmotherTests {
     }
 
     /**
-     * A sac saved and loaded (as a chunk load does) is still a sac with 1 health and its small hitbox, and finds its
-     * mother again: she counts it within a tick or two.
+     * A sac saved and loaded (as a chunk load does) is still a sac with 1 health and its small hitbox, is kept as its
+     * mother is before its first tick, and finds her again: she counts it within a tick or two.
      */
     private static void reload(GameTestHelper helper) {
         WeeplingBroodmother m = mother(helper, AT);
@@ -651,6 +651,8 @@ public final class WeeplingBroodmotherTests {
                     "its small hitbox, got " + fresh.getBbWidth() + " x " + fresh.getBbHeight());
             helper.assertTrue(level.addFreshEntity(fresh), "it joins");
             TestPlayers.whenDone(helper, fresh::discard);
+            // kept from its first tick, before it has ticked to find her: else a player far off despawns it at once
+            helper.assertTrue(fresh.requiresCustomPersistence(), "kept as soon as it loads, as its mother is");
             loaded[0] = fresh;
         });
         helper.runAtTickTime(7, () -> {
