@@ -163,6 +163,8 @@ public final class MobRenderers {
                 Set.of("base", "starved_mnemovore"), 0.6F, 1.0F, 5, false));
         out.register(ModMobs.ROTFANG.get(), ctx -> new TeemingRenderer<>(ctx, new RotfangModel(ctx.bakeLayer(CreatureLayers.ROTFANG)), "rotfang",
                 Set.of(), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.GEMINI_WATCHERS.get(), ctx -> new TeemingRenderer<>(ctx, new GeminiWatchersModel(ctx.bakeLayer(CreatureLayers.GEMINI_WATCHERS)), "gemini_watchers",
+                Set.of("base", "dusk_pair"), 0.4F, 1.0F, 5, false));
         out.register(ModMobs.SPIREBLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new SpirebloomModel(ctx.bakeLayer(CreatureLayers.SPIREBLOOM)), "spirebloom",
                 Set.of("base", "rose_spire"), 0.6F, 1.0F, 2, false));
         out.register(ModMobs.RIFTMINE_SAPPER.get(), ctx -> new TeemingRenderer<>(ctx, new RiftmineSapperModel(ctx.bakeLayer(CreatureLayers.RIFTMINE_SAPPER)), "riftmine_sapper",

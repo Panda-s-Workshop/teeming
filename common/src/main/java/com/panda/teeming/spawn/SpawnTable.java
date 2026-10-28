@@ -110,6 +110,7 @@ public final class SpawnTable {
             new Row("recurrent", "minecraft:end_barrens", 3),
             new Row("mnemovore", "minecraft:end_barrens", 3),
             new Row("rotfang", "minecraft:end_barrens", 4),
+            new Row("gemini_watchers", "minecraft:end_barrens", 3),
             new Row("spirebloom", "minecraft:end_barrens", 3),
             new Row("riftmine_sapper", "minecraft:end_barrens", 3),
             new Row("exile_wraith", "minecraft:end_barrens", 3),

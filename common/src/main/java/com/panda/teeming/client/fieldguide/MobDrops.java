@@ -85,6 +85,7 @@ public final class MobDrops {
             Map.entry("recurrent", List.of("teeming:time_sand", "minecraft:string", "teeming:trophy")),
             Map.entry("mnemovore", List.of("teeming:void_ichor", "teeming:trophy")),
             Map.entry("rotfang", List.of("teeming:void_ichor", "teeming:trophy")),
+            Map.entry("gemini_watchers", List.of("teeming:void_crystal", "minecraft:amethyst_shard", "teeming:trophy")),
             Map.entry("spirebloom", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("riftmine_sapper", List.of("teeming:gravity_stone", "minecraft:end_stone", "minecraft:flint", "teeming:trophy")),
             Map.entry("underclinger", List.of("teeming:void_membrane", "minecraft:end_stone", "teeming:trophy")),

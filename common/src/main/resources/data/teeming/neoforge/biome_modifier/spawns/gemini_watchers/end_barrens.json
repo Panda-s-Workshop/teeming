@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/gemini_watchers",
+      [
+        "minecraft:end_barrens"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:gemini_watchers",
+      "weight": 3,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 2,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

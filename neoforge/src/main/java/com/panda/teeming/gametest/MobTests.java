@@ -77,6 +77,7 @@ import com.panda.teeming.gametest.mob.VoidBloomTests;
 import com.panda.teeming.gametest.mob.RecurrentTests;
 import com.panda.teeming.gametest.mob.MnemovoreTests;
 import com.panda.teeming.gametest.mob.RotfangTests;
+import com.panda.teeming.gametest.mob.GeminiWatchersTests;
 import com.panda.teeming.gametest.mob.SpirebloomTests;
 import com.panda.teeming.gametest.mob.RiftmineSapperTests;
 import com.panda.teeming.gametest.mob.UnderclingerTests;
@@ -171,6 +172,7 @@ final class MobTests {
         RecurrentTests.register(out);
         MnemovoreTests.register(out);
         RotfangTests.register(out);
+        GeminiWatchersTests.register(out);
         SpirebloomTests.register(out);
         RiftmineSapperTests.register(out);
         UnderclingerTests.register(out);

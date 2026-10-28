@@ -91,6 +91,7 @@ public final class CreatureLayers {
     public static final ModelLayerLocation RECURRENT = new ModelLayerLocation(TeemingMod.id("recurrent"), "main");
     public static final ModelLayerLocation MNEMOVORE = new ModelLayerLocation(TeemingMod.id("mnemovore"), "main");
     public static final ModelLayerLocation ROTFANG = new ModelLayerLocation(TeemingMod.id("rotfang"), "main");
+    public static final ModelLayerLocation GEMINI_WATCHERS = new ModelLayerLocation(TeemingMod.id("gemini_watchers"), "main");
     public static final ModelLayerLocation SPIREBLOOM = new ModelLayerLocation(TeemingMod.id("spirebloom"), "main");
     public static final ModelLayerLocation RIFTMINE_SAPPER = new ModelLayerLocation(TeemingMod.id("riftmine_sapper"), "main");
     public static final ModelLayerLocation UNDERCLINGER = new ModelLayerLocation(TeemingMod.id("underclinger"), "main");
@@ -180,6 +181,7 @@ public final class CreatureLayers {
         out.register(RECURRENT, CreatureLayers::recurrent);
         out.register(MNEMOVORE, CreatureLayers::mnemovore);
         out.register(ROTFANG, CreatureLayers::rotfang);
+        out.register(GEMINI_WATCHERS, CreatureLayers::geminiWatchers);
         out.register(SPIREBLOOM, CreatureLayers::spirebloom);
         out.register(RIFTMINE_SAPPER, CreatureLayers::riftmineSapper);
         out.register(UNDERCLINGER, CreatureLayers::underclinger);
@@ -2332,6 +2334,30 @@ public final class CreatureLayers {
     /** Parts shown only for some variants of rotfang. */
     public static final Map<String, String[]> ROTFANG_ONLY = Map.ofEntries(
             Map.entry("blisters", new String[] {"blight_fang"}));
+
+    public static LayerDefinition geminiWatchers() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(62, 0).addBox(-3.0F, -10.0F, -2.0F, 6.0F, 10.0F, 4.0F).texOffs(90, 0).addBox(-4.5F, -11.0F, -2.5F, 9.0F, 2.0F, 5.0F).texOffs(90, 7).addBox(-3.5F, -1.0F, -2.5F, 7.0F, 2.0F, 5.0F).texOffs(112, 16).addBox(-2.5F, 1.0F, -1.5F, 5.0F, 4.0F, 3.0F).texOffs(102, 20).addBox(-1.5F, 5.0F, -1.0F, 3.0F, 3.0F, 2.0F).texOffs(56, 15).addBox(-1.0F, 8.0F, -0.5F, 2.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(0.0F, 12.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(36, 0).addBox(-3.5F, -9.0F, -3.0F, 7.0F, 9.0F, 6.0F).texOffs(90, 14).addBox(-3.0F, -10.0F, -2.5F, 6.0F, 1.0F, 5.0F), PartPose.offsetAndRotation(0.0F, -11.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("eye", CubeListBuilder.create().texOffs(62, 14).addBox(-3.0F, -3.0F, -2.0F, 6.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(1.5F, -4.5F, -3.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("crest", CubeListBuilder.create().texOffs(48, 15).addBox(-1.0F, -7.0F, -1.0F, 2.0F, 7.0F, 2.0F).texOffs(78, 14).addBox(-0.5F, -9.0F, -0.5F, 1.0F, 2.0F, 1.0F), PartPose.offsetAndRotation(-2.0F, -9.0F, 0.0F, 0.0F, 0.0F, -0.2443F));
+        p_head.addOrReplaceChild("moon", CubeListBuilder.create().texOffs(56, 18).addBox(-3.0F, -7.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(56, 20).addBox(-2.0F, -6.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(0, 24).addBox(-1.0F, -5.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(6, 24).addBox(-1.0F, -4.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(48, 24).addBox(-1.0F, -3.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(28, 25).addBox(-2.0F, -2.0F, -0.5F, 2.0F, 1.0F, 1.0F).texOffs(34, 25).addBox(-3.0F, -1.0F, -0.5F, 2.0F, 1.0F, 1.0F), PartPose.offsetAndRotation(-3.5F, -11.0F, 0.5F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("head_cracks", CubeListBuilder.create().texOffs(114, 7).addBox(-3.5F, -9.0F, -3.05F, 7.0F, 9.0F, 0.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_arm_free = p_body.addOrReplaceChild("arm_free", CubeListBuilder.create().texOffs(12, 18).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(4.5F, -10.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_arm_free.addOrReplaceChild("forearm_free", CubeListBuilder.create().texOffs(118, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F).texOffs(90, 20).addBox(-1.5F, 5.0F, -1.5F, 3.0F, 2.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 6.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_arm_staff = p_body.addOrReplaceChild("arm_staff", CubeListBuilder.create().texOffs(20, 18).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 6.0F, 2.0F), PartPose.offsetAndRotation(-4.5F, -10.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_forearm_staff = p_arm_staff.addOrReplaceChild("forearm_staff", CubeListBuilder.create().texOffs(28, 18).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F).texOffs(56, 22).addBox(-1.5F, 5.0F, -1.5F, 3.0F, 2.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 6.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_staff = p_forearm_staff.addOrReplaceChild("staff", CubeListBuilder.create().texOffs(82, 0).addBox(-1.0F, -22.0F, -1.0F, 2.0F, 32.0F, 2.0F).texOffs(68, 22).addBox(-1.5F, -21.0F, -1.5F, 3.0F, 1.0F, 3.0F).texOffs(112, 23).addBox(-1.5F, 6.0F, -1.5F, 3.0F, 1.0F, 3.0F), PartPose.offsetAndRotation(0.0F, 6.0F, -0.5F, 0.0F, 0.0F, 0.0F));
+        p_staff.addOrReplaceChild("staff_head", CubeListBuilder.create().texOffs(0, 18).addBox(-1.5F, -1.5F, -1.5F, 3.0F, 3.0F, 3.0F), PartPose.offsetAndRotation(0.0F, -24.0F, 0.0F, 0.0F, 0.0F, 0.7854F));
+        p_body.addOrReplaceChild("cracks", CubeListBuilder.create().texOffs(36, 15).addBox(-3.0F, -10.0F, -2.05F, 6.0F, 10.0F, 0.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        root.addOrReplaceChild("beam", CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, -1.0F, -16.0F, 2.0F, 2.0F, 16.0F, new CubeDeformation(-0.2F)), PartPose.offsetAndRotation(0.0F, 2.0F, 0.0F, 1.5708F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 128, 64);
+    }
+    /** Parts shown only for some variants of gemini_watchers. */
+    public static final Map<String, String[]> GEMINI_WATCHERS_ONLY = Map.ofEntries(
+            Map.entry("crest", new String[] {"base"}),
+            Map.entry("moon", new String[] {"dusk_pair"}));
 
     public static LayerDefinition spirebloom() {
         MeshDefinition mesh = new MeshDefinition();

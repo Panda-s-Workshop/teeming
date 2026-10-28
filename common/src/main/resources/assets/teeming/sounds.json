@@ -3057,6 +3057,185 @@
       }
     ]
   },
+  "gemini_watchers.ambient": {
+    "subtitle": "subtitles.teeming.gemini_watchers.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.iron_xylophone",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.3
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.3
+      }
+    ]
+  },
+  "gemini_watchers.hurt": {
+    "subtitle": "subtitles.teeming.gemini_watchers.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.hit",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.6
+      }
+    ]
+  },
+  "gemini_watchers.death": {
+    "subtitle": "subtitles.teeming.gemini_watchers.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.ender_eye.death",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "gemini_watchers.husk": {
+    "subtitle": "subtitles.teeming.gemini_watchers.husk",
+    "sounds": [
+      {
+        "name": "minecraft:item.spyglass.stop_using",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.amethyst_cluster.fall",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "gemini_watchers.tell": {
+    "subtitle": "subtitles.teeming.gemini_watchers.tell",
+    "sounds": [
+      {
+        "name": "minecraft:item.spyglass.use",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.4
+      }
+    ]
+  },
+  "gemini_watchers.strike": {
+    "subtitle": "subtitles.teeming.gemini_watchers.strike",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.attack.knockback",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      }
+    ]
+  },
+  "gemini_watchers.channel": {
+    "subtitle": "subtitles.teeming.gemini_watchers.channel",
+    "sounds": [
+      {
+        "name": "minecraft:entity.guardian.attack",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "gemini_watchers.hum": {
+    "subtitle": "subtitles.teeming.gemini_watchers.hum",
+    "sounds": [
+      {
+        "name": "minecraft:block.trial_spawner.spawn_item_begin",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.3
+      }
+    ]
+  },
+  "gemini_watchers.revive": {
+    "subtitle": "subtitles.teeming.gemini_watchers.revive",
+    "sounds": [
+      {
+        "name": "minecraft:item.totem.use",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.4
+      }
+    ]
+  },
+  "gemini_watchers.sever": {
+    "subtitle": "subtitles.teeming.gemini_watchers.sever",
+    "sounds": [
+      {
+        "name": "minecraft:block.chain.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.9
+      }
+    ]
+  },
   "gleamtrap.ambient": {
     "subtitle": "subtitles.teeming.gleamtrap.ambient",
     "sounds": [

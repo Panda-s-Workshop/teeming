@@ -85,6 +85,7 @@ public final class MobBounds {
             Map.entry("recurrent", new float[] {0.750F, 2.000F, 0.445F}),
             Map.entry("mnemovore", new float[] {1.375F, 0.625F, 1.000F}),
             Map.entry("rotfang", new float[] {0.897F, 0.801F, 1.562F}),
+            Map.entry("gemini_watchers", new float[] {0.789F, 2.553F, 0.500F}),
             Map.entry("spirebloom", new float[] {1.291F, 2.312F, 1.438F}),
             Map.entry("riftmine_sapper", new float[] {0.954F, 1.494F, 1.249F}),
             Map.entry("underclinger", new float[] {1.250F, 0.431F, 1.469F}),

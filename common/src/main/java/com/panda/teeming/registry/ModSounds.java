@@ -199,6 +199,16 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> GATECASTER_HIT = sound("gatecaster.hit");
     public static final DeferredHolder<SoundEvent, SoundEvent> GATECASTER_TURNED = sound("gatecaster.turned");
     public static final DeferredHolder<SoundEvent, SoundEvent> GATECASTER_BURST = sound("gatecaster.burst");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_AMBIENT = sound("gemini_watchers.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_HURT = sound("gemini_watchers.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_DEATH = sound("gemini_watchers.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_HUSK = sound("gemini_watchers.husk");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_TELL = sound("gemini_watchers.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_STRIKE = sound("gemini_watchers.strike");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_CHANNEL = sound("gemini_watchers.channel");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_HUM = sound("gemini_watchers.hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_REVIVE = sound("gemini_watchers.revive");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GEMINI_WATCHERS_SEVER = sound("gemini_watchers.sever");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLEAMTRAP_AMBIENT = sound("gleamtrap.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLEAMTRAP_HURT = sound("gleamtrap.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> GLEAMTRAP_DEATH = sound("gleamtrap.death");
