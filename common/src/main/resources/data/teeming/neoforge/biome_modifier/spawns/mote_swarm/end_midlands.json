@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/mote_swarm",
+      "#teeming:spawns_gate/mote_swarm/end_midlands",
       [
         "minecraft:end_midlands"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/swellshade",
+      "#teeming:spawns_gate/swellshade/end_midlands",
       [
         "minecraft:end_midlands"
       ]

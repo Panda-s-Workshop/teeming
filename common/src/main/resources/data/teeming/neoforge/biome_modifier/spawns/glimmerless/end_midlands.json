@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/glimmerless",
+      "#teeming:spawns_gate/glimmerless/end_midlands",
       [
         "minecraft:end_midlands"
       ]

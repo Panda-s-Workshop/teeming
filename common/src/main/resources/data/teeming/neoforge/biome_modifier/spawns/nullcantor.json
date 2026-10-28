@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/nullcantor",
+      "#teeming:spawns_gate/nullcantor/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_barrens"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/nullcantor"
       }
     ]
   },

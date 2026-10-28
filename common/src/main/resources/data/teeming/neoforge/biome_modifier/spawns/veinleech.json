@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/veinleech",
+      "#teeming:spawns_gate/veinleech/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/veinleech"
       }
     ]
   },

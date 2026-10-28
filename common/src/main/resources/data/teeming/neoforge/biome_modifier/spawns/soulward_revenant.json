@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/soulward_revenant",
+      "#teeming:spawns_gate/soulward_revenant/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:soul_sand_valley"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/soulward_revenant"
       }
     ]
   },

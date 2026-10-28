@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/exile_wraith",
+      "#teeming:spawns_gate/exile_wraith/end_barrens",
       [
         "minecraft:end_barrens"
       ]

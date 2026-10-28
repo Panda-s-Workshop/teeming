@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/snagwood",
+      "#teeming:spawns_gate/snagwood/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/snagwood"
       }
     ]
   },

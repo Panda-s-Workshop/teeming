@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/quakehopper",
+      "#teeming:spawns_gate/quakehopper/basalt_deltas",
       [
         "minecraft:basalt_deltas"
       ]

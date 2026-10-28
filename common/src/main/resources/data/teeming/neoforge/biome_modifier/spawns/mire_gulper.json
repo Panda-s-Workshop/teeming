@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/mire_gulper",
+      "#teeming:spawns_gate/mire_gulper/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/mire_gulper"
       }
     ]
   },

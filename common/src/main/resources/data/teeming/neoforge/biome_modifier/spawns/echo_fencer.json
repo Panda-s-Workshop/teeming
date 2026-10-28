@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/echo_fencer",
+      "#teeming:spawns_gate/echo_fencer/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_midlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/echo_fencer"
       }
     ]
   },

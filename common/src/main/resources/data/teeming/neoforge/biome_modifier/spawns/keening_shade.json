@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/keening_shade",
+      "#teeming:spawns_gate/keening_shade/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:soul_sand_valley"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/keening_shade"
       }
     ]
   },

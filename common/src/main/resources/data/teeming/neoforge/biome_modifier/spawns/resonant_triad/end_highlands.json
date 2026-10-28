@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/resonant_triad",
+      "#teeming:spawns_gate/resonant_triad/end_highlands",
       [
         "minecraft:end_highlands"
       ]

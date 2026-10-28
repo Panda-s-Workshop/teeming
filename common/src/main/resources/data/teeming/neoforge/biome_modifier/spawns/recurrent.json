@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/recurrent",
+      "#teeming:spawns_gate/recurrent/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_barrens"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/recurrent"
       }
     ]
   },

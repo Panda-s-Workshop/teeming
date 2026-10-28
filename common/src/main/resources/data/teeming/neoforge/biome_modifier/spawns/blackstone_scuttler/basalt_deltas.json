@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/blackstone_scuttler",
+      "#teeming:spawns_gate/blackstone_scuttler/basalt_deltas",
       [
         "minecraft:basalt_deltas"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/hollowmind",
+      "#teeming:spawns_gate/hollowmind/end_highlands",
       [
         "minecraft:end_highlands"
       ]

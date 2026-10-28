@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/rattlecoil",
+      "#teeming:spawns_gate/rattlecoil/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/rattlecoil"
       }
     ]
   },

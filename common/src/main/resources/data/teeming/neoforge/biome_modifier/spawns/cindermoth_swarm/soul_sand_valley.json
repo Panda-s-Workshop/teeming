@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/cindermoth_swarm",
+      "#teeming:spawns_gate/cindermoth_swarm/soul_sand_valley",
       [
         "minecraft:soul_sand_valley"
       ]

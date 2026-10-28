@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/phasewalker",
+      "#teeming:spawns_gate/phasewalker/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_midlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/phasewalker"
       }
     ]
   },

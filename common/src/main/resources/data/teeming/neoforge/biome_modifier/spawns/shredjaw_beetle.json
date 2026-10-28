@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/shredjaw_beetle",
+      "#teeming:spawns_gate/shredjaw_beetle/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/shredjaw_beetle"
       }
     ]
   },

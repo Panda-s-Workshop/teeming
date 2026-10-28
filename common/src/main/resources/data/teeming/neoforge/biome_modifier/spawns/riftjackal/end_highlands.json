@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/riftjackal",
+      "#teeming:spawns_gate/riftjackal/end_highlands",
       [
         "minecraft:end_highlands"
       ]

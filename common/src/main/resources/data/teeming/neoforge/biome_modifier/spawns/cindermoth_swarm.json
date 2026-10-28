@@ -3,19 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/cindermoth_swarm",
+      "#teeming:spawns_gate/cindermoth_swarm/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:nether_wastes",
-              "minecraft:soul_sand_valley"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/cindermoth_swarm"
       }
     ]
   },

@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/mycelite_shambler",
+      "#teeming:spawns_gate/mycelite_shambler/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/mycelite_shambler"
       }
     ]
   },

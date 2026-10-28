@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/exile_wraith",
+      "#teeming:spawns_gate/exile_wraith/small_end_islands",
       [
         "minecraft:small_end_islands"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/spirebloom",
+      "#teeming:spawns_gate/spirebloom/end_barrens",
       [
         "minecraft:end_barrens"
       ]

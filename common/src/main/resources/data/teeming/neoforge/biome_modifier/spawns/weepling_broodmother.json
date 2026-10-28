@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/weepling_broodmother",
+      "#teeming:spawns_gate/weepling_broodmother/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/weepling_broodmother"
       }
     ]
   },

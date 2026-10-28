@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/soulfire_seer",
+      "#teeming:spawns_gate/soulfire_seer/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:soul_sand_valley"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/soulfire_seer"
       }
     ]
   },

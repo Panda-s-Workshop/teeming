@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/vinedrop_strangler",
+      "#teeming:spawns_gate/vinedrop_strangler/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/vinedrop_strangler"
       }
     ]
   },

@@ -3,10 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/snapmaw_bloom",
+      "#teeming:spawns_gate/snapmaw_bloom/rest",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": "#teeming:spawns_excluded/snapmaw_bloom"
       }
     ]
   },

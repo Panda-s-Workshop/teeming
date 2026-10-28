@@ -3,20 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/lavaleaper",
+      "#teeming:spawns_gate/lavaleaper/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:nether_wastes",
-              "minecraft:soul_sand_valley",
-              "minecraft:basalt_deltas"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/lavaleaper"
       }
     ]
   },

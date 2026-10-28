@@ -3,19 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/vigil_owl",
+      "#teeming:spawns_gate/vigil_owl/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands",
-              "minecraft:end_midlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/vigil_owl"
       }
     ]
   },

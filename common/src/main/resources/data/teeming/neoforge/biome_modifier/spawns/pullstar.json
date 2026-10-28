@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/pullstar",
+      "#teeming:spawns_gate/pullstar/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_barrens"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/pullstar"
       }
     ]
   },

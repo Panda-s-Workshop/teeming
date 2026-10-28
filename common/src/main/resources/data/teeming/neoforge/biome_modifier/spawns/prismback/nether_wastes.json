@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/prismback",
+      "#teeming:spawns_gate/prismback/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

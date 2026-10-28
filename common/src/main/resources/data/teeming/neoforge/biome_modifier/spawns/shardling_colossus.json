@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/shardling_colossus",
+      "#teeming:spawns_gate/shardling_colossus/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_midlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/shardling_colossus"
       }
     ]
   },

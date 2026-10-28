@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/scarlet_mantis",
+      "#teeming:spawns_gate/scarlet_mantis/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/riftjackal",
+      "#teeming:spawns_gate/riftjackal/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/riftjackal"
       }
     ]
   },

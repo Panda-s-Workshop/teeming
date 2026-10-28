@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/ashharrier",
+      "#teeming:spawns_gate/ashharrier/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:basalt_deltas"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/ashharrier"
       }
     ]
   },

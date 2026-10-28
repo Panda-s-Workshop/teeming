@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/slagheart_golem",
+      "#teeming:spawns_gate/slagheart_golem/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

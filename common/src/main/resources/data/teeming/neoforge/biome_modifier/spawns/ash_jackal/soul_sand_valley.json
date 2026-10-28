@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/ash_jackal",
+      "#teeming:spawns_gate/ash_jackal/soul_sand_valley",
       [
         "minecraft:soul_sand_valley"
       ]

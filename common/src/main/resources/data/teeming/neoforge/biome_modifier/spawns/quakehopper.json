@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/quakehopper",
+      "#teeming:spawns_gate/quakehopper/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:basalt_deltas"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/quakehopper"
       }
     ]
   },

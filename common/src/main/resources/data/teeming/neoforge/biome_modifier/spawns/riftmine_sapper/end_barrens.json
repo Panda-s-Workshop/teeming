@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/riftmine_sapper",
+      "#teeming:spawns_gate/riftmine_sapper/end_barrens",
       [
         "minecraft:end_barrens"
       ]

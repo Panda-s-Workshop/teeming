@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/astral_augur",
+      "#teeming:spawns_gate/astral_augur/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/astral_augur"
       }
     ]
   },

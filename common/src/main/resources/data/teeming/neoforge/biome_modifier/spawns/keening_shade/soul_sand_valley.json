@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/keening_shade",
+      "#teeming:spawns_gate/keening_shade/soul_sand_valley",
       [
         "minecraft:soul_sand_valley"
       ]

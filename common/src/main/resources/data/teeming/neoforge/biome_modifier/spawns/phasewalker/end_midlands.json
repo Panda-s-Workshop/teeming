@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/phasewalker",
+      "#teeming:spawns_gate/phasewalker/end_midlands",
       [
         "minecraft:end_midlands"
       ]

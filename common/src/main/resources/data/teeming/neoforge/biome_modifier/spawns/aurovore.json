@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/aurovore",
+      "#teeming:spawns_gate/aurovore/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:nether_wastes"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/aurovore"
       }
     ]
   },

@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/gatecaster",
+      "#teeming:spawns_gate/gatecaster/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/gatecaster"
       }
     ]
   },

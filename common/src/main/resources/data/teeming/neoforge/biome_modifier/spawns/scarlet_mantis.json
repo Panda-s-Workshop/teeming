@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/scarlet_mantis",
+      "#teeming:spawns_gate/scarlet_mantis/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:nether_wastes"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/scarlet_mantis"
       }
     ]
   },

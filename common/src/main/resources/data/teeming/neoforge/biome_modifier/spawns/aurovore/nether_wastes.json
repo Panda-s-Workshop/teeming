@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/aurovore",
+      "#teeming:spawns_gate/aurovore/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/echo_fencer",
+      "#teeming:spawns_gate/echo_fencer/end_midlands",
       [
         "minecraft:end_midlands"
       ]

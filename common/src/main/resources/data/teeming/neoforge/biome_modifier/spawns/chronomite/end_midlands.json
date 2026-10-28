@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/chronomite",
+      "#teeming:spawns_gate/chronomite/end_midlands",
       [
         "minecraft:end_midlands"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/astral_augur",
+      "#teeming:spawns_gate/astral_augur/end_highlands",
       [
         "minecraft:end_highlands"
       ]

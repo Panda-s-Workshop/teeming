@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/rotfang",
+      "#teeming:spawns_gate/rotfang/end_barrens",
       [
         "minecraft:end_barrens"
       ]

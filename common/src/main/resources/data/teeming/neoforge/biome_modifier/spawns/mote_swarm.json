@@ -3,19 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/mote_swarm",
+      "#teeming:spawns_gate/mote_swarm/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_midlands",
-              "minecraft:small_end_islands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/mote_swarm"
       }
     ]
   },

@@ -3,19 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/pearlgulp",
+      "#teeming:spawns_gate/pearlgulp/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands",
-              "minecraft:small_end_islands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/pearlgulp"
       }
     ]
   },

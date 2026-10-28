@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/cindermoth_swarm",
+      "#teeming:spawns_gate/cindermoth_swarm/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

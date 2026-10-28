@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/chorus_husk",
+      "#teeming:spawns_gate/chorus_husk/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/chorus_husk"
       }
     ]
   },

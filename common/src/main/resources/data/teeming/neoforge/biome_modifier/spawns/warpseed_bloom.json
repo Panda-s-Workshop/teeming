@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/warpseed_bloom",
+      "#teeming:spawns_gate/warpseed_bloom/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:end_highlands"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/warpseed_bloom"
       }
     ]
   },

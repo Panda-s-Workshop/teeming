@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/vigil_owl",
+      "#teeming:spawns_gate/vigil_owl/end_midlands",
       [
         "minecraft:end_midlands"
       ]

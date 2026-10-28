@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/shardling_colossus",
+      "#teeming:spawns_gate/shardling_colossus/end_midlands",
       [
         "minecraft:end_midlands"
       ]

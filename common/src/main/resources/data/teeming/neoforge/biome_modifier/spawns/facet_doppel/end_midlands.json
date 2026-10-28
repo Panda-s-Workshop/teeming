@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/facet_doppel",
+      "#teeming:spawns_gate/facet_doppel/end_midlands",
       [
         "minecraft:end_midlands"
       ]

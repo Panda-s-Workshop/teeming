@@ -3,19 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/slagspitter",
+      "#teeming:spawns_gate/slagspitter/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:nether_wastes",
-              "minecraft:basalt_deltas"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/slagspitter"
       }
     ]
   },

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/brinkram",
+      "#teeming:spawns_gate/brinkram/end_midlands",
       [
         "minecraft:end_midlands"
       ]

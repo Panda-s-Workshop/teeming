@@ -3,18 +3,10 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/ossuary_wyrm",
+      "#teeming:spawns_gate/ossuary_wyrm/rest",
       {
         "type": "neoforge:not",
-        "value": {
-          "type": "neoforge:or",
-          "values": [
-            "#teeming:share_capped",
-            [
-              "minecraft:soul_sand_valley"
-            ]
-          ]
-        }
+        "value": "#teeming:spawns_excluded/ossuary_wyrm"
       }
     ]
   },

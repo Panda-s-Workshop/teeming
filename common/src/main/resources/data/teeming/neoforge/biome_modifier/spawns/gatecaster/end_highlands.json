@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/gatecaster",
+      "#teeming:spawns_gate/gatecaster/end_highlands",
       [
         "minecraft:end_highlands"
       ]

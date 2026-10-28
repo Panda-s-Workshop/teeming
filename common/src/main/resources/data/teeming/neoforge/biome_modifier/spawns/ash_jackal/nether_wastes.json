@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/ash_jackal",
+      "#teeming:spawns_gate/ash_jackal/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/nullcantor",
+      "#teeming:spawns_gate/nullcantor/end_barrens",
       [
         "minecraft:end_barrens"
       ]

@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/chorus_husk",
+      "#teeming:spawns_gate/chorus_husk/end_highlands",
       [
         "minecraft:end_highlands"
       ]

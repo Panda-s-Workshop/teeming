@@ -3,7 +3,7 @@
   "biomes": {
     "type": "neoforge:and",
     "values": [
-      "#teeming:spawns/slagspitter",
+      "#teeming:spawns_gate/slagspitter/nether_wastes",
       [
         "minecraft:nether_wastes"
       ]
