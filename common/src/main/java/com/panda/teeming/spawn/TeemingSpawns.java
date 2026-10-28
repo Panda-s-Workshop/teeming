@@ -149,11 +149,22 @@ public final class TeemingSpawns {
         };
     }
 
-    /** Local caps: a 4th of a type within 48 blocks is refused (apex mobs and giants: a 2nd within 128). */
+    /** Apex mobs and giants are capped at 1 within {@link #RARE_CAP_RADIUS}, the rest by the config within {@link #CAP_RADIUS}. */
+    public static boolean rare(Entry mob) {
+        return mob.apex() || GIANTS.contains(mob.id());
+    }
+
+    /** How many of the mob's type may stand within its cap radius; a spawning density above 1 lifts it. */
+    public static int cap(Entry mob) {
+        return (int) Math.round((rare(mob) ? 1 : TeemingConfig.localCap()) * Math.max(1.0, TeemingConfig.spawningDensity()));
+    }
+
+    public static int capRadius(Entry mob) {
+        return rare(mob) ? RARE_CAP_RADIUS : CAP_RADIUS;
+    }
+
+    /** Local caps: one more of a type is refused once {@link #cap} of it stand within {@link #capRadius}. */
     public static boolean underCap(Entry mob, EntityType<? extends Mob> type, ServerLevelAccessor level, BlockPos pos) {
-        boolean rare = mob.apex() || GIANTS.contains(mob.id());
-        int radius = rare ? RARE_CAP_RADIUS : CAP_RADIUS;
-        int cap = (int) Math.round((rare ? 1 : TeemingConfig.localCap()) * Math.max(1.0, TeemingConfig.spawningDensity())); // density > 1 lifts the caps
-        return level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(radius), e -> e.getType() == type).size() < cap;
+        return level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(capRadius(mob)), e -> e.getType() == type).size() < cap(mob);
     }
 }

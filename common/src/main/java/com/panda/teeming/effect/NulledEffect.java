@@ -64,6 +64,14 @@ public final class NulledEffect extends TeemingEffect {
         super(MobEffectCategory.HARMFUL, COLOR);
     }
 
+    /** When the server stops: a closed world's creatures must not stay referenced until the next world reads gear. */
+    public static void reset() {
+        STRIPPED.clear();
+        HALVED.clear();
+        HELD.clear();
+        serverThread = null;
+    }
+
     /** The status as a ring gives it: no end of its own, no particles, an icon. */
     public static MobEffectInstance instance() {
         return new MobEffectInstance(ModEffects.NULLED.holder(), MobEffectInstance.INFINITE_DURATION, 0, false, false, true);

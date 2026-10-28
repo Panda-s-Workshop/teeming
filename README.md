@@ -22,8 +22,9 @@ with real uses and twelve counter charms. It adds no biomes, structures or dimen
 ## Configuration
 
 The server's settings apply to everyone; clients only show the Field Guide's kill count. NeoForge keeps them in
-`teeming-common.toml` (in the world's `serverconfig` folder), Fabric in `config/teeming.properties`, written with the
-defaults on first start.
+`config/teeming-synced.toml` (one file for every world, sent to joining clients). Fabric keeps them in
+`config/teeming.properties`, read once at startup: restart after a change. Both files are written with the defaults
+on first start, and a newer version adds its new keys to an existing file.
 
 | Key | Default | What it does |
 |---|---|---|
@@ -33,8 +34,8 @@ defaults on first start.
 | `trophies.chance` | 0.025 | The chance a player kill of an ordinary Teeming mob drops its trophy (apex mobs four times it; Looting raises it in proportion) |
 | `fieldguide.killsToReveal` | 3 | Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide (1 to 100) |
 | `griefing.temporary_blocks` | true | False stops every mob placing even temporary blocks (the Gloomweaver raises no walls) |
-| `mobs.<id>.enabled` (NeoForge), `mob.<id>.enabled` (Fabric) | true | False stops that mob's natural spawns; spawn eggs and commands still work |
-| `mobs.<id>.spawnChance` (NeoForge), `mob.<id>.spawnChance` (Fabric) | 1.0 | 0 to 1, the chance a natural spawn that passed every other rule goes ahead |
+| `mobs.<id>.enabled` | true | False stops that mob's natural spawns; spawn eggs and commands still work |
+| `mobs.<id>.spawnChance` | 1.0 | 0 to 1, the chance a natural spawn that passed every other rule goes ahead |
 
 ## Commands
 
@@ -43,6 +44,25 @@ All need operator permission (level 2).
 - `/teeming guide reveal <players> <mob|all>` fills in Field Guide entries; `/teeming guide reset <players> <mob|all>` clears them.
 - `/teeming look <entity> <look>` gives a Teeming mob one of its looks.
 - `/teeming spawns <mob>` tells where and how often a mob spawns in the dimension you're in, and whether it can where you stand.
+
+## Data packs
+
+Everything a pack would change is data under `data/teeming/`:
+
+- **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to
+  give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that Teeming's own
+  spawner places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty.
+  To switch a mob off either way, use `mobs.<id>.enabled`. `#teeming:share_capped` holds
+  biomes whose vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead.
+- **Looks:** `data/teeming/teeming/looks/<mob>/<look>.json` with `weight` (0 switches a look off), and optionally
+  `scale`, `attributes` and `biomes`.
+- **Drops, recipes, advancements:** ordinary loot tables (`loot_table/entities/<mob>.json`; the trophy roll is the
+  condition `teeming:trophy_chance`), recipes and advancements, each replaceable by id.
+- **Entity tags:** `#teeming:overworld`, `#teeming:nether`, `#teeming:end`, `#teeming:apex`, `#teeming:passive`;
+  `#teeming:reflectable` (what the Prismback turns back; it includes `#minecraft:arrows`),
+  `#teeming:pyre_herald_allies`, `#teeming:mending_crystalling_patients`.
+- **Item tags:** `#teeming:signature_materials`, `#teeming:charms`, `#teeming:aurovore_loot` (what the Aurovore
+  steals).
 
 ## Build and run
 

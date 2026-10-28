@@ -30,9 +30,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MobSpawnSettings;
 
 /**
  * Operator commands: {@code /teeming guide reveal|reset <players> <mob|all>}, {@code /teeming look <entity> <look>}
@@ -92,7 +95,7 @@ public final class TeemingCommand {
         List<String> mobs = mobs(StringArgumentType.getString(c, "mob"), true);
         Collection<ServerPlayer> players = EntityArgument.getPlayers(c, "players");
         for (ServerPlayer player : players) {
-            FieldGuideProgress progress = FieldGuide.get(player);
+            FieldGuideProgress progress = FieldGuide.get(player).withRevealAt(TeemingConfig.killsToReveal());
             for (String mob : mobs) {
                 progress = reveal ? progress.withRevealed(mob, Looks.of(mob).stream().map(LookDef::id).toList()) : progress.without(mob);
             }
@@ -136,11 +139,14 @@ public final class TeemingCommand {
         }
         String chance = String.format(Locale.ROOT, "%.2f", TeemingConfig.spawnChance(mob.id()));
         String density = String.format(Locale.ROOT, "%.2f", TeemingConfig.spawningDensity());
-        source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.numbers", name, mob.weight(), mob.groupMin(), mob.groupMax(), chance, density,
-                mob.apex() ? 1 : TeemingConfig.localCap()), false);
+        source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.numbers", name, mob.groupMin(), mob.groupMax(), chance, density,
+                TeemingSpawns.cap(mob), TeemingSpawns.capRadius(mob)), false);
         if (!mob.spawner().isEmpty()) {
             source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.rule", mob.spawner()), false);
         }
+        BlockPos at = BlockPos.containing(source.getPosition());
+        int listed = listWeight(level, at, mob);
+        if (listed > 0) source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.weight", biomeId(level.getBiome(at)), listed), false);
         TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
         List<String> here = level.getChunkSource().getGenerator().getBiomeSource().possibleBiomes().stream()
                 .filter(biome -> biome.is(tag)).map(TeemingCommand::biomeId).sorted().toList();
@@ -156,10 +162,19 @@ public final class TeemingCommand {
                     : Component.translatable("commands.teeming.spawns.biomes", here.size(), list);
             source.sendSuccess(() -> biomes, false);
         }
-        Holder<Biome> standing = level.getBiome(BlockPos.containing(source.getPosition()));
+        Holder<Biome> standing = level.getBiome(at);
         boolean fits = tagged == 0 || standing.is(tag);
         source.sendSuccess(() -> Component.translatable(fits ? "commands.teeming.spawns.here_yes" : "commands.teeming.spawns.here_no", biomeId(standing)), false);
         return here.size();
+    }
+
+    /** The mob's weight in the live spawn list the game uses at {@code pos}, after every loader and data change; 0 if absent. */
+    private static int listWeight(ServerLevel level, BlockPos pos, RosterStats.Entry mob) {
+        MobSpawnSettings settings = level.environmentAttributes().getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, pos);
+        var type = TeemingSpawns.type(mob).orElse(null);
+        if (type == null) return 0;
+        return settings.getMobsInCategory(TeemingSpawns.category(mob)).unwrap().stream()
+                .filter(w -> w.value().type() == type).mapToInt(Weighted::weight).sum();
     }
 
     private static String biomeId(Holder<Biome> biome) {

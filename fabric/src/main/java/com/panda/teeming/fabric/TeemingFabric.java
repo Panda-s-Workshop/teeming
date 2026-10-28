@@ -4,6 +4,7 @@ import com.panda.teeming.DevExit;
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.command.TeemingCommand;
+import com.panda.teeming.effect.NulledEffect;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.registry.ModMobs;
@@ -21,6 +22,7 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.biome.v1.ModificationPhase;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -36,6 +38,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -58,9 +61,14 @@ public final class TeemingFabric implements ModInitializer {
                     return i < 0 ? FIRST.size() : i;
                 }))
                 .forEach(TeemingFabric::registerAll);
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> DevExit.onServerStopped(server.isDedicatedServer()));
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            NulledEffect.reset();
+            DevExit.onServerStopped(server.isDedicatedServer());
+        });
         ResourceLoader.get(PackType.SERVER_DATA).registerReloadListener(Looks.ID, new Looks());
         ModMobs.attributes(FabricDefaultAttributeRegistry::register);
+        // the eggs also go in vanilla's Spawn Eggs tab, where players and pack makers look for them
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS).register(output -> ModMobs.EGGS.forEach(egg -> output.accept(egg.get())));
         ServerTickEvents.END_LEVEL_TICK.register(TeemingMod::onLevelTick);
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> TeemingCommand.register(dispatcher));
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {

@@ -39,19 +39,32 @@ import net.minecraft.world.item.ItemStack;
  * The Field Guide: an open book. Left page: tabs Overworld / Nether / End with seen and trophy counts, and the tab's
  * creatures ("???" until seen, a crown once its trophy is owned). Right page: the chosen creature, an ink silhouette
  * until seen, then turning, with its home and role; its tell, counter and drops once the player has killed it three
- * times. Read-only: the data is the synced player attachment.
+ * times. The right page's text is never cut: it flows onto as many sides as it needs ({@link #sides}), turned with the
+ * link at the page's foot or the Left and Right keys. Read-only: the data is the synced player attachment.
  */
 public class FieldGuideScreen extends Screen {
     static final Identifier BOOK = TeemingMod.id("textures/gui/field_guide.png");
     public static final int W = 300, H = 184;
-    static final int L_X = 14, L_W = 128, R_X = 158, R_W = 128;
+    static final int L_X = 14, L_W = 128, R_X = 158;
+    /** The right page's text width. */
+    public static final int R_W = 128;
     static final int TAB_X = L_X - 3, TAB_Y = 26, TAB_H = 12, TAB_GAP = 1, TAB_PAD = 4, LIST_Y = 56, ROW_H = 12;
     /** Rows that fit on the left page above its bottom margin; a longer list scrolls (the wheel, or the selection). */
     public static final int ROWS = (H - 8 - LIST_Y) / ROW_H;
     /** Keeps the tabs and the count clear of the spine's shadow on the left page's inner edge. */
     static final int SPINE_MARGIN = 8;
-    static final int MODEL_Y = 10, MODEL_H = 52, FLIP_Y = H - 22;
-    static final int SILHOUETTE_W = 124, SILHOUETTE_H = 50, DROPS_Y = FLIP_Y - 30;
+    static final int MODEL_Y = 10, MODEL_H = 52;
+    /** The row at the right page's foot that turns its sides (page-relative). */
+    public static final int FLIP_Y = H - 22;
+    /** Nothing on a side that has the turning row reaches below this (page-relative). */
+    public static final int FOOT = FLIP_Y - 2;
+    static final int SILHOUETTE_W = 124, SILHOUETTE_H = 50;
+    /** A wrapped line's height, the room after a paragraph, a heading's advance and the room above a heading. */
+    static final int LINE_H = 9, PARA_GAP = 3, HEAD_H = 10, HEAD_GAP = 2;
+    /** Where a side's text starts under the name at its top, when it carries no portrait. */
+    static final int TEXT_Y = MODEL_Y + 14;
+    /** A heading moves to the next side unless this many of its lines (or all, if fewer) fit under it. */
+    static final int HEAD_KEEP = 2;
     static final int INK = 0xFF34261A, INK_MUTED = 0xFF7A6650, ACCENT = 0xFF3E5A30, SELECT = 0x3343602F;
     /** The trophy crown, drawn from the book's sheet beside the book: a text glyph that small reads as a sprig. */
     static final int CROWN_U = 304, CROWN_V = 0, CROWN_W = 9, CROWN_H = 7;
@@ -66,7 +79,7 @@ public class FieldGuideScreen extends Screen {
     private int selected;
     /** The list row shown at the top of the page. */
     private int top;
-    /** Right page: 0 about (model, home, role), 1 tell and counter (once revealed). */
+    /** The right page's side shown, 0 the first (portrait, home, role); see {@link #sides}. */
     private int side;
     private float ticks;
 
@@ -118,7 +131,7 @@ public class FieldGuideScreen extends Screen {
         return Component.translatable("screen.teeming.field_guide.tab." + TABS[t].name().toLowerCase(java.util.Locale.ROOT));
     }
 
-    /** The link at the foot of the right page that turns between its two sides. */
+    /** The row at the foot of the right page that turns its sides: the left half back, the right half on. */
     public int[] flipBounds() {
         return new int[] {x0 + R_X, y0 + FLIP_Y, R_W, 10};
     }
@@ -201,6 +214,156 @@ public class FieldGuideScreen extends Screen {
         reveal(selected);
     }
 
+    /** The right page's side shown, kept within the shown creature's sides. */
+    public int side() {
+        Entry mob = shown();
+        return mob == null ? 0 : Mth.clamp(side, 0, sides(mob).size() - 1);
+    }
+
+    private Entry shown() {
+        List<Entry> list = entries(TABS[tab]);
+        return list.isEmpty() ? null : list.get(Math.min(selected, list.size() - 1));
+    }
+
+    // ---- the right page's sides (also used by the harness) --------------------------------------------------
+
+    /** What a piece of a side is, and how tall it draws. */
+    public enum Part {
+        PORTRAIT(MODEL_H), NAME(LINE_H), HEADING(LINE_H), LINE(LINE_H), STATUS(LINE_H), DROPS(26);
+
+        public final int height;
+
+        Part(int height) {
+            this.height = height;
+        }
+    }
+
+    /**
+     * One thing drawn on a side at page-relative {@code y}: a wrapped line of {@code section} ("home", "role", "tell",
+     * "counter"), the heading over one, the name, the portrait, the looks or kills line, or the drops row. {@code width}
+     * is how wide it draws (a name with its crown).
+     */
+    public record Piece(Part part, String section, String text, int y, int width, int colour) {
+        public int bottom() {
+            return y + part.height;
+        }
+    }
+
+    /** One side of the right page: its pieces top to bottom, nothing reaching below {@code foot}; {@code fight} for the tell's sides. */
+    public record Side(List<Piece> pieces, int foot, boolean fight) {}
+
+    /**
+     * How a creature's right page lays out with the open player's progress, for the renderer and the harness alike. A
+     * seen creature's portrait, name, home, role and its looks (or kills) line flow down the first side and onto more
+     * as they need; once revealed, its tell, counter and drops start a side of their own and flow the same way. Every
+     * side after the first carries the name at its top, a heading keeps its first lines with it, and nothing is cut.
+     * An unseen creature has one side, its silhouette, drawn on its own.
+     */
+    public List<Side> sides(Entry mob) {
+        FieldGuideProgress p = progress();
+        if (!p.hasSeen(mob.id())) return List.of(new Side(List.of(), FOOT, false));
+        boolean revealed = p.revealed(mob.id());
+        String name = Component.translatable("entity.teeming." + mob.id()).getString();
+        int nameW = font.width(name) + (p.hasTrophy(mob.id()) ? NAME_GAP + CROWN_W : 0);
+        Flow flow = new Flow(name, nameW);
+        flow.add(Part.PORTRAIT, null, "", R_W, 0, MODEL_H + 3);
+        flow.add(Part.NAME, null, name, nameW, INK, 12);
+        flow.para("home", null, ACCENT, mob);
+        flow.para("role", null, INK, mob);
+        String status = revealed
+                ? Component.translatable("screen.teeming.field_guide.looks", (int) mob.looks().stream().filter(l -> p.hasSeenLook(mob.id(), l)).count(), mob.looks().size()).getString()
+                : Component.translatable("screen.teeming.field_guide.kills", p.killsOf(mob.id()), p.revealAt()).getString();
+        flow.room(LINE_H);
+        Piece looks = flow.add(Part.STATUS, null, status, font.width(status), INK_MUTED, LINE_H);
+        int aboutSides = flow.close();
+        if (revealed) {
+            flow.side(true);
+            flow.para("tell", "tell", INK, mob);
+            flow.para("counter", "counter", INK, mob);
+            int icons = (int) MobDrops.of(mob.id()).stream().filter(id -> BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).isPresent()).count();
+            Component drops = Component.translatable("screen.teeming.field_guide.drops");
+            flow.gap(Part.DROPS.height);
+            flow.add(Part.DROPS, null, drops.getString(), Math.max(font.width(drops), icons * 18 - 2), ACCENT, Part.DROPS.height);
+            flow.close();
+        }
+        // the looks or kills line sits at the foot of the last about side; alone on the page, in the turning row
+        List<Side> sides = flow.sides;
+        boolean alone = sides.size() == 1;
+        Side last = sides.get(aboutSides - 1);
+        List<Piece> pieces = new ArrayList<>(last.pieces());
+        pieces.set(pieces.indexOf(looks), new Piece(looks.part(), null, looks.text(), alone ? FLIP_Y : FLIP_Y - 11, looks.width(), looks.colour()));
+        sides.set(aboutSides - 1, new Side(List.copyOf(pieces), alone ? FLIP_Y + LINE_H : FOOT, false));
+        return List.copyOf(sides);
+    }
+
+    /** Lays pieces down the right page's sides, starting a side when the next one would reach below {@link #FOOT}. */
+    private final class Flow {
+        final List<Side> sides = new ArrayList<>();
+        final String name;
+        final int nameW;
+        List<Piece> pieces = new ArrayList<>();
+        int y = MODEL_Y;
+        boolean fight;
+        /** Nothing but the name is on the side yet, so a heading needs no room above it. */
+        boolean fresh = true;
+
+        Flow(String name, int nameW) {
+            this.name = name;
+            this.nameW = nameW;
+        }
+
+        Piece add(Part part, String section, String text, int width, int colour, int advance) {
+            Piece piece = new Piece(part, section, text, y, width, colour);
+            pieces.add(piece);
+            y += advance;
+            fresh = false;
+            return piece;
+        }
+
+        /** Starts a new side, the name at its top. */
+        void side(boolean fight) {
+            close();
+            this.fight = fight;
+            y = MODEL_Y;
+            add(Part.NAME, null, name, nameW, INK, TEXT_Y - MODEL_Y);
+            fresh = true;
+        }
+
+        /** Turns to a new side unless {@code height} more fits on this one. */
+        void room(int height) {
+            if (y + height > FOOT) side(fight);
+        }
+
+        /** The room above a heading or the drops row, then a new side unless {@code height} fits under it. */
+        void gap(int height) {
+            if (!fresh) y += HEAD_GAP;
+            if (y + height > FOOT) side(fight);
+        }
+
+        /** A paragraph of the creature's {@code section} text, wrapped to the page, under its heading if it has one. */
+        void para(String section, String heading, int colour, Entry mob) {
+            List<String> lines = font.getSplitter().splitLines(Component.translatable("guide.teeming." + mob.id() + "." + section), R_W, Style.EMPTY)
+                    .stream().map(FormattedText::getString).toList();
+            if (heading != null) {
+                Component label = Component.translatable("screen.teeming.field_guide." + heading);
+                gap(HEAD_H + Math.min(HEAD_KEEP, lines.size()) * LINE_H);
+                add(Part.HEADING, section, label.getString(), font.width(label), ACCENT, HEAD_H);
+            }
+            for (String line : lines) {
+                room(LINE_H);
+                add(Part.LINE, section, line, font.width(line), colour, LINE_H);
+            }
+            y += PARA_GAP;
+        }
+
+        /** Ends the side being laid; returns how many sides there are. */
+        int close() {
+            if (!pieces.isEmpty()) sides.add(new Side(List.copyOf(pieces), FOOT, fight));
+            pieces = new ArrayList<>();
+            return sides.size();
+        }
+    }
+
     private static boolean in(double mx, double my, int[] b) {
         return b != null && mx >= b[0] && mx < b[0] + b[2] && my >= b[1] && my < b[1] + b[3];
     }
@@ -213,9 +376,16 @@ public class FieldGuideScreen extends Screen {
         return true;
     }
 
-    /** Up and down move the selection a row, Page Up and Page Down a page; the list scrolls to keep it in view. */
+    /**
+     * Up and down move the selection a row, Page Up and Page Down a page; the list scrolls to keep it in view. Left and
+     * right turn the right page's sides.
+     */
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (event.isLeft() || event.isRight()) {
+            turnSide(event.isLeft() ? -1 : 1);
+            return true;
+        }
         int step = event.isUp() ? -1 : event.isDown() ? 1
                 : event.key() == InputConstants.KEY_PAGEUP ? -ROWS : event.key() == InputConstants.KEY_PAGEDOWN ? ROWS : 0;
         if (step == 0 || entries(TABS[tab]).isEmpty()) return super.keyPressed(event);
@@ -255,14 +425,27 @@ public class FieldGuideScreen extends Screen {
                     return true;
                 }
             }
-            if (!list.isEmpty() && in(event.x(), event.y(), flipBounds())
-                    && progress().revealed(list.get(Math.min(selected, list.size() - 1)).id())) {
-                side = 1 - side;
-                turn();
+            int[] flip = flipBounds();
+            if (!list.isEmpty() && in(event.x(), event.y(), flip)) {
+                // two sides, about and the tell: the link turns to the other; more: the half clicked turns back or on
+                int count = sides(shown()).size(), at = side();
+                if (count == 2) turnSide(at == 0 ? 1 : -1);
+                else turnSide(event.x() < flip[0] + flip[2] / 2.0 ? -1 : 1);
                 return true;
             }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    /** Turns the right page {@code dir} sides, if it has a side there; returns whether it turned. */
+    private boolean turnSide(int dir) {
+        Entry mob = shown();
+        if (mob == null) return false;
+        int to = side() + dir;
+        if (to < 0 || to >= sides(mob).size()) return false;
+        side = to;
+        turn();
+        return true;
     }
 
     private void turn() {
@@ -330,52 +513,45 @@ public class FieldGuideScreen extends Screen {
 
     private void drawRight(GuiGraphicsExtractor g, FieldGuideProgress p, Entry mob, float partial, int mx, int my) {
         int x = x0 + R_X, y = y0 + MODEL_Y;
-        boolean known = p.hasSeen(mob.id());
-        boolean revealed = p.revealed(mob.id());
-        Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
-        if (revealed && side == 1) {
-            centered(g, name, x + R_W / 2, y, INK);
-            int ty = labelled(g, "tell", mob, x, y + 14, DROPS_Y - 2);
-            labelled(g, "counter", mob, x, ty + 2, DROPS_Y - 2);
-            drops(g, mob, x, y0 + DROPS_Y, mx, my);
-            flip(g, "◀ " + Component.translatable("screen.teeming.field_guide.about").getString());
-            return;
-        }
-        if (known) {
-            LivingEntity portrait = portrait(mob, p);
-            if (portrait != null) {
-                int scale = (int) Math.max(8, Math.min(30, 46 / Math.max(mob.height(), mob.width() * 0.9F)));
-                float spin = Mth.sin((ticks + partial) * 0.04F) * 70.0F;
-                InventoryScreen.extractEntityInInventoryFollowsMouse(g, x, y, x + R_W, y + MODEL_H, scale, 0.0625F,
-                        x + R_W / 2.0F + spin, y + MODEL_H / 2.0F, portrait);
-            }
-        } else {
+        if (!p.hasSeen(mob.id())) {
             g.blit(RenderPipelines.GUI_TEXTURED, silhouette(mob), x + (R_W - SILHOUETTE_W) / 2, y + 1, 0, 0, SILHOUETTE_W, SILHOUETTE_H,
                     SILHOUETTE_W, SILHOUETTE_H);
-        }
-        int ty = y + MODEL_H + 3;
-        if (known && p.hasTrophy(mob.id())) {                 // its trophy is owned: the name and the crown, centred together
-            int w = font.width(name) + NAME_GAP + CROWN_W;
-            int nx = x + (R_W - w) / 2;
-            g.text(font, name, nx, ty, INK, false);
-            crown(g, nx + font.width(name) + NAME_GAP, ty);
-        } else {
-            centered(g, name, x + R_W / 2, ty, INK);
-        }
-        ty += 12;
-        if (!known) {
-            g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.unseen"), x, ty, R_W, INK_MUTED, false);
+            int ty = y + MODEL_H + 3;
+            centered(g, Component.translatable("screen.teeming.field_guide.unknown"), x + R_W / 2, ty, INK);
+            g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.unseen"), x, ty + 12, R_W, INK_MUTED, false);
             return;
         }
-        int foot = revealed ? FLIP_Y - 12 : FLIP_Y - 2;
-        ty = para(g, Component.translatable("guide.teeming." + mob.id() + ".home"), x, ty, ACCENT, foot);
-        para(g, Component.translatable("guide.teeming." + mob.id() + ".role"), x, ty, INK, foot);
-        if (revealed) {
-            int seenLooks = (int) mob.looks().stream().filter(l -> p.hasSeenLook(mob.id(), l)).count();
-            g.text(font, Component.translatable("screen.teeming.field_guide.looks", seenLooks, mob.looks().size()), x, y0 + FLIP_Y - 11, INK_MUTED, false);
-            flip(g, Component.translatable("screen.teeming.field_guide.fight").getString() + " ▶");
-        } else {
-            g.text(font, Component.translatable("screen.teeming.field_guide.kills", p.killsOf(mob.id()), p.revealAt()), x, y0 + FLIP_Y, INK_MUTED, false);
+        List<Side> sides = sides(mob);
+        int at = side();
+        for (Piece piece : sides.get(at).pieces()) {
+            int py = y0 + piece.y();
+            switch (piece.part()) {
+                case PORTRAIT -> {
+                    LivingEntity portrait = portrait(mob, p);
+                    if (portrait != null) {
+                        int scale = (int) Math.max(8, Math.min(30, 46 / Math.max(mob.height(), mob.width() * 0.9F)));
+                        float spin = Mth.sin((ticks + partial) * 0.04F) * 70.0F;
+                        InventoryScreen.extractEntityInInventoryFollowsMouse(g, x, py, x + R_W, py + MODEL_H, scale, 0.0625F,
+                                x + R_W / 2.0F + spin, py + MODEL_H / 2.0F, portrait);
+                    }
+                }
+                case NAME -> {                                   // an owned trophy: the name and the crown, centred together
+                    int nx = x + (R_W - piece.width()) / 2;
+                    g.text(font, piece.text(), nx, py, piece.colour(), false);
+                    if (p.hasTrophy(mob.id())) crown(g, nx + font.width(piece.text()) + NAME_GAP, py);
+                }
+                case DROPS -> drops(g, mob, x, py, mx, my);
+                default -> g.text(font, piece.text(), x, py, piece.colour(), false);
+            }
+        }
+        if (sides.size() == 2 && p.revealed(mob.id())) {      // about and the tell: a named link to the other
+            flip(g, at == 0 ? Component.translatable("screen.teeming.field_guide.fight").getString() + " ▶"
+                    : "◀ " + Component.translatable("screen.teeming.field_guide.about").getString());
+        } else if (sides.size() > 1) {                        // more: back and on, and which side of how many
+            int[] b = flipBounds();
+            if (at > 0) g.text(font, "◀", b[0], b[1], ACCENT, false);
+            if (at < sides.size() - 1) g.text(font, "▶", b[0] + b[2] - font.width("▶"), b[1], ACCENT, false);
+            centered(g, (at + 1) + " / " + sides.size(), b[0] + b[2] / 2, b[1], INK_MUTED);
         }
     }
 
@@ -398,11 +574,6 @@ public class FieldGuideScreen extends Screen {
         g.text(font, label, b[0] + b[2] - font.width(label), b[1], ACCENT, false);
     }
 
-    private int labelled(GuiGraphicsExtractor g, String key, Entry mob, int x, int y, int foot) {
-        g.text(font, Component.translatable("screen.teeming.field_guide." + key), x, y, ACCENT, false);
-        return para(g, Component.translatable("guide.teeming." + mob.id() + "." + key), x, y + 10, INK, foot);
-    }
-
     /** The drops row: a label and the items' icons, each naming itself on hover. */
     private void drops(GuiGraphicsExtractor g, Entry mob, int x, int y, int mx, int my) {
         g.text(font, Component.translatable("screen.teeming.field_guide.drops"), x, y, ACCENT, false);
@@ -421,21 +592,6 @@ public class FieldGuideScreen extends Screen {
 
     private Identifier silhouette(Entry mob) {
         return silhouettes.computeIfAbsent(mob.id(), id -> TeemingMod.id("textures/gui/field_guide/silhouette/" + id + ".png"));
-    }
-
-    /** Wrapped text that stops above {@code foot} (page-relative), its last line ending in "…" if cut; returns the next line's y. */
-    private int para(GuiGraphicsExtractor g, Component text, int x, int y, int colour, int foot) {
-        int bottom = y0 + foot;
-        List<FormattedText> lines = font.getSplitter().splitLines(text, R_W, Style.EMPTY);
-        for (int i = 0; i < lines.size(); i++) {
-            if (y + 9 > bottom) break;
-            String line = lines.get(i).getString();
-            boolean cut = i + 1 < lines.size() && y + 18 > bottom;
-            if (cut) line = font.plainSubstrByWidth(line.stripTrailing(), R_W - font.width("…")) + "…";
-            g.text(font, line, x, y, colour, false);
-            y += 9;
-        }
-        return y + 3;
     }
 
     /** A client-only copy of the creature in the first look the player saw (or its base look), for the page. */
