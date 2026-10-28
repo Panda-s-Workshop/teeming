@@ -131,6 +131,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_LURED = sound("cindermoth_swarm.lured");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_BORED = sound("cindermoth_swarm.bored");
     public static final DeferredHolder<SoundEvent, SoundEvent> CINDERMOTH_SWARM_SCATTER = sound("cindermoth_swarm.scatter");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_AMBIENT = sound("driftsong.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_HURT = sound("driftsong.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_DEATH = sound("driftsong.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_SWELL = sound("driftsong.swell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_SONG = sound("driftsong.song");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_SONG_ECHO = sound("driftsong.song_echo");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DRIFTSONG_DIVE = sound("driftsong.dive");
     public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_AMBIENT = sound("dripfang.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_HURT = sound("dripfang.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> DRIPFANG_DEATH = sound("dripfang.death");

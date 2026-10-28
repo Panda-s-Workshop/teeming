@@ -103,6 +103,7 @@ public final class CreatureLayers {
     public static final ModelLayerLocation WINGSHEAR = new ModelLayerLocation(TeemingMod.id("wingshear"), "main");
     public static final ModelLayerLocation GRAND_ORRERY = new ModelLayerLocation(TeemingMod.id("grand_orrery"), "main");
     public static final ModelLayerLocation RESONANT_TRIAD = new ModelLayerLocation(TeemingMod.id("resonant_triad"), "main");
+    public static final ModelLayerLocation DRIFTSONG = new ModelLayerLocation(TeemingMod.id("driftsong"), "main");
 
     private CreatureLayers() {}
 
@@ -196,6 +197,7 @@ public final class CreatureLayers {
         out.register(WINGSHEAR, CreatureLayers::wingshear);
         out.register(GRAND_ORRERY, CreatureLayers::grandOrrery);
         out.register(RESONANT_TRIAD, CreatureLayers::resonantTriad);
+        out.register(DRIFTSONG, CreatureLayers::driftsong);
     }
 
     public static LayerDefinition thornhorn() {
@@ -2761,4 +2763,30 @@ public final class CreatureLayers {
             Map.entry("hook_r", new String[] {"rose_triad"}),
             Map.entry("tip_l", new String[] {"base"}),
             Map.entry("tip_r", new String[] {"base"}));
+
+    public static LayerDefinition driftsong() {
+        MeshDefinition mesh = new MeshDefinition();
+        PartDefinition root = mesh.getRoot();
+        PartDefinition p_body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 0).addBox(-10.0F, -7.0F, -19.0F, 20.0F, 14.0F, 36.0F).texOffs(200, 44).addBox(1.5F, -8.0F, -15.0F, 6.0F, 1.0F, 6.0F).texOffs(224, 44).addBox(-7.5F, -8.0F, -10.0F, 6.0F, 1.0F, 6.0F).texOffs(148, 78).addBox(1.5F, -8.0F, -5.0F, 6.0F, 1.0F, 6.0F).texOffs(222, 98).addBox(-7.5F, -8.0F, 0.0F, 6.0F, 1.0F, 6.0F).texOffs(230, 105).addBox(1.5F, -8.0F, 5.0F, 6.0F, 1.0F, 6.0F).texOffs(230, 112).addBox(-7.5F, -8.0F, 10.0F, 6.0F, 1.0F, 6.0F), PartPose.offsetAndRotation(0.0F, 16.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_head = p_body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 118).addBox(-8.0F, -6.0F, -10.0F, 16.0F, 9.0F, 10.0F).texOffs(222, 89).addBox(-6.0F, -4.0F, -12.8F, 12.0F, 6.0F, 3.0F).texOffs(170, 130).addBox(-7.5F, 2.9F, -9.6F, 15.0F, 0.0F, 9.0F), PartPose.offsetAndRotation(0.0F, -1.0F, -18.6F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("jaw", CubeListBuilder.create().texOffs(120, 130).addBox(-7.0F, 0.0F, -11.0F, 14.0F, 3.0F, 11.0F), PartPose.offsetAndRotation(0.0F, 3.2F, -1.0F, 0.0F, 0.0F, 0.0F));
+        p_head.addOrReplaceChild("streamer_right", CubeListBuilder.create().texOffs(200, 24).addBox(-3.0F, 0.0F, 0.0F, 6.0F, 0.0F, 20.0F).texOffs(74, 99).addBox(-3.0F, 0.25F, 0.0F, 6.0F, 0.0F, 20.0F), PartPose.offsetAndRotation(-6.0F, -6.4F, -4.0F, 0.0698F, -0.2793F, 0.0F));
+        p_head.addOrReplaceChild("streamer_left", CubeListBuilder.create().texOffs(126, 110).addBox(-3.0F, 0.0F, 0.0F, 6.0F, 0.0F, 20.0F).texOffs(178, 110).addBox(-3.0F, 0.25F, 0.0F, 6.0F, 0.0F, 20.0F), PartPose.offsetAndRotation(6.0F, -6.4F, -4.0F, 0.0698F, 0.2793F, 0.0F));
+        PartDefinition p_tail = p_body.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(200, 0).addBox(-7.0F, -5.0F, 0.0F, 14.0F, 10.0F, 14.0F), PartPose.offsetAndRotation(0.0F, -1.0F, 16.5F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_tail_tip = p_tail.addOrReplaceChild("tail_tip", CubeListBuilder.create().texOffs(80, 119).addBox(-4.0F, -3.0F, 0.0F, 8.0F, 6.0F, 12.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 13.5F, 0.0F, 0.0F, 0.0F));
+        p_tail_tip.addOrReplaceChild("tail_fin", CubeListBuilder.create().texOffs(52, 119).addBox(0.0F, -10.0F, -1.0F, 0.0F, 20.0F, 14.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 11.5F, 0.0F, 0.0F, 0.0F));
+        PartDefinition p_wing_right = p_body.addOrReplaceChild("wing_right", CubeListBuilder.create().texOffs(112, 0).addBox(-18.0F, 0.0F, -4.0F, 18.0F, 0.0F, 26.0F).texOffs(112, 26).addBox(-18.0F, 0.25F, -4.0F, 18.0F, 0.0F, 26.0F), PartPose.offsetAndRotation(-9.5F, -2.0F, -10.0F, 0.0F, 0.0F, 0.1745F));
+        p_wing_right.addOrReplaceChild("wing_right_tip", CubeListBuilder.create().texOffs(0, 76).addBox(-16.0F, 0.0F, -1.0F, 16.0F, 0.0F, 21.0F).texOffs(74, 78).addBox(-16.0F, 0.25F, -1.0F, 16.0F, 0.0F, 21.0F), PartPose.offsetAndRotation(-18.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("fin_right", CubeListBuilder.create().texOffs(218, 130).addBox(-10.0F, 0.0F, -3.0F, 10.0F, 0.0F, 9.0F).texOffs(0, 137).addBox(-10.0F, 0.25F, -3.0F, 10.0F, 0.0F, 9.0F), PartPose.offsetAndRotation(-9.5F, 4.0F, 9.0F, 0.0F, 0.0F, -0.3491F));
+        PartDefinition p_wing_left = p_body.addOrReplaceChild("wing_left", CubeListBuilder.create().texOffs(0, 50).addBox(0.0F, 0.0F, -4.0F, 18.0F, 0.0F, 26.0F).texOffs(88, 52).addBox(0.0F, 0.25F, -4.0F, 18.0F, 0.0F, 26.0F), PartPose.offsetAndRotation(9.5F, -2.0F, -10.0F, 0.0F, 0.0F, -0.1745F));
+        p_wing_left.addOrReplaceChild("wing_left_tip", CubeListBuilder.create().texOffs(148, 89).addBox(0.0F, 0.0F, -1.0F, 16.0F, 0.0F, 21.0F).texOffs(0, 97).addBox(0.0F, 0.25F, -1.0F, 16.0F, 0.0F, 21.0F), PartPose.offsetAndRotation(18.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        p_body.addOrReplaceChild("fin_left", CubeListBuilder.create().texOffs(80, 137).addBox(0.0F, 0.0F, -3.0F, 10.0F, 0.0F, 9.0F).texOffs(170, 139).addBox(0.0F, 0.25F, -3.0F, 10.0F, 0.0F, 9.0F), PartPose.offsetAndRotation(9.5F, 4.0F, 9.0F, 0.0F, 0.0F, 0.3491F));
+        p_body.addOrReplaceChild("crest", CubeListBuilder.create().texOffs(176, 52).addBox(0.0F, -14.0F, -15.0F, 0.0F, 7.0F, 30.0F), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F));
+        return LayerDefinition.create(mesh, 256, 256);
+    }
+    /** Parts shown only for some variants of driftsong. */
+    public static final Map<String, String[]> DRIFTSONG_ONLY = Map.ofEntries(
+            Map.entry("crest", new String[] {"starlit_leviathan"}),
+            Map.entry("streamer_left", new String[] {"starlit_leviathan"}),
+            Map.entry("streamer_right", new String[] {"starlit_leviathan"}));
 }

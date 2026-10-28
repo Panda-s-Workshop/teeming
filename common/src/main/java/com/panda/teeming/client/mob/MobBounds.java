@@ -96,7 +96,8 @@ public final class MobBounds {
             Map.entry("pearlshell_snail", new float[] {0.562F, 0.763F, 1.380F}),
             Map.entry("wingshear", new float[] {2.791F, 0.339F, 1.809F}),
             Map.entry("grand_orrery", new float[] {2.112F, 1.544F, 1.958F}),
-            Map.entry("resonant_triad", new float[] {0.625F, 1.125F, 0.250F})
+            Map.entry("resonant_triad", new float[] {0.625F, 1.125F, 0.250F}),
+            Map.entry("driftsong", new float[] {10.757F, 2.500F, 10.738F})
     );
 
     public static float @Nullable [] of(String mob) {

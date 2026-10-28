@@ -89,6 +89,7 @@ import com.panda.teeming.gametest.mob.PearlshellSnailTests;
 import com.panda.teeming.gametest.mob.WingshearTests;
 import com.panda.teeming.gametest.mob.GrandOrreryTests;
 import com.panda.teeming.gametest.mob.ResonantTriadTests;
+import com.panda.teeming.gametest.mob.DriftsongTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -187,5 +188,6 @@ final class MobTests {
         WingshearTests.register(out);
         GrandOrreryTests.register(out);
         ResonantTriadTests.register(out);
+        DriftsongTests.register(out);
     }
 }

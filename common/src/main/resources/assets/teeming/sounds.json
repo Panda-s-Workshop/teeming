@@ -1954,6 +1954,116 @@
       }
     ]
   },
+  "driftsong.ambient": {
+    "subtitle": "subtitles.teeming.driftsong.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.elder_guardian.ambient",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.conduit.ambient",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.6
+      }
+    ]
+  },
+  "driftsong.hurt": {
+    "subtitle": "subtitles.teeming.driftsong.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.elder_guardian.hurt",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.elder_guardian.flop",
+        "type": "event",
+        "pitch": 0.45,
+        "volume": 0.6
+      }
+    ]
+  },
+  "driftsong.death": {
+    "subtitle": "subtitles.teeming.driftsong.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.elder_guardian.death",
+        "type": "event",
+        "pitch": 0.45
+      },
+      {
+        "name": "minecraft:block.conduit.deactivate",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "driftsong.swell": {
+    "subtitle": "subtitles.teeming.driftsong.swell",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.didgeridoo",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:block.conduit.activate",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "driftsong.song": {
+    "subtitle": "subtitles.teeming.driftsong.song",
+    "sounds": [
+      {
+        "name": "minecraft:item.goat_horn.sound.1",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:item.goat_horn.sound.6",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "driftsong.song_echo": {
+    "subtitle": "subtitles.teeming.driftsong.song_echo",
+    "sounds": [
+      {
+        "name": "minecraft:entity.elder_guardian.ambient",
+        "type": "event",
+        "pitch": 0.35
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "driftsong.dive": {
+    "subtitle": "subtitles.teeming.driftsong.dive",
+    "sounds": [
+      {
+        "name": "minecraft:entity.elder_guardian.flop",
+        "type": "event",
+        "pitch": 0.4
+      },
+      {
+        "name": "minecraft:entity.phantom.swoop",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.8
+      }
+    ]
+  },
   "dripfang.ambient": {
     "subtitle": "subtitles.teeming.dripfang.ambient",
     "sounds": [

@@ -96,7 +96,8 @@ public final class MobDrops {
             Map.entry("pearlshell_snail", List.of("teeming:trophy")),
             Map.entry("wingshear", List.of("teeming:void_membrane", "teeming:trophy")),
             Map.entry("grand_orrery", List.of("teeming:star_mote", "minecraft:purpur_block", "minecraft:popped_chorus_fruit", "teeming:trophy")),
-            Map.entry("resonant_triad", List.of("teeming:void_crystal", "minecraft:amethyst_shard", "teeming:trophy"))
+            Map.entry("resonant_triad", List.of("teeming:void_crystal", "minecraft:amethyst_shard", "teeming:trophy")),
+            Map.entry("driftsong", List.of("teeming:void_membrane", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {

@@ -187,5 +187,7 @@ public final class MobRenderers {
                 Set.of("base"), 0.9F, 1.0F, 3, true));
         out.register(ModMobs.RESONANT_TRIAD.get(), ctx -> new TeemingRenderer<>(ctx, new ResonantTriadModel(ctx.bakeLayer(CreatureLayers.RESONANT_TRIAD)), "resonant_triad",
                 Set.of("base", "rose_triad"), 0.25F, 1.0F, 4, true));
+        out.register(ModMobs.DRIFTSONG.get(), ctx -> new TeemingRenderer<>(ctx, new DriftsongModel(ctx.bakeLayer(CreatureLayers.DRIFTSONG)), "driftsong",
+                Set.of("base", "starlit_leviathan"), 2.5F, 2.0F, 2, false));
     }
 }
