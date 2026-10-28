@@ -61,8 +61,10 @@ import org.jspecify.annotations.Nullable;
  * health added up. A rejoined colossus is fused: its seam is sealed and it never splits again.
  *
  * <p>Counter: kill one half within the 100 ticks; the other goes dark and fights on alone, and never rejoins. Each half
- * drops a whole colossus's drops (its void crystal and leftovers) and half its experience, so a colossus beaten half
- * by half drops twice; a fused one is one colossus again and drops once.
+ * gives half its experience. The first half to fall drops a whole colossus's drops (its void crystal, its leftovers and
+ * its trophy roll); the second drops them again only if a player split it with one heavy hit and both halves fell
+ * inside those 100 ticks. A colossus worn below half, or one whose halves took longer, drops once; so does a fused
+ * one, which is one colossus again.
  *
  * <p>The halves are this same entity type in another form, kept in the synced flags ({@link Form}). The colossus
  * itself becomes the left half; the right half is new, made at the split, and stays exactly as persistent as the
@@ -146,6 +148,14 @@ public class ShardlingColossus extends TeemingMonster {
     private @Nullable UUID twinId;
     private @Nullable ShardlingColossus twin;
     private long splitAt;
+    /**
+     * A half: whether a player's single hit of {@link #SPLIT_HIT} or more split it (not wearing it below half), the game
+     * time of the split (never moved by a try at rejoining), and whether its twin has already fallen and dropped the
+     * colossus's drops.
+     */
+    private boolean heavy;
+    private long splitTime;
+    private boolean twinFell;
     /** The right half, made at the split; and whether the colossus it came from was kept from despawning then. */
     private boolean made;
     private boolean kept;
@@ -374,23 +384,33 @@ public class ShardlingColossus extends TeemingMonster {
 
     // ---- the split -------------------------------------------------------------------------------------------------
 
-    /** A hit of 8 or more, or one that leaves it below half its health, splits a whole colossus that isn't fused. */
+    /**
+     * A hit of 12 or more, or one that leaves it below half its health, splits a whole colossus that isn't fused. A
+     * player's hit of 12 or more makes it a heavy split, whatever health it leaves.
+     */
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         boolean hurt = super.hurtServer(level, source, amount);
         if (hurt && isAlive() && !isRemoved() && form() == Form.WHOLE && !fused
                 && (amount >= SPLIT_HIT || getHealth() < getMaxHealth() * SPLIT_BELOW)) {
-            split(source.getEntity() instanceof LivingEntity by ? by : null, SPLIT_TICKS);
+            split(source.getEntity() instanceof LivingEntity by ? by : null, SPLIT_TICKS,
+                    amount >= SPLIT_HIT && source.getEntity() instanceof Player);
         }
         return hurt;
     }
 
+    /** A split that wasn't a player's heavy hit: {@link #split(LivingEntity, int, boolean)} with {@code heavy} false. */
+    public @Nullable ShardlingColossus split(@Nullable LivingEntity by, int ticks) {
+        return split(by, ticks, false);
+    }
+
     /**
      * The split: it becomes the left half, and the right half stands up beside it, each at scale 0.7 with half the
-     * health it had (and half its maximum), staggering for {@code ticks} and then after {@code by}. A vetoed "split"
-     * leaves it whole. Returns the new right half, or null if it didn't split. Public as a test hook.
+     * health it had (and half its maximum), staggering for {@code ticks} and then after {@code by}. {@code heavy}: a
+     * player's single heavy hit split it, so both halves falling inside {@link #REJOIN_AFTER} pays the drops twice. A
+     * vetoed "split" leaves it whole. Returns the new right half, or null if it didn't split. Public as a test hook.
      */
-    public @Nullable ShardlingColossus split(@Nullable LivingEntity by, int ticks) {
+    public @Nullable ShardlingColossus split(@Nullable LivingEntity by, int ticks, boolean heavy) {
         if (!(level() instanceof ServerLevel level) || form() != Form.WHOLE || fused || isRemoved() || !isAlive()) return null;
         if (!core().start(Step.SPLIT, ticks, by)) return null;
         float each = getHealth() * HALF_SHARE;
@@ -432,6 +452,11 @@ public class ShardlingColossus extends TeemingMonster {
         twin = right;
         splitAt = level.getGameTime();
         right.splitAt = splitAt;
+        for (ShardlingColossus h : java.util.List.of(this, right)) {
+            h.heavy = heavy;
+            h.splitTime = splitAt;
+            h.twinFell = false;
+        }
         place(level, this, at.add(side));
         place(level, right, at.subtract(side));
         if (target != null) setTarget(target);
@@ -479,6 +504,8 @@ public class ShardlingColossus extends TeemingMonster {
         twin = null;
         made = false;
         kept = false;
+        heavy = false;
+        twinFell = false;
         xpReward = XP;
         refreshDimensions();
     }
@@ -627,10 +654,31 @@ public class ShardlingColossus extends TeemingMonster {
         super.die(source);
     }
 
+    /**
+     * The colossus's drops once: the first half to fall drops them; the second drops them again only after a heavy
+     * split, falling inside {@link #REJOIN_AFTER} of it (so both halves did).
+     */
+    @Override
+    protected boolean shouldDropLoot(ServerLevel level) {
+        if (form() != Form.WHOLE && twinFell && !paysTwice(level)) return false;
+        return super.shouldDropLoot(level);
+    }
+
+    /** True for a half of a heavy split, still inside {@link #REJOIN_AFTER} of it. Public as a test hook. */
+    public boolean paysTwice(ServerLevel level) {
+        return form() != Form.WHOLE && heavy && level.getGameTime() - splitTime < REJOIN_AFTER;
+    }
+
+    /** True for a half whose split was a player's heavy hit. Public as a test hook. */
+    public boolean heavy() {
+        return heavy;
+    }
+
     /** Its twin is dead: it can't rejoin now. Its seam's light gutters out in dark dust, with a dull chime. */
     private void sever(ServerLevel level, @Nullable LivingEntity by) {
         twinId = null;
         twin = null;
+        twinFell = true;
         if (core().in(Step.REGROUP)) core().end();
         if (!MechanicEvent.post(this, "sever", by)) return;
         double y = getY() + getBbHeight() * 0.6;
@@ -664,11 +712,15 @@ public class ShardlingColossus extends TeemingMonster {
         output.putBoolean("Kept", kept);
         if (twinId != null) output.putString("Twin", twinId.toString());
         output.putInt("SlamWait", untilSlam);
+        output.putBoolean("Heavy", heavy);
+        output.putInt("SplitAge", (int) Math.clamp(level().getGameTime() - splitTime, 0L, Integer.MAX_VALUE));
+        output.putBoolean("TwinFell", twinFell);
     }
 
     /**
-     * A half keeps its form, its twin's id and its clock (its scale and health share are saved modifiers); a fused
-     * colossus stays fused; the wait to the next slam survives. A reload mid-tell, mid-walk or mid-split ends it.
+     * A half keeps its form, its twin's id and its clock (its scale and health share are saved modifiers), whether its
+     * split was heavy and how long ago, and whether its twin has fallen; a fused colossus stays fused; the wait to the
+     * next slam survives. A reload mid-tell, mid-walk or mid-split ends it.
      */
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
@@ -688,6 +740,9 @@ public class ShardlingColossus extends TeemingMonster {
             twinId = null;
         }
         untilSlam = Math.max(0, input.getIntOr("SlamWait", 0));
+        heavy = input.getBooleanOr("Heavy", false);
+        splitTime = level().getGameTime() - Math.max(0, input.getIntOr("SplitAge", 0));
+        twinFell = input.getBooleanOr("TwinFell", false);
         xpReward = f == Form.WHOLE.ordinal() ? XP : HALF_XP;
         refreshDimensions();
     }

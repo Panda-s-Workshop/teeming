@@ -21,6 +21,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -44,9 +45,11 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * dealt, before its armour; so does a hit that leaves it below half its health (exactly half doesn't). The halves are
  * at scale 0.7 (a 0.98 x 1.82 hitbox) with half its health each and half its maximum, hit for 6, and set off to rejoin
  * exactly 100 ticks after the split. Failing the counter: they rejoin into one fused colossus with their health added
- * up, which never splits again. The counter: one half killed inside the 100 ticks leaves the other a half for good, and
- * each half drops its own void crystal. Vetoes, persistence of the halves, a reload, its stats and its home. Every
- * number is checked against a plain value.
+ * up, which never splits again. The counter: one half killed inside the 100 ticks leaves the other a half for good. The
+ * drops: the first half to fall drops a void crystal; the second drops another only when a player's single hit of 12
+ * split it and both halves fell inside the 100 ticks, so a colossus worn below half, or halves killed too slowly, pay
+ * once. Vetoes, persistence of the halves, a reload, its stats and its home. Every number is checked against a plain
+ * value.
  */
 public final class ShardlingColossusTests {
     private ShardlingColossusTests() {}
@@ -69,6 +72,11 @@ public final class ShardlingColossusTests {
         out.accept("shardling_colossus_counter", ShardlingColossusTests::counter);
         TeemingGameTests.wide("shardling_colossus_counter");
         TeemingGameTests.timeLimit("shardling_colossus_counter", 220);
+        out.accept("shardling_colossus_wear_split_pays_once", ShardlingColossusTests::wearSplitPaysOnce);
+        out.accept("shardling_colossus_heavy_split_pays_twice", ShardlingColossusTests::heavySplitPaysTwice);
+        TeemingGameTests.timeLimit("shardling_colossus_heavy_split_pays_twice", 160);
+        out.accept("shardling_colossus_heavy_split_too_slow", ShardlingColossusTests::heavySplitTooSlow);
+        TeemingGameTests.timeLimit("shardling_colossus_heavy_split_too_slow", 160);
         out.accept("shardling_colossus_tell_veto", ShardlingColossusTests::tellVeto);
         out.accept("shardling_colossus_split_veto", ShardlingColossusTests::splitVeto);
         out.accept("shardling_colossus_halves_kept", ShardlingColossusTests::halvesKept);
@@ -427,8 +435,8 @@ public final class ShardlingColossusTests {
 
     /**
      * The counter: the right half killed 30 ticks after the split drops a void crystal and leaves the left half a half,
-     * alone, for good: 140 ticks after the split it has never set off to rejoin. Killed too, the left half drops its own
-     * void crystal: two from one colossus.
+     * alone, for good: 140 ticks after the split it has never set off to rejoin. Killed then, past the 100 ticks and from
+     * a split that no player's heavy hit made, the left half drops no second crystal: one from one colossus.
      */
     private static void counter(GameTestHelper helper) {
         ShardlingColossus c = colossus(helper, MID_X, MID_Z);
@@ -455,7 +463,8 @@ public final class ShardlingColossusTests {
             c.hurtServer(helper.getLevel(), c.damageSources().magic(), 1000.0F);
         });
         helper.runAtTickTime(160, () -> {
-            helper.assertTrue(crystals.size() == 2, "each half dropped its own void crystal, saw " + crystals.size());
+            helper.assertTrue(c.isDeadOrDying(), "the left half is dead");
+            helper.assertTrue(crystals.size() == 1, "the second half dropped no second void crystal, saw " + crystals.size());
             helper.succeed();
         });
     }
@@ -463,6 +472,117 @@ public final class ShardlingColossusTests {
     private static List<ItemEntity> crystals(GameTestHelper helper) {
         return helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds(),
                 i -> i.isAlive() && i.getItem().is(ModMaterials.VOID_CRYSTAL.get()));
+    }
+
+    /** Every void crystal that turns up in the arena from now on, by id, counted each tick. */
+    private static Set<UUID> newCrystals(GameTestHelper helper) {
+        Set<UUID> before = new HashSet<>(), seen = new HashSet<>();
+        for (ItemEntity i : crystals(helper)) before.add(i.getUUID());
+        helper.onEachTick(() -> {
+            for (ItemEntity i : crystals(helper)) if (!before.contains(i.getUUID())) seen.add(i.getUUID());
+        });
+        return seen;
+    }
+
+    /** A player's blow of {@code amount} (as dealt, before armour), with the hurt cooldown cleared first. */
+    private static void strike(GameTestHelper helper, ShardlingColossus c, ServerPlayer player, float amount) {
+        c.damageCooldownTime = 0;
+        c.hurtServer(helper.getLevel(), c.damageSources().playerAttack(player), amount);
+    }
+
+    /**
+     * A colossus split by a player at tick 1, both halves held still (no AI, so neither walks to the player and its
+     * drops stay where they fell): {@code heavy}, by one blow of 12; otherwise worn down by blows of 10 (under 12; 8.8
+     * each through its armour), the third leaving it at 23.6, below half. Returns the two halves.
+     */
+    private static ShardlingColossus[] splitByPlayer(GameTestHelper helper, ShardlingColossus c, ServerPlayer player, boolean heavy) {
+        ShardlingColossus[] halves = {c, null};
+        helper.runAtTickTime(1, () -> {
+            if (heavy) {
+                strike(helper, c, player, 12.0F);
+            } else {
+                strike(helper, c, player, 10.0F);
+                strike(helper, c, player, 10.0F);
+                helper.assertTrue(c.form() == Form.WHOLE && near(c.getHealth(), 32.4), "two blows of 10 leave it whole at 32.4, got "
+                        + c.form() + " at " + c.getHealth());
+                strike(helper, c, player, 10.0F);
+            }
+            ShardlingColossus twin = c.twin(helper.getLevel());
+            helper.assertTrue(c.form() == Form.LEFT && twin != null, "the player's blows split it");
+            helper.assertTrue(c.heavy() == heavy && twin.heavy() == heavy, (heavy ? "a blow of 12 is a heavy split" : "wearing it down isn't a heavy split"));
+            c.setNoAi(true);
+            twin.setNoAi(true);
+            halves[1] = twin;
+        });
+        return halves;
+    }
+
+    private static void kill(GameTestHelper helper, ShardlingColossus half, ServerPlayer player) {
+        strike(helper, half, player, 1000.0F);
+        helper.assertTrue(half.isDeadOrDying(), "the half is dead");
+    }
+
+    /**
+     * Worn down, it pays once: a player's three blows of 10 split it below half, and both halves killed by the player 2
+     * and 4 ticks after the split, well inside the 100 ticks, drop one void crystal between them.
+     */
+    private static void wearSplitPaysOnce(GameTestHelper helper) {
+        ShardlingColossus c = colossus(helper, 5.5, 4.5);
+        ServerPlayer player = TestPlayers.survivor(helper, new Vec3(5.5, 1, 10.5));
+        Set<UUID> crystals = newCrystals(helper);
+        ShardlingColossus[] h = splitByPlayer(helper, c, player, false);
+        helper.runAtTickTime(3, () -> {
+            kill(helper, h[1], player);
+            helper.assertTrue(!h[0].paysTwice(helper.getLevel()), "a worn split never pays twice");
+        });
+        helper.runAtTickTime(5, () -> kill(helper, h[0], player));
+        helper.runAtTickTime(30, () -> {
+            helper.assertTrue(crystals.size() == 1, "a colossus worn in two drops one void crystal, saw " + crystals.size());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The counter done: a player's blow of 12 splits it, the right half is killed 3 ticks after the split and the left
+     * 99 ticks after, the last tick inside the 100; each drops a void crystal, two from one colossus.
+     */
+    private static void heavySplitPaysTwice(GameTestHelper helper) {
+        ShardlingColossus c = colossus(helper, 5.5, 4.5);
+        ServerPlayer player = TestPlayers.survivor(helper, new Vec3(5.5, 1, 10.5));
+        Set<UUID> crystals = newCrystals(helper);
+        ShardlingColossus[] h = splitByPlayer(helper, c, player, true);
+        helper.runAtTickTime(4, () -> kill(helper, h[1], player));
+        helper.runAtTickTime(20, () -> helper.assertTrue(crystals.size() == 1, "the first half dropped a void crystal, saw " + crystals.size()));
+        helper.runAtTickTime(100, () -> {
+            helper.assertTrue(h[0].age() == 99 && h[0].paysTwice(helper.getLevel()), "99 ticks after a heavy split the second half still pays, age "
+                    + h[0].age());
+            kill(helper, h[0], player);
+        });
+        helper.runAtTickTime(120, () -> {
+            helper.assertTrue(crystals.size() == 2, "both halves of a heavy split, killed in time, drop a void crystal each, saw " + crystals.size());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Too slow: a player's blow of 12 splits it, the right half is killed 30 ticks after the split, the left 100 ticks
+     * after, the first tick past the window; one void crystal between them.
+     */
+    private static void heavySplitTooSlow(GameTestHelper helper) {
+        ShardlingColossus c = colossus(helper, 5.5, 4.5);
+        ServerPlayer player = TestPlayers.survivor(helper, new Vec3(5.5, 1, 10.5));
+        Set<UUID> crystals = newCrystals(helper);
+        ShardlingColossus[] h = splitByPlayer(helper, c, player, true);
+        helper.runAtTickTime(31, () -> kill(helper, h[1], player));
+        helper.runAtTickTime(101, () -> {
+            helper.assertTrue(crystals.size() == 1, "the first half dropped a void crystal, saw " + crystals.size());
+            helper.assertTrue(h[0].age() == 100 && !h[0].paysTwice(helper.getLevel()), "100 ticks after the split the window is shut, age " + h[0].age());
+            kill(helper, h[0], player);
+        });
+        helper.runAtTickTime(121, () -> {
+            helper.assertTrue(crystals.size() == 1, "halves of a heavy split killed too slowly drop one void crystal, saw " + crystals.size());
+            helper.succeed();
+        });
     }
 
     // ---- vetoes, persistence, reload --------------------------------------------------------------------------------
