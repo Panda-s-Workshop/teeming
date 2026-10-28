@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -128,6 +129,13 @@ public final class HollowMournerTests {
                 h -> h.isAlive() && h.entityTags().contains(HollowMourner.RAISED_TAG));
     }
 
+    /** Every raised husk in the level near the arena, with its position relative to the arena. */
+    private static String raised(GameTestHelper helper) {
+        return helper.getLevel().getEntitiesOfClass(Husk.class, helper.getBounds().inflate(16.0), h -> h.entityTags().contains(HollowMourner.RAISED_TAG))
+                .stream().map(h -> String.format(Locale.ROOT, "%.2f %.2f %.2f%s", helper.relativeVec(h.position()).x, helper.relativeVec(h.position()).y,
+                        helper.relativeVec(h.position()).z, h.isAlive() ? "" : " dead")).toList().toString();
+    }
+
     /** Records the mourner's own tick count each time it posts a mechanic step; removed when the test ends. */
     private static Map<String, List<Integer>> steps(GameTestHelper helper, HollowMourner m) {
         return steps(helper, m, false);
@@ -168,11 +176,15 @@ public final class HollowMournerTests {
         double[] moved = {0.0};
         boolean[] early = {false};
         int[] held = {0};
+        // the tick a raised husk first stands at the grave: once up it has its AI back and may walk off (to a player in
+        // a neighbouring arena, say) before the check
+        int[] rose = {-1};
         helper.runAtTickTime(1, () -> {
             start[0] = m.position();
             killBy(helper, husk, pig);
         });
         helper.onEachTick(() -> {
+            if (held[0] > 0 && rose[0] < 0 && !m.core().in(Step.CHANT) && !raisedAt(helper, grave).isEmpty()) rose[0] = (int) helper.getTick();
             if (!m.core().in(Step.CHANT)) return;
             held[0]++;
             early[0] |= !raisedAt(helper, grave).isEmpty();
@@ -185,7 +197,8 @@ public final class HollowMournerTests {
             helper.assertTrue(Math.abs(held[0] - 60) <= 1, "it holds the chant phase 60 ticks, held " + held[0]);
             helper.assertTrue(!early[0], "nothing rises during the chant");
             helper.assertTrue(moved[0] < 0.1, "it stands still while it chants, moved " + moved[0]);
-            helper.assertTrue(raisedAt(helper, grave).size() == 1, "then the husk stands up at its grave");
+            helper.assertTrue(rose[0] >= 0, "then the husk stands up at its grave, first seen there on tick " + rose[0]
+                    + "; raised husks " + raised(helper));
             helper.succeed();
         });
     }
