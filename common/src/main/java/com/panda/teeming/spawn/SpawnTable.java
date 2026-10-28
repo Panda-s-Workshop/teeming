@@ -101,7 +101,10 @@ public final class SpawnTable {
             new Row("echo_fencer", "minecraft:end_midlands", 4),
             new Row("swellshade", "minecraft:end_midlands", 4),
             new Row("chronomite", "minecraft:end_midlands", 4),
-            new Row("chronomite", "minecraft:end_barrens", 3));
+            new Row("chronomite", "minecraft:end_barrens", 3),
+            new Row("anchor_golem", "minecraft:end_midlands", 4),
+            new Row("recurrent", "minecraft:end_barrens", 3),
+            new Row("mnemovore", "minecraft:end_barrens", 3));
 
     /** The mob's tuned rows, empty when it has none. */
     public static List<Row> tuned(String mob) {

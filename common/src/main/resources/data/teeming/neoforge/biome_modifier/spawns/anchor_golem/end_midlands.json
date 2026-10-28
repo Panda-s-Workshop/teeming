@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/anchor_golem",
+      [
+        "minecraft:end_midlands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:anchor_golem",
+      "weight": 4,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

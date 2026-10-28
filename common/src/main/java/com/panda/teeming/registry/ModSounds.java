@@ -10,6 +10,16 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TeemingMod.MODID);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_AMBIENT = sound("anchor_golem.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_HURT = sound("anchor_golem.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_DEATH = sound("anchor_golem.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_STEP = sound("anchor_golem.step");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_TELL = sound("anchor_golem.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_SWING = sound("anchor_golem.swing");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_WEIGHED = sound("anchor_golem.weighed");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_SINK = sound("anchor_golem.sink");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_MIRED = sound("anchor_golem.mired");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_LIFT = sound("anchor_golem.lift");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_AMBIENT = sound("ash_jackal.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_HURT = sound("ash_jackal.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ASH_JACKAL_DEATH = sound("ash_jackal.death");
@@ -299,6 +309,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_SPIT = sound("mire_gulper.spit");
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_STUNNED = sound("mire_gulper.stunned");
     public static final DeferredHolder<SoundEvent, SoundEvent> MIRE_GULPER_LET_GO = sound("mire_gulper.let_go");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_AMBIENT = sound("mnemovore.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_HURT = sound("mnemovore.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_DEATH = sound("mnemovore.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_GAPE = sound("mnemovore.gape");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_BITE = sound("mnemovore.bite");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_DEVOUR = sound("mnemovore.devour");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_MISS = sound("mnemovore.miss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MNEMOVORE_SPILL = sound("mnemovore.spill");
     public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_AMBIENT = sound("mycelite_shambler.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_HURT = sound("mycelite_shambler.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> MYCELITE_SHAMBLER_DEATH = sound("mycelite_shambler.death");
@@ -389,6 +407,16 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_RATTLE = sound("rattlecoil.rattle");
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_STRIKE = sound("rattlecoil.strike");
     public static final DeferredHolder<SoundEvent, SoundEvent> RATTLECOIL_CALM = sound("rattlecoil.calm");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_AMBIENT = sound("recurrent.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_HURT = sound("recurrent.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_DEATH = sound("recurrent.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_TELL = sound("recurrent.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_STRIKE = sound("recurrent.strike");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_SUMMON = sound("recurrent.summon");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_REWIND = sound("recurrent.rewind");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_ANCHOR_HIT = sound("recurrent.anchor_hit");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_ANCHOR_BREAK = sound("recurrent.anchor_break");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_UNRAVEL = sound("recurrent.unravel");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_AMBIENT = sound("riftjackal.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_HURT = sound("riftjackal.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_DEATH = sound("riftjackal.death");

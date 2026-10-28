@@ -78,6 +78,9 @@ public final class MobBounds {
             Map.entry("echo_fencer", new float[] {1.067F, 2.000F, 2.717F}),
             Map.entry("swellshade", new float[] {1.430F, 1.879F, 0.873F}),
             Map.entry("chronomite", new float[] {0.875F, 0.969F, 1.144F}),
+            Map.entry("anchor_golem", new float[] {2.852F, 2.333F, 1.294F}),
+            Map.entry("recurrent", new float[] {0.750F, 2.000F, 0.445F}),
+            Map.entry("mnemovore", new float[] {1.375F, 0.625F, 1.000F}),
             Map.entry("underclinger", new float[] {1.250F, 0.431F, 1.469F}),
             Map.entry("wingshear", new float[] {2.791F, 0.339F, 1.809F}),
             Map.entry("grand_orrery", new float[] {2.112F, 1.544F, 1.958F})
