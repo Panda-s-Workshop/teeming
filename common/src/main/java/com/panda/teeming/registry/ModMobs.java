@@ -25,7 +25,10 @@ import com.panda.teeming.mob.end.Phasewalker;
 import com.panda.teeming.mob.end.Pullstar;
 import com.panda.teeming.mob.end.Recurrent;
 import com.panda.teeming.mob.end.Riftjackal;
+import com.panda.teeming.mob.end.RiftmineSapper;
+import com.panda.teeming.mob.end.Rotfang;
 import com.panda.teeming.mob.end.ShardlingColossus;
+import com.panda.teeming.mob.end.Spirebloom;
 import com.panda.teeming.mob.end.Swellshade;
 import com.panda.teeming.mob.end.Underclinger;
 import com.panda.teeming.mob.end.VigilOwl;
@@ -248,6 +251,12 @@ public final class ModMobs {
             b -> b.sized(0.7F, 1.9F).eyeHeight(1.7F).clientTrackingRange(10));
     public static final Supplier<EntityType<Mnemovore>> MNEMOVORE = ENTITIES.registerEntityType("mnemovore", Mnemovore::new, MobCategory.MONSTER,
             b -> b.sized(1.0F, 0.6F).eyeHeight(0.4F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Rotfang>> ROTFANG = ENTITIES.registerEntityType("rotfang", Rotfang::new, MobCategory.MONSTER,
+            b -> b.sized(0.8F, 0.8F).eyeHeight(0.5F).clientTrackingRange(10));
+    public static final Supplier<EntityType<Spirebloom>> SPIREBLOOM = ENTITIES.registerEntityType("spirebloom", Spirebloom::new, MobCategory.MONSTER,
+            b -> b.sized(0.9F, 1.5F).eyeHeight(1.2F).clientTrackingRange(10));
+    public static final Supplier<EntityType<RiftmineSapper>> RIFTMINE_SAPPER = ENTITIES.registerEntityType("riftmine_sapper", RiftmineSapper::new, MobCategory.MONSTER,
+            b -> b.sized(0.7F, 1.4F).eyeHeight(1.0F).clientTrackingRange(10));
     public static final Supplier<EntityType<Underclinger>> UNDERCLINGER = ENTITIES.registerEntityType("underclinger", Underclinger::new, MobCategory.MONSTER,
             b -> b.sized(1.0F, 0.6F).eyeHeight(0.3F).clientTrackingRange(10));
     public static final Supplier<EntityType<Wingshear>> WINGSHEAR = ENTITIES.registerEntityType("wingshear", Wingshear::new, MobCategory.MONSTER,
@@ -331,12 +340,15 @@ public final class ModMobs {
     public static final DeferredItem<Item> VOID_BLOOM_SPAWN_EGG = ITEMS.registerItem("void_bloom_spawn_egg", Item::new, p -> p.spawnEgg(VOID_BLOOM.get()));
     public static final DeferredItem<Item> RECURRENT_SPAWN_EGG = ITEMS.registerItem("recurrent_spawn_egg", Item::new, p -> p.spawnEgg(RECURRENT.get()));
     public static final DeferredItem<Item> MNEMOVORE_SPAWN_EGG = ITEMS.registerItem("mnemovore_spawn_egg", Item::new, p -> p.spawnEgg(MNEMOVORE.get()));
+    public static final DeferredItem<Item> ROTFANG_SPAWN_EGG = ITEMS.registerItem("rotfang_spawn_egg", Item::new, p -> p.spawnEgg(ROTFANG.get()));
+    public static final DeferredItem<Item> SPIREBLOOM_SPAWN_EGG = ITEMS.registerItem("spirebloom_spawn_egg", Item::new, p -> p.spawnEgg(SPIREBLOOM.get()));
+    public static final DeferredItem<Item> RIFTMINE_SAPPER_SPAWN_EGG = ITEMS.registerItem("riftmine_sapper_spawn_egg", Item::new, p -> p.spawnEgg(RIFTMINE_SAPPER.get()));
     public static final DeferredItem<Item> UNDERCLINGER_SPAWN_EGG = ITEMS.registerItem("underclinger_spawn_egg", Item::new, p -> p.spawnEgg(UNDERCLINGER.get()));
     public static final DeferredItem<Item> WINGSHEAR_SPAWN_EGG = ITEMS.registerItem("wingshear_spawn_egg", Item::new, p -> p.spawnEgg(WINGSHEAR.get()));
     public static final DeferredItem<Item> GRAND_ORRERY_SPAWN_EGG = ITEMS.registerItem("grand_orrery_spawn_egg", Item::new, p -> p.spawnEgg(GRAND_ORRERY.get()));
 
     /** Every spawn egg, in roster order (the creative tab lists them). */
-    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, HOLLOWMIND_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG, SHARDLING_COLOSSUS_SPAWN_EGG, PHASEWALKER_SPAWN_EGG, ECHO_FENCER_SPAWN_EGG, SWELLSHADE_SPAWN_EGG, CHRONOMITE_SPAWN_EGG, VIGIL_OWL_SPAWN_EGG, ANCHOR_GOLEM_SPAWN_EGG, PULLSTAR_SPAWN_EGG, VOID_BLOOM_SPAWN_EGG, RECURRENT_SPAWN_EGG, MNEMOVORE_SPAWN_EGG, UNDERCLINGER_SPAWN_EGG, WINGSHEAR_SPAWN_EGG, GRAND_ORRERY_SPAWN_EGG);
+    public static final List<DeferredItem<Item>> EGGS = List.of(THORNHORN_SPAWN_EGG, SNAGWOOD_SPAWN_EGG, PUFFCAP_SHEPHERD_SPAWN_EGG, MIRE_GULPER_SPAWN_EGG, DUNEFIN_SPAWN_EGG, RATTLECOIL_SPAWN_EGG, SNOWROLLER_SPAWN_EGG, SHIVERWRAITH_SPAWN_EGG, GLOAMHOUND_SPAWN_EGG, VINEDROP_STRANGLER_SPAWN_EGG, SNAPMAW_BLOOM_SPAWN_EGG, STORMEEL_SPAWN_EGG, SHELLGUARD_CRAB_SPAWN_EGG, DRIPFANG_SPAWN_EGG, HUSHWING_SPAWN_EGG, MYCELITE_SHAMBLER_SPAWN_EGG, PETALKIN_SPAWN_EGG, HOLLOW_MOURNER_SPAWN_EGG, DUSTWHIRL_SPAWN_EGG, SKREEL_SPAWN_EGG, PRISMBACK_SPAWN_EGG, SLAGSPITTER_SPAWN_EGG, ASH_JACKAL_SPAWN_EGG, SLAGHEART_GOLEM_SPAWN_EGG, SOOT_MANTA_SPAWN_EGG, MAGMA_TORTOISE_SPAWN_EGG, VEINLEECH_SPAWN_EGG, SHREDJAW_BEETLE_SPAWN_EGG, WEEPLING_BROODMOTHER_SPAWN_EGG, GLEAMTRAP_SPAWN_EGG, SCARLET_MANTIS_SPAWN_EGG, PHANTASM_LANTERN_SPAWN_EGG, WOOLCAP_GRAZER_SPAWN_EGG, SIPHONJELLY_SPAWN_EGG, SPORE_CANNON_SPAWN_EGG, GLOOMWEAVER_SPAWN_EGG, OSSUARY_WYRM_SPAWN_EGG, KEENING_SHADE_SPAWN_EGG, SOULFIRE_SEER_SPAWN_EGG, CINDERMOTH_SWARM_SPAWN_EGG, SOULWARD_REVENANT_SPAWN_EGG, BASALT_BEHEMOTH_SPAWN_EGG, QUAKEHOPPER_SPAWN_EGG, ASHHARRIER_SPAWN_EGG, LAVALEAPER_SPAWN_EGG, BLACKSTONE_SCUTTLER_SPAWN_EGG, PYRE_HERALD_SPAWN_EGG, FORTRESS_JAILER_SPAWN_EGG, FLAMEWRIGHT_SPAWN_EGG, AUROVORE_SPAWN_EGG, MENDING_CRYSTALLING_SPAWN_EGG, LIFTSTONE_MONOLITH_SPAWN_EGG, ASTRAL_AUGUR_SPAWN_EGG, NULLCANTOR_SPAWN_EGG, CHORUS_GRAZER_SPAWN_EGG, LEVIMOTH_SPAWN_EGG, WARPSEED_BLOOM_SPAWN_EGG, GLIMMERLESS_SPAWN_EGG, RIFTJACKAL_SPAWN_EGG, CHORUS_HUSK_SPAWN_EGG, GATECASTER_SPAWN_EGG, HOLLOWMIND_SPAWN_EGG, PEARLGULP_SPAWN_EGG, BRINKRAM_SPAWN_EGG, FACET_DOPPEL_SPAWN_EGG, SHARDLING_COLOSSUS_SPAWN_EGG, PHASEWALKER_SPAWN_EGG, ECHO_FENCER_SPAWN_EGG, SWELLSHADE_SPAWN_EGG, CHRONOMITE_SPAWN_EGG, VIGIL_OWL_SPAWN_EGG, ANCHOR_GOLEM_SPAWN_EGG, PULLSTAR_SPAWN_EGG, VOID_BLOOM_SPAWN_EGG, RECURRENT_SPAWN_EGG, MNEMOVORE_SPAWN_EGG, ROTFANG_SPAWN_EGG, SPIREBLOOM_SPAWN_EGG, RIFTMINE_SAPPER_SPAWN_EGG, UNDERCLINGER_SPAWN_EGG, WINGSHEAR_SPAWN_EGG, GRAND_ORRERY_SPAWN_EGG);
 
     private ModMobs() {}
 
@@ -418,6 +430,9 @@ public final class ModMobs {
         sink.accept(VOID_BLOOM.get(), VoidBloom.createAttributes().build());
         sink.accept(RECURRENT.get(), Recurrent.createAttributes().build());
         sink.accept(MNEMOVORE.get(), Mnemovore.createAttributes().build());
+        sink.accept(ROTFANG.get(), Rotfang.createAttributes().build());
+        sink.accept(SPIREBLOOM.get(), Spirebloom.createAttributes().build());
+        sink.accept(RIFTMINE_SAPPER.get(), RiftmineSapper.createAttributes().build());
         sink.accept(UNDERCLINGER.get(), Underclinger.createAttributes().build());
         sink.accept(WINGSHEAR.get(), Wingshear.createAttributes().build());
         sink.accept(GRAND_ORRERY.get(), GrandOrrery.createAttributes().build());

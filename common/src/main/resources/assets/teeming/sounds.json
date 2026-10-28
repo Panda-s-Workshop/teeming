@@ -6853,6 +6853,336 @@
       }
     ]
   },
+  "riftmine_sapper.ambient": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.sniffer.digging",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:item.bundle.insert",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "riftmine_sapper.hurt": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.sniffer.hurt",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.chain.hit",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.6
+      }
+    ]
+  },
+  "riftmine_sapper.death": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.sniffer.death",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:item.bundle.drop_contents",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "riftmine_sapper.plant": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.plant",
+    "sounds": [
+      {
+        "name": "minecraft:item.bundle.remove_one",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:item.brush.brushing.gravel.complete",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.8
+      }
+    ]
+  },
+  "riftmine_sapper.tick": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.tick",
+    "sounds": [
+      {
+        "name": "minecraft:block.tripwire.click_on",
+        "type": "event",
+        "pitch": 1.7,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.lever.click",
+        "type": "event",
+        "pitch": 1.9,
+        "volume": 0.25
+      }
+    ]
+  },
+  "riftmine_sapper.armed": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.armed",
+    "sounds": [
+      {
+        "name": "minecraft:block.tripwire.attach",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "riftmine_sapper.launch": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.launch",
+    "sounds": [
+      {
+        "name": "minecraft:entity.wind_charge.wind_burst",
+        "type": "event",
+        "pitch": 0.75
+      },
+      {
+        "name": "minecraft:block.heavy_core.place",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "riftmine_sapper.shot": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.shot",
+    "sounds": [
+      {
+        "name": "minecraft:block.decorated_pot.shatter",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:block.tripwire.detach",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
+  },
+  "riftmine_sapper.fizzle": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.fizzle",
+    "sounds": [
+      {
+        "name": "minecraft:block.fire.extinguish",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.tripwire.click_off",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "riftmine_sapper.tell": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:item.armor.equip_chain",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  },
+  "riftmine_sapper.jab": {
+    "subtitle": "subtitles.teeming.riftmine_sapper.jab",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.land",
+        "type": "event",
+        "pitch": 1.4
+      },
+      {
+        "name": "minecraft:entity.player.attack.weak",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
+  },
+  "rotfang.ambient": {
+    "subtitle": "subtitles.teeming.rotfang.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton_horse.ambient",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.mud.step",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.4
+      }
+    ]
+  },
+  "rotfang.hurt": {
+    "subtitle": "subtitles.teeming.rotfang.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton_horse.hurt",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.slime.hurt",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.5
+      }
+    ]
+  },
+  "rotfang.death": {
+    "subtitle": "subtitles.teeming.rotfang.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.skeleton_horse.death",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.honey_block.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.7
+      }
+    ]
+  },
+  "rotfang.snarl": {
+    "subtitle": "subtitles.teeming.rotfang.snarl",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zoglin.angry",
+        "type": "event",
+        "pitch": 1.35,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.honey_block.slide",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "rotfang.bite": {
+    "subtitle": "subtitles.teeming.rotfang.bite",
+    "sounds": [
+      {
+        "name": "minecraft:entity.zoglin.attack",
+        "type": "event",
+        "pitch": 1.25,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:entity.slime.squish",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "rotfang.rot": {
+    "subtitle": "subtitles.teeming.rotfang.rot",
+    "sounds": [
+      {
+        "name": "minecraft:block.sculk.spread",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.honey_block.step",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "rotfang.miss": {
+    "subtitle": "subtitles.teeming.rotfang.miss",
+    "sounds": [
+      {
+        "name": "minecraft:block.slime_block.break",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:entity.zoglin.attack",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.3
+      }
+    ]
+  },
+  "rotfang.gnaw": {
+    "subtitle": "subtitles.teeming.rotfang.gnaw",
+    "sounds": [
+      {
+        "name": "minecraft:entity.player.attack.crit",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:entity.zoglin.hurt",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.8
+      }
+    ]
+  },
+  "rotfang.cleanse": {
+    "subtitle": "subtitles.teeming.rotfang.cleanse",
+    "sounds": [
+      {
+        "name": "minecraft:item.bottle.fill_dragonbreath",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.sculk.charge",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.4
+      }
+    ]
+  },
   "scarlet_mantis.ambient": {
     "subtitle": "subtitles.teeming.scarlet_mantis.ambient",
     "sounds": [
@@ -8738,6 +9068,170 @@
         "name": "minecraft:block.chain.break",
         "type": "event",
         "pitch": 0.8
+      }
+    ]
+  },
+  "spirebloom.ambient": {
+    "subtitle": "subtitles.teeming.spirebloom.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.calcite.hit",
+        "type": "event",
+        "pitch": 1.5,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.35
+      }
+    ]
+  },
+  "spirebloom.hurt": {
+    "subtitle": "subtitles.teeming.spirebloom.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.hit",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.7
+      }
+    ]
+  },
+  "spirebloom.death": {
+    "subtitle": "subtitles.teeming.spirebloom.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.dripstone_block.break",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "spirebloom.tell": {
+    "subtitle": "subtitles.teeming.spirebloom.tell",
+    "sounds": [
+      {
+        "name": "minecraft:block.tuff_bricks.break",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "spirebloom.burst": {
+    "subtitle": "subtitles.teeming.spirebloom.burst",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.land",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.6
+      }
+    ]
+  },
+  "spirebloom.struck": {
+    "subtitle": "subtitles.teeming.spirebloom.struck",
+    "sounds": [
+      {
+        "name": "minecraft:block.heavy_core.hit",
+        "type": "event",
+        "pitch": 1.2
+      },
+      {
+        "name": "minecraft:block.pointed_dripstone.hit",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.8
+      }
+    ]
+  },
+  "spirebloom.stand": {
+    "subtitle": "subtitles.teeming.spirebloom.stand",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.place",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.1
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.4
+      }
+    ]
+  },
+  "spirebloom.shatter": {
+    "subtitle": "subtitles.teeming.spirebloom.shatter",
+    "sounds": [
+      {
+        "name": "minecraft:block.calcite.break",
+        "type": "event",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.6
+      }
+    ]
+  },
+  "spirebloom.fend": {
+    "subtitle": "subtitles.teeming.spirebloom.fend",
+    "sounds": [
+      {
+        "name": "minecraft:block.calcite.place",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.pointed_dripstone.hit",
+        "type": "event",
+        "pitch": 1.1,
+        "volume": 0.6
+      }
+    ]
+  },
+  "spirebloom.crumble": {
+    "subtitle": "subtitles.teeming.spirebloom.crumble",
+    "sounds": [
+      {
+        "name": "minecraft:block.pointed_dripstone.fall",
+        "type": "event",
+        "pitch": 0.8
+      },
+      {
+        "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
       }
     ]
   },

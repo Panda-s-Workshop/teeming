@@ -84,6 +84,9 @@ public final class MobDrops {
             Map.entry("void_bloom", List.of("teeming:void_ichor", "minecraft:chorus_fruit", "teeming:trophy")),
             Map.entry("recurrent", List.of("teeming:time_sand", "minecraft:string", "teeming:trophy")),
             Map.entry("mnemovore", List.of("teeming:void_ichor", "teeming:trophy")),
+            Map.entry("rotfang", List.of("teeming:void_ichor", "teeming:trophy")),
+            Map.entry("spirebloom", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
+            Map.entry("riftmine_sapper", List.of("teeming:gravity_stone", "minecraft:end_stone", "minecraft:flint", "teeming:trophy")),
             Map.entry("underclinger", List.of("teeming:void_membrane", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("wingshear", List.of("teeming:void_membrane", "teeming:trophy")),
             Map.entry("grand_orrery", List.of("teeming:star_mote", "minecraft:purpur_block", "minecraft:popped_chorus_fruit", "teeming:trophy"))

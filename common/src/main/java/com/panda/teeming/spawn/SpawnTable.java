@@ -108,7 +108,10 @@ public final class SpawnTable {
             new Row("pullstar", "minecraft:end_barrens", 3),
             new Row("void_bloom", "minecraft:end_barrens", 3),
             new Row("recurrent", "minecraft:end_barrens", 3),
-            new Row("mnemovore", "minecraft:end_barrens", 3));
+            new Row("mnemovore", "minecraft:end_barrens", 3),
+            new Row("rotfang", "minecraft:end_barrens", 4),
+            new Row("spirebloom", "minecraft:end_barrens", 3),
+            new Row("riftmine_sapper", "minecraft:end_barrens", 3));
 
     /** The mob's tuned rows, empty when it has none. */
     public static List<Row> tuned(String mob) {
