@@ -5,9 +5,7 @@ import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
-import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.registry.ModSounds;
-import com.panda.teeming.roster.RosterStats;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -19,7 +17,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -79,8 +76,6 @@ public class Wingshear extends TeemingMonster {
     /** Circling off when lost, and climbing away after a hit, in blocks a tick. */
     public static final double LOST_SPEED = 0.9;
     public static final double RECOVER_SPEED = 0.7;
-    /** A natural spawn's partner arrives this far to one side. */
-    public static final double PAIR_SPACING = 3.0;
     /** It comes at its glider from this far above, so the dive drops onto them. */
     public static final double APPROACH_ABOVE = 2.0;
 
@@ -179,19 +174,10 @@ public class Wingshear extends TeemingMonster {
 
     // ---- arriving in pairs ---------------------------------------------------------------------------------------
 
-    /** Marks the partner of a natural spawn, so it brings none of its own. */
+    /** The look a natural group shares: the first picks it, the others take it. */
     private record Pair(String look) implements SpawnGroupData {}
 
-    /** How many partners a natural spawn brings: its group is 1 or 2, so 0 or 1, even odds. */
-    public static int partners(RandomSource random) {
-        RosterStats.Entry row = RosterStats.get("wingshear");
-        return row.groupMin() - 1 + random.nextInt(row.groupMax() - row.groupMin() + 1);
-    }
-
-    /**
-     * A natural spawn comes alone or with a partner of the same look, 3 blocks to one side in open air (if that air is
-     * free); the spawner places one mob a try, so the pair is made here.
-     */
+    /** A natural group (the spawner brings 1 or 2) flies in one look: the first's. */
     @Override
     public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason,
                                                   @Nullable SpawnGroupData data) {
@@ -200,21 +186,7 @@ public class Wingshear extends TeemingMonster {
             core().setLook(pair.look(), true);
             return data;
         }
-        if (reason == EntitySpawnReason.NATURAL) {
-            for (int i = partners(level.getRandom()); i > 0; i--) bringPartner(level, difficulty);
-        }
-        return result;
-    }
-
-    /** Spawns one partner beside it, of its own look; returns it, or null if the air there is taken. Public as a test hook. */
-    public @Nullable Wingshear bringPartner(ServerLevelAccessor level, DifficultyInstance difficulty) {
-        Wingshear partner = new Wingshear(ModMobs.WINGSHEAR.get(), level.getLevel());
-        double a = level.getRandom().nextDouble() * Mth.TWO_PI;
-        partner.snapTo(getX() + Math.cos(a) * PAIR_SPACING, getY(), getZ() + Math.sin(a) * PAIR_SPACING, getYRot(), 0.0F);
-        if (!level.noCollision(partner)) return null;
-        partner.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, new Pair(look()));
-        level.addFreshEntityWithPassengers(partner);
-        return partner;
+        return reason == EntitySpawnReason.NATURAL ? new Pair(look()) : result;
     }
 
     // ---- the hunt ------------------------------------------------------------------------------------------------

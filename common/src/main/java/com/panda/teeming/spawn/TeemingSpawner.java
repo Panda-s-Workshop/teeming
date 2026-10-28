@@ -26,6 +26,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.end.EnderDragonFight;
@@ -61,6 +62,8 @@ public final class TeemingSpawner {
     /** Empty blocks under a spot that make it a drop into the void (underside and void-air rules). */
     public static final int VOID_GAP = 4;
     private static final int SCAN = 24;
+    /** How far from the first of a group the others may stand (blocks, each way). */
+    public static final int GROUP_SPREAD = 3;
     /** Biomes whose Teeming monsters only this spawner places, under the share cap (default: {@link SpawnTable#SHARE_CAPPED}). */
     public static final TagKey<Biome> SHARE_CAPPED = TagKey.create(Registries.BIOME, TeemingMod.id("share_capped"));
 
@@ -215,7 +218,7 @@ public final class TeemingSpawner {
             } else if (!underCategoryCap(level, player, category, 1.0)) {
                 return null;
             }
-            return spawn(level, pick.mob(), pick.type(), pick.pos(), random);
+            return spawnGroup(level, pick, random);
         }
         return null;
     }
@@ -387,14 +390,56 @@ public final class TeemingSpawner {
 
     /** Spawns the mob at a spot its rule found, if the natural-spawn predicate agrees. */
     public static @Nullable Mob spawn(ServerLevel level, Entry mob, EntityType<? extends Mob> type, BlockPos pos, RandomSource random) {
+        return spawn(level, mob, type, pos, random, new SpawnGroupData[1]);
+    }
+
+    /**
+     * As above; {@code group} carries the spawn data from one member of a group to the next, as vanilla's spawner does,
+     * so a mob can match its look or link to the others of its group.
+     */
+    private static @Nullable Mob spawn(ServerLevel level, Entry mob, EntityType<? extends Mob> type, BlockPos pos, RandomSource random,
+                                       SpawnGroupData[] group) {
         if (!TeemingSpawns.check(mob, type, level, EntitySpawnReason.NATURAL, pos, random)) return null;
         Mob created = type.create(level, EntitySpawnReason.NATURAL);
         if (created == null) return null;
         created.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         created.setYRot(random.nextFloat() * 360.0F);
-        created.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, null);
+        group[0] = created.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.NATURAL, group[0]);
         level.addFreshEntity(created);
         return created;
+    }
+
+    /** How many come together: the row's group size, from its least to its most. */
+    public static int groupSize(Entry mob, RandomSource random) {
+        return mob.groupMin() + random.nextInt(Math.max(1, mob.groupMax() - mob.groupMin() + 1));
+    }
+
+    /**
+     * Spawns the picked mob and the rest of its group (the row's group size), the others on free spots its rule accepts
+     * within {@link #GROUP_SPREAD} blocks of the first; a member without such a spot is left out. Returns the first, or
+     * null. Public as a test hook.
+     */
+    public static @Nullable Mob spawnGroup(ServerLevel level, Candidate pick, RandomSource random) {
+        SpawnGroupData[] group = new SpawnGroupData[1];
+        Mob first = spawn(level, pick.mob(), pick.type(), pick.pos(), random, group);
+        if (first == null) return null;
+        for (int i = groupSize(pick.mob(), random) - 1; i > 0; i--) {
+            BlockPos at = groupSpot(level, pick, random);
+            if (at != null) spawn(level, pick.mob(), pick.type(), at, random, group);
+        }
+        return first;
+    }
+
+    /** A free spot for another member of the group near the first: the same rule's shape (or the mob's placement), room for its body. */
+    private static @Nullable BlockPos groupSpot(ServerLevel level, Candidate pick, RandomSource random) {
+        for (int tries = 0; tries < 10; tries++) {
+            BlockPos at = pick.pos().offset(random.nextInt(2 * GROUP_SPREAD + 1) - GROUP_SPREAD, random.nextInt(3) - 1,
+                    random.nextInt(2 * GROUP_SPREAD + 1) - GROUP_SPREAD);
+            if (at.equals(pick.pos())) continue;
+            boolean shape = pick.rule() != null ? pick.rule().fits(level, at) : TeemingSpawns.placeOk(pick.mob(), pick.type(), level, at);
+            if (shape && level.noCollision(pick.type().getSpawnAABB(at.getX() + 0.5, at.getY(), at.getZ() + 0.5))) return at;
+        }
+        return null;
     }
 
     /** The vanilla per-player cap of the category (70 monsters, 10 creatures) within the despawn range, times {@code lift}. */

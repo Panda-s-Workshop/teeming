@@ -27,6 +27,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -513,28 +514,26 @@ public final class WingshearTests {
     // ---- spawning ------------------------------------------------------------------------------------------------
 
     /**
-     * Groups of 1 to 2: a natural spawn brings 0 or 1 partners, both seen over 200 rolls; a partner arrives 3 blocks to
-     * one side with the same look and brings none of its own.
+     * Groups of 1 to 2: the spawner's group size for its row gives 1 or 2, both seen over 200 rolls; the members of a
+     * natural group fly in one look, the first's, handed on in the spawn data whatever the second rolled.
      */
     private static void pair(GameTestHelper helper) {
+        RosterStats.Entry row = RosterStats.get("wingshear");
         Set<Integer> seen = new HashSet<>();
         RandomSource random = RandomSource.create(87L);
-        for (int i = 0; i < 200; i++) seen.add(Wingshear.partners(random));
-        helper.assertTrue(seen.equals(Set.of(0, 1)), "0 or 1 partners, both seen: " + seen);
-        Wingshear w = shear(helper, new Vec3(5.5, 3, 5.5));
-        w.core().setLook("dusk_shear", true);
-        Wingshear partner = w.bringPartner(helper.getLevel(), helper.getLevel().getCurrentDifficultyAt(w.blockPosition()));
-        helper.assertTrue(partner != null, "a partner arrived in the open air");
-        TestPlayers.whenDone(helper, partner::discard);
-        helper.assertTrue(near(Math.hypot(partner.getX() - w.getX(), partner.getZ() - w.getZ()), 3.0) && near(partner.getY(), w.getY()),
-                "3 blocks to one side at its height");
-        helper.assertTrue(partner.look().equals("dusk_shear"), "with its look, got " + partner.look());
-        AABB around = new AABB(w.blockPosition()).inflate(6);
-        helper.runAtTickTime(2, () -> {
-            int count = helper.getLevel().getEntitiesOfClass(Wingshear.class, around, Wingshear::isAlive).size();
-            helper.assertTrue(count == 2, "the partner brought no partner of its own, " + count + " here");
-            helper.succeed();
-        });
+        for (int i = 0; i < 200; i++) seen.add(TeemingSpawner.groupSize(row, random));
+        helper.assertTrue(seen.equals(Set.of(1, 2)), "groups of 1 or 2, both seen: " + seen);
+        var level = helper.getLevel();
+        var difficulty = level.getCurrentDifficultyAt(helper.absolutePos(new BlockPos(5, 3, 5)));
+        for (int i = 0; i < 6; i++) {
+            Wingshear first = shear(helper, new Vec3(2.5 + i, 3, 4.5));
+            Wingshear second = shear(helper, new Vec3(2.5 + i, 3, 7.5));
+            var data = first.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, null);
+            second.core().setLook(first.look().equals(LookDef.BASE) ? "dusk_shear" : LookDef.BASE, true);
+            second.finalizeSpawn(level, difficulty, EntitySpawnReason.NATURAL, data);
+            helper.assertTrue(second.look().equals(first.look()), "the second took the first's look " + first.look() + ", got " + second.look());
+        }
+        helper.succeed();
     }
 
     /**
