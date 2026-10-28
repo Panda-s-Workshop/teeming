@@ -52,21 +52,30 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * mid-mark or mid-wind-up it finishes nothing. Stats, home and spawn rule against plain values.
  *
  * <p>An exile reaches far past a 12-block arena, so the tests that let one happen run on a patch of sky far from every
- * arena ({@link Site}), where the test builds every block of land within reach itself.
+ * arena ({@link Site}), where the test builds every block of land within reach itself. A patch forced fresh can take
+ * many ticks before its mobs tick (past a hundred on a slow machine), so those tests count every step from the tick
+ * their wraith first ticks, and have room for that wait in their time limits.
  */
 public final class ExileWraithTests {
     private ExileWraithTests() {}
 
+    /** The time limit of a test on a patch of sky: its own steps and up to 300 ticks of waiting for the patch to tick. */
+    private static final int SITE_TICKS = 400;
+
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("exile_wraith_tell", ExileWraithTests::tell);
+        TeemingGameTests.timeLimit("exile_wraith_tell", SITE_TICKS);
         out.accept("exile_wraith_counter", ExileWraithTests::counter);
         out.accept("exile_wraith_failure", ExileWraithTests::failure);
+        TeemingGameTests.timeLimit("exile_wraith_failure", SITE_TICKS);
         out.accept("exile_wraith_radius", ExileWraithTests::radius);
         out.accept("exile_wraith_range", ExileWraithTests::range);
         out.accept("exile_wraith_far_land", ExileWraithTests::farLand);
+        TeemingGameTests.timeLimit("exile_wraith_far_land", SITE_TICKS);
         out.accept("exile_wraith_no_land", ExileWraithTests::noLand);
+        TeemingGameTests.timeLimit("exile_wraith_no_land", SITE_TICKS);
         out.accept("exile_wraith_once_per_200", ExileWraithTests::oncePer200);
-        TeemingGameTests.timeLimit("exile_wraith_once_per_200", 300);
+        TeemingGameTests.timeLimit("exile_wraith_once_per_200", SITE_TICKS + 200);
         out.accept("exile_wraith_claw", ExileWraithTests::claw);
         out.accept("exile_wraith_armour", ExileWraithTests::armour);
         out.accept("exile_wraith_pillar", ExileWraithTests::pillar);
@@ -154,6 +163,17 @@ public final class ExileWraithTests {
             }
         }
 
+        /** Runs {@code start} once, on the first tick {@code mob} has ticked twice: the test's steps count from there. */
+        void whenTicking(Entity mob, Runnable start) {
+            boolean[] done = {false};
+            helper.onEachTick(() -> {
+                if (!done[0] && mob.tickCount >= 2) {
+                    done[0] = true;
+                    start.run();
+                }
+            });
+        }
+
         /** A square of end stone {@code 2 * half + 1} across at {@code (dx, dy, dz)} from the centre. */
         Site floor(int dx, int dy, int dz, int half) {
             for (int x = -half; x <= half; x++) {
@@ -226,10 +246,14 @@ public final class ExileWraithTests {
         w.fixRoll(new Roll(30.0, 0.0));
         int[] held = {0};
         boolean[] ended = {false};
+        boolean[] opened = {false};
         helper.onEachTick(() -> {
-            // opened here rather than in a timed callback, so it is counted from the tick it opens whatever order the
-            // test's callbacks run in
-            if (helper.getTick() == 2) helper.assertTrue(w.mark(pig), "the mark opens");
+            // opened here rather than in a separate callback, so it is counted from the tick it opens whatever order the
+            // test's callbacks run in, once the wraith ticks
+            if (!opened[0] && w.tickCount >= 2) {
+                opened[0] = true;
+                helper.assertTrue(w.mark(pig), "the mark opens");
+            }
             if (w.core().in(Step.TELL)) {
                 held[0]++;
                 var mark = w.mark();
@@ -298,7 +322,7 @@ public final class ExileWraithTests {
         Vec3 start = site.at(0.5, 1, 0.5);
         p.snapTo(start.x, start.y, start.z);
         w.fixRoll(new Roll(30.0, 0.0));
-        helper.runAtTickTime(2, () -> helper.assertTrue(w.mark(p), "the mark opens under the player"));
+        site.whenTicking(w, () -> helper.assertTrue(w.mark(p), "the mark opens under the player"));
         helper.succeedWhen(() -> {
             helper.assertTrue(w.exiles() == 1, "the player was sent away");
             double d = across(p.position(), start);
@@ -354,7 +378,7 @@ public final class ExileWraithTests {
         Pig pig = site.pig(0.5, 1, 0.5);
         Vec3 start = pig.position();
         w.fixRoll(new Roll(24.0, 0.0));
-        helper.runAtTickTime(2, () -> helper.assertTrue(w.mark(pig), "the mark opens"));
+        site.whenTicking(w, () -> helper.assertTrue(w.mark(pig), "the mark opens"));
         helper.succeedWhen(() -> {
             helper.assertTrue(w.exiles() == 1, "the pig was sent away");
             double d = across(pig.position(), start);
@@ -376,7 +400,7 @@ public final class ExileWraithTests {
         ExileWraith w = site.wraith(-0.5, -0.5);
         Pig pig = site.pig(0.5, 1, 0.5);
         Vec3 start = pig.position();
-        helper.runAtTickTime(2, () -> helper.assertTrue(w.mark(pig), "the mark opens"));
+        site.whenTicking(w, () -> helper.assertTrue(w.mark(pig), "the mark opens"));
         helper.succeedWhen(() -> {
             helper.assertTrue(w.marksCast() == 1 && !w.core().in(Step.TELL) && w.mark() == null, "the mark ran out");
             helper.assertTrue(w.exiles() == 0 && w.fizzles() == 1 && w.snags() == 0, "nothing sent away; it fizzled, no snag");
@@ -398,11 +422,13 @@ public final class ExileWraithTests {
         w.fixRoll(new Roll(30.0, 0.0));
         long[] sent = {-1};
         long[] again = {-1};
-        helper.runAtTickTime(2, () -> helper.assertTrue(w.mark(pig), "the first mark opens"));
+        long[] sentAt = {-1};
+        site.whenTicking(w, () -> helper.assertTrue(w.mark(pig), "the first mark opens"));
         helper.onEachTick(() -> {
             long now = site.level.getGameTime();
             if (sent[0] < 0 && w.exiles() == 1) {
                 sent[0] = now;
+                sentAt[0] = helper.getTick();
                 pig.snapTo(start.x, start.y, start.z);                       // back on the island, in reach and sight
                 w.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(16.0);
                 w.setTarget(pig);
@@ -416,7 +442,7 @@ public final class ExileWraithTests {
             }
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(again[0] >= 0, "it marked the pig again");
+            helper.assertTrue(again[0] >= 0, "it marked the pig again (sent on test tick " + sentAt[0] + ", " + (sent[0] < 0 ? "-" : site.level.getGameTime() - sent[0]) + " ticks ago; target " + (w.getTarget() == pig) + ", wait " + w.markCooldown() + ", idle " + w.core().idle() + ", snagged " + w.snagged() + ", " + w.distanceTo(pig) + " off, sight " + w.hasLineOfSight(pig) + ", lately sent " + ExileWraith.recentlyExiled(pig, site.level.getGameTime()) + ", ticked " + w.tickCount + ")");
             long wait = again[0] - sent[0];
             helper.assertTrue(wait >= 200 && wait <= 202, "not before 200 ticks had passed, marked again after " + wait);
             helper.assertTrue(w.marksCast() == 2 && other.marksCast() == 0, "two marks in all");
