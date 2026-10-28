@@ -6,7 +6,15 @@
       "#teeming:spawns/gatecaster",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:end_highlands"
+            ]
+          ]
+        }
       }
     ]
   },

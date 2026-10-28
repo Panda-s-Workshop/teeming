@@ -6,7 +6,16 @@
       "#teeming:spawns/chronomite",
       {
         "type": "neoforge:not",
-        "value": "#teeming:share_capped"
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:end_midlands",
+              "minecraft:end_barrens"
+            ]
+          ]
+        }
       }
     ]
   },

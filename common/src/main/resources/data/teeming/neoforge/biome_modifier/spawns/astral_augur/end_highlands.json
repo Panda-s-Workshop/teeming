@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/astral_augur",
+      [
+        "minecraft:end_highlands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:astral_augur",
+      "weight": 2,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

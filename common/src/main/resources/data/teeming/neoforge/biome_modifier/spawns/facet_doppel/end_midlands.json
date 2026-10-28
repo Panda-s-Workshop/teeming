@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/facet_doppel",
+      [
+        "minecraft:end_midlands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:facet_doppel",
+      "weight": 3,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

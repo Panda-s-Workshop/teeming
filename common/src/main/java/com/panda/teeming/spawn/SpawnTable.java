@@ -34,6 +34,18 @@ public final class SpawnTable {
      */
     public static final double END_SHARE = 0.5;
     public static final double END_SHARE_MAX = 0.6;
+    /**
+     * The End's biome-list weights are set once from all 40 End rows: each outer biome's share, counted as mobs, once
+     * every End mob is in (the small islands aim at a third, the others at {@link #END_SHARE}). Built mobs carry their
+     * part of it in {@link #TUNED}; the live lists reach these shares when the last End mob is built.
+     */
+    public static final Map<String, Double> END_PLANNED_SHARE = Map.of(
+            "minecraft:end_highlands", 0.4771,
+            "minecraft:end_midlands", 0.5238,
+            "minecraft:end_barrens", 0.5031,
+            "minecraft:small_end_islands", 0.3443);
+    /** How far from its target a biome's planned share may land. */
+    public static final double END_PLAN_RANGE = 0.05;
 
     /** Vanilla's monster weight in each End biome: the enderman alone, weight 10 in groups of 4. */
     public static final Map<String, Integer> VANILLA_END_MONSTER_WEIGHT = Map.of(
@@ -69,7 +81,27 @@ public final class SpawnTable {
             new Row("lavaleaper", "minecraft:soul_sand_valley", 3),
             new Row("lavaleaper", "minecraft:basalt_deltas", 7),
             new Row("blackstone_scuttler", "minecraft:basalt_deltas", 6),
-            new Row("aurovore", "minecraft:nether_wastes", 3));
+            new Row("aurovore", "minecraft:nether_wastes", 3),
+            new Row("astral_augur", "minecraft:end_highlands", 2),
+            new Row("nullcantor", "minecraft:end_barrens", 3),
+            new Row("levimoth", "minecraft:end_highlands", 3),
+            new Row("warpseed_bloom", "minecraft:end_highlands", 3),
+            new Row("glimmerless", "minecraft:end_highlands", 2),
+            new Row("glimmerless", "minecraft:end_midlands", 4),
+            new Row("riftjackal", "minecraft:end_highlands", 2),
+            new Row("chorus_husk", "minecraft:end_highlands", 3),
+            new Row("gatecaster", "minecraft:end_highlands", 2),
+            new Row("hollowmind", "minecraft:end_highlands", 2),
+            new Row("pearlgulp", "minecraft:end_highlands", 2),
+            new Row("pearlgulp", "minecraft:small_end_islands", 7),
+            new Row("brinkram", "minecraft:end_midlands", 4),
+            new Row("facet_doppel", "minecraft:end_midlands", 3),
+            new Row("shardling_colossus", "minecraft:end_midlands", 3),
+            new Row("phasewalker", "minecraft:end_midlands", 4),
+            new Row("echo_fencer", "minecraft:end_midlands", 4),
+            new Row("swellshade", "minecraft:end_midlands", 4),
+            new Row("chronomite", "minecraft:end_midlands", 4),
+            new Row("chronomite", "minecraft:end_barrens", 3));
 
     /** The mob's tuned rows, empty when it has none. */
     public static List<Row> tuned(String mob) {

@@ -259,7 +259,8 @@ final class SpawnTests {
     /**
      * In each End biome, read from the live spawn lists: vanilla's monsters are unchanged, and Teeming's share of the
      * monsters, counted as mobs (each entry's weight times its mean group, so the endermen's groups of 4 count), stays
-     * at or under {@link SpawnTable#END_SHARE_MAX}. The spawner's own End cap counts Teeming monsters alone: it has room
+     * at or under {@link SpawnTable#END_SHARE_MAX}; the plan for all 40 End rows lands each outer biome near its target
+     * (half, a third on the small islands). The spawner's own End cap counts Teeming monsters alone: it has room
      * with any number of endermen about, and stops at half the vanilla per-player cap.
      */
     private static void spawnShareEnd(GameTestHelper helper) {
@@ -288,6 +289,15 @@ final class SpawnTests {
             if (got > SpawnTable.END_SHARE_MAX) wrong.add(String.format(Locale.ROOT, "%s: Teeming %.0f of %.0f mobs, %.1f %%", name, oursMobs, oursMobs + vanillaMobs, got * 100));
             seen.add(String.format(Locale.ROOT, "%s %.1f %%", name, got * 100));
         }
+        // the plan: the weights are set from all 40 End rows, so once every End mob is in, the three larger outer biomes
+        // reach about half and the small islands about a third, never past the most
+        for (Map.Entry<String, Double> e : SpawnTable.END_PLANNED_SHARE.entrySet()) {
+            double target = e.getKey().equals("minecraft:small_end_islands") ? 1.0 / 3.0 : SpawnTable.END_SHARE;
+            double plan = e.getValue();
+            if (Math.abs(plan - target) > SpawnTable.END_PLAN_RANGE || plan > SpawnTable.END_SHARE_MAX)
+                wrong.add(String.format(Locale.ROOT, "%s: planned share %.1f %%, target %.1f %%", e.getKey(), plan * 100, target * 100));
+        }
+        if (SpawnTable.END_PLANNED_SHARE.size() != 4) wrong.add("a plan for the four outer End biomes, got " + SpawnTable.END_PLANNED_SHARE.keySet());
         if (!TeemingSpawner.endAllows(0)) wrong.add("the End cap refuses with no Teeming monster about");
         if (!TeemingSpawner.endAllows(34)) wrong.add("the End cap refuses at 34 Teeming monsters");
         if (TeemingSpawner.endAllows(35)) wrong.add("the End cap allows a 36th Teeming monster, past half of 70");
