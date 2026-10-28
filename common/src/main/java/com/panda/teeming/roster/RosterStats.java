@@ -141,7 +141,7 @@ public final class RosterStats {
             e(85, "mote_swarm", Dim.END, Cat.MONSTER, false, 30F, 1F, 0F, 1.5F, 1.5F, 0, 0F, 30F, 1F, 4, 1, 1, "ember_motes", "star_mote", Place.GROUND, false, Integer.MAX_VALUE, ""),
             e(86, "pearlshell_snail", Dim.END, Cat.CREATURE, false, 16F, 0F, 6F, 0.6F, 0.5F, 0, 0F, 16F, 0F, 5, 1, 3, "purpur_snail", "", Place.GROUND, true, Integer.MAX_VALUE, ""),
             e(87, "wingshear", Dim.END, Cat.MONSTER, false, 30F, 6F, 2F, 1.4F, 0.6F, 16, 0F, 30F, 6F, 0, 1, 2, "dusk_shear", "void_membrane", Place.NONE, false, Integer.MAX_VALUE, "sky"),
-            e(88, "grand_orrery", Dim.END, Cat.MONSTER, true, 300F, 6F, 10F, 2F, 2F, 20, 6F, 300F, 6F, 0, 1, 1, "", "star_mote", Place.NONE, false, Integer.MAX_VALUE, "sky"),
+            e(88, "grand_orrery", Dim.END, Cat.MONSTER, true, 300F, 6F, 10F, 2F, 2F, 20, 6F, 300F, 6F, 0, 1, 1, "", "star_mote", Place.NONE, false, Integer.MAX_VALUE, "apex_sky"),
             e(89, "resonant_triad", Dim.END, Cat.MONSTER, false, 16F, 4F, 0F, 0.6F, 0.9F, 0, 0F, 16F, 4F, 3, 3, 3, "rose_triad", "void_crystal", Place.GROUND, false, Integer.MAX_VALUE, "sky"),
             e(90, "driftsong", Dim.END, Cat.CREATURE, false, 120F, 0F, 6F, 6F, 2.5F, 0, 0F, 120F, 0F, 0, 1, 1, "starlit_leviathan", "void_membrane", Place.NONE, false, Integer.MAX_VALUE, "void_below"));
 

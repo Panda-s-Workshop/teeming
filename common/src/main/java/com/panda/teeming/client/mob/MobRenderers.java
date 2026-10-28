@@ -149,5 +149,11 @@ public final class MobRenderers {
                 Set.of("base", "gloom_swell"), 0.5F, 1.0F, 5, false));
         out.register(ModMobs.CHRONOMITE.get(), ctx -> new TeemingRenderer<>(ctx, new ChronomiteModel(ctx.bakeLayer(CreatureLayers.CHRONOMITE)), "chronomite",
                 Set.of("base", "gilded_mite"), 0.5F, 1.0F, 5, false));
+        out.register(ModMobs.UNDERCLINGER.get(), ctx -> new TeemingRenderer<>(ctx, new UnderclingerModel(ctx.bakeLayer(CreatureLayers.UNDERCLINGER)), "underclinger",
+                Set.of(), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.WINGSHEAR.get(), ctx -> new TeemingRenderer<>(ctx, new WingshearModel(ctx.bakeLayer(CreatureLayers.WINGSHEAR)), "wingshear",
+                Set.of("base", "dusk_shear"), 0.4F, 1.0F, 2, false));
+        out.register(ModMobs.GRAND_ORRERY.get(), ctx -> new TeemingRenderer<>(ctx, new GrandOrreryModel(ctx.bakeLayer(CreatureLayers.GRAND_ORRERY)), "grand_orrery",
+                Set.of("base"), 0.9F, 1.0F, 3, true));
     }
 }

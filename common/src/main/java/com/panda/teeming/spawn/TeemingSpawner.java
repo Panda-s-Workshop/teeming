@@ -67,7 +67,7 @@ public final class TeemingSpawner {
     /** Where a spawner mob appears. The rule names are the {@code spawner} values in the roster. */
     public enum Rule {
         FORTRESS(Level.NETHER), BASTION(Level.NETHER), LAVA_SEA_AIR(Level.NETHER), FUNGUS_CAP(Level.NETHER), APEX_GROUND(Level.NETHER),
-        MAIN_ISLAND(Level.END), APEX_ISLAND(Level.END), UNDERSIDE(Level.END), VOID_AIR(Level.END), VOID_BELOW(Level.END), SKY(Level.END);
+        MAIN_ISLAND(Level.END), APEX_ISLAND(Level.END), UNDERSIDE(Level.END), VOID_AIR(Level.END), VOID_BELOW(Level.END), SKY(Level.END), APEX_SKY(Level.END);
 
         public final ResourceKey<Level> dimension;
 
@@ -94,11 +94,11 @@ public final class TeemingSpawner {
         }
 
         /**
-         * An apex, on open Nether ground or on the End's main island once the dragon is dead: only after a won apex roll,
+         * An apex, on open Nether ground, on the End's main island once the dragon is dead, or in the open sky off it: only after a won apex roll,
          * only with room for its whole body, and only with no other of its kind near (SpawnTable).
          */
         public boolean apex() {
-            return this == APEX_GROUND || this == APEX_ISLAND;
+            return this == APEX_GROUND || this == APEX_ISLAND || this == APEX_SKY;
         }
 
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
@@ -115,7 +115,7 @@ public final class TeemingSpawner {
                         && openBelow(level, pos);
                 case VOID_AIR -> !mainIsland(level, pos) && air(level, pos.above()) && openBelow(level, pos) && edgeNear(level, pos);
                 case VOID_BELOW -> !mainIsland(level, pos) && pos.getY() < 40 && islandAbove(level, pos);
-                case SKY -> !mainIsland(level, pos) && level.canSeeSky(pos) && air(level, pos.above()) && air(level, pos.below());
+                case SKY, APEX_SKY -> !mainIsland(level, pos) && level.canSeeSky(pos) && air(level, pos.above()) && air(level, pos.below());
             };
         }
 

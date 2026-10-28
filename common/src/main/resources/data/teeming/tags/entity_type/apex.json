@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "teeming:basalt_behemoth",
-    "teeming:liftstone_monolith"
+    "teeming:liftstone_monolith",
+    "teeming:grand_orrery"
   ]
 }

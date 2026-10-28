@@ -70,6 +70,9 @@ import com.panda.teeming.gametest.mob.PhasewalkerTests;
 import com.panda.teeming.gametest.mob.EchoFencerTests;
 import com.panda.teeming.gametest.mob.SwellshadeTests;
 import com.panda.teeming.gametest.mob.ChronomiteTests;
+import com.panda.teeming.gametest.mob.UnderclingerTests;
+import com.panda.teeming.gametest.mob.WingshearTests;
+import com.panda.teeming.gametest.mob.GrandOrreryTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -149,5 +152,8 @@ final class MobTests {
         EchoFencerTests.register(out);
         SwellshadeTests.register(out);
         ChronomiteTests.register(out);
+        UnderclingerTests.register(out);
+        WingshearTests.register(out);
+        GrandOrreryTests.register(out);
     }
 }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "teeming:void_membrane"
+  ],
+  "result": {
+    "id": "minecraft:phantom_membrane",
+    "count": 1
+  }
+}
