@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -266,14 +267,14 @@ public class Brinkram extends TeemingMonster {
         return e != this && e.isAlive() && !(e instanceof Brinkram) && !(e instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
-    /** The hit: its attack, then the victim thrown out along the charge and up, less by its knockback resistance. */
+    /** The hit: its attack, then the victim thrown out along the charge and up, less by its knockback resistance and by half with a Shellward Charm. */
     private void ram(ServerLevel level, LivingEntity victim) {
         level.playSound(null, getX(), getY(), getZ(), ModSounds.BRINKRAM_RAM.get(), getSoundSource(), 1.2F, 1.0F);
         if (!MechanicEvent.post(this, "charge_hit", victim)) return;
         DamageSource source = damageSources().mobAttack(this);
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * CHARGE_HIT;
         if (!victim.hurtServer(level, source, damage)) return;
-        double keep = 1.0 - Mth.clamp(victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0.0, 1.0);
+        double keep = (1.0 - Mth.clamp(victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0.0, 1.0)) * Charms.chargeThrow(victim);
         if (keep > 0.0 && MechanicEvent.post(this, "throw", victim)) {
             Push.set(victim, new Vec3(chargeDir.x * KNOCKBACK_OUT * keep, KNOCKBACK_UP * keep, chargeDir.z * KNOCKBACK_OUT * keep));
         }

@@ -3,6 +3,7 @@ package com.panda.teeming.gametest;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.item.MaterialItem;
 import com.panda.teeming.platform.registry.DeferredItem;
+import com.panda.teeming.registry.ModCharms;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModMaterials;
 import com.panda.teeming.registry.ModMobs;
@@ -117,6 +118,9 @@ final class MaterialTests {
                     if (!out.is(Items.POTION) || contents == null || !contents.is(potion(w[1]))) wrong.add(id + ": brewing an Awkward Potion gives " + out + ", want " + w[1]);
                     BrewingInput water = new BrewingInput(PotionContents.createItemStack(Items.POTION, Potions.WATER), new ItemStack(mat.get()));
                     if (server.getRecipeManager().getRecipeFor(RecipeType.BREWING, water, helper.getLevel()).isPresent()) wrong.add(id + " also brews a Water Bottle");
+                } else if (w[0].equals("charm")) {                              // the charm's own crafting is charms_craftable
+                    List<String> recipe = ModCharms.RECIPES.getOrDefault(w[1], List.of());
+                    if (recipe.stream().noneMatch(part -> part.startsWith(mat.getId() + "*"))) wrong.add(id + ": the " + w[1] + " recipe doesn't take it");
                 } else {
                     wrong.add(id + ": unknown use " + use);
                 }

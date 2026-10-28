@@ -1,6 +1,7 @@
 package com.panda.teeming.mob.overworld;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -255,13 +256,13 @@ public class Snowroller extends TeemingMonster {
         return null;
     }
 
-    /** The roll reaches someone: attack x (1 + blocks rolled / 8), at most x2.5, and a shove along the roll. */
+    /** The roll reaches someone: attack x (1 + blocks rolled / 8), at most x2.5, and a shove along the roll (half with a Shellward Charm). */
     private void slam(ServerLevel level, LivingEntity victim) {
         if (MechanicEvent.post(this, "roll_hit", victim)) {
             DamageSource source = damageSources().mobAttack(this);
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * hitMultiplier();
             victim.hurtServer(level, source, damage);
-            victim.knockback(KNOCKBACK, -rollDir.x, -rollDir.z, source, damage);
+            victim.knockback(KNOCKBACK * Charms.chargeThrow(victim), -rollDir.x, -rollDir.z, source, damage);
             Push.sync(victim);
             level.playSound(null, victim.getX(), victim.getY(), victim.getZ(), ModSounds.SNOWROLLER_SLAM.get(), getSoundSource(), 1.0F, 1.0F);
         }

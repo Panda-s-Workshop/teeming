@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -166,7 +167,7 @@ public class Thornhorn extends TeemingAnimal {
                 DamageSource source = damageSources().mobAttack(this);
                 float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * CHARGE_HIT;
                 victim.hurtServer(level, source, damage);
-                victim.knockback(KNOCKBACK, -chargeDir.x, -chargeDir.z, source, damage);
+                victim.knockback(KNOCKBACK * Charms.chargeThrow(victim), -chargeDir.x, -chargeDir.z, source, damage);
                 Push.sync(victim);
             }
             level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_RAM.get(), getSoundSource(), 1.0F, 1.0F);

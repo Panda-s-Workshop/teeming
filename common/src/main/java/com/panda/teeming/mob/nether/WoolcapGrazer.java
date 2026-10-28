@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
@@ -392,7 +393,7 @@ public class WoolcapGrazer extends TeemingAnimal implements Shearable {
         return e.isAlive() && !(e instanceof WoolcapGrazer) && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(e) && !e.isPassenger();
     }
 
-    /** The shove: {@link #KNOCKBACK} blocks a tick away from this grazer and a {@link #KNOCKBACK_LIFT} hop, no damage. */
+    /** The shove: {@link #KNOCKBACK} blocks a tick away from this grazer and a {@link #KNOCKBACK_LIFT} hop (half with a Shellward Charm), no damage. */
     private void bump(ServerLevel level, LivingEntity victim) {
         Long last = bumped.get(victim.getUUID());
         if (last != null && level.getGameTime() - last < BUMP_COOLDOWN) return;
@@ -400,7 +401,8 @@ public class WoolcapGrazer extends TeemingAnimal implements Shearable {
         if (!MechanicEvent.post(this, "bump", victim)) return;
         double resist = Mth.clamp(victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0.0, 1.0);
         if (resist >= 1.0) return;
-        Push.away(victim, position(), KNOCKBACK * (1.0 - resist), KNOCKBACK_LIFT);
+        double charm = Charms.chargeThrow(victim);
+        Push.away(victim, position(), KNOCKBACK * (1.0 - resist) * charm, KNOCKBACK_LIFT * charm);
         bumps++;
         BUMP.play(victim);
         level.playSound(null, victim.getX(), victim.getY(), victim.getZ(), ModSounds.WOOLCAP_GRAZER_BUMP.get(), getSoundSource(), 1.0F, getVoicePitch());

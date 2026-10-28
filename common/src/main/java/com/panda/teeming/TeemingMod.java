@@ -6,6 +6,7 @@ import com.panda.teeming.mob.nether.PhantasmLantern;
 import com.panda.teeming.mob.overworld.HollowMourner;
 import com.panda.teeming.registry.ModBlockEntities;
 import com.panda.teeming.registry.ModBlocks;
+import com.panda.teeming.registry.ModCharms;
 import com.panda.teeming.registry.ModComponents;
 import com.panda.teeming.registry.ModEffects;
 import com.panda.teeming.registry.ModItems;
@@ -27,7 +28,7 @@ public final class TeemingMod {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     /** The classes whose static DeferredRegisters hold the mod's content. */
-    private static final List<Class<?>> CONTENT = List.of(ModComponents.class, ModBlocks.class, ModBlockEntities.class, ModLoot.class, ModItems.class, ModMaterials.class,
+    private static final List<Class<?>> CONTENT = List.of(ModComponents.class, ModBlocks.class, ModBlockEntities.class, ModLoot.class, ModItems.class, ModMaterials.class, ModCharms.class,
             ModMobs.class, ModEffects.class, ModSounds.class, ModTabs.class);
 
     private TeemingMod() {}

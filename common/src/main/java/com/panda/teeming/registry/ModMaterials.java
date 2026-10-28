@@ -49,13 +49,13 @@ public final class ModMaterials {
 
     public static final List<DeferredItem<MaterialItem>> ALL = List.of(TOUGH_HIDE, HEARTWOOD, SPORE_SAC, BOG_GLAND, SAND_SCALE, VENOM_FANG, FROST_CORE, STORM_COIL, ECHO_MEMBRANE, PETAL_DUST, GRAVE_ASH, GALE_ESSENCE, PRISM_SHARD, SLAG_GLAND, ASH_PELT, SOOT_PLUME, MAGMA_SCUTE, VEIN_SAC, CHITIN_PLATE, SIPHON_GEL, FUNGAL_FLEECE, SOUL_VERTEBRA, EMBER_WING, MOLTEN_HEART, CHAIN_LINK, GILDED_GIZZARD, VOID_CRYSTAL, GRAVITY_STONE, STAR_MOTE, VOID_ICHOR, PURPUR_FLEECE, CHORUS_SILK, RIFT_ESSENCE, TIME_SAND, VOID_MEMBRANE);
 
-    /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>" or "tipped <potion>". */
+    /** Each material's uses, for the GameTests: "craft <in> <result> <out> [item*count ...]", "brew <potion>", "tipped <potion>" or "charm <id>". */
     public static final Map<String, List<String>> USES = Map.ofEntries(
-            Map.entry("tough_hide", List.of("craft 1 minecraft:leather 2")),
+            Map.entry("tough_hide", List.of("craft 1 minecraft:leather 2", "charm shellward_charm")),
             Map.entry("heartwood", List.of("craft 1 minecraft:stick 4", "craft 2 minecraft:bone_meal 3")),
             Map.entry("spore_sac", List.of("brew minecraft:regeneration")),
             Map.entry("bog_gland", List.of("craft 1 minecraft:slime_ball 2")),
-            Map.entry("sand_scale", List.of("craft 4 minecraft:turtle_scute 1")),
+            Map.entry("sand_scale", List.of("craft 4 minecraft:turtle_scute 1", "charm shellward_charm")),
             Map.entry("venom_fang", List.of("brew minecraft:poison", "tipped minecraft:poison")),
             Map.entry("frost_core", List.of("craft 1 minecraft:powder_snow_bucket 1 minecraft:bucket*1")),
             Map.entry("storm_coil", List.of("brew minecraft:water_breathing")),

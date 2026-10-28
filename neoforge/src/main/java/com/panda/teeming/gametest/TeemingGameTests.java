@@ -52,6 +52,7 @@ public final class TeemingGameTests {
         FieldGuideTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         TrophyTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         MaterialTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
+        CharmTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         EffectTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         MobTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
     }

@@ -23,6 +23,7 @@ public final class ModTabs {
                 output.accept(ModItems.FIELD_GUIDE.get());
                 ModMobs.EGGS.forEach(egg -> output.accept(egg.get()));
                 ModMaterials.ALL.forEach(mat -> output.accept(mat.get()));
+                ModCharms.ALL.forEach(charm -> output.accept(charm.get()));
                 for (RosterStats.Entry mob : RosterStats.ALL) {
                     if (TeemingSpawns.type(mob).isEmpty()) continue;
                     ItemStack trophy = new ItemStack(ModItems.TROPHY.get());
