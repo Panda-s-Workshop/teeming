@@ -60,15 +60,20 @@ public final class ShardlingColossusTests {
         out.accept("shardling_colossus_halves", ShardlingColossusTests::halves);
         out.accept("shardling_colossus_half_slam", ShardlingColossusTests::halfSlam);
         out.accept("shardling_colossus_rejoin_100", ShardlingColossusTests::rejoinHundred);
+        TeemingGameTests.wide("shardling_colossus_rejoin_100");
         TeemingGameTests.timeLimit("shardling_colossus_rejoin_100", 300);
         out.accept("shardling_colossus_failure", ShardlingColossusTests::failure);
+        TeemingGameTests.wide("shardling_colossus_failure");
         TeemingGameTests.timeLimit("shardling_colossus_failure", 300);
+        out.accept("shardling_colossus_meet_a_block_apart", ShardlingColossusTests::meetABlockApart);
         out.accept("shardling_colossus_counter", ShardlingColossusTests::counter);
+        TeemingGameTests.wide("shardling_colossus_counter");
         TeemingGameTests.timeLimit("shardling_colossus_counter", 220);
         out.accept("shardling_colossus_tell_veto", ShardlingColossusTests::tellVeto);
         out.accept("shardling_colossus_split_veto", ShardlingColossusTests::splitVeto);
         out.accept("shardling_colossus_halves_kept", ShardlingColossusTests::halvesKept);
         out.accept("shardling_colossus_reload", ShardlingColossusTests::reload);
+        TeemingGameTests.wide("shardling_colossus_reload");
         TeemingGameTests.timeLimit("shardling_colossus_reload", 160);
         out.accept("shardling_colossus_stats", ShardlingColossusTests::stats);
         out.accept("shardling_colossus_home", ShardlingColossusTests::home);
@@ -80,6 +85,12 @@ public final class ShardlingColossusTests {
      * A colossus with the base look, a follow range of 1 (it, and its halves, never notice survivors in other arenas),
      * ready to slam, facing +z, removed when the test ends with any half it made; its slam never reaches past the arena.
      */
+    /**
+     * The middle of the wide arena, for the tests that leave the halves to stroll for 100 ticks or more: from a 12-block
+     * arena they can walk into a chunk the test server doesn't tick and freeze there, so they never rejoin.
+     */
+    private static final double MID_X = 50.5, MID_Z = 22.5;
+
     private static ShardlingColossus colossus(GameTestHelper helper, double x, double z) {
         ShardlingColossus c = helper.spawn(ModMobs.SHARDLING_COLOSSUS.get(), new Vec3(x, 1, z));
         c.core().setLook("base", true);
@@ -300,13 +311,14 @@ public final class ShardlingColossusTests {
 
     /** The halves set off to rejoin exactly 100 ticks after the split, both of them, and not a tick before; then they meet. */
     private static void rejoinHundred(GameTestHelper helper) {
-        ShardlingColossus c = colossus(helper, 5.5, 5.5);
+        ShardlingColossus c = colossus(helper, MID_X, MID_Z);
         ShardlingColossus[] right = {null};
         long[] split = {-1}, left = {-1}, rightAt = {-1};
         helper.runAtTickTime(1, () -> {
             right[0] = c.split(null, 10);
             split[0] = helper.getTick();
         });
+        StringBuilder log = trail(helper, c, right);
         helper.onEachTick(() -> {
             if (split[0] < 0 || right[0] == null) return;
             if (left[0] < 0 && c.core().in(Step.REGROUP)) left[0] = helper.getTick();
@@ -319,7 +331,7 @@ public final class ShardlingColossusTests {
             helper.assertTrue(left[0] >= 0 && rightAt[0] >= 0, "both set off to rejoin");
             helper.assertTrue(left[0] - split[0] == 100 && rightAt[0] - split[0] == 100,
                     "they set off 100 ticks after the split, saw " + (left[0] - split[0]) + " and " + (rightAt[0] - split[0]));
-            helper.assertTrue(c.form() == Form.WHOLE && c.fused() && right[0].isRemoved(), "and then rejoined");
+            helper.assertTrue(c.form() == Form.WHOLE && c.fused() && right[0].isRemoved(), "and then rejoined:" + log);
         });
     }
 
@@ -329,10 +341,11 @@ public final class ShardlingColossusTests {
      * below half) leaves it whole.
      */
     private static void failure(GameTestHelper helper) {
-        ShardlingColossus c = colossus(helper, 5.5, 5.5);
+        ShardlingColossus c = colossus(helper, MID_X, MID_Z);
         ShardlingColossus[] right = {null};
         boolean[] struck = {false};
         helper.runAtTickTime(1, () -> right[0] = c.split(null, 10));
+        StringBuilder log = trail(helper, c, right);
         helper.runAtTickTime(20, () -> {
             hit(helper, c, 6.0F);
             hit(helper, right[0], 4.0F);
@@ -351,9 +364,62 @@ public final class ShardlingColossusTests {
             }
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(struck[0], "the halves rejoined");
+            helper.assertTrue(struck[0], "the halves rejoined:" + log);
             helper.assertTrue(c.form() == Form.WHOLE && c.twin(helper.getLevel()) == null, "and stay one");
         });
+    }
+
+    /**
+     * Halves setting off from neighbouring blocks, their middles 1.6 apart (past the 1.2 that rejoins them), still meet: a
+     * path to the twin counts as done a block short, and they used to stand there until the walk ran out.
+     */
+    private static void meetABlockApart(GameTestHelper helper) {
+        ShardlingColossus c = colossus(helper, 5.5, 5.5);
+        ShardlingColossus[] right = {null};
+        long[] off = {-1}, met = {-1};
+        helper.runAtTickTime(1, () -> right[0] = c.split(null, 10));
+        StringBuilder log = trail(helper, c, right);
+        helper.runAtTickTime(15, () -> {
+            Vec3 l = helper.absoluteVec(new Vec3(4.1, 1, 5.5)), r = helper.absoluteVec(new Vec3(5.7, 1, 5.5));
+            c.snapTo(l.x, l.y, l.z, 0.0F, 0.0F);
+            right[0].snapTo(r.x, r.y, r.z, 0.0F, 0.0F);
+            c.getNavigation().stop();
+            right[0].getNavigation().stop();
+            c.setAge(ShardlingColossus.REJOIN_AFTER);
+            right[0].setAge(ShardlingColossus.REJOIN_AFTER);
+            off[0] = helper.getTick();
+        });
+        helper.onEachTick(() -> {
+            if (met[0] < 0 && off[0] >= 0 && c.form() == Form.WHOLE) met[0] = helper.getTick();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(met[0] >= 0, "the halves rejoined:" + log);
+            helper.assertTrue(met[0] - off[0] <= 40, "within 40 ticks of setting off, took " + (met[0] - off[0]));
+        });
+    }
+
+    /**
+     * What the halves did, for a failure message: a line whenever either one sets off or stops walking, and every 50
+     * ticks: who walks, how far apart their middles are across the ground and the height between them, and whether each
+     * stands where the server ticks entities.
+     */
+    private static StringBuilder trail(GameTestHelper helper, ShardlingColossus c, ShardlingColossus[] right) {
+        StringBuilder log = new StringBuilder();
+        boolean[] walking = {false, false};
+        helper.onEachTick(() -> {
+            ShardlingColossus r = right[0];
+            if (r == null || c.form() == Form.WHOLE) return;
+            boolean lw = c.core().in(Step.REGROUP), rw = r.core().in(Step.REGROUP);
+            if (lw != walking[0] || rw != walking[1] || helper.getTick() % 50 == 0) {
+                ServerLevel level = helper.getLevel();
+                log.append(String.format(" t%d %s%s apart %.2f dy %.2f ticking %b/%b;", helper.getTick(), lw ? "L" : "-", rw ? "R" : "-",
+                        Math.hypot(r.getX() - c.getX(), r.getZ() - c.getZ()), r.getY() - c.getY(),
+                        level.isPositionEntityTicking(c.blockPosition()), level.isPositionEntityTicking(r.blockPosition())));
+                walking[0] = lw;
+                walking[1] = rw;
+            }
+        });
+        return log;
     }
 
     /**
@@ -362,7 +428,7 @@ public final class ShardlingColossusTests {
      * void crystal: two from one colossus.
      */
     private static void counter(GameTestHelper helper) {
-        ShardlingColossus c = colossus(helper, 5.5, 5.5);
+        ShardlingColossus c = colossus(helper, MID_X, MID_Z);
         ShardlingColossus[] right = {null};
         Set<UUID> before = new HashSet<>();
         Set<UUID> crystals = new HashSet<>();
@@ -463,7 +529,7 @@ public final class ShardlingColossusTests {
      * right half, saved 20 ticks after the split, still sets off to rejoin 100 ticks after it.
      */
     private static void reload(GameTestHelper helper) {
-        ShardlingColossus c = colossus(helper, 5.5, 5.5);
+        ShardlingColossus c = colossus(helper, MID_X, MID_Z);
         ShardlingColossus[] copy = {null};
         long[] split = {-1}, setOff = {-1};
         helper.runAtTickTime(1, () -> {

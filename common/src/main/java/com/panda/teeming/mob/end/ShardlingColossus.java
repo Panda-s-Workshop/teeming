@@ -107,6 +107,8 @@ public class ShardlingColossus extends TeemingMonster {
     public static final int REJOIN_AFTER = 100;
     /** Halves whose middles come this close (across the ground) rejoin. */
     public static final double MEET = 1.2;
+    /** Halves this close (across the ground) while walking together stop pathing and walk straight at each other. */
+    public static final double STEER = 2.5;
     /** Halves that haven't met after this long fight on, and set off again another 100 ticks later. */
     public static final int REGROUP_MAX = 200;
     public static final double REGROUP_SPEED = 1.1;
@@ -537,7 +539,11 @@ public class ShardlingColossus extends TeemingMonster {
         }
     }
 
-    /** Walking together: each half heads for the other; the first to find them close enough rejoins them. */
+    /**
+     * Walking together: each half heads for the other; the first to find them close enough rejoins them. A path ends in
+     * its twin's own block, and within {@link #STEER} they walk straight at each other's middle: a path counts as done a
+     * block short, and two halves a block apart would stand there, too far to rejoin, until the walk ran out.
+     */
     private void regroupTick(ServerLevel level) {
         if (form() == Form.WHOLE) {
             core().end();
@@ -554,7 +560,12 @@ public class ShardlingColossus extends TeemingMonster {
             else t.fuse(level, this);
             return;
         }
-        if (tickCount % 5 == 0 || getNavigation().isDone()) getNavigation().moveTo(t, REGROUP_SPEED);
+        if (dx * dx + dz * dz <= STEER * STEER) {
+            getNavigation().stop();
+            getMoveControl().setWantedPosition(t.getX(), t.getY(), t.getZ(), REGROUP_SPEED);
+        } else if (tickCount % 5 == 0 || getNavigation().isDone()) {
+            getNavigation().moveTo(t, 0, REGROUP_SPEED);
+        }
     }
 
     /**
