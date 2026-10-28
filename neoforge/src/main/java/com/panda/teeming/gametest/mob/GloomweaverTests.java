@@ -89,7 +89,7 @@ public final class GloomweaverTests {
         out.accept("no_grief_when_gamerule_off", GloomweaverTests::noGrief);
         out.accept("gloomweaver_config_off", GloomweaverTests::configOff);
         out.accept("temp_blocks_cleanup", GloomweaverTests::chunkUnloadCleanup);
-        TeemingGameTests.timeLimit("temp_blocks_cleanup", 600);
+        TeemingGameTests.timeLimit("temp_blocks_cleanup", CLEANUP_TICKS);
         out.accept("gloomweaver_wall_cancel", GloomweaverTests::wallCancel);
         out.accept("gloomweaver_death_cleanup", GloomweaverTests::deathCleanup);
         out.accept("gloomweaver_discard_cleanup", GloomweaverTests::discardCleanup);
@@ -562,10 +562,18 @@ public final class GloomweaverTests {
     }
 
     /**
-     * A real chunk unload and reload: far from every arena (10,000 blocks east), a chunk is force-loaded and floored,
-     * and a weaver (no AI, kept from despawning) raises its wall there at a still pig. The chunk is let go; once the
-     * weaver has been unloaded with it, the chunk is force-loaded again. When the weaver is back and has ticked, no
-     * block of its wall is left anywhere in the chunk, and it holds no walls and no waiting spots.
+     * The cleanup test's time limit. A far chunk forced fresh ticks entities only once its neighbours have generated off
+     * the main thread, which beside the full suite on CI can take hundreds of ticks; the test waits for that before it
+     * builds, and again after the reload.
+     */
+    private static final int CLEANUP_TICKS = 1200;
+
+    /**
+     * A real chunk unload and reload: far from every arena (10,000 blocks east), a chunk is force-loaded and, once it
+     * ticks entities, floored, and a weaver (no AI, kept from despawning) raises its wall there at a still pig. The chunk
+     * is let go; once the weaver has been unloaded with it, the chunk is force-loaded again. When the weaver is back and
+     * has ticked, no block of its wall is left anywhere in the chunk, and it holds no walls and no waiting spots. Out of
+     * time, it says how far it got.
      */
     private static void chunkUnloadCleanup(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -587,9 +595,13 @@ public final class GloomweaverTests {
             }
             level.setChunkForced(cx, cz, false);
         });
+        BlockPos middle = base.offset(8, 1, 8);
         helper.runAtTickTime(2, () -> {
             level.setChunkForced(cx, cz, true);
             level.getChunk(cx, cz);
+        });
+        helper.onEachTick(() -> {
+            if (stage[0] != 0 || helper.getTick() <= 2 || !level.isPositionEntityTicking(middle)) return;
             for (int dx = 0; dx < 16; dx++) {
                 for (int dz = 0; dz < 16; dz++) {
                     level.setBlockAndUpdate(base.offset(dx, 0, dz), Blocks.STONE.defaultBlockState());
@@ -613,6 +625,14 @@ public final class GloomweaverTests {
             first[0] = g;
             level.setChunkForced(cx, cz, false);                             // let the chunk go
             stage[0] = 1;
+        });
+        helper.runAtTickTime(CLEANUP_TICKS - 1, () -> {
+            if (stage[0] >= 3) return;
+            Entity back = ids[0] == null ? null : level.getEntity(ids[0]);
+            helper.fail(String.format("stopped at stage %d (0 wait for the chunk to tick, 1 wait for the unload, 2 wait for the "
+                    + "reloaded weaver to tick): first removed %s, back %s ticked %d, chunk loaded %b, entities tick there %b",
+                    stage[0], first[0] == null ? "-" : first[0].getRemovalReason(), back == null ? "no" : back == first[0] ? "same" : "yes",
+                    back == null ? -1 : back.tickCount, level.hasChunk(cx, cz), level.isPositionEntityTicking(middle)));
         });
         helper.onEachTick(() -> {
             if (stage[0] == 1 && first[0].isRemoved()) {
