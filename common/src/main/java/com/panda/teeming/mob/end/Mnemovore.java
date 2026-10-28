@@ -47,8 +47,8 @@ import org.jspecify.annotations.Nullable;
  * {@link #BITE_EVERY} ticks.
  *
  * <p>Counter: step back when the maw gapes, or raise a shield; a bite that doesn't land takes nothing, and its jaws
- * snap shut on air. Payoff: killed, it spills every point it ate as experience orbs, plus a tenth (rounded up), so the
- * player gets back more than they lost. A Mnemovore holding stolen experience never despawns, and a removal that
+ * snap shut on air. Payoff: killed, it spills every point it ate as experience orbs, exactly what it took and no more,
+ * so feeding it is never a profit and a bitten player loses nothing for good once it dies. A Mnemovore holding stolen experience never despawns, and a removal that
  * destroys it (Peaceful, a command) spills the points too: nothing it took is ever lost.
  */
 public class Mnemovore extends TeemingMonster {
@@ -64,8 +64,8 @@ public class Mnemovore extends TeemingMonster {
     public static final float BITE = 1.0F;
     /** Each bite that lands on a player takes this many experience levels. */
     public static final int LEVELS_PER_BITE = 1;
-    /** On death it gives back what it ate times this, rounded up. */
-    public static final double REPAY = 1.1;
+    /** On death it gives back what it ate plus this many points: none, so feeding it never pays more than it took. */
+    public static final int REPAY_BONUS = 0;
     /** It starts a gape at a target within this many blocks of open space, and the bite lands on one still within this. */
     public static final double BITE_START = 0.75;
     public static final double BITE_HOLD = 1.25;
@@ -340,11 +340,10 @@ public class Mnemovore extends TeemingMonster {
         return 7 + level * 2;
     }
 
-    /** What it gives back for {@code points} eaten: a tenth more, rounded up. */
+    /** What it gives back for {@code points} eaten: every one of them, plus the flat {@link #REPAY_BONUS}. */
     public static int repay(int points) {
         if (points <= 0) return 0;
-        long tenths = (long) points * Math.round(REPAY * 10.0);
-        return (int) Math.min(Integer.MAX_VALUE, (tenths + 9) / 10);
+        return saturated(points, REPAY_BONUS);
     }
 
     private static int saturated(int a, int b) {
@@ -352,7 +351,7 @@ public class Mnemovore extends TeemingMonster {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, sum));
     }
 
-    // ---- the payoff: everything back, and more ------------------------------------------------------------------------
+    // ---- the payoff: everything back --------------------------------------------------------------------------------
 
     @Override
     public void die(DamageSource source) {
@@ -374,7 +373,7 @@ public class Mnemovore extends TeemingMonster {
     }
 
     /**
-     * Spills everything it ate, plus a tenth, as experience orbs from its mouth (on the last ground it stood on, if it
+     * Spills everything it ate as experience orbs from its mouth (on the last ground it stood on, if it
      * died in the void below the world); its glyphs go dark.
      */
     private void spill(ServerLevel level) {

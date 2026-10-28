@@ -42,8 +42,8 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Mote Swarm: health 30, attack 1 a mote, armour 0, a 1.5 x 1.5 hitbox. Wrapped round its target for 10 ticks it
- * gathers for 8 (the tell), then surges for 10: each mote that touches deals 1 through armour, at most 3 on one body a
+ * Mote Swarm: health 30, attack 1.2 a mote, armour 0, a 1.5 x 1.5 hitbox. Wrapped round its target for 10 ticks it
+ * gathers for 8 (the tell), then surges for 10: each mote that touches deals 1.2 through armour, at most 3 on one body a
  * tick, as many motes as it has left (one a point of health, 30 at full). A plain single-target hit does a quarter;
  * sweeps, explosions, splash and lingering potions and other area damage do triple. Small end islands and end midlands,
  * weight 4, alone. Every number is checked against a plain value.
@@ -170,7 +170,7 @@ public final class MoteSwarmTests {
             helper.assertTrue(moved[0] < 0.01, "it hangs still while it gathers, moved " + moved[0]);
             helper.assertTrue(hitAt[0] == startedAt[0] + 8 && surging[0], "the first motes land as the gather ends, at tick " + hitAt[0]
                     + ", the gather began at " + startedAt[0] + ", surging " + surging[0]);
-            helper.assertTrue(near(first[0], 3.0F), "the first tick of the surge lands 3 motes of 1, took " + first[0]);
+            helper.assertTrue(near(first[0], 3.6F), "the first tick of the surge lands 3 motes of 1.2, took " + first[0]);
         });
     }
 
@@ -224,8 +224,8 @@ public final class MoteSwarmTests {
     }
 
     /**
-     * Failing: a pig stays inside through a whole surge of a full swarm. It loses 3 on each of exactly 10 ticks, 30 in
-     * all, never more than 3 in one tick, in one surge.
+     * Failing: a pig stays inside through a whole surge of a full swarm. It loses 3.6 (3 motes of 1.2) on each of
+     * exactly 10 ticks, 36 in all, never more than 3 motes in one tick, in one surge.
      */
     private static void failure(GameTestHelper helper) {
         Pig pig = pig(helper, 5.5, 5.5);
@@ -243,15 +243,15 @@ public final class MoteSwarmTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(done[0], "the surge is over, phase " + s.phase());
             helper.assertTrue(losses.size() == 10, "motes land on 10 ticks, " + losses);
-            helper.assertTrue(losses.stream().allMatch(l -> near(l, 3.0F)), "3 motes of 1 land each tick, never more, " + losses);
-            helper.assertTrue(near(100.0F - pig.getHealth(), 30.0F), "a full swarm's surge deals 30, took " + (100.0F - pig.getHealth()));
+            helper.assertTrue(losses.stream().allMatch(l -> near(l, 3.6F)), "3 motes of 1.2 land each tick, never more, " + losses);
+            helper.assertTrue(near(100.0F - pig.getHealth(), 36.0F), "a full swarm's surge deals 36, took " + (100.0F - pig.getHealth()));
             helper.assertTrue(s.surges() == 1 && s.stings() == 30, "one surge, 30 motes, " + s.surges() + "/" + s.stings());
         });
     }
 
     /**
-     * Armour counts, mote by mote: a pig with 20 armour takes each mote's 1 as 1 x (1 - 19.5 / 25) = 0.22, so 0.66 a
-     * tick of the surge and 6.6 over it.
+     * Armour counts, mote by mote: a pig with 20 armour takes each mote's 1.2 as 1.2 x (1 - 19.4 / 25) = 0.2688, so
+     * 0.8064 a tick of the surge and 8.064 over it.
      */
     private static void armour(GameTestHelper helper) {
         Pig pig = pig(helper, 5.5, 5.5);
@@ -269,12 +269,12 @@ public final class MoteSwarmTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(done[0], "the surge is over, phase " + s.phase());
-            helper.assertTrue(losses.size() == 10 && losses.stream().allMatch(l -> near(l, 0.66F)), "0.66 a tick through 20 armour, " + losses);
-            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 6.6F) < 0.05F, "6.6 over the surge, took " + (100.0F - pig.getHealth()));
+            helper.assertTrue(losses.size() == 10 && losses.stream().allMatch(l -> near(l, 0.8064F)), "0.8064 a tick through 20 armour, " + losses);
+            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 8.064F) < 0.05F, "8.064 over the surge, took " + (100.0F - pig.getHealth()));
         });
     }
 
-    /** A thinner swarm stings less: at 12 health it has 12 motes, and its surge lands 3 on each of 4 ticks, 12 in all. */
+    /** A thinner swarm stings less: at 12 health it has 12 motes, and its surge lands 3 on each of 4 ticks, 14.4 in all. */
     private static void thinSurge(GameTestHelper helper) {
         Pig pig = pig(helper, 5.5, 5.5);
         MoteSwarm s = onPig(helper, pig);
@@ -291,8 +291,8 @@ public final class MoteSwarmTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(done[0], "the surge is over, phase " + s.phase());
-            helper.assertTrue(losses.size() == 4 && losses.stream().allMatch(l -> near(l, 3.0F)), "3 on each of 4 ticks, " + losses);
-            helper.assertTrue(near(100.0F - pig.getHealth(), 12.0F), "12 motes, 12 damage, took " + (100.0F - pig.getHealth()));
+            helper.assertTrue(losses.size() == 4 && losses.stream().allMatch(l -> near(l, 3.6F)), "3 motes (3.6) on each of 4 ticks, " + losses);
+            helper.assertTrue(near(100.0F - pig.getHealth(), 14.4F), "12 motes, 14.4 damage, took " + (100.0F - pig.getHealth()));
         });
     }
 
@@ -538,12 +538,12 @@ public final class MoteSwarmTests {
 
     // ---- numbers -----------------------------------------------------------------------------------------------------
 
-    /** Health 30, attack 1 (a mote), armour 0, a 1.5 x 1.5 hitbox, 30 motes at full. */
+    /** Health 30, attack 1.2 (a mote), armour 0, a 1.5 x 1.5 hitbox, 30 motes at full. */
     private static void stats(GameTestHelper helper) {
         MoteSwarm s = swarm(helper, 5.5, 1.0, 5.5, false);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(s.getMaxHealth() == 30.0F && s.getHealth() == 30.0F, "health 30, got " + s.getHealth() + "/" + s.getMaxHealth());
-            helper.assertTrue(s.getAttributeValue(Attributes.ATTACK_DAMAGE) == 1.0, "attack 1, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(Math.abs(s.getAttributeValue(Attributes.ATTACK_DAMAGE) - 1.2) < 1.0E-4, "attack 1.2, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(s.getArmorValue() == 0, "armour 0, got " + s.getArmorValue());
             helper.assertTrue(near(s.getBbWidth(), 1.5F) && near(s.getBbHeight(), 1.5F), "a 1.5 x 1.5 hitbox, got " + s.getBbWidth() + " x " + s.getBbHeight());
             helper.assertTrue(s.motes() == 30, "30 motes at full health, " + s.motes());

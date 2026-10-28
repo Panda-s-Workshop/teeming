@@ -45,7 +45,7 @@ import net.minecraft.world.phys.Vec3;
  * so it stays in the arena.
  *
  * <p>A quarry at the brink is banked at for exactly 20 ticks and unhurt meanwhile, then rammed at 1 block a tick: its
- * attack (8, armour counts) and a throw of 1.8 on along the ram and 0.3 up, less by knockback resistance. A quarry that
+ * attack (9, armour counts) and a throw of 1.8 on along the ram and 0.3 up, less by knockback resistance. A quarry that
  * steps off the streak during the bank (a block inland, or three along the bridge) is missed, and the ray rams the rock
  * and hangs there, held fast and within reach, for exactly 60 ticks. It ignores survival players on solid ground and
  * loses interest in one who gets back to it; hit, it hunts the one who hit it for exactly 200 ticks anywhere, and away
@@ -268,7 +268,7 @@ public final class BrinkrayTests {
     // ---- the failure -----------------------------------------------------------------------------------------------
 
     /**
-     * Failing the counter: the pig stays on the bridge. It loses exactly the ray's attack of 8, is thrown on along the
+     * Failing the counter: the pig stays on the bridge. It loses exactly the ray's attack of 9, is thrown on along the
      * ram (south) across the bridge, and falls off its far side, out over the void.
      */
     private static void failure(GameTestHelper helper) {
@@ -282,7 +282,7 @@ public final class BrinkrayTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(r.hits() == 1, "one ram hit, saw " + r.hits());
-            helper.assertTrue(Math.abs(lost[0] - 8.0F) < 0.01F, "the pig lost the ray's attack of 8, lost " + lost[0]);
+            helper.assertTrue(Math.abs(lost[0] - 9.0F) < 0.01F, "the pig lost the ray's attack of 9, lost " + lost[0]);
             Vec3 at = rel(helper, pig);
             helper.assertTrue(at.z > 10.0 && at.y < 3.5, "thrown off the bridge's far side and falling, at " + at);
         });
@@ -321,7 +321,7 @@ public final class BrinkrayTests {
         });
     }
 
-    /** Armour counts: armour 10 turns the ram's 8 into 6.08. */
+    /** Armour counts: armour 10 turns the ram's 9 into 7.02. */
     private static void armour(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
         Brinkray r = onBridge(helper, pig);
@@ -329,7 +329,7 @@ public final class BrinkrayTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(r.hits() == 1, "one hit, saw " + r.hits());
             float lost = 100.0F - pig[0].getHealth();
-            helper.assertTrue(Math.abs(lost - 6.08F) < 0.01F, "armour 10 turns the 8 into 6.08, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 7.02F) < 0.01F, "armour 10 turns the 9 into 7.02, the pig lost " + lost);
         });
     }
 
@@ -496,7 +496,7 @@ public final class BrinkrayTests {
     }
 
     /**
-     * Away from a brink its ram hurts but throws no one: a pig inland that hit it is rammed for 8 with no motion across
+     * Away from a brink its ram hurts but throws no one: a pig inland that hit it is rammed for 9 with no motion across
      * the ground at all (not even vanilla's knockback).
      */
     private static void grudgeNoThrow(GameTestHelper helper) {
@@ -510,7 +510,7 @@ public final class BrinkrayTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(thrown[0] != null && r.hits() == 1, "the ram hit the pig that hit it");
-            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 8.0F) < 0.01F, "for its attack of 8");
+            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 9.0F) < 0.01F, "for its attack of 9");
             helper.assertTrue(thrown[0].horizontalDistance() < 1.0E-6, "with no motion across the ground, motion " + thrown[0]);
         });
     }
@@ -567,7 +567,7 @@ public final class BrinkrayTests {
         helper.succeed();
     }
 
-    /** Health 40, attack 8, armour 2, a 3.0 x 0.6 hitbox; it flies (no gravity) and looks 32 out for a quarry. */
+    /** Health 40, attack 9, armour 2, a 3.0 x 0.6 hitbox; it flies (no gravity) and looks 32 out for a quarry. */
     private static void stats(GameTestHelper helper) {
         Brinkray r = helper.spawn(ModMobs.BRINKRAY.get(), new Vec3(5.5, 3, 5.5));
         r.core().setLook(LookDef.BASE, true);
@@ -575,7 +575,7 @@ public final class BrinkrayTests {
         TestPlayers.whenDone(helper, r::discard);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(near(r.getMaxHealth(), 40.0) && near(r.getHealth(), 40.0), "health 40, got " + r.getHealth() + "/" + r.getMaxHealth());
-            helper.assertTrue(near(r.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.0), "attack 8");
+            helper.assertTrue(near(r.getAttributeValue(Attributes.ATTACK_DAMAGE), 9.0), "attack 9");
             helper.assertTrue(r.getArmorValue() == 2, "armour 2, got " + r.getArmorValue());
             helper.assertTrue(Math.abs(r.getBbWidth() - 3.0F) < 0.02F && Math.abs(r.getBbHeight() - 0.6F) < 0.02F,
                     "hitbox 3.0 x 0.6, got " + r.getBbWidth() + " x " + r.getBbHeight());

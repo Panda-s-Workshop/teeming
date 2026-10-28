@@ -54,7 +54,7 @@ import org.jspecify.annotations.Nullable;
  * of it: its attack (9) to everything within 3 blocks of its middle and 75 degrees of where it faces, without
  * knockback, so a slam never throws anyone off an island.
  *
- * <p>A single hit of 8 or more (as dealt, before armour), or a hit that leaves it below half its health, splits it
+ * <p>A single hit of 12 or more (as dealt, before armour), or a hit that leaves it below half its health, splits it
  * along the seam into two halves with a shatter and sparks: each at scale 0.7 with half the health it had when it
  * split (and half its maximum), hitting for 6 and a little quicker on its one leg. The halves fight on. 100 ticks
  * after the split, if both still live, they stop fighting, walk to each other and rejoin into one colossus with their
@@ -89,8 +89,11 @@ public class ShardlingColossus extends TeemingMonster {
     /** The slam reaches this far from its middle (at scale 1; a half's reach shrinks with it), this wide either side. */
     public static final double SLAM_REACH = 3.0;
     public static final double SLAM_ARC = 75.0;
-    /** A single hit this big (as dealt, before armour) splits it. */
-    public static final float SPLIT_HIT = 8.0F;
+    /**
+     * A single hit this big (as dealt, before armour) splits it: more than the End reference sword's 11, so a plain
+     * blow doesn't, and splitting it early takes a heavier one (a critical hit).
+     */
+    public static final float SPLIT_HIT = 12.0F;
     /** A hit that leaves it below this share of its maximum health splits it. */
     public static final float SPLIT_BELOW = 0.5F;
     /** A half: this scale, and this share of the colossus's health (and of its maximum). */

@@ -50,8 +50,8 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Resonant Triad: health 16 each, attack 4, armour 0, a 0.6 x 0.9 hitbox, in groups of three. While all three live only
- * the singer takes damage; the song passes every 60 ticks, with a 10 tick tell on the next one; killing the singer
+ * Resonant Triad: health 16 each, attack 8.5, armour 0, a 0.6 x 0.9 hitbox, in groups of three. While all three live
+ * only the singer takes damage; the song passes every 60 ticks, with a 10 tick tell on the next one; killing the singer
  * breaks the chord and the other two take damage. Each zaps for its attack (through armour, without knockback) after an
  * 8 tick crackle, within 5 blocks, then waits 40 ticks. Every number is checked against a plain value.
  *
@@ -489,8 +489,8 @@ public final class ResonantTriadTests {
     // ---- the zap -----------------------------------------------------------------------------------------------------
 
     /**
-     * The zap: its attack of 4 through armour (a pig has none), exactly 4 lost, and no knockback (a pig with no goals but
-     * its physics doesn't move).
+     * The zap: its attack of 8.5 through armour (a pig has none), exactly 8.5 lost, and no knockback (a pig with no
+     * goals but its physics doesn't move).
      */
     private static void zap(GameTestHelper helper) {
         Pig pig = pig(helper, 6.0, 8.5);
@@ -501,7 +501,7 @@ public final class ResonantTriadTests {
         helper.onEachTick(() -> {
             if (pig.getHealth() < hp[0]) {
                 float l = hp[0] - pig.getHealth();
-                helper.assertTrue(near(l, 4.0), "the zap deals 4, " + l);
+                helper.assertTrue(near(l, 8.5), "the zap deals 8.5, " + l);
                 helper.assertTrue(pig.getDeltaMovement().horizontalDistance() < 1.0E-3, "no knockback, " + pig.getDeltaMovement());
                 helper.assertTrue(t.zaps() == 1 && t.core().in(Step.ZAP), "one zap landed");
                 helper.succeed();
@@ -523,7 +523,7 @@ public final class ResonantTriadTests {
             if (tellAt[0] >= 0 && t.core().in(Step.TELL)) helper.assertTrue(near(pig.getHealth(), 100.0), "nothing lands in the crackle");
             if (tellAt[0] >= 0 && t.core().in(Step.ZAP)) {
                 helper.assertTrue(now - tellAt[0] == 8, "the crackle lasts 8 ticks, " + (now - tellAt[0]));
-                helper.assertTrue(near(pig.getHealth(), 96.0), "the zap lands as it ends, " + pig.getHealth());
+                helper.assertTrue(near(pig.getHealth(), 91.5), "the zap lands as it ends, " + pig.getHealth());
                 helper.succeed();
             }
         });
@@ -582,14 +582,14 @@ public final class ResonantTriadTests {
         });
     }
 
-    /** Armour counts: a pig with 10 armour takes 4 x (1 - 8 / 25) = 2.72 from the zap. */
+    /** Armour counts: a pig with 10 armour takes 8.5 x (1 - 5.75 / 25) = 6.545 from the zap. */
     private static void armour(GameTestHelper helper) {
         Pig pig = pig(helper, 6.0, 8.5);
         pig.getAttribute(Attributes.ARMOR).setBaseValue(10.0);
         zapper(helper, 6.0, 5.5, pig);
         helper.succeedWhen(() -> {
             helper.assertTrue(pig.getHealth() < 100.0F, "zapped");
-            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 2.72F) < 0.01F, "armour 10 leaves 2.72, lost " + (100.0F - pig.getHealth()));
+            helper.assertTrue(Math.abs(100.0F - pig.getHealth() - 6.545F) < 0.01F, "armour 10 leaves 6.545, lost " + (100.0F - pig.getHealth()));
         });
     }
 
@@ -648,12 +648,12 @@ public final class ResonantTriadTests {
                 "air under an island block is not"));
     }
 
-    /** Health 16, attack 4, armour 0, a 0.6 x 0.9 hitbox, 10 experience; it flies. */
+    /** Health 16, attack 8.5, armour 0, a 0.6 x 0.9 hitbox, 10 experience; it flies. */
     private static void stats(GameTestHelper helper) {
         ResonantTriad t = shard(helper, 6.0, 3, 6.0);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(t.getMaxHealth() == 16.0F && t.getHealth() == 16.0F, "health 16, got " + t.getHealth() + "/" + t.getMaxHealth());
-            helper.assertTrue(t.getAttributeValue(Attributes.ATTACK_DAMAGE) == 4.0, "attack 4, got " + t.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(t.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + t.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(t.getArmorValue() == 0, "armour 0, got " + t.getArmorValue());
             helper.assertTrue(Math.abs(t.getBbWidth() - 0.6F) < 0.01F && Math.abs(t.getBbHeight() - 0.9F) < 0.01F,
                     "a 0.6 x 0.9 hitbox, got " + t.getBbWidth() + " x " + t.getBbHeight());

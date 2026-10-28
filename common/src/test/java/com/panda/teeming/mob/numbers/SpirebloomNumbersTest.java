@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Spirebloom's numbers against its roster row, written out as plain values: HP 28, Atk 8, Arm 6, 0.9 x 1.5; a
+ * The Spirebloom's numbers against its roster row, written out as plain values: HP 28, Atk 20, Arm 6, 0.9 x 1.5; a
  * 16-tick tell (cracks); every 80 ticks a spike line 10 long toward its target, 8 damage and a knock-up; End barrens,
  * weight 4, alone; second look Rose Spire; drops void crystal. The spike spacing and width, the throw's height and the
  * spikes left standing are its design. The GameTests check the numbers are applied; this checks they are the right
@@ -73,12 +73,12 @@ class SpirebloomNumbersTest {
         RosterStats.Entry row = RosterStats.get("spirebloom");
         assertEquals(79, row.number());
         assertEquals(28.0F, row.health());
-        assertEquals(8.0F, row.attack());
+        assertEquals(20.0F, row.attack());
         assertEquals(6.0F, row.armor());
         assertEquals(0.9F, row.width());
         assertEquals(1.5F, row.height());
         assertEquals(16, row.tellTicks());
-        assertEquals(8.0F, row.blow());
+        assertEquals(20.0F, row.blow());
         assertEquals(4, row.weight());
         assertEquals(1, row.groupMin());
         assertEquals(1, row.groupMax());

@@ -48,7 +48,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Riftjackal: an 8-tick crouch (still, harmless, the landing picked at its target's side or back, 2 to 4 blocks out),
- * then the blink; a bite of 6 if the target is in reach; a rift left where it vanished, open exactly 60 ticks, that
+ * then the blink; a bite of 8.5 if the target is in reach; a rift left where it vanished, open exactly 60 ticks, that
  * throws a mob or a survival player exactly 8 blocks onto safe ground and never a Riftjackal; each jackal blinks every
  * 60 ticks and a pack takes turns, a crouch at most every 20 ticks; the counter (the target facing the landing) throws
  * the jackal 8 blocks away with no bite and no rift. The safe-teleport rule is checked in the world (lava, fire, a pit,
@@ -232,7 +232,7 @@ public final class RiftjackalTests {
     }
 
     /**
-     * Failing the counter: the pig never turns. The jackal lands at its side or back and bites for 6, and its rift lies
+     * Failing the counter: the pig never turns. The jackal lands at its side or back and bites for 8.5, and its rift lies
      * where it crouched.
      */
     private static void failure(GameTestHelper helper) {
@@ -246,7 +246,7 @@ public final class RiftjackalTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(j.blinks() == 1, "it blinked");
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the bite takes 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the bite takes 8.5, the pig lost " + lost);
             helper.assertTrue(j.snaps() == 0, "unseen, it was not thrown back");
             helper.assertTrue(j.rifts().size() == 1 && flat(j.rifts().getFirst(), start[0]) < 0.01, "and its rift lies where it vanished");
         });
@@ -273,7 +273,7 @@ public final class RiftjackalTests {
         });
     }
 
-    /** A lone jackal blinks again exactly 60 ticks after its last crouch started, biting 6 each time. */
+    /** A lone jackal blinks again exactly 60 ticks after its last crouch started, biting 8.5 each time. */
     private static void every60(GameTestHelper helper) {
         Riftjackal j = jackal(helper, 2.5, 1, 6.5);
         Pig pig = pig(helper, 6.5, 1, 6.5, 0.0F);
@@ -290,7 +290,7 @@ public final class RiftjackalTests {
             int gap = crouches.get(1) - crouches.get(0);
             helper.assertTrue(gap == 60, "60 ticks from crouch to crouch, saw " + gap);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F * j.bites()) < 0.01F && j.bites() >= 2, "bites of 6, the pig lost " + lost + " to " + j.bites());
+            helper.assertTrue(Math.abs(lost - 8.5F * j.bites()) < 0.01F && j.bites() >= 2, "bites of 8.5, the pig lost " + lost + " to " + j.bites());
         });
     }
 
@@ -336,7 +336,7 @@ public final class RiftjackalTests {
             helper.assertTrue(turns.getFirst() == alpha, "the alpha goes first");
             float lost = 100.0F - pig.getHealth();
             int bites = alpha.bites() + a.bites() + b.bites();
-            helper.assertTrue(Math.abs(lost - 6.0F * bites) < 0.01F, "bites of 6, the pig lost " + lost + " to " + bites);
+            helper.assertTrue(Math.abs(lost - 8.5F * bites) < 0.01F, "bites of 8.5, the pig lost " + lost + " to " + bites);
         });
     }
 
@@ -503,13 +503,13 @@ public final class RiftjackalTests {
 
     // ---- stats, the pack, saving, home -----------------------------------------------------------------------------
 
-    /** A plain jackal: health 26, attack 6, armour 2, a 0.8 x 0.9 hitbox, no alpha sheets. */
+    /** A plain jackal: health 26, attack 8.5, armour 2, a 0.8 x 0.9 hitbox, no alpha sheets. */
     private static void stats(GameTestHelper helper) {
         Riftjackal j = still(helper, 5.5, 1, 5.5);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(!j.isAlpha() && !j.core().flag(Riftjackal.ALPHA_FLAG), "no alpha");
             helper.assertTrue(j.getMaxHealth() == 26.0F && j.getHealth() == 26.0F, "health 26, got " + j.getHealth() + "/" + j.getMaxHealth());
-            helper.assertTrue(j.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + j.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(j.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + j.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(j.getArmorValue() == 2, "armour 2, got " + j.getArmorValue());
             helper.assertTrue(Math.abs(j.getBbWidth() - 0.8F) < 0.01F && Math.abs(j.getBbHeight() - 0.9F) < 0.01F,
                     "a 0.8 x 0.9 hitbox, got " + j.getBbWidth() + " x " + j.getBbHeight());
@@ -517,14 +517,14 @@ public final class RiftjackalTests {
         });
     }
 
-    /** The alpha: health 40 (full), attack 6, armour 2, 1.15x the size (0.92 x 1.035), its flag set. */
+    /** The alpha: health 40 (full), attack 8.5, armour 2, 1.15x the size (0.92 x 1.035), its flag set. */
     private static void alphaStats(GameTestHelper helper) {
         Riftjackal alpha = still(helper, 5.5, 1, 5.5);
         Riftjackal.formPack(alpha);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(alpha.isAlpha() && alpha.core().flag(Riftjackal.ALPHA_FLAG), "it leads, and shows its sheets");
             helper.assertTrue(alpha.getMaxHealth() == 40.0F && alpha.getHealth() == 40.0F, "health 40, got " + alpha.getHealth() + "/" + alpha.getMaxHealth());
-            helper.assertTrue(alpha.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6");
+            helper.assertTrue(alpha.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5");
             helper.assertTrue(alpha.getArmorValue() == 2, "armour 2");
             helper.assertTrue(Math.abs(alpha.getBbWidth() - 0.92F) < 0.01F && Math.abs(alpha.getBbHeight() - 1.035F) < 0.01F,
                     "a 0.92 x 1.035 hitbox, got " + alpha.getBbWidth() + " x " + alpha.getBbHeight());

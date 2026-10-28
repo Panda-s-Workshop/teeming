@@ -35,10 +35,10 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Echo Fencer: a 10-tick tell, then a lunge for 7 at everything on a line 3 blocks straight ahead; its afterimage stays
+ * Echo Fencer: a 10-tick tell, then a lunge for 8.5 at everything on a line 3 blocks straight ahead; its afterimage stays
  * where it struck, draws back for the last 10 ticks and repeats the thrust 20 ticks after it, from the same spot the same
- * way, for 0.8 x 7 = 5.6. The fencer steps a block aside out of the line (never toward a drop); its own echo runs it
- * through when it stands in the line away from that spot, for 5.6 through its armour, and the first time spills a time
+ * way, for 0.8 x 8.5 = 6.8. The fencer steps a block aside out of the line (never toward a drop); its own echo runs it
+ * through when it stands in the line away from that spot, for 6.8 through its armour, and the first time spills a time
  * sand. Every number is checked against a plain value.
  *
  * <p>Most fencers here have no AI (they keep the place and facing they are given; their steps still run on time) or no
@@ -136,7 +136,7 @@ public final class EchoFencerTests {
 
     /**
      * The tell: with a pig 2.5 blocks ahead in reach it draws back by itself for exactly 10 ticks, hurting nothing; the
-     * lunge follows and takes 7 from the pig on its first tick.
+     * lunge follows and takes 8.5 from the pig on its first tick.
      */
     private static void tell(GameTestHelper helper) {
         EchoFencer f = fencer(helper, new Vec3(5.5, 1, 3.5));
@@ -162,11 +162,11 @@ public final class EchoFencerTests {
             helper.assertTrue(tell[0] == 10, "the tell holds 10 ticks, saw " + tell[0]);
             helper.assertTrue(quiet[0], "in the tell it hurts nothing");
             helper.assertTrue(thrustNext[0], "the lunge follows");
-            helper.assertTrue(near(atThrust[0], 7.0F), "the lunge takes 7 on its first tick, the pig lost " + atThrust[0]);
+            helper.assertTrue(near(atThrust[0], 8.5F), "the lunge takes 8.5 on its first tick, the pig lost " + atThrust[0]);
         });
     }
 
-    /** The lunge takes 7 from a pig 2.5 blocks ahead; a pig 2.5 behind and one 2 to the side are untouched. */
+    /** The lunge takes 8.5 from a pig 2.5 blocks ahead; a pig 2.5 behind and one 2 to the side are untouched. */
     private static void thrust(GameTestHelper helper) {
         EchoFencer f = still(helper, new Vec3(5.5, 1, 5.5));
         Pig ahead = pig(helper, new Vec3(5.5, 1, 8.0));
@@ -174,7 +174,7 @@ public final class EchoFencerTests {
         Pig aside = pig(helper, new Vec3(7.5, 1, 7.5));
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(f.lunge(null), "the lunge starts");
-            helper.assertTrue(near(lost(ahead), 7.0F), "the pig ahead lost 7, lost " + lost(ahead));
+            helper.assertTrue(near(lost(ahead), 8.5F), "the pig ahead lost 8.5, lost " + lost(ahead));
             helper.assertTrue(lost(behind) < 0.001F && lost(aside) < 0.001F, "behind and aside lost nothing: " + lost(behind) + ", " + lost(aside));
             helper.assertTrue(f.thrusts() == 1, "one thrust");
             helper.succeed();
@@ -183,7 +183,7 @@ public final class EchoFencerTests {
 
     // ---- the echo ----------------------------------------------------------------------------------------------------
 
-    /** The afterimage repeats the thrust exactly 20 ticks after it, for 0.8 x 7 = 5.6. */
+    /** The afterimage repeats the thrust exactly 20 ticks after it, for 0.8 x 8.5 = 6.8. */
     private static void echoDelay(GameTestHelper helper) {
         EchoFencer f = still(helper, new Vec3(5.5, 1, 3.5));
         Pig pig = sturdyPig(helper, new Vec3(5.5, 1, 6.0));
@@ -195,12 +195,12 @@ public final class EchoFencerTests {
             first[0] = lost(pig);
         });
         helper.onEachTick(() -> {
-            if (echoAt[0] < 0 && lost(pig) > 7.001F) echoAt[0] = helper.getLevel().getGameTime();
+            if (echoAt[0] < 0 && lost(pig) > 8.501F) echoAt[0] = helper.getLevel().getGameTime();
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(echoAt[0] >= 0, "the echo lands");
-            helper.assertTrue(near(first[0], 7.0F), "the thrust takes 7, took " + first[0]);
-            helper.assertTrue(near(lost(pig) - first[0], 5.6F), "the echo takes 5.6, took " + (lost(pig) - first[0]));
+            helper.assertTrue(near(first[0], 8.5F), "the thrust takes 8.5, took " + first[0]);
+            helper.assertTrue(near(lost(pig) - first[0], 6.8F), "the echo takes 6.8, took " + (lost(pig) - first[0]));
             helper.assertTrue(echoAt[0] - thrustAt[0] == 20, "the echo comes 20 ticks after the thrust, came " + (echoAt[0] - thrustAt[0]));
             helper.assertTrue(f.echoes() == 1, "one echo, saw " + f.echoes());
         });
@@ -218,9 +218,9 @@ public final class EchoFencerTests {
             boolean now = f.echoTelling();
             if (now) {
                 telling[0]++;
-                if (lost(pig) > 7.001F) quiet[0] = false;
+                if (lost(pig) > 8.501F) quiet[0] = false;
             } else if (was[0]) {
-                landed[0] = f.core().in(Step.ECHO) && near(lost(pig), 12.6F);
+                landed[0] = f.core().in(Step.ECHO) && near(lost(pig), 15.3F);
             }
             was[0] = now;
         });
@@ -232,7 +232,7 @@ public final class EchoFencerTests {
         });
     }
 
-    /** The counter: a pig that steps 2 blocks aside after the thrust loses only the thrust's 7. */
+    /** The counter: a pig that steps 2 blocks aside after the thrust loses only the thrust's 8.5. */
     private static void stepOut(GameTestHelper helper) {
         EchoFencer f = still(helper, new Vec3(5.5, 1, 3.5));
         Pig pig = pig(helper, new Vec3(5.5, 1, 6.0));
@@ -240,18 +240,18 @@ public final class EchoFencerTests {
         helper.runAtTickTime(8, () -> move(helper, pig, new Vec3(7.5, 1, 6.0)));
         helper.runAtTickTime(30, () -> {
             helper.assertTrue(f.echoes() == 1, "the echo came");
-            helper.assertTrue(near(lost(pig), 7.0F), "out of the line it lost only the 7, lost " + lost(pig));
+            helper.assertTrue(near(lost(pig), 8.5F), "out of the line it lost only the 8.5, lost " + lost(pig));
             helper.succeed();
         });
     }
 
-    /** The failure: a pig that stays where it was struck loses 7 and then the echo's 5.6. */
+    /** The failure: a pig that stays where it was struck loses 8.5 and then the echo's 6.8. */
     private static void standInLine(GameTestHelper helper) {
         EchoFencer f = still(helper, new Vec3(5.5, 1, 3.5));
         Pig pig = sturdyPig(helper, new Vec3(5.5, 1, 6.0));
         helper.runAtTickTime(2, () -> helper.assertTrue(f.lunge(null), "the lunge starts"));
         helper.runAtTickTime(30, () -> {
-            helper.assertTrue(near(lost(pig), 12.6F), "standing in the line costs 7 + 5.6 = 12.6, lost " + lost(pig));
+            helper.assertTrue(near(lost(pig), 15.3F), "standing in the line costs 8.5 + 6.8 = 15.3, lost " + lost(pig));
             helper.succeed();
         });
     }
@@ -267,7 +267,7 @@ public final class EchoFencerTests {
         TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
         helper.runAtTickTime(2, () -> helper.assertTrue(f.lunge(null), "the lunge starts"));
         helper.runAtTickTime(30, () -> {
-            helper.assertTrue(near(lost(pig), 7.0F), "only the thrust landed, lost " + lost(pig));
+            helper.assertTrue(near(lost(pig), 8.5F), "only the thrust landed, lost " + lost(pig));
             helper.assertTrue(f.anchor() == null && f.core().idle() && !Afterimage.live(f.core().flags()), "no afterimage stands");
             helper.succeed();
         });
@@ -286,7 +286,7 @@ public final class EchoFencerTests {
         Pig far = pig(helper, new Vec3(7.5, 1, 2.5 + 3.95));       // its edge 3.5 ahead: out of reach
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(a.lunge(null) && b.lunge(null), "the lunges start");
-            helper.assertTrue(near(lost(near), 7.0F), "the pig 3.3 ahead was hit, lost " + lost(near));
+            helper.assertTrue(near(lost(near), 8.5F), "the pig 3.3 ahead was hit, lost " + lost(near));
             helper.assertTrue(lost(far) < 0.001F, "the pig 3.5 ahead was not, lost " + lost(far));
             helper.succeed();
         });
@@ -300,7 +300,7 @@ public final class EchoFencerTests {
         Pig out = pig(helper, new Vec3(8.5 + 0.9, 1, 5.5));         // its edge 0.45 off
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(a.lunge(null) && b.lunge(null), "the lunges start");
-            helper.assertTrue(near(lost(in), 7.0F), "0.35 off, hit: lost " + lost(in));
+            helper.assertTrue(near(lost(in), 8.5F), "0.35 off, hit: lost " + lost(in));
             helper.assertTrue(lost(out) < 0.001F, "0.45 off, missed: lost " + lost(out));
             helper.succeed();
         });
@@ -323,8 +323,8 @@ public final class EchoFencerTests {
 
     /**
      * The payoff: a fencer standing in its own afterimage's line, 1.5 blocks from where it struck, is run through by
-     * the echo for 5.6 (through its armour 2), and its hourglass cracks and spills one time sand. A second time it loses
-     * 5.6 again and spills nothing.
+     * the echo for 6.8 (through its armour 2), and its hourglass cracks and spills one time sand. A second time it loses
+     * 6.8 again and spills nothing.
      */
     private static void turned(GameTestHelper helper) {
         EchoFencer f = still(helper, new Vec3(5.5, 1, 2.5));
@@ -336,7 +336,7 @@ public final class EchoFencerTests {
         helper.runAtTickTime(12, () -> move(helper, f, new Vec3(5.5, 1, 4.0)));
         helper.runAtTickTime(23, () -> {
             helper.assertTrue(f.turned() == 1, "its echo ran it through, " + f.turned());
-            helper.assertTrue(near(lost(f), 5.6F), "for 5.6 through its armour, lost " + lost(f));
+            helper.assertTrue(near(lost(f), 6.8F), "for 6.8 through its armour, lost " + lost(f));
             helper.assertTrue(f.cracked(), "its hourglass cracked");
             helper.assertTrue(timeSand(helper) - sandBefore[0] == 1, "and spilled one time sand, " + (timeSand(helper) - sandBefore[0]));
         });
@@ -344,7 +344,7 @@ public final class EchoFencerTests {
         helper.runAtTickTime(50, () -> move(helper, f, new Vec3(5.5, 1, 5.5)));
         helper.runAtTickTime(61, () -> {
             helper.assertTrue(f.turned() == 2, "run through again, " + f.turned());
-            helper.assertTrue(near(lost(f), 11.2F), "5.6 more, lost " + lost(f));
+            helper.assertTrue(near(lost(f), 13.6F), "6.8 more, lost " + lost(f));
             helper.assertTrue(timeSand(helper) - sandBefore[0] == 1, "and nothing more spilled, " + (timeSand(helper) - sandBefore[0]));
             helper.succeed();
         });
@@ -357,7 +357,7 @@ public final class EchoFencerTests {
         helper.runAtTickTime(2, () -> helper.assertTrue(f.lunge(null), "the lunge starts"));
         helper.runAtTickTime(30, () -> {
             helper.assertTrue(f.turned() == 0 && lost(f) < 0.001F, "on its own spot it lost nothing, lost " + lost(f));
-            helper.assertTrue(near(lost(pig), 12.6F), "the pig lost 12.6, lost " + lost(pig));
+            helper.assertTrue(near(lost(pig), 15.3F), "the pig lost 15.3, lost " + lost(pig));
             helper.succeed();
         });
     }
@@ -492,12 +492,12 @@ public final class EchoFencerTests {
         });
     }
 
-    /** Health 32, attack 7, armour 2, a 0.7 x 2.0 hitbox; a monster; no glow stages; two looks; nothing on it is gold. */
+    /** Health 32, attack 8.5, armour 2, a 0.7 x 2.0 hitbox; a monster; no glow stages; two looks; nothing on it is gold. */
     private static void stats(GameTestHelper helper) {
         EchoFencer f = fencer(helper, new Vec3(5.5, 1, 5.5));
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(near(f.getMaxHealth(), 32.0F) && near(f.getHealth(), 32.0F), "health 32, got " + f.getHealth() + "/" + f.getMaxHealth());
-            helper.assertTrue(Math.abs(f.getAttributeValue(Attributes.ATTACK_DAMAGE) - 7.0) < 0.01, "attack 7");
+            helper.assertTrue(Math.abs(f.getAttributeValue(Attributes.ATTACK_DAMAGE) - 8.5) < 0.01, "attack 8.5");
             helper.assertTrue(Math.abs(f.getAttributeValue(Attributes.ARMOR) - 2.0) < 0.01, "armour 2");
             helper.assertTrue(Math.abs(f.getBbWidth() - 0.7F) < 0.02F && Math.abs(f.getBbHeight() - 2.0F) < 0.02F,
                     "hitbox 0.7 x 2.0, got " + f.getBbWidth() + " x " + f.getBbHeight());

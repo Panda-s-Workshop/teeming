@@ -137,7 +137,7 @@ public class AshJackal extends TeemingMonster {
 
     public AshJackal(EntityType<? extends AshJackal> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

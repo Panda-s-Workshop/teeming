@@ -317,7 +317,8 @@ public final class AdvancementTests {
             helper.assertTrue(charmed.heat() == 1 && !charmed.core().in(SlagheartGolem.Step.QUENCHED), "the charm hit cools 2 to 1, heat " + charmed.heat());
             helper.assertTrue(!done(helper, holder, TeemingAdvancements.SLAGHEART_QUENCH), "cooling short of 0 earns nothing");
             helper.assertTrue(snowed.hurtServer(level, level.damageSources().playerAttack(fighter), 1.0F), "the bare-handed blow lands");
-            helper.assertTrue(snowed.heat() == 3, "a bare-handed blow heats it, heat " + snowed.heat());
+            helper.assertTrue(snowed.heat() == 2 + SlagheartGolem.HEAT_PER_HIT, "a bare-handed blow heats it by "
+                    + SlagheartGolem.HEAT_PER_HIT + ", heat " + snowed.heat());
         });
         helper.runAtTickTime(25, () -> {                 // after the golem's 20-tick hurt cooldown
             helper.assertTrue(charmed.hurtServer(level, level.damageSources().playerAttack(holder), 1.0F), "the charm holder's second blow lands");

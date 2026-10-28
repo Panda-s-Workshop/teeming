@@ -42,7 +42,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Pullstar: while bright it pulls every living thing whose middle is within 8 blocks of its own toward itself, at a
  * steady 0.09 blocks a tick (a sneaking player at a quarter of that), never across open void. Touching it starts an
- * 8-tick flare, then the touch deals its attack of 6 through armour. Every 100 ticks it dims for 40, after a 20-tick
+ * 8-tick flare, then the touch deals its attack of 8.5 through armour. Every 100 ticks it dims for 40, after a 20-tick
  * tell: dim, it neither pulls nor burns and takes x2. Dead, it finishes nothing.
  *
  * <p>Stars with their AI on run the cycle; they get a speed of 0 so they hold still, and a follow range of 1 so they
@@ -239,7 +239,7 @@ public final class PullstarTests {
     }
 
     /**
-     * The failure: a body that stands in the pull is drawn in to the star, which flares and burns it: 6 (its attack),
+     * The failure: a body that stands in the pull is drawn in to the star, which flares and burns it: 8.5 (its attack),
      * and the flare came 8 ticks before the burn.
      */
     private static void failure(GameTestHelper helper) {
@@ -259,7 +259,7 @@ public final class PullstarTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(burn[0] >= 0, "the pig was drawn in and burned");
             helper.assertTrue(across(s, pig) < 1.1, "the pig ended pressed against it, " + across(s, pig) + " across");
-            helper.assertTrue(Math.abs(first[0] - 6.0F) < 0.01F, "the touch deals 6, dealt " + first[0]);
+            helper.assertTrue(Math.abs(first[0] - 8.5F) < 0.01F, "the touch deals 8.5, dealt " + first[0]);
             helper.assertTrue(burn[0] - flare[0] == 8, "the flare came 8 ticks before the burn, saw " + (burn[0] - flare[0]));
         });
     }
@@ -394,7 +394,7 @@ public final class PullstarTests {
 
     /**
      * The touch: a pig pressed against it starts a flare at once; for the 8 ticks of the flare nothing is hurt, then the
-     * pig loses 6. The next flare waits until 28 ticks after the first.
+     * pig loses 8.5. The next flare waits until 28 ticks after the first.
      */
     private static void touch(GameTestHelper helper) {
         Pullstar s = star(helper, 5.5, 5.5, false);
@@ -422,12 +422,12 @@ public final class PullstarTests {
             helper.assertTrue(second[0] >= 0, "a second flare came");
             helper.assertTrue(burn[0] - flare[0] == 8, "nothing for the 8-tick flare, then the burn: " + (burn[0] - flare[0]));
             helper.assertTrue(lit[0], "the heart blazed (flag and glow) through the flare");
-            helper.assertTrue(Math.abs(first[0] - 6.0F) < 0.01F, "the touch deals 6, dealt " + first[0]);
+            helper.assertTrue(Math.abs(first[0] - 8.5F) < 0.01F, "the touch deals 8.5, dealt " + first[0]);
             helper.assertTrue(second[0] - flare[0] == 28, "the next flare 28 ticks after the first, saw " + (second[0] - flare[0]));
         });
     }
 
-    /** Armour counts: a pig with armour 10 takes 4.32 of the touch's 6. */
+    /** Armour counts: a pig with armour 10 takes 6.545 of the touch's 8.5. */
     private static void armour(GameTestHelper helper) {
         Pullstar s = star(helper, 5.5, 5.5, false);
         Pig[] pig = {null};
@@ -439,7 +439,7 @@ public final class PullstarTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(pig[0] != null && s.touches() == 1, "one touch, saw " + s.touches());
             float lost = 100.0F - pig[0].getHealth();
-            helper.assertTrue(Math.abs(lost - 4.32F) < 0.01F, "armour 10 turns the 6 into 4.32, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 6.545F) < 0.01F, "armour 10 turns the 8.5 into 6.545, the pig lost " + lost);
         });
     }
 
@@ -553,13 +553,13 @@ public final class PullstarTests {
         helper.succeed();
     }
 
-    /** Health 30, attack 6, armour 4, a 1.0 x 1.0 hitbox. */
+    /** Health 30, attack 8.5, armour 4, a 1.0 x 1.0 hitbox. */
     private static void stats(GameTestHelper helper) {
         Pullstar s = star(helper, 5.5, 5.5, false);
         contain(helper, false, s);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(s.getMaxHealth() == 30.0F && s.getHealth() == 30.0F, "health 30, got " + s.getHealth() + "/" + s.getMaxHealth());
-            helper.assertTrue(s.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(s.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(s.getArmorValue() == 4, "armour 4, got " + s.getArmorValue());
             helper.assertTrue(Math.abs(s.getBbWidth() - 1.0F) < 0.01F && Math.abs(s.getBbHeight() - 1.0F) < 0.01F,
                     "a 1.0 x 1.0 hitbox, got " + s.getBbWidth() + " x " + s.getBbHeight());

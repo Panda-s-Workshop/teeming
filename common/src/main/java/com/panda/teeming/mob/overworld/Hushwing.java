@@ -110,7 +110,7 @@ public class Hushwing extends TeemingMonster {
         super(type, level, Step.values());
         moveControl = new FlyingMoveControl<>(this, 20, true);
         setNoGravity(true);
-        xpReward = 3;
+        xpReward = 5;
         ears = new DynamicGameEventListener<>(new Ears(new EntityPositionSource(this, 0.3F)));
     }
 

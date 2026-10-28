@@ -67,9 +67,9 @@ public class SporeCannon extends TeemingMonster {
     /** It starts a volley at a target this close that it can see. */
     public static final double FIRE_RANGE = 16.0;
 
-    /** A spore: 0.3 blocks a tick, 4 on a hit, 1 health. */
+    /** A spore: 0.3 blocks a tick, 6 on a hit, 1 health. */
     public static final double SPORE_SPEED = 0.3;
-    public static final float SPORE_DAMAGE = 4.0F;
+    public static final float SPORE_DAMAGE = 6.0F;
     public static final float SPORE_HEALTH = 1.0F;
     /** It climbs out of the vent for 6 ticks, then turns toward its quarry by at most 10 degrees a tick. */
     public static final int SPORE_RISE = 6;

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Gloamhound's numbers against its design, written out as plain values: tell 14 t (the crouch); packs of 3 to 4 with
- * one alpha (health 30, attack 6); one hound darts at a time and bites for its attack; the alpha howls every 200 t for
+ * one alpha (health 30, attack 5.5); one hound darts at a time and bites for its attack; the alpha howls every 200 t for
  * Speed I; when it dies the rest flee for 200 t. The GameTests check the numbers are applied; this checks they are the
  * right numbers.
  */
@@ -18,7 +18,7 @@ class GloamhoundNumbersTest {
     void mechanic() {
         assertEquals(14, Gloamhound.TELL_TICKS);
         assertEquals(30.0F, Gloamhound.ALPHA_HEALTH);
-        assertEquals(6.0F, Gloamhound.ALPHA_ATTACK);
+        assertEquals(5.5F, Gloamhound.ALPHA_ATTACK);
         assertEquals(1.0F, Gloamhound.BITE);
         assertEquals(4, Gloamhound.PACK_MAX);
         assertEquals(200, Gloamhound.HOWL_EVERY);
@@ -35,7 +35,7 @@ class GloamhoundNumbersTest {
 
     @Test
     void stats() {
-        // HP 18 (alpha 30), Atk 4 (alpha 6), Arm 1, 0.8 x 0.85, tell 14; no blow above its bite; taiga, weight 15, 3-4
+        // HP 18 (alpha 30), Atk 4 (alpha 5.5), Arm 1, 0.8 x 0.85, tell 14; no blow above its bite; taiga, weight 15, 3-4
         RosterStats.Entry row = RosterStats.get("gloamhound");
         assertEquals(18.0F, row.health());
         assertEquals(4.0F, row.attack());

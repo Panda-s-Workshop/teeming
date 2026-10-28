@@ -2,6 +2,7 @@ package com.panda.teeming.gametest.mob;
 
 import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.gametest.AdvancementTests;
+import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.mob.nether.SlagheartGolem.Step;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -22,7 +24,11 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
-/** Slagheart Golem: hits heat it, full heat erupts, snowballs and powder snow quench it, quenched it takes x1.5. */
+/**
+ * Slagheart Golem: it spawns at heat 6 and every hit heats it by 2, so a straight melee fight erupts before it falls;
+ * full heat erupts, thrown cold items ({@code #teeming:cold_items}: snowballs) and powder snow quench it, quenched it
+ * takes x1.5.
+ */
 public final class SlagheartGolemTests {
     private SlagheartGolemTests() {}
 
@@ -37,6 +43,9 @@ public final class SlagheartGolemTests {
         out.accept("slagheart_golem_splash", SlagheartGolemTests::splash);
         out.accept("slagheart_golem_quench_length", SlagheartGolemTests::quenchLength);
         out.accept("slagheart_golem_feat", SlagheartGolemTests::feat);
+        out.accept("slagheart_golem_cold_items", SlagheartGolemTests::coldItems);
+        out.accept("slagheart_golem_fight_erupts", SlagheartGolemTests::fightErupts);
+        TeemingGameTests.timeLimit("slagheart_golem_fight_erupts", 200);
     }
 
     private static SlagheartGolem golem(GameTestHelper helper) {
@@ -84,10 +93,10 @@ public final class SlagheartGolemTests {
         SlagheartGolem golem = golem(helper);
         Pig pig = helper.spawn(EntityTypes.PIG, new Vec3(7.5, 1, 5.5));
         pig.setNoAi(true);
-        golem.setHeat(SlagheartGolem.MAX_HEAT - 1);
+        golem.setHeat(SlagheartGolem.MAX_HEAT - 2);
         helper.runAtTickTime(2, () -> {
             golem.hurtServer(helper.getLevel(), golem.damageSources().magic(), 1.0F);
-            helper.assertTrue(golem.heat() == SlagheartGolem.MAX_HEAT, "a hit heats it by 1, heat " + golem.heat());
+            helper.assertTrue(golem.heat() == SlagheartGolem.MAX_HEAT, "a hit heats it by 2, heat " + golem.heat());
             helper.assertTrue(golem.core().in(Step.TELL), "full heat starts the eruption tell, phase " + golem.phase());
             helper.assertTrue(golem.core().stage() == 3, "full heat glows at stage 3, stage " + golem.core().stage());
         });
@@ -100,7 +109,7 @@ public final class SlagheartGolemTests {
 
     private static void snowballCools(GameTestHelper helper) {
         SlagheartGolem golem = golem(helper);
-        helper.assertTrue(golem.heat() == 3 && golem.core().stage() == 1, "it spawns at heat 3, glowing at stage 1, stage " + golem.core().stage());
+        helper.assertTrue(golem.heat() == 6 && golem.core().stage() == 2, "it spawns at heat 6, glowing at stage 2, stage " + golem.core().stage());
         golem.setHeat(9);
         Snowball ball = helper.spawn(EntityTypes.SNOWBALL, new Vec3(5.5, 2.5, 2.5));
         ball.setDeltaMovement(0, 0, 0.8);
@@ -146,9 +155,9 @@ public final class SlagheartGolemTests {
         pig.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000.0);              // outlasts the golem's blows, so the target stays
         pig.setHealth(1000.0F);
         helper.runAtTickTime(1, () -> golem.setTarget(pig));
-        helper.runAtTickTime(SlagheartGolem.HEAT_EVERY - 6, () -> helper.assertTrue(golem.heat() == 3, "no heat before 60 ticks, heat " + golem.heat()));
+        helper.runAtTickTime(SlagheartGolem.HEAT_EVERY - 6, () -> helper.assertTrue(golem.heat() == 6, "no heat before 60 ticks, heat " + golem.heat()));
         helper.runAtTickTime(SlagheartGolem.HEAT_EVERY + 6, () -> {
-            helper.assertTrue(golem.heat() == 4, "60 ticks with a target heat it by 1, heat " + golem.heat());
+            helper.assertTrue(golem.heat() == 7, "60 ticks with a target heat it by 1, heat " + golem.heat());
             helper.succeed();
         });
     }
@@ -211,6 +220,53 @@ public final class SlagheartGolemTests {
         helper.runAtTickTime(2 + SlagheartGolem.QUENCH_TICKS + 3, () -> {
             helper.assertTrue(!golem.core().in(Step.QUENCHED), "quenched ends after 60 ticks, " + golem.phase());
             helper.succeed();
+        });
+    }
+
+    /**
+     * The quench items are a tag packs can fill, {@code #teeming:cold_items}, snowballs by default: a thrown snowball
+     * counts as cold, a thrown egg and a splash water bottle (which has its own rule) don't.
+     */
+    private static void coldItems(GameTestHelper helper) {
+        helper.assertTrue(Items.SNOWBALL.getDefaultInstance().is(SlagheartGolem.COLD_ITEMS), "snowballs are cold items");
+        helper.assertTrue(!Items.EGG.getDefaultInstance().is(SlagheartGolem.COLD_ITEMS), "eggs are not");
+        Snowball ball = helper.spawn(EntityTypes.SNOWBALL, new Vec3(1.5, 3.5, 1.5));
+        ball.setNoGravity(true);
+        ThrownEgg egg = helper.spawn(EntityTypes.EGG, new Vec3(3.5, 3.5, 1.5));
+        egg.setNoGravity(true);
+        Vec3 at = helper.absoluteVec(new Vec3(7.5, 3.5, 1.5));
+        ThrownSplashPotion potion = new ThrownSplashPotion(helper.getLevel(), at.x, at.y, at.z,
+                PotionContents.createItemStack(Items.SPLASH_POTION, Potions.WATER));
+        helper.assertTrue(SlagheartGolem.cold(ball), "a thrown snowball cools it");
+        helper.assertTrue(!SlagheartGolem.cold(egg), "a thrown egg doesn't");
+        helper.assertTrue(!SlagheartGolem.cold(potion), "splash water isn't a cold item: it cools by its own rule");
+        ball.discard();
+        egg.discard();
+        helper.succeed();
+    }
+
+    /**
+     * A straight melee fight against the Nether reference player (8.5 a blow through its armour 6, 1.6 blows a second,
+     * one every 12 ticks) reaches full heat and erupts before the golem falls: heat 6 plus 2 a hit is 12 at the third
+     * blow, the eruption follows 20 ticks later, and 44 health takes a sixth blow 60 ticks after the first.
+     */
+    private static void fightErupts(GameTestHelper helper) {
+        SlagheartGolem golem = golem(helper);
+        Pig attacker = helper.spawn(EntityTypes.PIG, new Vec3(1.5, 1, 1.5));
+        attacker.setNoAi(true);
+        boolean[] erupted = {false};
+        int[] blows = {0};
+        helper.onEachTick(() -> {
+            if (golem.core().in(Step.ERUPT) && golem.isAlive()) erupted[0] = true;
+            if (helper.getTick() >= 2 && (helper.getTick() - 2) % 12 == 0 && golem.isAlive()) {
+                golem.hurtServer(helper.getLevel(), golem.damageSources().mobAttack(attacker), 8.5F);
+                blows[0]++;
+            }
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!golem.isAlive(), "the blows kill it");
+            helper.assertTrue(blows[0] >= 6, "it takes six blows, took " + blows[0]);
+            helper.assertTrue(erupted[0], "it erupts before it falls");
         });
     }
 }

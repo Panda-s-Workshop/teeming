@@ -47,10 +47,10 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Rotfang. A target in reach is snarled at for exactly 10 ticks (it holds still and nothing is hurt yet), then bitten
- * for the attack of 6 (armour counts: a pig in 10 armour loses 4.32) with no knockback, and given Void Rot for exactly
+ * for the attack of 8.5 (armour counts: a pig in 10 armour loses 6.545) with no knockback, and given Void Rot for exactly
  * 160 ticks: shown on the player, it ends after 160 ticks on a pig, halves healing (a heal of 4 gives 2) and stops a
  * full food bar's natural regeneration. Struck during the snarl it bites itself instead: the striker keeps its health
- * and loses its own Void Rot, and the Rotfang takes the blow plus its own bite of 6 through its armour (6.844 in all),
+ * and loses its own Void Rot, and the Rotfang takes the blow plus its own bite of 8.5 through its armour (9.304 in all),
  * credited to the striker, and rots. Stepping out of reach makes the jaws close on nothing; a target on a pillar is
  * never snarled at; killed mid-snarl it bites no one. A pair takes turns, and a Rotfang hands its target only to a
  * packmate that can reach it. Groups of 1-2, stats, home and spawn rule against plain values.
@@ -136,13 +136,13 @@ public final class RotfangTests {
         return e.hasEffect(ModEffects.VOID_ROT.holder());
     }
 
-    /** What one bite costs a player: the attack of 6, scaled by difficulty as every mob's blow on a player is. */
+    /** What one bite costs a player: the attack of 8.5, scaled by difficulty as every mob's blow on a player is. */
     private static float biteOnPlayer(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
             case PEACEFUL -> 0.0F;
-            case EASY -> 4.0F;
-            case HARD -> 9.0F;
-            default -> 6.0F;
+            case EASY -> 5.25F;
+            case HARD -> 12.75F;
+            default -> 8.5F;
         };
     }
 
@@ -150,7 +150,7 @@ public final class RotfangTests {
 
     /**
      * The tell: a pig in reach is snarled at for exactly 10 ticks; meanwhile the Rotfang holds still and the pig is
-     * unhurt and not rotting. Then the jaws shut: the pig has lost exactly the attack of 6 and rots.
+     * unhurt and not rotting. Then the jaws shut: the pig has lost exactly the attack of 8.5 and rots.
      */
     private static void tell(GameTestHelper helper) {
         Rotfang f = fang(helper, 5.5, 6.5);
@@ -174,7 +174,7 @@ public final class RotfangTests {
             helper.assertTrue(after[0] >= 0, "it snarled and bit");
             helper.assertTrue(snarl[0] == 10, "the snarl lasts 10 ticks, saw " + snarl[0]);
             float lost = 100.0F - after[0];
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the bite takes 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the bite takes 8.5, the pig lost " + lost);
             helper.assertTrue(f.bites() == 1 && f.rots() == 1 && rotting(pig), "and the pig rots");
         });
     }
@@ -183,7 +183,7 @@ public final class RotfangTests {
      * The counter: a survival player already rotting stands in reach and strikes the Rotfang for 1, 5 ticks into its
      * snarl. Its jaw turns on itself: it gnaws its own leg (no bite comes, the player keeps all 20 health through the
      * gnaw), the player's Void Rot is drawn out, and the Rotfang lost exactly the blow (1 through armour 2: 0.94) plus its
-     * own bite (6 through armour 2: 5.904), 6.844 in all, last hurt by the player, and rots itself.
+     * own bite (8.5 through armour 2: 8.364), 9.304 in all, last hurt by the player, and rots itself.
      */
     private static void counter(GameTestHelper helper) {
         Rotfang f = fang(helper, 5.5, 6.5);
@@ -212,12 +212,12 @@ public final class RotfangTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(gnawEnded[0], "it was struck in the snarl and gnawed itself through");
-            helper.assertTrue(Math.abs(lost[0] - 6.844F) < 0.01F, "the blow and its own bite cost it 6.844, it lost " + lost[0]);
+            helper.assertTrue(Math.abs(lost[0] - 9.304F) < 0.01F, "the blow and its own bite cost it 9.304, it lost " + lost[0]);
         });
     }
 
     /**
-     * Failing the counter: a survival player stands in reach through the snarl. The bite costs the attack of 6 (at this
+     * Failing the counter: a survival player stands in reach through the snarl. The bite costs the attack of 8.5 (at this
      * difficulty) and gives Void Rot for exactly 160 ticks, shown on the player with particles and an icon.
      */
     private static void failure(GameTestHelper helper) {
@@ -318,7 +318,7 @@ public final class RotfangTests {
 
     // ---- armour, knockback, reach ------------------------------------------------------------------------------------
 
-    /** Armour counts: a pig in 10 armour loses 4.32 to the bite of 6 (6 x (1 - 7 / 25)). */
+    /** Armour counts: a pig in 10 armour loses 6.545 to the bite of 8.5 (8.5 x (1 - 5.75 / 25)). */
     private static void armour(GameTestHelper helper) {
         Rotfang f = fang(helper, 5.5, 6.5);
         Pig pig = pig(helper, 6.9, 6.5);
@@ -327,7 +327,7 @@ public final class RotfangTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(f.bites() == 1, "it bit once");
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 4.32F) < 0.01F, "armour took its share, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 6.545F) < 0.01F, "armour took its share, the pig lost " + lost);
         });
     }
 
@@ -560,13 +560,13 @@ public final class RotfangTests {
         helper.succeed();
     }
 
-    /** Health 26, attack 6, armour 2, a 0.8 x 0.8 hitbox. */
+    /** Health 26, attack 8.5, armour 2, a 0.8 x 0.8 hitbox. */
     private static void stats(GameTestHelper helper) {
         Rotfang f = fang(helper, 5.5, 5.5);
         f.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(f.getMaxHealth() == 26.0F && f.getHealth() == 26.0F, "health 26, got " + f.getHealth() + "/" + f.getMaxHealth());
-            helper.assertTrue(f.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + f.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(f.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + f.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(f.getArmorValue() == 2, "armour 2, got " + f.getArmorValue());
             helper.assertTrue(Math.abs(f.getBbWidth() - 0.8F) < 0.01F && Math.abs(f.getBbHeight() - 0.8F) < 0.01F,
                     "a 0.8 x 0.8 hitbox, got " + f.getBbWidth() + " x " + f.getBbHeight());

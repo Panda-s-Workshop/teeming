@@ -57,7 +57,7 @@ import org.jspecify.annotations.Nullable;
  * the fencer only follows a foe who backs out of its reach, and the afterimage's blade cuts whatever stands in its line,
  * the fencer included: lead it back into its own line and its afterimage runs it through, for the echo's damage through
  * any armour, and the first time it also cracks the little hourglass in its hilt, which spills a pinch of time sand on
- * the ground. Failing it: standing where it attacked costs the echo's 5.6 on top of the 7.
+ * the ground. Failing it: standing where it attacked costs the echo's 6.8 on top of the 8.5.
  *
  * <p>The fencer keeps no glow stage: its synced flags carry the afterimage (see {@link Afterimage}) and the cracked
  * hourglass, and the model draws both from them.
@@ -83,7 +83,7 @@ public class EchoFencer extends TeemingMonster {
 
     /** The thrust's damage, times the attack damage. */
     public static final float THRUST = 1.0F;
-    /** The echo's damage, times the attack damage: 0.8 of 7 is 5.6. */
+    /** The echo's damage, times the attack damage: 0.8 of 8.5 is 6.8. */
     public static final float ECHO = 0.8F;
     /** The thrust's line: this many blocks straight ahead from where the fencer stands. */
     public static final double REACH = 3.0;

@@ -37,7 +37,7 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Gemini Watchers: an 8-tick staff wind-up (still, harmless) before a blow of 6 through armour, with no knockback, that
+ * Gemini Watchers: an 8-tick staff wind-up (still, harmless) before a blow of 8.5 through armour, with no knockback, that
  * doesn't reach a pig 4 blocks up. A pair links at spawn through the spawn data, and a watcher from a spawn egg links to
  * the nearest unlinked one within 8 or comes alone. One killed falls as an untouchable husk and its twin channels a beam
  * for exactly 100 ticks, standing still and fighting nothing, the husk glowing a step brighter each quarter; then the
@@ -170,7 +170,7 @@ public final class GeminiWatchersTests {
         });
     }
 
-    /** The staff hits a pig 1 block in front for exactly 6 and doesn't move it; a pig behind is untouched. */
+    /** The staff hits a pig 1 block in front for exactly 8.5 and doesn't move it; a pig behind is untouched. */
     private static void strike(GameTestHelper helper) {
         GeminiWatchers w = still(helper, 5.5, 4.5);
         Pig front = pig(helper, 5.5, 1, 5.5);
@@ -183,14 +183,14 @@ public final class GeminiWatchersTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(moved[0] != null, "the strike landed");
             float lost = 100.0F - front.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the staff hits for 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the staff hits for 8.5, the pig lost " + lost);
             helper.assertTrue(moved[0].horizontalDistance() < 0.01, "and doesn't knock it back, motion " + moved[0]);
             helper.assertTrue(behind.getHealth() >= 100.0F, "nothing behind it is hit");
             helper.assertTrue(w.strikes() == 1, "one blow landed, " + w.strikes());
         });
     }
 
-    /** Armour counts: a pig with 10 armour takes 6 x (1 - (10 - 6/2) / 25) = 4.32 from the blow, vanilla's armour sum. */
+    /** Armour counts: a pig with 10 armour takes 8.5 x (1 - (10 - 8.5/2) / 25) = 6.545 from the blow, vanilla's armour sum. */
     private static void armour(GameTestHelper helper) {
         GeminiWatchers w = still(helper, 5.5, 4.5);
         Pig pig = pig(helper, 5.5, 1, 5.5);
@@ -199,11 +199,11 @@ public final class GeminiWatchersTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(w.strikes() == 1, "the blow landed");
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 4.32F) < 0.01F, "armour 10 takes the 6 down to 4.32, lost " + lost);
+            helper.assertTrue(Math.abs(lost - 6.545F) < 0.01F, "armour 10 takes the 8.5 down to 6.545, lost " + lost);
         });
     }
 
-    /** Reach counts height: beside a pig whose feet are 4 blocks up (2 over its head) the blow lands nothing; 2 up, its 6. */
+    /** Reach counts height: beside a pig whose feet are 4 blocks up (2 over its head) the blow lands nothing; 2 up, its 8.5. */
     private static void reachHeight(GameTestHelper helper) {
         for (int y = 1; y <= 4; y++) helper.setBlock(new BlockPos(3, y, 5), Blocks.STONE);
         for (int y = 1; y <= 2; y++) helper.setBlock(new BlockPos(8, y, 5), Blocks.STONE);
@@ -215,7 +215,7 @@ public final class GeminiWatchersTests {
         helper.runAtTickTime(20, () -> {
             helper.assertTrue(up4.getHealth() >= 100.0F, "a pig 4 blocks up is out of reach, health " + up4.getHealth());
             float lost = 100.0F - up2.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "a pig 2 blocks up is hit for 6, lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "a pig 2 blocks up is hit for 8.5, lost " + lost);
             helper.succeed();
         });
     }
@@ -610,12 +610,12 @@ public final class GeminiWatchersTests {
 
     // ---- the row ---------------------------------------------------------------------------------------------------
 
-    /** Health 30, attack 6, armour 4, a 0.7 x 2.0 hitbox, 12 experience. */
+    /** Health 30, attack 8.5, armour 4, a 0.7 x 2.0 hitbox, 12 experience. */
     private static void stats(GameTestHelper helper) {
         GeminiWatchers w = still(helper, 5.5, 5.5);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(w.getMaxHealth() == 30.0F && w.getHealth() == 30.0F, "health 30, got " + w.getHealth() + "/" + w.getMaxHealth());
-            helper.assertTrue(w.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + w.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(w.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + w.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(w.getArmorValue() == 4, "armour 4, got " + w.getArmorValue());
             helper.assertTrue(Math.abs(w.getBbWidth() - 0.7F) < 0.01F && Math.abs(w.getBbHeight() - 2.0F) < 0.01F,
                     "a 0.7 x 2.0 hitbox, got " + w.getBbWidth() + " x " + w.getBbHeight());

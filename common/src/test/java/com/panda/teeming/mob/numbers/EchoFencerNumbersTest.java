@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Echo Fencer's numbers against its row, written out as plain values: HP 32, Atk 7, Arm 2, 0.7 x 2.0, tell 10 (the
+ * The Echo Fencer's numbers against its row, written out as plain values: HP 32, Atk 8.5, Arm 2, 0.7 x 2.0, tell 10 (the
  * swing); its afterimage repeats each attack 20 ticks later at 0.8x; End midlands, weight 4, alone; second look Gilded
  * Fencer; drops time sand. Then the calls made here (the lunge's line, the step aside, the afterimage's own tell, the
  * rest between lunges) and the afterimage's place in the synced flags, which is pure maths and needs no game. The
@@ -50,7 +50,7 @@ class EchoFencerNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("echo_fencer");
         assertEquals(32.0F, row.health());
-        assertEquals(7.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

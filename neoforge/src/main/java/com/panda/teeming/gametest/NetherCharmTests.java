@@ -74,7 +74,7 @@ final class NetherCharmTests {
 
     /**
      * Both halves of the Quench Charm. Heat: two still Slagheart Golems at heat 6 each take one blow from a survival
-     * player; the main-hand holder's blow heats its golem by 1 as any blow does, the off-hand holder's cools it by
+     * player; the main-hand holder's blow heats its golem by 2 as any blow does, the off-hand holder's cools it by
      * {@link Charms#QUENCH_COOL}. Burn: two still Slagspitters each open a burning patch under a still pig, one holding
      * the charm in the off-hand and one in the main hand; the pigs stand in their patches for all 80 ticks and burn on
      * for the 60 after. Both pigs burn on the same ticks (each spitter ticks just before its pig, and the hurt cooldown
@@ -108,7 +108,7 @@ final class NetherCharmTests {
             if (offPig.isOnFire() || mainPig.isOnFire()) burnt[0]++;
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(heat[1] == 6 + 1, "the charm in the main hand leaves the blow heating the golem, 6 -> " + heat[1]);
+            helper.assertTrue(heat[1] == 6 + SlagheartGolem.HEAT_PER_HIT, "the charm in the main hand leaves the blow heating the golem, 6 -> " + heat[1]);
             helper.assertTrue(heat[0] == 6 - Charms.QUENCH_COOL, "the charm in the off-hand cools the golem by " + Charms.QUENCH_COOL
                     + ", 6 -> " + heat[0]);
             helper.assertTrue(opened[0], "both patches opened");

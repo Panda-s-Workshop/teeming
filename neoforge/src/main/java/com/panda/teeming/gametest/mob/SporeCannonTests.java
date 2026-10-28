@@ -44,7 +44,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Spore Cannon: a 20-tick tell with the bulb lit that fires nothing yet; volleys of 3 spores every 80 ticks, 4 ticks
- * apart, that home in at 0.3 blocks a tick for 4 each and have 1 health, so a swing or an arrow pops one; a hit on the
+ * apart, that home in at 0.3 blocks a tick for 6 each and have 1 health, so a swing or an arrow pops one; a hit on the
  * lit bulb lands double and stuns it for 80 ticks, taking double, and loses the volley; nothing moves it. Every number
  * is checked against a plain value.
  *
@@ -256,7 +256,7 @@ public final class SporeCannonTests {
         });
     }
 
-    /** Failing the counter: the volley reaches the pig, three spores of exactly 4: 12 in all. */
+    /** Failing the counter: the volley reaches the pig, three spores of exactly 6: 18 in all. */
     private static void volleyHits(GameTestHelper helper) {
         walls(helper);
         Pig pig = pig(helper, 5.5, 8.5);
@@ -266,7 +266,7 @@ public final class SporeCannonTests {
         helper.succeedWhen(() -> {
             float lost = before - pig.getHealth();
             helper.assertTrue(log.of("spore_hit").size() == 3 && c.sporesInFlight() == 0, "three spores struck, " + log.steps);
-            helper.assertTrue(Math.abs(lost - 12.0F) < 0.01F, "a spore does 4, three of them 12: the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 18.0F) < 0.01F, "a spore does 6, three of them 18: the pig lost " + lost);
         });
     }
 
@@ -357,7 +357,7 @@ public final class SporeCannonTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(moved[0] > 0 && c.sporesInFlight() == 0, "the pig stepped aside and the volley is spent");
             helper.assertTrue(log.of("spore_hit").size() == 3, "every spore followed it there: " + log.steps);
-            helper.assertTrue(Math.abs(before - pig.getHealth() - 12.0F) < 0.01F, "and struck for 12, the pig lost " + (before - pig.getHealth()));
+            helper.assertTrue(Math.abs(before - pig.getHealth() - 18.0F) < 0.01F, "and struck for 18, the pig lost " + (before - pig.getHealth()));
         });
     }
 
@@ -385,7 +385,7 @@ public final class SporeCannonTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(stage[0] == 2 && c.launched() == 3 && c.sporesInFlight() == 0, "the volley is spent");
             helper.assertTrue(log.of("spore_pop").size() == 1 && log.of("spore_hit").size() == 2, "one popped, two arrived: " + log.steps);
-            helper.assertTrue(Math.abs(before - pig.getHealth() - 8.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
+            helper.assertTrue(Math.abs(before - pig.getHealth() - 12.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
         });
     }
 
@@ -423,7 +423,7 @@ public final class SporeCannonTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(swung[0] > 0 && c.launched() == 3 && c.sporesInFlight() == 0, "the volley is spent");
             helper.assertTrue(log.of("spore_pop").size() == 1 && log.of("spore_hit").size() == 2, "one swatted, two arrived: " + log.steps);
-            helper.assertTrue(Math.abs(before - pig.getHealth() - 8.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
+            helper.assertTrue(Math.abs(before - pig.getHealth() - 12.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
         });
     }
 
@@ -456,7 +456,7 @@ public final class SporeCannonTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(first[0] > 0 && c.launched() == 3 && c.sporesInFlight() == 0, "the volley is spent");
             helper.assertTrue(log.of("spore_pop").size() == 1 && log.of("spore_hit").size() == 2, "one shot down, two arrived: " + log.steps + trace);
-            helper.assertTrue(Math.abs(before - pig.getHealth() - 8.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
+            helper.assertTrue(Math.abs(before - pig.getHealth() - 12.0F) < 0.01F, "the pig took the other two, lost " + (before - pig.getHealth()));
         });
     }
 

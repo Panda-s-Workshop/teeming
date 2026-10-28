@@ -77,7 +77,7 @@ public class Underclinger extends TeemingMonster {
     public static final int HOLD_TICKS = 20;              // it holds its prey at the rim this long before the drag
     public static final int PULL_TICKS = 4;               // the drag itself
     public static final double PULL_DISTANCE = 2.0;       // exactly this far out from the island, never more
-    public static final float GRAB_HIT = 1.0F;            // x attack damage as the hooks close: 6 for its attack of 6
+    public static final float GRAB_HIT = 1.0F;            // x attack damage as the hooks close: 8.5 for its attack of 8.5
     public static final int RETREAT_TICKS = 40;           // after a blow makes it let go, before it can reach again
     public static final int RECOIL_TICKS = 8;             // the start of the retreat: it flinches back before it crawls
     public static final int COOLDOWN = 40;                // after a drag, before it reaches again

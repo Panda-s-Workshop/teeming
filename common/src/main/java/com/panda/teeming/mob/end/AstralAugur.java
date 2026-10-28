@@ -73,8 +73,11 @@ public class AstralAugur extends TeemingMonster {
     /** Circles a whole halo casts: one per mote. */
     public static final int CIRCLES = 3;
     public static final double CIRCLE_RADIUS = 1.5;
-    /** Each circle's strike on everything inside. */
-    public static final float STRIKE_DAMAGE = 9.0F;
+    /**
+     * Each circle's strike on everything inside: big enough that the End reference player (netherite, Protection IV)
+     * standing in one loses an eighth of their health, so a channel left unbroken costs something.
+     */
+    public static final float STRIKE_DAMAGE = 20.0F;
     /** Ticks from one channel to the next, at the soonest. */
     public static final int CAST_EVERY = 100;
     /** It channels at targets this close, and in its sight. */

@@ -29,6 +29,24 @@ class MyceliteShamblerNumbersTest {
         assertEquals(2, MyceliteShambler.SMALL);
     }
 
+    /**
+     * Experience by size 6, 1, 0: a line fought down to its smallest pays 6 + 2 x 1 + 4 x 0 = 8 (inside the
+     * Overworld's 5-10), and a death by fire pays what the rest of the line would have, so burning never pays less.
+     */
+    @Test
+    void experience() {
+        assertEquals(6, MyceliteShambler.XP_LARGE);
+        assertEquals(1, MyceliteShambler.XP_MEDIUM);
+        assertEquals(0, MyceliteShambler.XP_SMALL);
+        assertEquals(8, MyceliteShambler.Line.xp(MyceliteShambler.LARGE));
+        assertEquals(1, MyceliteShambler.Line.xp(MyceliteShambler.MEDIUM));
+        assertEquals(0, MyceliteShambler.Line.xp(MyceliteShambler.SMALL));
+        for (int size = MyceliteShambler.LARGE; size < MyceliteShambler.SMALL; size++) {
+            int fought = MyceliteShambler.Line.xpOf(size) + MyceliteShambler.SPLIT_COUNT * MyceliteShambler.Line.xp(size + 1);
+            assertEquals(fought, MyceliteShambler.Line.xp(size), "burning a shambler of size " + size + " pays its whole line");
+        }
+    }
+
     @Test
     void row() {
         RosterStats.Entry row = RosterStats.get("mycelite_shambler");

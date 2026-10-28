@@ -8,7 +8,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Pullstar's numbers against its roster row, written out as plain values: HP 30, Atk 6 (touch), Arm 4, 1.0 x 1.0;
+ * The Pullstar's numbers against its roster row, written out as plain values: HP 30, Atk 8.5 (touch), Arm 4, 1.0 x 1.0;
  * a 20-tick tell before the dim; pulls everything within 8 (sneaking x0.25); dims 40 ticks in every 100: no pull, and it
  * takes x2; the End barrens at weight 4, alone; second look Red Pullstar; drops gravity stone. Its own numbers (a drift
  * of 0.09 blocks a tick, an 8-tick flare before the touch, a touch every 28 ticks at most, hovering a block up) are its
@@ -42,7 +42,7 @@ class PullstarNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("pullstar");
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(4.0F, row.armor());
         assertEquals(1.0F, row.width());
         assertEquals(1.0F, row.height());

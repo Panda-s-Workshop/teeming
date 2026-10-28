@@ -130,7 +130,7 @@ public class CindermothSwarm extends TeemingMonster {
         super(type, level, Step.values());
         moveControl = new FlyingMoveControl<>(this, 20, true);
         setNoGravity(true);
-        xpReward = 3;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

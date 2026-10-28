@@ -60,6 +60,7 @@ public class Thornhorn extends TeemingAnimal {
 
     public Thornhorn(EntityType<? extends Thornhorn> type, Level level) {
         super(type, level, Step.values());
+        xpReward = 5;                                      // fightable when provoked: the Overworld band's low end
     }
 
     /** Gold stars circling over its head while it is stunned, one lap a second. */

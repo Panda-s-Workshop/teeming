@@ -11,9 +11,9 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Gatecaster's numbers against its roster row, written out as plain values: HP 30, Atk 6, Arm 2, 0.7 x 2.0; tell
+ * The Gatecaster's numbers against its roster row, written out as plain values: HP 30, Atk 8.5, Arm 2, 0.7 x 2.0; tell
  * 20 t (the exit rift); its bolt comes out of a gate 3-5 blocks behind its target, every 80 t; End highlands, weight
- * 4, groups of 1; second look Mirrored Weaver; drops rift essence. The 16-block reach in sight, the 6 of the bolt (its
+ * 4, groups of 1; second look Mirrored Weaver; drops rift essence. The 16-block reach in sight, the 8.5 of the bolt (its
  * attack), the 12-tick follow before the 8-tick lock, the bolt's speed and length, and the turned bolt's burst are its
  * design. Then the gate's layout and its packing into the synced flags. The GameTests check the numbers are applied in
  * the world; this checks they are the right numbers.
@@ -26,7 +26,7 @@ class GatecasterNumbersTest {
         assertEquals(3.0, Gatecaster.GATE_NEAR);
         assertEquals(5.0, Gatecaster.GATE_FAR);
         assertEquals(16.0, Gatecaster.CAST_RANGE);
-        assertEquals(6.0F, Gatecaster.BOLT_DAMAGE);
+        assertEquals(8.5F, Gatecaster.BOLT_DAMAGE);
         // the calls made here: 12 ticks following then 8 locked, a bolt at 0.6 a tick out to 12 blocks (20 thrown
         // straight), caught within 0.3 of a hitbox, a ring 0.7 across at 0.65 of the target's height
         assertEquals(12, Gatecaster.TRACK_TICKS);
@@ -108,7 +108,7 @@ class GatecasterNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("gatecaster");
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

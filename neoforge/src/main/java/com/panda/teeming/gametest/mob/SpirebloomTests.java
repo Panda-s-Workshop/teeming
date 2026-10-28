@@ -42,7 +42,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Spirebloom: at a target in range it cracks the ground for exactly 16 ticks (rooted, hurting nothing) along a line
  * fixed toward where the target stood, 19 spikes from 1 to 10 blocks out; then spikes burst up along the line and strike
- * everyone on it for its attack of 8 through armour, throwing them straight up at 0.6 with nothing across (a plain blow
+ * everyone on it for its attack of 20 through armour, throwing them straight up at 0.6 with nothing across (a plain blow
  * knocks the control across), never a bystander and never a player beside the line. A line that hits nobody leaves its
  * spikes standing for exactly 60 ticks: an ownerless arrow shatters on them, a player's flies through, a monster in them
  * is pushed out across the line, a pig and a player are left alone. It cracks once every 80 ticks, not at a target 11.5
@@ -139,12 +139,12 @@ public final class SpirebloomTests {
         return Math.abs(value - expected) < 0.01;
     }
 
-    /** What the spikes do to a survival player at the test's difficulty: 8 on Normal, 5 on Easy, 12 on Hard. */
+    /** What the spikes do to a survival player at the test's difficulty: 20 on Normal, 11 on Easy, 30 on Hard. */
     private static float playerBlow(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 5.0F;
-            case HARD -> 12.0F;
-            default -> 8.0F;
+            case EASY -> 11.0F;
+            case HARD -> 30.0F;
+            default -> 20.0F;
         };
     }
 
@@ -201,13 +201,15 @@ public final class SpirebloomTests {
     }
 
     /**
-     * Failing the counter: a survival player stays on the line. The spikes hit them for its attack (8 on Normal; mob
-     * damage to players scales with difficulty: 5 on Easy, 12 on Hard) as the Spirebloom's own blow, which armour
+     * Failing the counter: a survival player stays on the line. The spikes hit them for its attack (20 on Normal; mob
+     * damage to players scales with difficulty: 11 on Easy, 30 on Hard; the player has 40 health) as the Spirebloom's own blow, which armour
      * reduces, and throw them straight up at 0.6 with nothing across; no spikes are left standing.
      */
     private static void failure(GameTestHelper helper) {
         Spirebloom b = bloom(helper);
         ServerPlayer p = TestPlayers.survivor(helper, along(6, 0));
+        p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);         // the blow leaves it standing on any difficulty
+        p.setHealth(40.0F);
         float before = p.getHealth();
         float expected = playerBlow(helper);
         DamageSource[] last = {null};
@@ -231,7 +233,7 @@ public final class SpirebloomTests {
     }
 
     /**
-     * The blow on a pig with no armour: exactly 8, and a throw straight up at 0.6 with nothing across (a control pig given
+     * The blow on a pig with no armour: exactly 20, and a throw straight up at 0.6 with nothing across (a control pig given
      * the same blow plainly is knocked across), and a second pig standing on the line that isn't its target is left alone.
      * The pig and the control have no AI, so the motion read after the tick is the motion the blow set.
      */
@@ -248,13 +250,13 @@ public final class SpirebloomTests {
         helper.onEachTick(() -> {
             if (struck[0] == null && b.strikes() == 1) {
                 struck[0] = pig.getDeltaMovement();
-                control.hurtServer(helper.getLevel(), b.damageSources().mobAttack(b), 8.0F);
+                control.hurtServer(helper.getLevel(), b.damageSources().mobAttack(b), 20.0F);
                 knocked[0] = control.getDeltaMovement().horizontalDistance();
             }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(struck[0] != null, "the spikes struck, phase " + b.phase());
-            helper.assertTrue(near(pig.getHealth(), 92.0), "the pig lost exactly 8, has " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 80.0), "the pig lost exactly 20, has " + pig.getHealth());
             helper.assertTrue(near(struck[0].y, 0.6), "thrown up at 0.6, dy " + struck[0].y);
             helper.assertTrue(struck[0].horizontalDistance() < 0.01, "and not across at all, " + struck[0].horizontalDistance());
             helper.assertTrue(knocked[0] > 0.1, "a plain blow knocks the control across, motion " + knocked[0]);
@@ -262,7 +264,7 @@ public final class SpirebloomTests {
         });
     }
 
-    /** Armour counts: a pig with 10 armour takes 8 x (1 - (10 - 8/2) / 25) = 6.08 from the blow, vanilla's armour sum. */
+    /** Armour counts: a pig with 10 armour takes 20 x (1 - max(10 - 20/2, 2) / 25) = 18.4 from the blow, vanilla's armour sum. */
     private static void armour(GameTestHelper helper) {
         Spirebloom b = bloom(helper);
         Pig pig = pig(helper, along(6, 0));
@@ -270,7 +272,7 @@ public final class SpirebloomTests {
         b.setTarget(pig);
         helper.succeedWhen(() -> {
             helper.assertTrue(b.strikes() == 1, "the spikes struck, phase " + b.phase());
-            helper.assertTrue(near(100.0 - pig.getHealth(), 6.08), "armour 10 takes the 8 down to 6.08, lost " + (100.0F - pig.getHealth()));
+            helper.assertTrue(near(100.0 - pig.getHealth(), 18.4), "armour 10 takes the 20 down to 18.4, lost " + (100.0F - pig.getHealth()));
         });
     }
 
@@ -282,6 +284,8 @@ public final class SpirebloomTests {
         Spirebloom b = bloom(helper);
         Pig pig = pig(helper, along(5, 0));
         ServerPlayer reached = TestPlayers.survivor(helper, along(9.7, 0));
+        reached.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);         // the blow leaves it standing on any difficulty
+        reached.setHealth(40.0F);
         ServerPlayer past = TestPlayers.survivor(helper, along(10.9, 0));
         float r0 = reached.getHealth(), p0 = past.getHealth();
         helper.runAtTickTime(1, () -> {
@@ -341,6 +345,8 @@ public final class SpirebloomTests {
         Spirebloom b = bloom(helper);
         Pig pig = pig(helper, along(7, 0));
         ServerPlayer on = TestPlayers.survivor(helper, along(4, 0.3));
+        on.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);         // the blow leaves it standing on any difficulty
+        on.setHealth(40.0F);
         ServerPlayer off = TestPlayers.survivor(helper, along(4, 1.3));
         float on0 = on.getHealth(), off0 = off.getHealth();
         helper.runAtTickTime(1, () -> helper.assertTrue(b.crack(pig), "the tell starts"));
@@ -351,7 +357,7 @@ public final class SpirebloomTests {
         });
     }
 
-    /** Once every 80 ticks: with the pig left in range, the second tell starts 80 ticks after the first; two blows of 8. */
+    /** Once every 80 ticks: with the pig left in range, the second tell starts 80 ticks after the first; two blows of 20. */
     private static void every(GameTestHelper helper) {
         Spirebloom b = bloom(helper);
         Pig pig = pig(helper, along(6, 0));
@@ -369,7 +375,7 @@ public final class SpirebloomTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(second[0] >= 0 && b.strikes() == 2, "two tells, two blows");
             helper.assertTrue(second[0] - first[0] == 80, "80 ticks apart, got " + (second[0] - first[0]));
-            helper.assertTrue(near(pig.getHealth(), 84.0), "two blows of 8, health " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 60.0), "two blows of 20, health " + pig.getHealth());
         });
     }
 
@@ -538,7 +544,7 @@ public final class SpirebloomTests {
     // ---- the row ---------------------------------------------------------------------------------------------------
 
     /**
-     * Health 28, attack 8, armour 6, a 0.9 x 1.5 hitbox, speed 0, 12 experience; rooted: a hit that would knock it back
+     * Health 28, attack 20, armour 6, a 0.9 x 1.5 hitbox, speed 0, 12 experience; rooted: a hit that would knock it back
      * leaves it where it is.
      */
     private static void stats(GameTestHelper helper) {
@@ -546,7 +552,7 @@ public final class SpirebloomTests {
         Pig pig = pig(helper, new Vec3(3.5, 1, 5.5));
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(b.getMaxHealth() == 28.0F && b.getHealth() == 28.0F, "health 28, got " + b.getHealth() + "/" + b.getMaxHealth());
-            helper.assertTrue(b.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.0, "attack 8, got " + b.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(b.getAttributeValue(Attributes.ATTACK_DAMAGE) == 20.0, "attack 20, got " + b.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(b.getArmorValue() == 6, "armour 6, got " + b.getArmorValue());
             helper.assertTrue(Math.abs(b.getBbWidth() - 0.9F) < 0.01F && Math.abs(b.getBbHeight() - 1.5F) < 0.01F,
                     "a 0.9 x 1.5 hitbox, got " + b.getBbWidth() + " x " + b.getBbHeight());

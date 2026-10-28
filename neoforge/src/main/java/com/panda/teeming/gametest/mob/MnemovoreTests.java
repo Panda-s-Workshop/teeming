@@ -42,13 +42,14 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Mnemovore. A target within reach is gaped at for exactly 10 ticks (it holds still and nothing is hurt or taken yet),
- * then bitten for the attack of 5 (armour counts: a pig in 10 armour loses 3.5). A bite that lands on a survival player
- * at level 10 takes exactly one level and keeps exactly the 25 points it held (a player 40 % into level 20 drops to 40 %
- * into level 19, and 59 points are kept); a player at level 0 loses nothing but health; a vetoed "steal" takes nothing.
- * Stepping out of reach during the gape makes the bite snap on air. A bite reaches 1.25 blocks of open space across or
- * up, so a player on a pillar beside it is never gaped at. Gapes come 30 ticks apart. Killed, it spills its points
- * times 1.1, rounded up (48 eaten in two bites: 53 back), once and no more; killed mid-gape it bites no one. It never
- * despawns while it holds points, and they survive a save and reload. Stats, home and spawn rule against plain values.
+ * then bitten for the attack of 8.5 (armour counts: a pig in 10 armour loses 6.545). A bite that lands on a survival
+ * player at level 10 takes exactly one level and keeps exactly the 25 points it held (a player 40 % into level 20 drops
+ * to 40 % into level 19, and 59 points are kept); a player at level 0 loses nothing but health; a vetoed "steal" takes
+ * nothing. Stepping out of reach during the gape makes the bite snap on air. A bite reaches 1.25 blocks of open space
+ * across or up, so a player on a pillar beside it is never gaped at. Gapes come 30 ticks apart. Killed, it spills
+ * exactly the points it ate (48 eaten in two bites: 48 back), once and no more; killed mid-gape it bites no one. It
+ * never despawns while it holds points, and they survive a save and reload. Stats, home and spawn rule against plain
+ * values.
  */
 public final class MnemovoreTests {
     private MnemovoreTests() {}
@@ -131,13 +132,13 @@ public final class MnemovoreTests {
         e.yBodyRotO = yaw;
     }
 
-    /** What one bite costs a player: the attack of 5, scaled by difficulty as every mob's blow on a player is. */
+    /** What one bite costs a player: the attack of 8.5, scaled by difficulty as every mob's blow on a player is. */
     private static float biteOnPlayer(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
             case PEACEFUL -> 0.0F;
-            case EASY -> 3.5F;
-            case HARD -> 7.5F;
-            default -> 5.0F;
+            case EASY -> 5.25F;
+            case HARD -> 12.75F;
+            default -> 8.5F;
         };
     }
 
@@ -157,7 +158,8 @@ public final class MnemovoreTests {
 
     /**
      * The tell: a pig in reach is gaped at for exactly 10 ticks; meanwhile the Mnemovore holds still and the pig is
-     * unhurt. Then the jaws shut and the pig has lost exactly the attack of 5; a pig has no levels, so nothing is eaten.
+     * unhurt. Then the jaws shut and the pig has lost exactly the attack of 8.5; a pig has no levels, so nothing
+     * is eaten.
      */
     private static void tell(GameTestHelper helper) {
         Mnemovore m = vore(helper, 5.5, 6.5);
@@ -181,7 +183,7 @@ public final class MnemovoreTests {
             helper.assertTrue(after[0] >= 0, "it gaped and bit");
             helper.assertTrue(gape[0] == 10, "the gape lasts 10 ticks, saw " + gape[0]);
             float lost = 100.0F - after[0];
-            helper.assertTrue(Math.abs(lost - 5.0F) < 0.01F, "the bite takes 5, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the bite takes 8.5, the pig lost " + lost);
             helper.assertTrue(m.bites() == 1 && m.memories() == 0 && m.levelsEaten() == 0, "a pig has no levels to eat");
         });
     }
@@ -215,9 +217,9 @@ public final class MnemovoreTests {
 
     /**
      * Failing the counter: a survival player at level 10, with no progress into level 11, stands in reach through the
-     * gape. The bite takes the attack of 5 (at this difficulty) and exactly one level: the player is at level 9 with no
-     * progress, and the Mnemovore holds exactly the 25 points level 9 to 10 is worth; its glyphs show one level eaten, it
-     * swallows, and it can no longer despawn.
+     * gape. The bite takes the attack of 8.5 (at this difficulty) and exactly one level: the player is at level 9 with
+     * no progress, and the Mnemovore holds exactly the 25 points level 9 to 10 is worth; its glyphs show one level
+     * eaten, it swallows, and it can no longer despawn.
      */
     private static void failure(GameTestHelper helper) {
         Mnemovore m = vore(helper, 5.5, 6.5);
@@ -290,13 +292,13 @@ public final class MnemovoreTests {
 
     /**
      * The payoff: two real bites on a player at level 10 take 25 and then 23 points (level 8 is left), the second gape
-     * starting exactly 30 ticks after the first, and the glyphs show two levels. Killed, it spills 53 points of orbs:
-     * the 48 it ate times 1.1 (52.8), rounded up. The rounding against plain values too: 25 gives 28, 10 gives 11, 1
-     * gives 2, nothing gives nothing.
+     * starting exactly 30 ticks after the first, and the glyphs show two levels. Killed, it spills 48 points of orbs:
+     * exactly what it ate, no more. Against plain values too: 25 gives 25, 10 gives 10, 1 gives 1, nothing gives
+     * nothing.
      */
     private static void repay(GameTestHelper helper) {
-        helper.assertTrue(Mnemovore.repay(25) == 28 && Mnemovore.repay(10) == 11 && Mnemovore.repay(1) == 2 && Mnemovore.repay(0) == 0,
-                "a tenth more, rounded up: " + Mnemovore.repay(25) + ", " + Mnemovore.repay(10) + ", " + Mnemovore.repay(1));
+        helper.assertTrue(Mnemovore.repay(25) == 25 && Mnemovore.repay(10) == 10 && Mnemovore.repay(1) == 1 && Mnemovore.repay(0) == 0,
+                "exactly what it ate: " + Mnemovore.repay(25) + ", " + Mnemovore.repay(10) + ", " + Mnemovore.repay(1));
         Mnemovore m = vore(helper, 5.5, 6.5);
         ServerPlayer p = player(helper, 6.9, 1, 6.5, 10, 0.0F);
         p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);              // two bites leave it standing on any difficulty
@@ -327,13 +329,13 @@ public final class MnemovoreTests {
             helper.assertTrue(killed[0] >= 0 && helper.getTick() >= killed[0] + 3, "it ate twice and was killed");
             helper.assertTrue(gapes[1] - gapes[0] == 30, "the gapes came 30 ticks apart, " + (gapes[1] - gapes[0]));
             int back = orbs(helper, AABB.ofSize(m.position(), 5.0, 4.0, 5.0)) + (p.totalExperience - xpBefore[0]);
-            helper.assertTrue(back == 53, "it spills 53 points (48 x 1.1, rounded up), found " + back);
+            helper.assertTrue(back == 48, "it spills the 48 points it ate, no more, found " + back);
             helper.assertTrue(m.memories() == 0, "and holds nothing more");
         });
     }
 
     /**
-     * Nothing after death: holding 25 points it is killed; 28 points of orbs come out at once, its glyphs go dark, and
+     * Nothing after death: holding 25 points it is killed; 25 points of orbs come out at once, its glyphs go dark, and
      * when the body is gone 30 ticks later it has spilled once only (the removal spills nothing more).
      */
     private static void deathOnce(GameTestHelper helper) {
@@ -344,7 +346,7 @@ public final class MnemovoreTests {
         helper.runAtTickTime(2, () -> m.hurtServer(helper.getLevel(), m.damageSources().fellOutOfWorld(), 1000.0F));
         helper.runAtTickTime(5, () -> {
             int found = orbs(helper, box);
-            helper.assertTrue(found == 28, "the death spills 28 points (25 x 1.1, rounded up), found " + found);
+            helper.assertTrue(found == 25, "the death spills the 25 points it ate, found " + found);
             helper.assertTrue(m.memories() == 0 && m.core().stage() == 0 && m.spills() == 1, "it holds nothing now, its glyphs dark");
         });
         helper.runAtTickTime(40, () -> {
@@ -355,7 +357,7 @@ public final class MnemovoreTests {
     }
 
     /**
-     * Killed in the void below the world, holding 25 points, it still pays them back: the 28 points of orbs come out on
+     * Killed in the void below the world, holding 25 points, it still pays them back: the 25 points of orbs come out on
      * the last ground it stood on, in its arena, where a player can pick them up, and none below the world's floor.
      */
     private static void voidSpill(GameTestHelper helper) {
@@ -370,7 +372,7 @@ public final class MnemovoreTests {
         });
         helper.runAtTickTime(8, () -> {
             int found = orbs(helper, box);
-            helper.assertTrue(found == 28, "the 28 points come out on the ground it last stood on, found " + found);
+            helper.assertTrue(found == 25, "the 25 points come out on the ground it last stood on, found " + found);
             int below = orbs(helper, new AABB(m.getX() - 4, helper.getLevel().getMinY() - 200, m.getZ() - 4, m.getX() + 4, helper.getLevel().getMinY(), m.getZ() + 4));
             helper.assertTrue(below == 0, "none below the world's floor, found " + below);
             helper.succeed();
@@ -447,7 +449,7 @@ public final class MnemovoreTests {
         });
     }
 
-    /** Armour counts: a pig in 10 armour loses 3.5 to the bite of 5 (5 x (1 - 7.5 / 25)). */
+    /** Armour counts: a pig in 10 armour loses 6.545 to the bite of 8.5 (8.5 x (1 - 5.75 / 25)). */
     private static void armour(GameTestHelper helper) {
         Mnemovore m = vore(helper, 5.5, 6.5);
         Pig pig = pig(helper, 6.9, 6.5);
@@ -456,7 +458,7 @@ public final class MnemovoreTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(m.bites() == 1, "it bit once");
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 3.5F) < 0.01F, "armour took its share, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 6.545F) < 0.01F, "armour took its share, the pig lost " + lost);
         });
     }
 
@@ -531,13 +533,13 @@ public final class MnemovoreTests {
         helper.succeed();
     }
 
-    /** Health 28, attack 5, armour 2, a 1.0 x 0.6 hitbox. */
+    /** Health 28, attack 8.5, armour 2, a 1.0 x 0.6 hitbox. */
     private static void stats(GameTestHelper helper) {
         Mnemovore m = vore(helper, 5.5, 5.5);
         m.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(m.getMaxHealth() == 28.0F && m.getHealth() == 28.0F, "health 28, got " + m.getHealth() + "/" + m.getMaxHealth());
-            helper.assertTrue(m.getAttributeValue(Attributes.ATTACK_DAMAGE) == 5.0, "attack 5, got " + m.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(m.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + m.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(m.getArmorValue() == 2, "armour 2, got " + m.getArmorValue());
             helper.assertTrue(Math.abs(m.getBbWidth() - 1.0F) < 0.01F && Math.abs(m.getBbHeight() - 0.6F) < 0.01F,
                     "a 1.0 x 0.6 hitbox, got " + m.getBbWidth() + " x " + m.getBbHeight());

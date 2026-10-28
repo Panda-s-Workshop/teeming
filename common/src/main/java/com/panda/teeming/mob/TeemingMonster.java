@@ -127,7 +127,12 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        FieldGuide.onKilled(this, source);
+        if (countsAsKill()) FieldGuide.onKilled(this, source);
+    }
+
+    /** Whether its death counts as a Field Guide kill; a mob that comes out of another's death (a split) may not. */
+    protected boolean countsAsKill() {
+        return true;
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Recurrent's numbers against its stat row, written out as plain values: HP 30, Atk 6, Arm 2, 0.7 x 1.9; no tell in
+ * The Recurrent's numbers against its stat row, written out as plain values: HP 30, Atk 8.5, Arm 2, 0.7 x 1.9; no tell in
  * the row (its blow still gets 8 t); a killing blow winds it back to its place and health of 60 t ago, once per 60 t,
  * unless its anchor (4 HP, within 6 blocks) is broken; the End barrens, weight 3, alone; the Gilded Recurrent; time
  * sand. The GameTests check the numbers are applied; this checks they are the right numbers.
@@ -17,7 +17,7 @@ class RecurrentNumbersTest {
     @Test
     void mechanic() {
         assertEquals(60, Recurrent.REWIND_BACK);
-        assertEquals(60, Recurrent.REWIND_EVERY);
+        assertEquals(30, Recurrent.REWIND_EVERY);
         assertEquals(4.0F, Recurrent.ANCHOR_HEALTH);
         assertEquals(6.0, Recurrent.LEASH);
     }
@@ -64,8 +64,14 @@ class RecurrentNumbersTest {
         assertTrue(Recurrent.TELL_TICKS + Recurrent.STRIKE_TICKS < Recurrent.SWING_EVERY);
         // it remembers one tick more than it winds back, so the place of exactly 60 ticks ago is kept
         assertEquals(Recurrent.REWIND_BACK + 1, Recurrent.HISTORY);
-        // the daze is over well inside the 60 ticks a second kill is final
+        // the daze is over well inside the 30 ticks a second kill is final
         assertTrue(Recurrent.REWOUND_TICKS < Recurrent.REWIND_EVERY);
+        // the End reference player (11 a blow through its armour 2, 1.6 blows a second) takes about 35 ticks to deal its 30
+        // health: longer than the window in which a second kill is final, so without the anchor it winds back more than
+        // once, and the anchor is worth reaching for
+        float perTick = 11.0F * (1.0F - 0.4F / 25.0F) * 1.6F / 20.0F;
+        assertTrue(30.0F / perTick > Recurrent.REWIND_EVERY, "a full kill takes " + 30.0F / perTick + " ticks");
+        assertTrue(Recurrent.REWIND_EVERY < Recurrent.REWIND_BACK);
         // the anchor's spots lie inside its leash, and out to the side it is low enough for a sword
         assertTrue(Math.hypot(Recurrent.GUARD_BACK, Recurrent.GUARD_UP) < Recurrent.LEASH);
         assertTrue(Math.hypot(Recurrent.OUT_SIDE, Recurrent.OUT_UP) < Recurrent.LEASH);
@@ -97,7 +103,7 @@ class RecurrentNumbersTest {
         assertEquals(RosterStats.Cat.MONSTER, row.cat());
         assertEquals(RosterStats.Dim.END, row.dim());
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(1.9F, row.height());

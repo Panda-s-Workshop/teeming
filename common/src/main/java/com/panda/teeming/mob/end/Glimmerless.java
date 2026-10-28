@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Its strike: with its target next to it, it holds still for 8 ticks (tell: a shimmer rises where it stands, its body
  * is drawn faintly for the moment, and it hisses), then rakes both claws through the space in front of it for its
- * attack damage, 7, if the target is still in reach.
+ * attack damage, 9, if the target is still in reach.
  *
  * <p>Counter: any projectile hit (an arrow, a trident, a snowball, an egg, a wind charge: anything whose damage is a
  * projectile's) reveals it for {@link #REVEAL_TICKS} ticks. It is drawn in full, its eyes and seams glow faintly, and a
@@ -67,7 +67,7 @@ public class Glimmerless extends TeemingMonster {
 
     public static final int TELL_TICKS = 8;               // 0.4 s of shimmer before the rake
     public static final int STRIKE_TICKS = 8;             // the rake lands on its first tick; the arms stay out this long
-    public static final float STRIKE = 1.0F;              // x attack damage: 7
+    public static final float STRIKE = 1.0F;              // x attack damage: 9
     public static final int COOLDOWN = 30;                // ticks from the end of one rake to the next tell
     public static final double START_REACH = 0.9;         // blocks between hitboxes: this close it starts its tell
     public static final double STRIKE_REACH = 1.6;        // blocks between hitboxes: a target this close when it rakes is hit

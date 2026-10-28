@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Pearlgulp's numbers against its row, written out as plain values: HP 22, Atk 5, Arm 2, 0.9 x 0.8, no tell in the
+ * The Pearlgulp's numbers against its row, written out as plain values: HP 22, Atk 8.5, Arm 2, 0.9 x 0.8, no tell in the
  * row (its bite and its blink toward you still get 8 ticks each); it eats ender pearls in flight within 8 blocks, with
  * no teleport, and each one gives it one blink of 8 blocks; End highlands and small islands, weight 4, alone; second
  * look Smoky Gulp; drops rift essence. The GameTests check the numbers are applied in the world; this checks they are
@@ -47,7 +47,7 @@ class PearlgulpNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("pearlgulp");
         assertEquals(22.0F, row.health());
-        assertEquals(5.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.9F, row.width());
         assertEquals(0.8F, row.height());

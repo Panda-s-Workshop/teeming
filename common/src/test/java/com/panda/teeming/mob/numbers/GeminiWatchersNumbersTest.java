@@ -8,7 +8,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Gemini Watchers' numbers against their stat row, written out as plain values: HP 30 each, Atk 6, Arm 4, 0.7 x 2.0;
+ * The Gemini Watchers' numbers against their stat row, written out as plain values: HP 30 each, Atk 8.5, Arm 4, 0.7 x 2.0;
  * a 100 t revive beam: one dies, the other raises it after 100 t at 50 %, unless both are dead; the End barrens, weight
  * 3, in pairs; the Dusk Pair; void crystal. The GameTests check the numbers are applied; this checks they are the right
  * numbers.
@@ -94,7 +94,7 @@ class GeminiWatchersNumbersTest {
         assertEquals(RosterStats.Cat.MONSTER, row.cat());
         assertEquals(RosterStats.Dim.END, row.dim());
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(4.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

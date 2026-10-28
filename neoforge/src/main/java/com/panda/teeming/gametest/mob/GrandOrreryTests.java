@@ -26,6 +26,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -64,6 +65,8 @@ public final class GrandOrreryTests {
         TeemingGameTests.timeLimit("grand_orrery_counter", 160);
         out.accept("grand_orrery_failure", GrandOrreryTests::failure);
         TeemingGameTests.timeLimit("grand_orrery_failure", 160);
+        out.accept("grand_orrery_pierce", GrandOrreryTests::pierce);
+        TeemingGameTests.timeLimit("grand_orrery_pierce", 160);
         out.accept("grand_orrery_spiral", GrandOrreryTests::spiral);
         out.accept("grand_orrery_double_ring", GrandOrreryTests::doubleRing);
         out.accept("grand_orrery_burst", GrandOrreryTests::burst);
@@ -149,13 +152,24 @@ public final class GrandOrreryTests {
         return Mth.atan2(b.z - a.z, b.x - a.x) * Mth.RAD_TO_DEG - 90.0;
     }
 
-    /** One mote's cost to a player here: mob projectiles to players scale with difficulty. */
+    /**
+     * One mote's cost to an unarmoured player here: its 6 and the 10 through armour, each scaled with difficulty as mob
+     * blows to players are.
+     */
     private static float moteHere(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 4.0F;          // min(6 / 2 + 1, 6)
-            case HARD -> 9.0F;          // 6 x 1.5
-            default -> 6.0F;
+            case EASY -> 10.0F;         // min(6 / 2 + 1, 6) + min(10 / 2 + 1, 10)
+            case HARD -> 24.0F;         // (6 + 10) x 1.5
+            default -> 16.0F;
         };
+    }
+
+    /** A survival player with 40 health, so a mote on Hard leaves them standing. */
+    private static ServerPlayer survivor(GameTestHelper helper, Vec3 at) {
+        ServerPlayer p = TestPlayers.survivor(helper, at);
+        p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);
+        p.setHealth(40.0F);
+        return p;
     }
 
     /**
@@ -314,14 +328,14 @@ public final class GrandOrreryTests {
 
     /**
      * Failing it: a survival player standing on the line of the spiral's first mote, 5 blocks out, is struck once for
-     * exactly one mote (6 on Normal, as the game scales mob projectiles) and not moved at all, and no other mote of
+     * exactly one mote (6 and 10 through armour, 16 on Normal, as the game scales mob blows) and not moved at all, and no other mote of
      * the turn touches them.
      */
     private static void failure(GameTestHelper helper) {
         GrandOrrery o = hanging(helper);
-        ServerPlayer p = TestPlayers.survivor(helper, out(HANG, -90.0, 5.0));
+        ServerPlayer p = survivor(helper, out(HANG, -90.0, 5.0));
         float each = moteHere(helper);
-        float[] health = {20.0F};
+        float[] health = {40.0F};
         Vec3[] start = {null};
         double[] drift = {0.0};
         helper.runAtTickTime(1, () -> {
@@ -339,6 +353,33 @@ public final class GrandOrreryTests {
             helper.assertTrue(o.strikes() == 1, "one mote struck the player, " + o.strikes());
             helper.assertTrue(Math.abs(lost(p, health[0]) - each) < 0.01F, "the mote costs " + each + " here, cost " + lost(p, health[0]));
             helper.assertTrue(drift[0] < 0.01, "and doesn't move the player, moved " + drift[0]);
+        });
+    }
+
+    /**
+     * A mote's share goes through armour: a pig in 20 armour on the spiral's first line, 5 blocks out, takes the mote's 6
+     * as 6 x (1 - 17 / 25) = 1.92 and the 10 past its armour in full, 11.92 in all, from the one mote that reaches it, and
+     * the last of it is the orrery's own armour-piercing damage type.
+     */
+    private static void pierce(GameTestHelper helper) {
+        GrandOrrery o = hanging(helper);
+        Pig pig = pig(helper, out(HANG, -90.0, 5.0), 100.0F);
+        pig.getAttribute(Attributes.ARMOR).setBaseValue(20.0);
+        DamageSource[] lastHit = {null};
+        helper.runAtTickTime(1, () -> {
+            o.setNextPattern(Step.SPIRAL);
+            helper.assertTrue(o.spinUp(pig), "it spins up");
+        });
+        helper.onEachTick(() -> {                  // the pig forgets its last source 40 ticks on, before the pattern ends
+            if (pig.getLastDamageSource() != null) lastHit[0] = pig.getLastDamageSource();
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(o.core().in(Step.OPEN) && o.motes().isEmpty(), "the spiral is over and every mote spent, phase " + o.phase());
+            helper.assertTrue(o.strikes() == 1, "one mote struck the pig, " + o.strikes());
+            helper.assertTrue(Math.abs(lost(pig, 100.0F) - 11.92F) < 0.01F, "1.92 through armour and 10 past it, lost " + lost(pig, 100.0F));
+            var last = lastHit[0];
+            helper.assertTrue(last != null && last.typeHolder().is(GrandOrrery.PIERCE) && last.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR),
+                    "the share past armour is the orrery's own type, in #minecraft:bypasses_armor, got " + last);
         });
     }
 
@@ -456,10 +497,10 @@ public final class GrandOrreryTests {
     private static void gap(GameTestHelper helper, Step pattern, double gapYaw, double rayYaw) {
         GrandOrrery o = hanging(helper);
         Pig pig = pig(helper, TARGET, 1000.0F);
-        ServerPlayer inGap = TestPlayers.survivor(helper, out(HANG, -90.0 + gapYaw, 5.0));
-        ServerPlayer onLine = TestPlayers.survivor(helper, out(HANG, -90.0 + rayYaw, 5.0));
+        ServerPlayer inGap = survivor(helper, out(HANG, -90.0 + gapYaw, 5.0));
+        ServerPlayer onLine = survivor(helper, out(HANG, -90.0 + rayYaw, 5.0));
         float each = moteHere(helper);
-        float[] health = {20.0F, 20.0F};
+        float[] health = {40.0F, 40.0F};
         boolean[] cast = {false};
         helper.runAtTickTime(1, () -> {
             health[0] = inGap.getHealth();
@@ -484,8 +525,8 @@ public final class GrandOrreryTests {
      */
     private static void feat(GameTestHelper helper, boolean step) {
         GrandOrrery o = hanging(helper);
-        ServerPlayer p = TestPlayers.survivor(helper, out(HANG, -90.0, 5.0));
-        float[] health = {20.0F};
+        ServerPlayer p = survivor(helper, out(HANG, -90.0, 5.0));
+        float[] health = {40.0F};
         boolean[] stepped = {false}, early = {false};
         helper.runAtTickTime(1, () -> {
             health[0] = p.getHealth();
@@ -517,9 +558,9 @@ public final class GrandOrreryTests {
     // ---- motes -----------------------------------------------------------------------------------------------------
 
     /**
-     * A mote: flies 0.25 blocks a tick, strikes a pig for exactly 6 and doesn't move it (the pig keeps its physics), and
-     * stops at a block: every mote of the burst's lane 20 degrees round from the aim ends at a stone pillar standing in
-     * it a block and a half out, at the pillar's face and never past it.
+     * A mote: flies 0.25 blocks a tick, strikes a pig for exactly 16 (6, then 10 through armour) and doesn't move it (the
+     * pig keeps its physics), and stops at a block: every mote of the burst's lane 20 degrees round from the aim ends at
+     * a stone pillar standing in it a block and a half out, at the pillar's face and never past it.
      */
     private static void mote(GameTestHelper helper) {
         GrandOrrery o = hanging(helper);
@@ -539,7 +580,7 @@ public final class GrandOrreryTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(o.core().in(Step.OPEN) && o.motes().isEmpty(), "the burst is over and every mote spent, phase " + o.phase());
-            helper.assertTrue(Math.abs(first[0] - 6.0F) < 0.01F, "the first mote to land takes 6, took " + first[0]);
+            helper.assertTrue(Math.abs(first[0] - 16.0F) < 0.01F, "the first mote to land takes 6 and 10 more, 16, took " + first[0]);
             helper.assertTrue(drift[0] < 0.01, "and doesn't knock the pig back, moved " + drift[0]);
             List<Log.Mote> m = log.of(Step.BURST);
             helper.assertTrue(m.size() == 9, "nine motes, saw " + m.size());
@@ -556,7 +597,7 @@ public final class GrandOrreryTests {
     /** A survival player holding up a shield toward the orrery takes nothing from the spiral mote that reaches them. */
     private static void shield(GameTestHelper helper) {
         GrandOrrery o = hanging(helper);
-        ServerPlayer p = TestPlayers.survivor(helper, out(HANG, -90.0, 5.0));
+        ServerPlayer p = survivor(helper, out(HANG, -90.0, 5.0));
         p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHIELD));
         p.startUsingItem(InteractionHand.MAIN_HAND);
         helper.onEachTick(() -> {

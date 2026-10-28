@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Chronomite's numbers against its row, written out as plain values: HP 26, Atk 5, Arm 6, 0.9 x 0.7, no tell of
+ * The Chronomite's numbers against its row, written out as plain values: HP 26, Atk 8.5, Arm 6, 0.9 x 0.7, no tell of
  * its own (its bite gets one anyway); a field of radius 6 in which movement and projectiles run at x0.4 and attack speed
  * at x0.6 (40 % slower); a 20-point shell that takes damage first and ends the field when it cracks; End midlands and
  * barrens, weight 4, alone; second look Gilded Mite; drops time sand. Then the calls made here: the bite's 8-tick tell
@@ -45,7 +45,7 @@ class ChronomiteNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("chronomite");
         assertEquals(26.0F, row.health());
-        assertEquals(5.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(6.0F, row.armor());
         assertEquals(0.9F, row.width());
         assertEquals(0.7F, row.height());

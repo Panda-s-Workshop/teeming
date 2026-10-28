@@ -58,7 +58,7 @@ public class Wingshear extends TeemingMonster {
     public static final double DIVE_SPEED = 1.5;
     /** The longest dive: 18 blocks at 1.5 a tick. */
     public static final int DIVE_TICKS = 12;
-    /** x attack damage: the dive is its one blow, 6 for its attack of 6. */
+    /** x attack damage: the dive is its one blow, 8.5 for its attack of 8.5. */
     public static final float DIVE_HIT = 1.0F;
     /** After a hit the glider's wings stay shut this long: every try to glide again is put out. */
     public static final int NO_GLIDE_TICKS = 40;

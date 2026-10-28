@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Anchor Golem's numbers against its roster row, written out as plain values: HP 44, Atk 7, Arm 8, 1.2 x 2.2; a
+ * The Anchor Golem's numbers against its roster row, written out as plain values: HP 44, Atk 9, Arm 8, 1.2 x 2.2; a
  * 14-tick wind-up; its hits make you Heavy for 120 ticks (no jumping, gravity x1.5, Levitation and Slow Falling
  * cancelled); End midlands, weight 4, alone; second look Rusted Anchor; drops gravity stone. The ring, the sink, the
  * swing's rhythm and its reach are its design. The GameTests check the numbers are applied; this checks they are the
@@ -20,7 +20,7 @@ class AnchorGolemNumbersTest {
     @Test
     void blow() {
         assertEquals(14, AnchorGolem.TELL_TICKS);
-        // its blow is its attack (7), not 1.5x it: an 8-tick tell is the floor; it takes 14
+        // its blow is its attack (9), not 1.5x it: an 8-tick tell is the floor; it takes 14
         assertEquals(1.0F, AnchorGolem.STRIKE);
         assertTrue(AnchorGolem.STRIKE < 1.5F && AnchorGolem.TELL_TICKS >= 8);
         assertEquals(12, AnchorGolem.SWING_TICKS);
@@ -76,7 +76,7 @@ class AnchorGolemNumbersTest {
         RosterStats.Entry row = RosterStats.get("anchor_golem");
         assertEquals(72, row.number());
         assertEquals(44.0F, row.health());
-        assertEquals(7.0F, row.attack());
+        assertEquals(9.0F, row.attack());
         assertEquals(8.0F, row.armor());
         assertEquals(1.2F, row.width());
         assertEquals(2.2F, row.height());

@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * takes nothing away and leaves every item working; it is a place to fight round, not a status to carry off.
  *
  * <p>Up close it raises both arms and its chant swells for 10 ticks (tell: glyphs swirl into its hood), then brings its
- * arms down on its target for its attack (6), if the target is still in reach; it swings at most every 30 ticks.
+ * arms down on its target for its attack (8.5), if the target is still in reach; it swings at most every 30 ticks.
  *
  * <p>Counter: fight it from outside the ring (a bow, a trident), or come in with plain gear and step back from the
  * swing. A hit from an attacker who stands outside the ring knocks its collar off: it flinches, and the collar's shard
@@ -57,7 +57,7 @@ public class Nullcantor extends TeemingMonster {
     /** The hum: every 2 s, loud enough (24 blocks) to be heard well outside the ring. */
     public static final int HUM_EVERY = 40;
     public static final float HUM_VOLUME = 1.5F;
-    /** The swing: a 10-tick tell with its arms raised, then a blow of its attack (6), at most every 30 ticks. */
+    /** The swing: a 10-tick tell with its arms raised, then a blow of its attack (8.5), at most every 30 ticks. */
     public static final int TELL_TICKS = 10;
     public static final int STRIKE_TICKS = 8;
     public static final int STRIKE_EVERY = 30;

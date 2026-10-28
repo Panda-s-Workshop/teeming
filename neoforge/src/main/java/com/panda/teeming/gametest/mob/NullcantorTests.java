@@ -52,7 +52,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Nullcantor: a null ring of radius 8 is always on round it; a player inside is Nulled, and no enchantment on their
  * gear has any effect (Sharpness, Protection, Feather Falling, Efficiency, Mending, Loyalty...; curses still hold),
- * until a tick or two after they step out. Its swing: a 10-tick tell that hurts nothing, then a blow of 6, at most
+ * until a tick or two after they step out. Its swing: a 10-tick tell that hurts nothing, then a blow of 8.5, at most
  * every 30 ticks. A hit from an attacker standing outside the ring knocks its collar off: the ring stays where the
  * collar fell for 160 ticks while the Nullcantor walks on without one, then the collar grows back.
  *
@@ -205,7 +205,7 @@ public final class NullcantorTests {
         });
     }
 
-    /** After the tell the blow lands for its attack, 6 (40 -> 34), and it swings again no sooner than 30 ticks on. */
+    /** After the tell the blow lands for its attack, 8.5 (40 -> 31.5), and it swings again no sooner than 30 ticks on. */
     private static void strike(GameTestHelper helper) {
         Nullcantor n = cantor(helper, new Vec3(4.5, 1, 5.5));
         Pig pig = pig(helper, new Vec3(5.7, 1, 5.5));
@@ -223,7 +223,7 @@ public final class NullcantorTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(tells.size() >= 2, "it swung twice, tells at " + tells);
-            helper.assertTrue(near(afterFirst[0], 34.0F), "the blow does its attack, 6: 40 -> 34, got " + afterFirst[0]);
+            helper.assertTrue(near(afterFirst[0], 31.5F), "the blow does its attack, 8.5: 40 -> 31.5, got " + afterFirst[0]);
             long gap = tells.get(1) - tells.get(0);
             helper.assertTrue(Math.abs(gap - 30) <= 1, "it swings every 30 ticks, the second tell came " + gap + " after the first");
         });
@@ -481,7 +481,7 @@ public final class NullcantorTests {
         Nullcantor n = cantor(helper, SIDE);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(near(n.getMaxHealth(), 40.0F) && near(n.getHealth(), 40.0F), "health 40, got " + n.getHealth() + "/" + n.getMaxHealth());
-            helper.assertTrue(Math.abs(n.getAttributeValue(Attributes.ATTACK_DAMAGE) - 6.0) < 0.01, "attack 6");
+            helper.assertTrue(Math.abs(n.getAttributeValue(Attributes.ATTACK_DAMAGE) - 8.5) < 0.01, "attack 8.5");
             helper.assertTrue(Math.abs(n.getAttributeValue(Attributes.ARMOR) - 4.0) < 0.01, "armour 4");
             helper.assertTrue(Math.abs(n.getBbWidth() - 0.7F) < 0.02F && Math.abs(n.getBbHeight() - 2.0F) < 0.02F,
                     "hitbox 0.7 x 2.0, got " + n.getBbWidth() + " x " + n.getBbHeight());

@@ -64,7 +64,7 @@ public class Slagspitter extends TeemingMonster {
     public static final double MIN_RANGE = 6.0;
     /** ...and no farther than this. */
     public static final double MAX_RANGE = 20.0;
-    public static final float GLOB_DAMAGE = 5.0F;
+    public static final float GLOB_DAMAGE = 6.0F;
     public static final double PATCH_RADIUS = 1.5;
     public static final int PATCH_TICKS = 80;             // 4 s of burning ground
     /** A survival player this close makes it hop away, and spoils a tell in progress. */
@@ -118,7 +118,7 @@ public class Slagspitter extends TeemingMonster {
 
     public Slagspitter(EntityType<? extends Slagspitter> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

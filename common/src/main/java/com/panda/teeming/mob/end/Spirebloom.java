@@ -74,7 +74,7 @@ public class Spirebloom extends TeemingMonster {
     public static final double SPIKE_RADIUS = 0.5;
     /** How high over the ground a body's feet may be and still be struck: a jump doesn't clear the spikes. */
     public static final double SPIKE_HEIGHT = 1.5;
-    /** The blow: x its attack (8), through armour. */
+    /** The blow: x its attack (20), through armour. */
     public static final float STRIKE = 1.0F;
     /** The throw: straight up at this many blocks a tick (about 2 blocks high, no fall damage), nothing across. */
     public static final double KNOCK_UP = 0.6;

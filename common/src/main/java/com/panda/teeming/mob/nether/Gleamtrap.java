@@ -67,7 +67,7 @@ public class Gleamtrap extends TeemingMonster {
 
     public Gleamtrap(EntityType<? extends Gleamtrap> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 6;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

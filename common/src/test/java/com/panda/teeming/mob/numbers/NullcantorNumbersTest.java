@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Nullcantor's numbers against its roster row, written out as plain values: HP 40, Atk 6, Arm 4, 0.7 x 2.0; its
+ * The Nullcantor's numbers against its roster row, written out as plain values: HP 40, Atk 8.5, Arm 4, 0.7 x 2.0; its
  * ring always on, radius 8, violet, with a hum; main island (the spawner's rule) and End barrens, weight 3, groups of
  * 1; second look Pale Cantor; drops void ichor. The 10-tick swing tell, the 30-tick swing interval, the 160-tick shard
  * and the 2-tick grace of the status are its design. The GameTests check the numbers are applied; this checks they are
@@ -31,7 +31,7 @@ class NullcantorNumbersTest {
 
     @Test
     void swing() {
-        // its blow is its attack (6), not 1.5x it: an 8-tick tell is the floor; it takes 10
+        // its blow is its attack (8.5), not 1.5x it: an 8-tick tell is the floor; it takes 10
         assertEquals(10, Nullcantor.TELL_TICKS);
         assertTrue(Nullcantor.TELL_TICKS >= 8);
         assertEquals(8, Nullcantor.STRIKE_TICKS);
@@ -60,7 +60,7 @@ class NullcantorNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("nullcantor");
         assertEquals(40.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(4.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

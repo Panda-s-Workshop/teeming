@@ -40,7 +40,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Shardling Colossus: a 16-tick crack (still, harmless) before its slam, which hits for 9 within 3 blocks in front and
- * nothing behind, beside or past that, with no knockback. A single hit of 8 splits it (a hit of 7 doesn't), counted as
+ * nothing behind, beside or past that, with no knockback. A single hit of 12 splits it (the End sword's 11 doesn't), counted as
  * dealt, before its armour; so does a hit that leaves it below half its health (exactly half doesn't). The halves are
  * at scale 0.7 (a 0.98 x 1.82 hitbox) with half its health each and half its maximum, hit for 6, and set off to rejoin
  * exactly 100 ticks after the split. Failing the counter: they rejoin into one fused colossus with their health added
@@ -54,7 +54,7 @@ public final class ShardlingColossusTests {
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("shardling_colossus_tell", ShardlingColossusTests::tell);
         out.accept("shardling_colossus_slam", ShardlingColossusTests::slam);
-        out.accept("shardling_colossus_split_hit_8", ShardlingColossusTests::splitHitEight);
+        out.accept("shardling_colossus_split_hit_12", ShardlingColossusTests::splitHitTwelve);
         out.accept("shardling_colossus_split_before_armour", ShardlingColossusTests::splitBeforeArmour);
         out.accept("shardling_colossus_split_below_half", ShardlingColossusTests::splitBelowHalf);
         out.accept("shardling_colossus_halves", ShardlingColossusTests::halves);
@@ -214,20 +214,23 @@ public final class ShardlingColossusTests {
 
     // ---- the split -------------------------------------------------------------------------------------------------
 
-    /** A hit of 7 leaves it whole at 43; a hit of 8 splits it, each half with 21 of the 42 left and a maximum of 25. */
-    private static void splitHitEight(GameTestHelper helper) {
-        ShardlingColossus seven = colossus(helper, 3.5, 5.5);
-        ShardlingColossus eight = colossus(helper, 8.5, 5.5);
+    /**
+     * A hit of 11 (the End reference sword's) leaves it whole at 39; a hit of 12 splits it, each half with 19 of the 38
+     * left and a maximum of 25.
+     */
+    private static void splitHitTwelve(GameTestHelper helper) {
+        ShardlingColossus eleven = colossus(helper, 3.5, 5.5);
+        ShardlingColossus twelve = colossus(helper, 8.5, 5.5);
         helper.runAtTickTime(1, () -> {
-            hit(helper, seven, 7.0F);
-            hit(helper, eight, 8.0F);
-            helper.assertTrue(seven.form() == Form.WHOLE && near(seven.getHealth(), 43.0), "a hit of 7 leaves it whole at 43, got "
-                    + seven.form() + " at " + seven.getHealth());
-            ShardlingColossus twin = eight.twin(helper.getLevel());
-            helper.assertTrue(eight.form() == Form.LEFT && twin != null && twin.form() == Form.RIGHT, "a hit of 8 splits it, got " + eight.form());
-            for (ShardlingColossus h : List.of(eight, twin)) {
-                helper.assertTrue(near(h.getHealth(), 21.0) && near(h.getMaxHealth(), 25.0),
-                        "each half has 21 of the 42 left, of 25, got " + h.getHealth() + "/" + h.getMaxHealth());
+            hit(helper, eleven, 11.0F);
+            hit(helper, twelve, 12.0F);
+            helper.assertTrue(eleven.form() == Form.WHOLE && near(eleven.getHealth(), 39.0), "a hit of 11 leaves it whole at 39, got "
+                    + eleven.form() + " at " + eleven.getHealth());
+            ShardlingColossus twin = twelve.twin(helper.getLevel());
+            helper.assertTrue(twelve.form() == Form.LEFT && twin != null && twin.form() == Form.RIGHT, "a hit of 12 splits it, got " + twelve.form());
+            for (ShardlingColossus h : List.of(twelve, twin)) {
+                helper.assertTrue(near(h.getHealth(), 19.0) && near(h.getMaxHealth(), 25.0),
+                        "each half has 19 of the 38 left, of 25, got " + h.getHealth() + "/" + h.getMaxHealth());
                 helper.assertTrue(h.core().in(Step.SPLIT), "each half staggers out of the split");
             }
             helper.succeed();
@@ -235,18 +238,18 @@ public final class ShardlingColossusTests {
     }
 
     /**
-     * A pig's blow of 8 splits it though its armour of 8 takes some of it: the hit counts as dealt. Each half has just
-     * over 21 (half of what armour let through, taken from 50).
+     * A pig's blow of 12 splits it though its armour of 8 takes some of it (12 x (1 - 2 / 25) = 11.04, under 12): the hit
+     * counts as dealt. Each half has 19.48 (half of what armour left, 38.96).
      */
     private static void splitBeforeArmour(GameTestHelper helper) {
         ShardlingColossus c = colossus(helper, 5.5, 4.5);
         Pig pig = pig(helper, 5.5, 8.0);
         helper.runAtTickTime(1, () -> {
-            c.hurtServer(helper.getLevel(), c.damageSources().mobAttack(pig), 8.0F);
+            c.hurtServer(helper.getLevel(), c.damageSources().mobAttack(pig), 12.0F);
             ShardlingColossus twin = c.twin(helper.getLevel());
-            helper.assertTrue(c.form() == Form.LEFT && twin != null, "a blow of 8 through armour still splits it");
-            helper.assertTrue(c.getHealth() > 21.0F && c.getHealth() < 22.0F && near(c.getHealth(), twin.getHealth()),
-                    "armour took part of the blow: each half has between 21 and 22, got " + c.getHealth() + " and " + twin.getHealth());
+            helper.assertTrue(c.form() == Form.LEFT && twin != null, "a blow of 12 through armour still splits it");
+            helper.assertTrue(near(c.getHealth(), 19.48) && near(c.getHealth(), twin.getHealth()),
+                    "armour took part of the blow: each half has 19.48, got " + c.getHealth() + " and " + twin.getHealth());
             helper.assertTrue(c.getTarget() == pig && twin.getTarget() == pig, "both halves turn on whoever split it");
             helper.succeed();
         });
@@ -337,7 +340,7 @@ public final class ShardlingColossusTests {
 
     /**
      * Failing the counter: halves left at 19 and 21 rejoin into one colossus with 40 of 50, at scale 1, fused; the right
-     * half is gone without a death. A fused colossus never splits again: a hit of 16 (8 or more, and leaving it at 24,
+     * half is gone without a death. A fused colossus never splits again: a hit of 16 (12 or more, and leaving it at 24,
      * below half) leaves it whole.
      */
     private static void failure(GameTestHelper helper) {
@@ -481,7 +484,7 @@ public final class ShardlingColossusTests {
         });
     }
 
-    /** A listener that cancels the "split" step keeps it whole: a hit of 8 leaves it at 42, one colossus. */
+    /** A listener that cancels the "split" step keeps it whole: a hit of 12 leaves it at 38, one colossus. */
     private static void splitVeto(GameTestHelper helper) {
         ShardlingColossus c = colossus(helper, 5.5, 5.5);
         Consumer<MechanicEvent> veto = e -> {
@@ -490,8 +493,8 @@ public final class ShardlingColossusTests {
         MechanicEvent.listen(veto);
         TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
         helper.runAtTickTime(1, () -> {
-            hit(helper, c, 8.0F);
-            helper.assertTrue(c.form() == Form.WHOLE && near(c.getHealth(), 42.0) && near(c.getScale(), 1.0), "vetoed, it stays whole at 42");
+            hit(helper, c, 12.0F);
+            helper.assertTrue(c.form() == Form.WHOLE && near(c.getHealth(), 38.0) && near(c.getScale(), 1.0), "vetoed, it stays whole at 38");
             helper.succeed();
         });
     }

@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.TeemingMod;
 import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
@@ -16,11 +17,14 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -45,15 +49,16 @@ import org.jspecify.annotations.Nullable;
  * Grand Orrery: the apex of the sky round the End's outer islands, a floating clockwork of three tilted purpur rings
  * turning round a star core. A strong field mob: no boss bar and no arena, and only one in a wide stretch of sky.
  *
- * <p>It keeps its distance: 7 blocks out from its target and 3 blocks over its feet. With a target within 16 blocks in
- * its sight it casts a pattern of star motes, each pattern after a 20-tick spin-up (the tell: its rings spin up and
+ * <p>It keeps its distance: 7 blocks out from its target and 3 blocks over its feet. With a target within 12 blocks of
+ * its core (as far as a mote flies) in its sight it casts a pattern of star motes, each pattern after a 20-tick spin-up (the tell: its rings spin up and
  * their studs light white, a chime climbs and motes gather into the core). The patterns come in turn: a spiral of 24
  * motes over 2 s, one turn round; a double ring, two rings of 12 at once, the second slower and turned half a step;
  * and an aimed burst, three volleys of three down the same three lanes, 20 degrees apart. Each pattern is aimed so one
  * mote heads straight at its target, and its motes dip to pass through the target's chest. A mote flies straight at
  * 0.25 blocks a tick (the slow ring's at 0.15) for up to 12 blocks, stops at the first block or hitbox, and hits for
- * the orrery's attack damage as a mob's projectile (a raised shield takes it) without knocking anyone back, so no
- * mote throws a player off an island.
+ * the orrery's attack damage as a mob's projectile (a raised shield takes it), and a mote that lands also deals
+ * {@link #MOTE_PIERCE} through armour ({@code teeming:orrery_mote}, Protection still counts), all without knocking
+ * anyone back, so no mote throws a player off an island.
  *
  * <p>Counter: read the lanes. Every pattern leaves lanes wider than a player 4 blocks out, wider the farther out, and a
  * player standing still in one is never touched. Payoff: after each pattern the rings part, the cage round the core
@@ -79,8 +84,8 @@ public class GrandOrrery extends TeemingMonster {
     public static final float OPEN_DAMAGE = 2.0F;
     /** From the core closing to the next spin-up: half a second to climb back and turn to its target. */
     public static final int REST_TICKS = 10;
-    /** It casts at targets this close, in its sight. */
-    public static final double CAST_RANGE = 16.0;
+    /** It casts at targets this close to its core, in its sight: no farther than its motes fly. */
+    public static final double CAST_RANGE = 12.0;
     /** Where it keeps station: this far out from its target across the ground, its feet this far over the target's. */
     public static final double KEEP_DISTANCE = 7.0;
     public static final double HOVER_UP = 3.0;
@@ -106,6 +111,13 @@ public class GrandOrrery extends TeemingMonster {
     public static final double SLOW_RING_SPEED = 0.15;     // the second ring trails the first
     public static final double MOTE_RANGE = 12.0;          // blocks a mote flies before it fades
     public static final double MOTE_RADIUS = 0.1;          // how far from a hitbox a mote still hits it
+    /**
+     * What a mote that lands deals on top of its attack, through armour: with it the End reference player (netherite,
+     * Protection IV) survives about 5 motes, not 37, so a pattern stood in costs something.
+     */
+    public static final float MOTE_PIERCE = 10.0F;
+    /** The share of a mote that goes through armour. */
+    public static final ResourceKey<DamageType> PIERCE = ResourceKey.create(Registries.DAMAGE_TYPE, TeemingMod.id("orrery_mote"));
     /** Motes leave the core, this high over its feet, this far out from its middle. */
     public static final double CORE_UP = 1.0;
     public static final double RELEASE_OUT = 0.6;
@@ -372,7 +384,7 @@ public class GrandOrrery extends TeemingMonster {
         }
         if (target != null && (core().idle() || core().in(Step.SPIN))) setFacing(yawTo(target.position()));
         LivingEntity hunted = getTarget();
-        if (core().idle() && cooldown == 0 && !holdFire && valid(hunted) && distanceTo(hunted) <= CAST_RANGE
+        if (core().idle() && cooldown == 0 && !holdFire && valid(hunted) && corePos().distanceTo(hunted.position()) <= CAST_RANGE
                 && getSensing().hasLineOfSight(hunted)) {
             spinUp(hunted);
         }
@@ -633,15 +645,26 @@ public class GrandOrrery extends TeemingMonster {
         level.sendParticles(VIOLET, mid.x, mid.y, mid.z, 1, 0.0, 0.0, 0.0, 0.0);
     }
 
+    /** The piercing share's source: the orrery's own damage type, caused by the orrery. */
+    private DamageSource pierce(ServerLevel level) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(PIERCE), this);
+    }
+
     /**
      * A mote reaches a hitbox: the orrery's attack damage as a mob's projectile (a shield raised toward the orrery takes
-     * it), with no knockback, so a mote never throws anyone off an island's edge.
+     * it), then, if that landed, {@link #MOTE_PIERCE} through armour; both with no knockback, so a mote never throws
+     * anyone off an island's edge. A mote the shield took, or the last hit's cooldown swallowed, pierces nothing.
      */
     private void strike(ServerLevel level, Shot shot, LivingEntity victim, Vec3 at) {
         flying.remove(shot);
         if (watch != null && watch.left.remove(shot) && victim == watch.player) watch.touched = true;
         if (MechanicEvent.post(this, "mote_hit", victim)) {
+            float before = victim.getHealth() + victim.getAbsorptionAmount();
             AstralAugur.GroundMarks.hurtInPlace(level, victim, Shot.damage(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE));
+            if (victim.isAlive() && victim.getHealth() + victim.getAbsorptionAmount() < before) {
+                victim.damageCooldownTime = 0;                  // the piercing share is the same mote: the hit just dealt must not eat it
+                AstralAugur.GroundMarks.hurtInPlace(level, victim, pierce(level), MOTE_PIERCE);
+            }
             strikes++;
         }
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, true, true, at.x, at.y, at.z, 8, 0.15, 0.15, 0.15, 0.0);

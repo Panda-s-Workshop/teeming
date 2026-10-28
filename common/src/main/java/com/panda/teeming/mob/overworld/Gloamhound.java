@@ -84,7 +84,7 @@ public class Gloamhound extends TeemingMonster {
     public static final double JOIN_RANGE = 8.0;
 
     public static final float ALPHA_HEALTH = 30.0F;
-    public static final float ALPHA_ATTACK = 6.0F;
+    public static final float ALPHA_ATTACK = 5.5F;          // the iron reference player survives 7 of its bites
     public static final double ALPHA_SCALE = 1.2;
 
     /** Ticks from one howl to the next, at the soonest; the first comes as soon as the alpha has a target. */
@@ -163,7 +163,7 @@ public class Gloamhound extends TeemingMonster {
         return id;
     }
 
-    /** The alpha is the same hound made bigger and stronger: 30 health, 6 attack, 1.2x, and a ruff. Fills its health. */
+    /** The alpha is the same hound made bigger and stronger: 30 health, 5.5 attack, 1.2x, and a ruff. Fills its health. */
     private void setAlpha(boolean on) {
         alpha = on;
         core().setFlag(ALPHA_FLAG, on);
@@ -425,7 +425,7 @@ public class Gloamhound extends TeemingMonster {
         return e != this && e.isAlive() && !(e instanceof Gloamhound) && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(e);
     }
 
-    /** The bite: its attack damage (4, the alpha's 6). */
+    /** The bite: its attack damage (4, the alpha's 5.5). */
     private void bite(ServerLevel level, LivingEntity victim) {
         if (MechanicEvent.post(this, "bite", victim)) {
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE;

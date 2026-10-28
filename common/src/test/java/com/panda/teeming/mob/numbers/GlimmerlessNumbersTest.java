@@ -12,7 +12,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Glimmerless's numbers against its row, written out as plain values: HP 30, Atk 7, Arm 2, 0.7 x 1.9, its tell
+ * The Glimmerless's numbers against its row, written out as plain values: HP 30, Atk 9, Arm 2, 0.7 x 1.9, its tell
  * the footprints; invisible but for them, and any projectile hit reveals it for 200 t; End highlands and midlands,
  * weight 4, alone; second look Shimmering; drops void ichor. Then its own calls (an 8-tick shimmer before a rake of
  * 1 x Atk, a 30-tick cooldown, a 30-tick flinch 3 blocks back) and the footprint rule on plain positions. The GameTests
@@ -44,7 +44,7 @@ class GlimmerlessNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("glimmerless");
         assertEquals(30.0F, row.health());
-        assertEquals(7.0F, row.attack());
+        assertEquals(9.0F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(1.9F, row.height());

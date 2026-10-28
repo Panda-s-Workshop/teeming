@@ -40,9 +40,9 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Recurrent: an 8-tick wind-up (still, harmless) before a blow of 6 with no knockback that doesn't reach a pig 3 blocks
- * up. A killing blow winds it back to exactly the place and health it had 60 ticks before; a second kill inside 60 ticks
- * is final, and one 60 ticks on winds it back again. Its anchor unfolds only in a fight, has 4 health (an arrow breaks
+ * Recurrent: an 8-tick wind-up (still, harmless) before a blow of 8.5 with no knockback that doesn't reach a pig 3 blocks
+ * up. A killing blow winds it back to exactly the place and health it had 60 ticks before; a second kill inside 30 ticks
+ * is final, and one 30 ticks on winds it back again. Its anchor unfolds only in a fight, has 4 health (an arrow breaks
  * it), stays within 6 blocks, waits behind its back and drifts out to its side; once it is broken the first kill is
  * final. Nothing happens after a final death; a kill command is always final; a vetoed rewind is a kill; it lands on
  * safe ground when its old spot is walled up; save and load keep the link and the state. Its stats, home and spawn
@@ -175,7 +175,7 @@ public final class RecurrentTests {
         });
     }
 
-    /** The strike hits a pig 1 block in front for exactly 6 and doesn't move it; a pig behind is untouched. */
+    /** The strike hits a pig 1 block in front for exactly 8.5 and doesn't move it; a pig behind is untouched. */
     private static void strike(GameTestHelper helper) {
         Recurrent r = still(helper, 5.5, 4.5);
         Pig front = pig(helper, 5.5, 1, 5.5);
@@ -188,7 +188,7 @@ public final class RecurrentTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(moved[0] != null, "the strike landed");
             float lost = 100.0F - front.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the strike hits for 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the strike hits for 8.5, the pig lost " + lost);
             helper.assertTrue(moved[0].horizontalDistance() < 0.01, "and doesn't knock it back, motion " + moved[0]);
             helper.assertTrue(behind.getHealth() >= 100.0F, "nothing behind it is hit");
             helper.assertTrue(r.strikes() == 1, "one blow landed, " + r.strikes());
@@ -197,7 +197,7 @@ public final class RecurrentTests {
 
     /**
      * Reach counts height: beside a pig whose feet are 3 blocks up (1.1 over its head) the strike lands nothing; beside a
-     * pig 2 blocks up (0.1 over its head) it lands its 6.
+     * pig 2 blocks up (0.1 over its head) it lands its 8.5.
      */
     private static void reachHeight(GameTestHelper helper) {
         for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(3, y, 5), Blocks.STONE);
@@ -212,7 +212,7 @@ public final class RecurrentTests {
         helper.runAtTickTime(20, () -> {
             helper.assertTrue(up3.getHealth() >= 100.0F, "a pig 3 blocks up is out of reach, health " + up3.getHealth());
             float lost = 100.0F - up2.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "a pig 2 blocks up is hit for 6, lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "a pig 2 blocks up is hit for 8.5, lost " + lost);
             helper.succeed();
         });
     }
@@ -258,7 +258,7 @@ public final class RecurrentTests {
     }
 
     /**
-     * The counter: a second kill 59 ticks after a rewind is final, though its anchor is whole; the anchor shatters with it.
+     * The counter: a second kill 29 ticks after a rewind is final, though its anchor is whole; the anchor shatters with it.
      */
     private static void counter(GameTestHelper helper) {
         Recurrent r = still(helper, 5.5, 5.5);
@@ -274,18 +274,18 @@ public final class RecurrentTests {
                 kill(helper, r);
                 helper.assertTrue(r.isAlive() && r.rewinds() == 1, "the first kill winds it back");
                 first[0] = tick;
-            } else if (first[0] >= 0 && tick == first[0] + 59) {
-                helper.assertTrue(!r.canRewind(), "59 ticks after a rewind it can't wind back");
+            } else if (first[0] >= 0 && tick == first[0] + 29) {
+                helper.assertTrue(!r.canRewind(), "29 ticks after a rewind it can't wind back");
                 helper.assertTrue(a[0].isAlive() && r.anchorOf(helper.getLevel()) == a[0], "its anchor is still whole");
                 kill(helper, r);
-                helper.assertTrue(r.isDeadOrDying() && r.rewinds() == 1, "the second kill inside 60 ticks is final, rewinds " + r.rewinds());
+                helper.assertTrue(r.isDeadOrDying() && r.rewinds() == 1, "the second kill inside 30 ticks is final, rewinds " + r.rewinds());
                 helper.assertTrue(a[0].isRemoved(), "and its anchor shatters with it");
                 helper.succeed();
             }
         });
     }
 
-    /** Once per 60 ticks, not once ever: a kill exactly 60 ticks after a rewind winds it back again. */
+    /** Once per 30 ticks, not once ever: a kill exactly 30 ticks after a rewind winds it back again. */
     private static void oncePerSixty(GameTestHelper helper) {
         Recurrent r = still(helper, 5.5, 5.5);
         long[] first = {-1};
@@ -295,12 +295,12 @@ public final class RecurrentTests {
                 kill(helper, r);
                 helper.assertTrue(r.isAlive() && r.rewinds() == 1, "the first kill winds it back");
                 first[0] = tick;
-            } else if (first[0] >= 0 && tick == first[0] + 59) {
-                helper.assertTrue(!r.canRewind(), "59 ticks on it can't wind back yet");
-            } else if (first[0] >= 0 && tick == first[0] + 60) {
-                helper.assertTrue(r.canRewind() && r.core().stage() == Recurrent.STAGE_LIT, "60 ticks on its face is lit again");
+            } else if (first[0] >= 0 && tick == first[0] + 29) {
+                helper.assertTrue(!r.canRewind(), "29 ticks on it can't wind back yet");
+            } else if (first[0] >= 0 && tick == first[0] + 30) {
+                helper.assertTrue(r.canRewind() && r.core().stage() == Recurrent.STAGE_LIT, "30 ticks on its face is lit again");
                 kill(helper, r);
-                helper.assertTrue(r.isAlive() && r.rewinds() == 2, "a kill 60 ticks after a rewind winds it back again, rewinds " + r.rewinds());
+                helper.assertTrue(r.isAlive() && r.rewinds() == 2, "a kill 30 ticks after a rewind winds it back again, rewinds " + r.rewinds());
                 helper.succeed();
             }
         });
@@ -540,7 +540,7 @@ public final class RecurrentTests {
 
     /**
      * Save and load: a Recurrent and its anchor, saved and loaded, find each other again by id; the anchor is still an
-     * anchor of 4 health, small and weightless, and the Recurrent still can't wind back inside 60 ticks of the rewind it
+     * anchor of 4 health, small and weightless, and the Recurrent still can't wind back inside 30 ticks of the rewind it
      * made before it was saved. A Recurrent whose anchor broke loads with it broken and, given a foe, never unfolds another.
      */
     private static void saveLoad(GameTestHelper helper) {
@@ -603,12 +603,12 @@ public final class RecurrentTests {
 
     // ---- the row ---------------------------------------------------------------------------------------------------
 
-    /** Health 30, attack 6, armour 2, a 0.7 x 1.9 hitbox, 12 experience. */
+    /** Health 30, attack 8.5, armour 2, a 0.7 x 1.9 hitbox, 12 experience. */
     private static void stats(GameTestHelper helper) {
         Recurrent r = still(helper, 5.5, 5.5);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(r.getMaxHealth() == 30.0F && r.getHealth() == 30.0F, "health 30, got " + r.getHealth() + "/" + r.getMaxHealth());
-            helper.assertTrue(r.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + r.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(r.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + r.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(r.getArmorValue() == 2, "armour 2, got " + r.getArmorValue());
             helper.assertTrue(Math.abs(r.getBbWidth() - 0.7F) < 0.01F && Math.abs(r.getBbHeight() - 1.9F) < 0.01F,
                     "a 0.7 x 1.9 hitbox, got " + r.getBbWidth() + " x " + r.getBbHeight());

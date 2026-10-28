@@ -38,7 +38,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Anchor Golem: with its target within 1.5 blocks it heaves its anchor for exactly 14 ticks (still, hurting nothing)
  * while a ring of radius 1.25 lies at the target's feet; the anchor then strikes everyone in the ring for its attack of
- * 7 through armour, without knockback and never a bystander, and makes them Heavy for exactly 120 ticks (shown, with
+ * 9 through armour, without knockback and never a bystander, and makes them Heavy for exactly 120 ticks (shown, with
  * particles and an icon): no jump, Levitation and Slow Falling cancelled and refused, and the Slow Falling given back
  * when the weight lifts (at once if the golem dies). A target that steps out of the ring is missed, and the anchor leaves
  * a sink of radius 1.5 for exactly 160 ticks; an Anchor Golem in a sink can't start a tell and moves at half speed, and
@@ -170,8 +170,8 @@ public final class AnchorGolemTests {
     }
 
     /**
-     * Failing the counter: a survival player stays in the ring. The anchor hits them for its attack (7 on Normal; mob
-     * damage to players scales with difficulty: 4.5 on Easy, 10.5 on Hard) as the golem's own blow, which armour
+     * Failing the counter: a survival player stays in the ring. The anchor hits them for its attack (9 on Normal; mob
+     * damage to players scales with difficulty: 5.5 on Easy, 13.5 on Hard) as the golem's own blow, which armour
      * reduces, and they are Heavy; no sink opens.
      */
     private static void failure(GameTestHelper helper) {
@@ -180,9 +180,9 @@ public final class AnchorGolemTests {
         g.setTarget(p);
         float before = p.getHealth();
         float expected = switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 4.5F;
-            case HARD -> 10.5F;
-            default -> 7.0F;
+            case EASY -> 5.5F;
+            case HARD -> 13.5F;
+            default -> 9.0F;
         };
         DamageSource[] last = {null};
         helper.onEachTick(() -> {
@@ -200,7 +200,7 @@ public final class AnchorGolemTests {
     }
 
     /**
-     * The blow on a pig with no armour: exactly 7, with no knockback (the pig keeps no motion; a control pig given the
+     * The blow on a pig with no armour: exactly 9, with no knockback (the pig keeps no motion; a control pig given the
      * same blow plainly is knocked back), and a second pig standing in the ring that isn't its target is left alone.
      */
     private static void strike(GameTestHelper helper) {
@@ -213,13 +213,13 @@ public final class AnchorGolemTests {
         helper.onEachTick(() -> {
             if (struck[0] < 0 && g.strikes() == 1) {
                 struck[0] = pig.getDeltaMovement().horizontalDistance();
-                control.hurtServer(helper.getLevel(), g.damageSources().mobAttack(g), 7.0F);
+                control.hurtServer(helper.getLevel(), g.damageSources().mobAttack(g), 9.0F);
                 knocked[0] = control.getDeltaMovement().horizontalDistance();
             }
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(struck[0] >= 0.0, "the anchor struck, phase " + g.phase());
-            helper.assertTrue(near(pig.getHealth(), 93.0), "the pig lost exactly 7, has " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 91.0), "the pig lost exactly 9, has " + pig.getHealth());
             helper.assertTrue(struck[0] < 0.01, "and was not moved, motion " + struck[0]);
             helper.assertTrue(knocked[0] > 0.1, "a plain blow knocks the control back, motion " + knocked[0]);
             helper.assertTrue(bystander.getHealth() >= 100.0F && !heavy(bystander), "the bystander in the ring is untouched, health " + bystander.getHealth());
@@ -227,8 +227,8 @@ public final class AnchorGolemTests {
     }
 
     /**
-     * Armour counts: a pig with 10 armour takes 7 x (1 - (10 - 7/2) / 25) = 5.18 from the blow, the vanilla armour sum
-     * for a blow of 7.
+     * Armour counts: a pig with 10 armour takes 9 x (1 - (10 - 9/2) / 25) = 7.02 from the blow, the vanilla armour sum
+     * for a blow of 9.
      */
     private static void armour(GameTestHelper helper) {
         AnchorGolem g = golem(helper, AT);
@@ -237,7 +237,7 @@ public final class AnchorGolemTests {
         g.setTarget(pig);
         helper.succeedWhen(() -> {
             helper.assertTrue(g.strikes() == 1, "the anchor struck, phase " + g.phase());
-            helper.assertTrue(near(100.0 - pig.getHealth(), 5.18), "armour 10 takes the 7 down to 5.18, lost " + (100.0F - pig.getHealth()));
+            helper.assertTrue(near(100.0 - pig.getHealth(), 7.02), "armour 10 takes the 9 down to 7.02, lost " + (100.0F - pig.getHealth()));
         });
     }
 
@@ -354,7 +354,7 @@ public final class AnchorGolemTests {
             helper.assertTrue(g.core().in(Step.SWING), "the anchor came down, phase " + g.phase());
             helper.assertTrue(heavy(near) && !heavy(far), "the player 1.15 off is struck, the one 1.45 off is not");
             helper.assertTrue(inside.getHealth() >= 100.0F && outside.getHealth() >= 100.0F, "pigs that aren't its target are never struck");
-            helper.assertTrue(near(pig.getHealth(), 93.0), "its target is, health " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 91.0), "its target is, health " + pig.getHealth());
         });
     }
 
@@ -448,7 +448,7 @@ public final class AnchorGolemTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(second[0] >= 0, "two tells");
             helper.assertTrue(second[0] - first[0] == 56, "56 ticks apart, got " + (second[0] - first[0]));
-            helper.assertTrue(near(pig.getHealth(), 86.0), "two blows of 7, health " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 82.0), "two blows of 9, health " + pig.getHealth());
         });
     }
 
@@ -492,13 +492,13 @@ public final class AnchorGolemTests {
 
     // ---- the row ---------------------------------------------------------------------------------------------------
 
-    /** Health 44, attack 7, armour 8, a 1.2 x 2.2 hitbox, speed 0.18, knockback resistance 0.7. */
+    /** Health 44, attack 9, armour 8, a 1.2 x 2.2 hitbox, speed 0.18, knockback resistance 0.7. */
     private static void stats(GameTestHelper helper) {
         AnchorGolem g = golem(helper, AT);
         g.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(g.getMaxHealth() == 44.0F && g.getHealth() == 44.0F, "health 44, got " + g.getHealth() + "/" + g.getMaxHealth());
-            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 7.0, "attack 7, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 9.0, "attack 9, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(g.getArmorValue() == 8, "armour 8, got " + g.getArmorValue());
             helper.assertTrue(Math.abs(g.getBbWidth() - 1.2F) < 0.01F && Math.abs(g.getBbHeight() - 2.2F) < 0.01F,
                     "a 1.2 x 2.2 hitbox, got " + g.getBbWidth() + " x " + g.getBbHeight());

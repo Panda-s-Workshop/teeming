@@ -45,11 +45,11 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Glimmerless: hidden with its AI on (invisible, drawn faintly only in its tell or as the Shimmering look), in plain
- * sight with its AI off and as it dies; an 8-tick shimmer that holds still and hurts nothing, then a rake of 7; 30
+ * sight with its AI off and as it dies; an 8-tick shimmer that holds still and hurts nothing, then a rake of 9; 30
  * ticks between rakes; any projectile hit (a snowball, an egg, an arrow, a trident, a wind charge) reveals it for
  * exactly 200 ticks and a fresh reveal makes it flinch 3 blocks straight back from the shot, breaking off its strike;
  * a melee hit never reveals it; a print every 0.9 blocks it walks, on the ground a foot off its line, gone 60 ticks
- * later; HP 30, Atk 7, Arm 2, 0.7 x 1.9; End highlands and midlands, weight 4, alone. Every number is checked against
+ * later; HP 30, Atk 9, Arm 2, 0.7 x 1.9; End highlands and midlands, weight 4, alone. Every number is checked against
  * a plain value.
  */
 public final class GlimmerlessTests {
@@ -152,14 +152,14 @@ public final class GlimmerlessTests {
         });
     }
 
-    /** Failing the counter: the rake lands for exactly 7, and it stays hidden. */
+    /** Failing the counter: the rake lands for exactly 9, and it stays hidden. */
     private static void failure(GameTestHelper helper) {
         Glimmerless g = glim(helper, 5.5, 5.5);
         Pig pig = pig(helper, 5.5, 6.7);
         g.setTarget(pig);
         helper.succeedWhen(() -> {
             helper.assertTrue(g.strikes() == 1, "one rake landed, " + g.strikes());
-            helper.assertTrue(Math.abs(lost(pig) - 7.0F) < 0.01F, "the rake takes exactly 7, took " + lost(pig));
+            helper.assertTrue(Math.abs(lost(pig) - 9.0F) < 0.01F, "the rake takes exactly 9, took " + lost(pig));
             helper.assertTrue(g.hidden() && g.isInvisible() && g.reveals() == 0, "and it is still unseen");
         });
     }
@@ -393,13 +393,13 @@ public final class GlimmerlessTests {
         helper.runAtTickTime(2, () -> helper.assertTrue(g.hidden(), "it walks unseen"));
     }
 
-    /** HP 30, attack 7, armour 2, a 0.7 x 1.9 hitbox. */
+    /** HP 30, attack 9, armour 2, a 0.7 x 1.9 hitbox. */
     private static void stats(GameTestHelper helper) {
         Glimmerless g = glim(helper, 5.5, 5.5);
         g.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(g.getMaxHealth() == 30.0F && g.getHealth() == 30.0F, "health 30, got " + g.getHealth() + "/" + g.getMaxHealth());
-            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 7.0, "attack 7, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 9.0, "attack 9, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(g.getArmorValue() == 2, "armour 2, got " + g.getArmorValue());
             helper.assertTrue(Math.abs(g.getBbWidth() - 0.7F) < 0.01F && Math.abs(g.getBbHeight() - 1.9F) < 0.01F,
                     "a 0.7 x 1.9 hitbox, got " + g.getBbWidth() + " x " + g.getBbHeight());

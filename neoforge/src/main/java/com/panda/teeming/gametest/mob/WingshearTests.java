@@ -43,8 +43,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Wingshear: it hunts only survival players gliding on elytra within 48 blocks, at 1.25 blocks a tick. Within a gap of
  * 5 it screeches for 16 ticks, keeping its place and hurting nothing, then dives at 1.5 blocks a tick: the hit deals its
- * attack of 6 through armour, ends the glide, and every try to glide again in the next 40 ticks is put out. Outrun by 8
- * blocks past the closest it got, it loses its glider and circles off for 100 ticks, hunting nobody; a player who
+ * attack of 8.5 through armour, ends the glide, and every try to glide again in the next 40 ticks is put out. Outrun by
+ * 8 blocks past the closest it got, it loses its glider and circles off for 100 ticks, hunting nobody; a player who
  * lands is left alone. Killed mid-screech, it dives at nothing.
  *
  * <p>Gliders are real survival players with elytra, set gliding with {@code startFallFlying}. Nothing ticks them here,
@@ -401,7 +401,7 @@ public final class WingshearTests {
         });
     }
 
-    /** The dive deals its attack, 6, to an unarmoured pig handed to it as a target, and then it pulls up. */
+    /** The dive deals its attack, 8.5, to an unarmoured pig handed to it as a target, and then it pulls up. */
     private static void diveDamage(GameTestHelper helper) {
         Wingshear w = shear(helper, SHEAR_AT);
         Pig pig = pig(helper, new Vec3(8.5, 1, 5.5));
@@ -410,7 +410,7 @@ public final class WingshearTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(w.hits() == 1, "one hit, saw " + w.hits());
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the dive takes 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the dive takes 8.5, the pig lost " + lost);
             helper.assertTrue(w.core().in(Step.RECOVER), "it pulls up after the hit, has " + w.core().phase().step());
         });
     }
@@ -445,8 +445,8 @@ public final class WingshearTests {
     }
 
     /**
-     * Armour counts against the dive: a pig with 10 armour takes 6 x (1 - 7/25) = 4.32 (vanilla's formula: the armour
-     * less half the damage, 7 here, at least a fifth of the armour, each point 4 %).
+     * Armour counts against the dive: a pig with 10 armour takes 8.5 x (1 - 5.75/25) = 6.545 (vanilla's formula: the
+     * armour less half the damage, 5.75 here, at least a fifth of the armour, each point 4 %).
      */
     private static void armour(GameTestHelper helper) {
         Wingshear w = shear(helper, SHEAR_AT);
@@ -457,7 +457,7 @@ public final class WingshearTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(w.hits() == 1, "one hit, saw " + w.hits());
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 4.32F) < 0.01F, "armour 10 turns the 6 into 4.32, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 6.545F) < 0.01F, "armour 10 turns the 8.5 into 6.545, the pig lost " + lost);
         });
     }
 
@@ -582,13 +582,13 @@ public final class WingshearTests {
 
     // ---- the row -------------------------------------------------------------------------------------------------
 
-    /** Health 30, attack 6, armour 2, a 1.4 x 0.6 hitbox; it hunts as far as 48 (its follow range too). */
+    /** Health 30, attack 8.5, armour 2, a 1.4 x 0.6 hitbox; it hunts as far as 48 (its follow range too). */
     private static void stats(GameTestHelper helper) {
         Wingshear w = shear(helper, new Vec3(5.5, 3, 5.5));
         w.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(near(w.getMaxHealth(), 30.0) && near(w.getHealth(), 30.0), "health 30, got " + w.getHealth() + "/" + w.getMaxHealth());
-            helper.assertTrue(near(w.getAttributeValue(Attributes.ATTACK_DAMAGE), 6.0), "attack 6");
+            helper.assertTrue(near(w.getAttributeValue(Attributes.ATTACK_DAMAGE), 8.5), "attack 8.5");
             helper.assertTrue(near(w.getAttributeValue(Attributes.ARMOR), 2.0), "armour 2");
             helper.assertTrue(Math.abs(w.getBbWidth() - 1.4F) < 0.02F && Math.abs(w.getBbHeight() - 0.6F) < 0.02F,
                     "hitbox 1.4 x 0.6, got " + w.getBbWidth() + " x " + w.getBbHeight());

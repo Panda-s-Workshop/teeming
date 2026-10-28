@@ -46,8 +46,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * wall, one it is barred from eating and one thrown at a full pouch all fly on and teleport their thrower (so the
  * teleport these tests stop is real). Each pearl eaten is one blink of exactly 8 blocks, no more: the closing blink
  * comes after an 8-tick throat flare (still, harmless, the pouch blazing), the escape blink when a blow leaves it under
- * half health, straight away from the attacker and never within 3 blocks of a player. The bite takes 5 after an 8-tick
- * gape. Killed, it spills the pearls it holds. Stats, home and saving against plain values.
+ * half health, straight away from the attacker and never within 3 blocks of a player. The bite takes 8.5 after an
+ * 8-tick gape. Killed, it spills the pearls it holds. Stats, home and saving against plain values.
  */
 public final class PearlgulpTests {
     private PearlgulpTests() {}
@@ -422,7 +422,7 @@ public final class PearlgulpTests {
 
     // ---- the bite ----------------------------------------------------------------------------------------------------
 
-    /** The gape lasts exactly 8 ticks and hurts nothing; then the bite takes 5. */
+    /** The gape lasts exactly 8 ticks and hurts nothing; then the bite takes 8.5. */
     private static void bite(GameTestHelper helper) {
         Pearlgulp g = gulp(helper, 4.5, 6.5, -90.0F);
         Pig pig = pig(helper, 6.0, 6.5);
@@ -441,7 +441,7 @@ public final class PearlgulpTests {
             helper.assertTrue(after[0] >= 0, "it gaped and bit");
             helper.assertTrue(gape[0] == 8, "the gape lasts 8 ticks, saw " + gape[0]);
             float lost = 100.0F - after[0];
-            helper.assertTrue(Math.abs(lost - 5.0F) < 0.01F, "the bite takes 5, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the bite takes 8.5, the pig lost " + lost);
         });
     }
 
@@ -495,12 +495,12 @@ public final class PearlgulpTests {
 
     // ---- stats, saving, home -------------------------------------------------------------------------------------------
 
-    /** Health 22, attack 5, armour 2, a 0.9 x 0.8 hitbox. */
+    /** Health 22, attack 8.5, armour 2, a 0.9 x 0.8 hitbox. */
     private static void stats(GameTestHelper helper) {
         Pearlgulp g = still(helper, 5.5, 5.5, 0.0F);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(g.getMaxHealth() == 22.0F && g.getHealth() == 22.0F, "health 22, got " + g.getHealth() + "/" + g.getMaxHealth());
-            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 5.0, "attack 5, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(g.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + g.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(g.getArmorValue() == 2, "armour 2, got " + g.getArmorValue());
             helper.assertTrue(Math.abs(g.getBbWidth() - 0.9F) < 0.01F && Math.abs(g.getBbHeight() - 0.8F) < 0.01F,
                     "a 0.9 x 0.8 hitbox, got " + g.getBbWidth() + " x " + g.getBbHeight());

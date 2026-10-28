@@ -40,7 +40,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Gloamhound: a 14-tick crouch before each dart; a pack takes turns, one hound holding the turn at a time, bites of 4
- * (the alpha's 6) at least 10 ticks apart after each dart; the alpha (30 health, 6 attack) howls every 200 ticks for
+ * (the alpha's 5.5) at least 10 ticks apart after each dart; the alpha (30 health, 5.5 attack) howls every 200 ticks for
  * Speed I (6 s, 16 blocks); when it dies the rest flee for 200 ticks. Every number is checked against a plain value.
  */
 public final class GloamhoundTests {
@@ -155,7 +155,7 @@ public final class GloamhoundTests {
     /**
      * Failing the counter: a pack of three (alpha and two) wears a still pig down with a steady stream of bites. Never
      * more than one hound holds the turn; the first three turns go to three different hounds; each bite is 4 (the
-     * alpha's 6); bites land at least 24 ticks apart (the 10-tick gap after a dart plus the 14-tick crouch).
+     * alpha's 5.5); bites land at least 24 ticks apart (the 10-tick gap after a dart plus the 14-tick crouch).
      */
     private static void failure(GameTestHelper helper) {
         Pig pig = pig(helper, 6.5, 6.5);
@@ -194,13 +194,13 @@ public final class GloamhoundTests {
             helper.assertTrue(bites >= 4, "a steady stream of bites, " + bites + " so far");
             helper.assertTrue(turns.size() >= 3 && new HashSet<>(turns.subList(0, 3)).size() == 3, "the first three turns go to three hounds, " + turns.size() + " turns");
             float lost = 100.0F - pig.getHealth();
-            float want = 4.0F * (a.bites() + b.bites()) + 6.0F * alpha.bites();
-            helper.assertTrue(Math.abs(lost - want) < 0.01F, "bites of 4 and the alpha's 6 make " + want + ", the pig lost " + lost);
+            float want = 4.0F * (a.bites() + b.bites()) + 5.5F * alpha.bites();
+            helper.assertTrue(Math.abs(lost - want) < 0.01F, "bites of 4 and the alpha's 5.5 make " + want + ", the pig lost " + lost);
             for (int gap : gaps) helper.assertTrue(gap >= 24, "bites land at least 24 ticks apart, saw " + gaps);
         });
     }
 
-    /** A plain hound's bite takes 4, an alpha's 6 (the first bite each). */
+    /** A plain hound's bite takes 4, an alpha's 5.5 (the first bite each). */
     private static void bite(GameTestHelper helper) {
         Gloamhound plain = hound(helper, 2.5, 2.5);
         Gloamhound alpha = hound(helper, 2.5, 9.5);
@@ -217,7 +217,7 @@ public final class GloamhoundTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(first[0] > 0.0F && first[1] > 0.0F, "both bit, " + first[0] + " and " + first[1]);
             helper.assertTrue(Math.abs(first[0] - 4.0F) < 0.01F, "a hound bites for 4, took " + first[0]);
-            helper.assertTrue(Math.abs(first[1] - 6.0F) < 0.01F, "the alpha bites for 6, took " + first[1]);
+            helper.assertTrue(Math.abs(first[1] - 5.5F) < 0.01F, "the alpha bites for 5.5, took " + first[1]);
         });
     }
 
@@ -264,7 +264,7 @@ public final class GloamhoundTests {
         });
     }
 
-    /** The alpha: health 30 (full), attack 6, armour 1, 1.2x the size (0.96 x 1.02), its ruff flag set. */
+    /** The alpha: health 30 (full), attack 5.5, armour 1, 1.2x the size (0.96 x 1.02), its ruff flag set. */
     private static void alphaStats(GameTestHelper helper) {
         Gloamhound alpha = hound(helper, 5.5, 5.5);
         alpha.setNoAi(true);
@@ -272,7 +272,7 @@ public final class GloamhoundTests {
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(alpha.isAlpha() && alpha.core().flag(Gloamhound.ALPHA_FLAG), "it leads, and shows its ruff");
             helper.assertTrue(alpha.getMaxHealth() == 30.0F && alpha.getHealth() == 30.0F, "health 30, got " + alpha.getHealth() + "/" + alpha.getMaxHealth());
-            helper.assertTrue(alpha.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + alpha.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(alpha.getAttributeValue(Attributes.ATTACK_DAMAGE) == 5.5, "attack 5.5, got " + alpha.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(alpha.getArmorValue() == 1, "armour 1, got " + alpha.getArmorValue());
             helper.assertTrue(Math.abs(alpha.getBbWidth() - 0.96F) < 0.01F && Math.abs(alpha.getBbHeight() - 1.02F) < 0.01F,
                     "a 0.96 x 1.02 hitbox, got " + alpha.getBbWidth() + " x " + alpha.getBbHeight());
@@ -420,7 +420,7 @@ public final class GloamhoundTests {
         });
     }
 
-    /** Pack and alpha survive a save and reload: the reloaded hounds share their pack, and the alpha keeps 30/6/1.2x. */
+    /** Pack and alpha survive a save and reload: the reloaded hounds share their pack, and the alpha keeps 30/5.5/1.2x. */
     private static void saveLoad(GameTestHelper helper) {
         Gloamhound alpha = hound(helper, 3.5, 5.5);
         Gloamhound member = hound(helper, 8.5, 5.5);
@@ -449,7 +449,7 @@ public final class GloamhoundTests {
             helper.assertTrue(copies[0].isAlpha() && copies[0].core().flag(Gloamhound.ALPHA_FLAG), "the alpha is still the alpha, ruff and all");
             helper.assertTrue(!copies[1].isAlpha(), "the packmate is still not");
             helper.assertTrue(copies[0].getMaxHealth() == 30.0F && copies[0].getHealth() == 30.0F, "the alpha keeps health 30, got " + copies[0].getHealth());
-            helper.assertTrue(copies[0].getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "and attack 6");
+            helper.assertTrue(copies[0].getAttributeValue(Attributes.ATTACK_DAMAGE) == 5.5, "and attack 5.5");
             helper.assertTrue(Math.abs(copies[0].getBbWidth() - 0.96F) < 0.01F, "and its size, width " + copies[0].getBbWidth());
             helper.assertTrue(copies[1].getMaxHealth() == 18.0F, "the packmate keeps health 18");
             helper.assertTrue(copies[0].pack().size() == 2 && copies[0].pack().contains(copies[1]), "they find each other as one pack");

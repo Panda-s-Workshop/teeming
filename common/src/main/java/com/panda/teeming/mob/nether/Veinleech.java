@@ -85,7 +85,7 @@ public class Veinleech extends TeemingMonster {
 
     public Veinleech(EntityType<? extends Veinleech> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

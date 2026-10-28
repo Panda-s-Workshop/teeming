@@ -12,7 +12,7 @@ import java.util.function.IntPredicate;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Brinkray's numbers against its row, written out as plain values: neutral, HP 40, Atk 8, Arm 2, 3.0 x 0.6; a 20 t
+ * The Brinkray's numbers against its row, written out as plain values: neutral, HP 40, Atk 9, Arm 2, 3.0 x 0.6; a 20 t
  * bank; hostile only to players standing where 20 or more blocks of air lie below within 1 block; the ram throws 1.8;
  * small islands and the outer End by the spawner's void-air rule, weight 0, one at a time; second look Starry Ray; drops
  * void membrane. Then the brink rule on mock columns (19 blocks of air is no brink, 20 is) and mock ground round the
@@ -53,7 +53,7 @@ class BrinkrayNumbersTest {
         assertEquals(RosterStats.Cat.NEUTRAL, row.cat());
         assertEquals(RosterStats.Dim.END, row.dim());
         assertEquals(40.0F, row.health());
-        assertEquals(8.0F, row.attack());
+        assertEquals(9.0F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(3.0F, row.width());
         assertEquals(0.6F, row.height());

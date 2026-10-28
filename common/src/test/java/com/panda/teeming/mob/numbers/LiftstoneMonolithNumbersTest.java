@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Liftstone Monolith's mechanic numbers against the design, written out as plain values: the rise lasts 20 t; the pull
- * reaches 6 blocks and lifts 6 blocks over 20 t; the slam does 12; a block within 3 over the head stops the lift; it
+ * reaches 6 blocks and lifts 6 blocks over 20 t; the slam does 27; a block within 3 over the head stops the lift; it
  * pulls every 160 t; one in 128 blocks; an apex's 100 experience. The GameTests check the numbers are applied; this
  * checks they are the right numbers, and that they hold the apex balance against the End's reference player.
  */
@@ -19,7 +19,7 @@ class LiftstoneMonolithNumbersTest {
         assertEquals(6.0, LiftstoneMonolith.LIFT_RADIUS);
         assertEquals(6.0, LiftstoneMonolith.LIFT_HEIGHT);
         assertEquals(20, LiftstoneMonolith.LIFT_TICKS);
-        assertEquals(12.0F, LiftstoneMonolith.SLAM_DAMAGE);
+        assertEquals(27.0F, LiftstoneMonolith.SLAM_DAMAGE);
         assertEquals(3.0, LiftstoneMonolith.ROOF_REACH);
         assertEquals(160, LiftstoneMonolith.CYCLE_TICKS);
         assertEquals(128, LiftstoneMonolith.CAP_RADIUS);
@@ -49,6 +49,9 @@ class LiftstoneMonolithNumbersTest {
         assertTrue(LiftstoneMonolith.STAGE_REST == 1 && LiftstoneMonolith.STAGE_FULL == 4);
     }
 
+    /** What Protection IV (EPF 16) leaves of a blow. */
+    private static final float PROTECTION_IV = 1.0F - 16.0F / 25.0F;
+
     /** Vanilla's armour formula: armour - damage / (2 + toughness / 4), clamped to [armour / 5, 20], each point -4 %. */
     private static float afterArmor(float damage, float armor, float toughness) {
         float reduction = Math.clamp(armor - damage / (2.0F + toughness / 4.0F), armor * 0.2F, 20.0F);
@@ -58,7 +61,7 @@ class LiftstoneMonolithNumbersTest {
     @Test
     void apexBalance() {
         // the End's reference player: a netherite sword with Sharpness V (11 a hit, 1.6 swings a second), a netherite set
-        // (armour 20, toughness 12), 20 health. Protection IV is left out, so the blows here are the worst case
+        // (armour 20, toughness 12) with Protection IV (-64 %), 20 health
         float hit = 11.0F, swings = 1.6F;
         // a cycle with a roof: the pull, the split capstone (armour 0), and the rest of the wait at armour 12
         float cycle = LiftstoneMonolith.CYCLE_TICKS / 20.0F;
@@ -69,11 +72,12 @@ class LiftstoneMonolithNumbersTest {
         float seconds = 250.0F / perCycle * cycle;
         assertTrue(seconds <= 60.0F, "using the counter it dies in 60 s or less, took " + seconds);
         assertEquals(22.9F, seconds, 0.1F);
-        // the reference player survives at least three slams (3.55 each on Normal: 5.6 slams)
-        float slam = afterArmor(LiftstoneMonolith.SLAM_DAMAGE, 20, 12);
-        assertEquals(3.552F, slam, 0.01F);
-        assertTrue(20.0F / slam >= 3.0F, "survives three slams, " + 20.0F / slam);
-        // and three on Hard, where mob blows to players are 1.5x: 6.19 each
-        assertTrue(20.0F / afterArmor(LiftstoneMonolith.SLAM_DAMAGE * 1.5F, 20, 12) > 3.0F);
+        // the reference player survives at least three slams and at most five (4.04 each on Normal: 4.95 slams), so a
+        // lift left unbroken is a real risk and never a kill
+        float slam = afterArmor(LiftstoneMonolith.SLAM_DAMAGE, 20, 12) * PROTECTION_IV;
+        assertEquals(4.04F, slam, 0.01F);
+        assertTrue(20.0F / slam >= 3.0F && 20.0F / slam <= 5.0F, "survives three to five slams, " + 20.0F / slam);
+        // on Hard, where mob blows to players are 1.5x (7.64 each), no slam is nearly a kill: 2.6 slams
+        assertTrue(20.0F / (afterArmor(LiftstoneMonolith.SLAM_DAMAGE * 1.5F, 20, 12) * PROTECTION_IV) > 1.5F);
     }
 }

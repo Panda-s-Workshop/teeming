@@ -138,7 +138,7 @@ public class Siphonjelly extends TeemingMonster {
         super(type, level, Step.values());
         moveControl = new FlyingMoveControl<>(this, 10, true);
         setNoGravity(true);
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

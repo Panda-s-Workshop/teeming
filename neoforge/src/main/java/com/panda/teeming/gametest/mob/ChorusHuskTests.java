@@ -44,7 +44,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * yet), then bursts: everything within 4 blocks (a pig at 3.9 yes, one at 4.2 no; a survival player; never a creative
  * one) is teleported onto safe ground at the rolled distance (3 to 8 blocks; 8 checked in the world), and the husk is
  * gone, its loot dropped to its killer. A burst that catches no player drops 2 chorus fruit; one that catches a player
- * drops none. Its blow: an 8-tick wind-up, then 6 damage to a target still in reach. Health 30, attack 6, armour 2,
+ * drops none. Its blow: an 8-tick wind-up, then 8.5 damage to a target still in reach. Health 30, attack 8.5, armour 2,
  * 0.7 x 2.0, End highlands at weight 5 in groups of 1 to 2. Every teleport here has a fixed roll whose landing lies on
  * this arena's floor, and every burst is kept to this arena. Every number is checked against a plain value.
  */
@@ -334,7 +334,7 @@ public final class ChorusHuskTests {
     // ---- the blow ------------------------------------------------------------------------------------------------------
 
     /**
-     * Its blow: an 8-tick wind-up, held still and harmless, then 6 damage to the pig in reach (armour 0 takes all 6).
+     * Its blow: an 8-tick wind-up, held still and harmless, then 8.5 damage to the pig in reach (armour 0 takes all 8.5).
      */
     private static void windup(GameTestHelper helper) {
         ChorusHusk h = husk(helper);
@@ -352,7 +352,7 @@ public final class ChorusHuskTests {
             helper.assertTrue(h.strikes() == 1, "the blow landed, strikes " + h.strikes() + ", phase " + h.phase());
             helper.assertTrue(ticks[0] == 8, "the wind-up lasts 8 ticks, saw " + ticks[0]);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the blow takes 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the blow takes 8.5, the pig lost " + lost);
         });
     }
 
@@ -447,13 +447,13 @@ public final class ChorusHuskTests {
 
     // ---- stats and home ---------------------------------------------------------------------------------------------
 
-    /** Health 30, attack 6, armour 2, a 0.7 x 2.0 hitbox. */
+    /** Health 30, attack 8.5, armour 2, a 0.7 x 2.0 hitbox. */
     private static void stats(GameTestHelper helper) {
         ChorusHusk h = husk(helper);
         h.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(h.getMaxHealth() == 30.0F && h.getHealth() == 30.0F, "health 30, got " + h.getHealth() + "/" + h.getMaxHealth());
-            helper.assertTrue(h.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + h.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(h.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + h.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(h.getArmorValue() == 2, "armour 2, got " + h.getArmorValue());
             helper.assertTrue(Math.abs(h.getBbWidth() - 0.7F) < 0.01F && Math.abs(h.getBbHeight() - 2.0F) < 0.01F,
                     "a 0.7 x 2.0 hitbox, got " + h.getBbWidth() + " x " + h.getBbHeight());

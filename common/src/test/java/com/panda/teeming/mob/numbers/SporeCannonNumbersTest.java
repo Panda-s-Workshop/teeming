@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Spore Cannon's mechanic numbers against the design, written out as plain values: tell 20 t (the bulb); 3 homing
- * spores at 0.3 blocks a tick, 4 damage, 1 health each, a volley every 80 t; a hit on the lit bulb stuns it 80 t, taking
+ * spores at 0.3 blocks a tick, 6 damage, 1 health each, a volley every 80 t; a hit on the lit bulb stuns it 80 t, taking
  * x2. The GameTests check the numbers are applied; this checks they are the right numbers.
  */
 class SporeCannonNumbersTest {
@@ -17,7 +17,7 @@ class SporeCannonNumbersTest {
         assertEquals(20, SporeCannon.TELL_TICKS);
         assertEquals(3, SporeCannon.SPORES);
         assertEquals(0.3, SporeCannon.SPORE_SPEED);
-        assertEquals(4.0F, SporeCannon.SPORE_DAMAGE);
+        assertEquals(6.0F, SporeCannon.SPORE_DAMAGE);
         assertEquals(1.0F, SporeCannon.SPORE_HEALTH);
         assertEquals(80, SporeCannon.VOLLEY_EVERY);
         assertEquals(80, SporeCannon.STUN_TICKS);

@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Phasewalker's numbers against its row, written out as plain values: HP 32, Atk 7, Arm 2, 0.7 x 2.0, tell 10 (the
+ * The Phasewalker's numbers against its row, written out as plain values: HP 32, Atk 9, Arm 2, 0.7 x 2.0, tell 10 (the
  * shimmer); 60 ticks solid, 60 ticks phased; End midlands, weight 4, alone; second look Inverted Walker; drops time
  * sand. Then the calls made here: how fast it floats through blocks, how it looks for open ground, its 8-tick wind-up
  * and blow, and the crack and the leak. The GameTests check the numbers are applied in the world; this checks they are
@@ -50,7 +50,7 @@ class PhasewalkerNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("phasewalker");
         assertEquals(32.0F, row.health());
-        assertEquals(7.0F, row.attack());
+        assertEquals(9.0F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

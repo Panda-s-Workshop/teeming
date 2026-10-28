@@ -41,9 +41,9 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Gatecaster: every 80 ticks, with a target within 16 blocks in its sight, it weaves for 20 ticks (the tell, which hurts
  * nothing): a gate opens 3-5 blocks behind the target as it faces (at its sides when behind is shut, nowhere when both
- * are), follows the target for 12 ticks and locks for 8. Then a bolt flies out of the gate along the locked line: 6 to
+ * are), follows the target for 12 ticks and locks for 8. Then a bolt flies out of the gate along the locked line: 8.5 to
  * the first thing it meets, a mob's projectile from the gate's side, no knockback. A shield raised toward the gate
- * turns the bolt back: the caster is dragged to the ground under the gate and takes 6 from its own bolt.
+ * turns the bolt back: the caster is dragged to the ground under the gate and takes 8.5 from its own bolt.
  *
  * <p>The caster stands at the west side of the arena with its goals cleared (it reads its target straight from the
  * test, and a follow range of 1 keeps it from picking up survivors in other arenas), and its target stands 3 blocks
@@ -184,7 +184,7 @@ public final class GatecasterTests {
      * The counter: a survival player faces the caster as the tell starts (so the gate opens behind them), turns round
      * 4 ticks in and raises a shield toward the gate. The shield takes the bolt: the player loses nothing. The bolt goes
      * back through the gate: the caster is dragged onto the ground under the gate, within half a block of its middle,
-     * 3-5 blocks east of the player and facing them, and its own bolt bursts at its feet for 6 (30 -> 24).
+     * 3-5 blocks east of the player and facing them, and its own bolt bursts at its feet for 8.5 (30 -> 21.5).
      */
     private static void counter(GameTestHelper helper) {
         backstop(helper);
@@ -217,15 +217,15 @@ public final class GatecasterTests {
                     "dragged to the ground under the gate " + gate[0] + ", stands at " + g.position());
             double d = across(g.position(), p.position());
             helper.assertTrue(d >= 2.9 && d <= 5.1, "3-5 blocks from the player, " + d);
-            helper.assertTrue(Math.abs(g.getHealth() - 24.0F) < 0.01F, "its own bolt bursts for 6: 30 -> 24, got " + g.getHealth());
+            helper.assertTrue(Math.abs(g.getHealth() - 21.5F) < 0.01F, "its own bolt bursts for 8.5: 30 -> 21.5, got " + g.getHealth());
             helper.assertTrue(g.gate() == null, "the gate collapsed");
         });
     }
 
     /**
      * Failing the counter: a survival player keeps facing the caster. The gate opens behind them at chest height
-     * (0.65 of 1.8 blocks over their feet), and the bolt hits them in the back for 6 (mob damage to players scales with
-     * difficulty: 4 on Easy, 9 on Hard), a mob's projectile coming from the gate behind them, with no knockback.
+     * (0.65 of 1.8 blocks over their feet), and the bolt hits them in the back for 8.5 (mob damage to players scales with
+     * difficulty: 5.25 on Easy, 12.75 on Hard), a mob's projectile coming from the gate behind them, with no knockback.
      */
     private static void failure(GameTestHelper helper) {
         backstop(helper);
@@ -235,9 +235,9 @@ public final class GatecasterTests {
         g.setTarget(p);
         float before = p.getHealth();
         float expected = switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 4.0F;
-            case HARD -> 9.0F;
-            default -> 6.0F;
+            case EASY -> 5.25F;
+            case HARD -> 12.75F;
+            default -> 8.5F;
         };
         long[] hitAt = {-1};
         Vec3[] gate = {null};
@@ -268,14 +268,14 @@ public final class GatecasterTests {
 
     // ---- the numbers -----------------------------------------------------------------------------------------------
 
-    /** The bolt's hit: a pig with 40 health loses exactly 6. */
+    /** The bolt's hit: a pig with 40 health loses exactly 8.5. */
     private static void damage(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
         Gatecaster g = onPig(helper, pig);
         helper.succeedWhen(() -> {
             helper.assertTrue(g.bolts() == 1 && g.bolt() == null, "the bolt flew and landed, phase " + g.phase());
             helper.assertTrue(g.lastStruck() == pig[0], "the bolt struck the pig, struck " + g.lastStruck());
-            helper.assertTrue(Math.abs(pig[0].getHealth() - 34.0F) < 0.01F, "6 damage: 40 -> 34, got " + pig[0].getHealth());
+            helper.assertTrue(Math.abs(pig[0].getHealth() - 31.5F) < 0.01F, "8.5 damage: 40 -> 31.5, got " + pig[0].getHealth());
         });
     }
 
@@ -320,7 +320,7 @@ public final class GatecasterTests {
             Vec3 at = pig.position();
             helper.assertTrue(at.z - gate[0].z > 3.99 && at.z - gate[0].z < 4.01 && Math.abs(gate[0].x - at.x) < 0.01,
                     "4 blocks north of a pig facing south, gate " + gate[0] + ", pig " + at);
-            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 34.0F) < 0.01F, "and the bolt struck it, health " + pig.getHealth());
+            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 31.5F) < 0.01F, "and the bolt struck it, health " + pig.getHealth());
         });
     }
 
@@ -381,13 +381,13 @@ public final class GatecasterTests {
             Vec3 at = pig.position();
             helper.assertTrue(Math.abs(gate[0].z - at.z - 4.0) < 0.01 && Math.abs(gate[0].x - at.x) < 0.01,
                     "4 blocks to its left (south), gate " + gate[0] + ", pig " + at);
-            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 34.0F) < 0.01F, "and the bolt struck it from the side");
+            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 31.5F) < 0.01F, "and the bolt struck it from the side");
         });
     }
 
     /**
      * No gate: walls shut the pig's back and both its sides, so no gate opens; the bolt is thrown straight from the
-     * caster's own ring and still strikes the pig for 6.
+     * caster's own ring and still strikes the pig for 8.5.
      */
     private static void noGate(GameTestHelper helper) {
         backstop(helper);
@@ -408,7 +408,7 @@ public final class GatecasterTests {
             helper.assertTrue(!gated[0], "no gate opened");
             helper.assertTrue(g.straightBolts() == 1, "the bolt was thrown straight");
             helper.assertTrue(g.boltFrom().distanceTo(g.ringPoint()) < 0.01, "from its own ring, " + g.boltFrom());
-            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 34.0F) < 0.01F, "and it struck the pig, health " + pig.getHealth());
+            helper.assertTrue(g.lastStruck() == pig && Math.abs(pig.getHealth() - 31.5F) < 0.01F, "and it struck the pig, health " + pig.getHealth());
         });
     }
 
@@ -438,7 +438,7 @@ public final class GatecasterTests {
             helper.assertTrue(lockedAt[0] >= 0 && g.bolts() == 1 && g.bolt() == null, "the aim locked and the bolt landed, phase " + g.phase());
             helper.assertTrue(Math.abs(lockedAt[0] - start[0] - 12) <= 1, "it locks 12 ticks in, locked at " + (lockedAt[0] - start[0]));
             helper.assertTrue(Math.abs(lockedTicks[0] - 8) <= 1, "locked for the last 8 ticks, was " + lockedTicks[0]);
-            helper.assertTrue(g.lastStruck() == pig[0] && Math.abs(pig[0].getHealth() - 34.0F) < 0.01F,
+            helper.assertTrue(g.lastStruck() == pig[0] && Math.abs(pig[0].getHealth() - 31.5F) < 0.01F,
                     "it followed the pig's step and struck it, struck " + g.lastStruck() + ", health " + pig[0].getHealth());
         });
     }
@@ -535,7 +535,7 @@ public final class GatecasterTests {
             helper.assertTrue(second[0] >= 0, "it weaved twice, first at " + first[0] + ", cooldown " + g.castCooldown());
             long gap = second[0] - first[0];
             helper.assertTrue(Math.abs(gap - 80) <= 1, "80 ticks from one tell to the next, took " + gap);
-            helper.assertTrue(g.hits() >= 1 && pig[0].getHealth() <= 34.01F, "the first bolt struck, health " + pig[0].getHealth());
+            helper.assertTrue(g.hits() >= 1 && pig[0].getHealth() <= 31.51F, "the first bolt struck, health " + pig[0].getHealth());
         });
     }
 
@@ -624,7 +624,7 @@ public final class GatecasterTests {
         });
     }
 
-    /** Health 30, attack 6, armour 2, a 0.7 x 2.0 hitbox; it notices targets as far off as it weaves. */
+    /** Health 30, attack 8.5, armour 2, a 0.7 x 2.0 hitbox; it notices targets as far off as it weaves. */
     private static void stats(GameTestHelper helper) {
         Gatecaster g = helper.spawn(ModMobs.GATECASTER.get(), AT);
         g.removeFreeWill();
@@ -632,7 +632,7 @@ public final class GatecasterTests {
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(Math.abs(g.getMaxHealth() - 30.0F) < 0.01F && Math.abs(g.getHealth() - 30.0F) < 0.01F,
                     "health 30, got " + g.getHealth() + "/" + g.getMaxHealth());
-            helper.assertTrue(Math.abs(g.getAttributeValue(Attributes.ATTACK_DAMAGE) - 6.0) < 0.01, "attack 6");
+            helper.assertTrue(Math.abs(g.getAttributeValue(Attributes.ATTACK_DAMAGE) - 8.5) < 0.01, "attack 8.5");
             helper.assertTrue(Math.abs(g.getAttributeValue(Attributes.ARMOR) - 2.0) < 0.01, "armour 2");
             helper.assertTrue(Math.abs(g.getAttributeValue(Attributes.FOLLOW_RANGE) - 16.0) < 0.01, "follow range 16, got "
                     + g.getAttributeValue(Attributes.FOLLOW_RANGE));

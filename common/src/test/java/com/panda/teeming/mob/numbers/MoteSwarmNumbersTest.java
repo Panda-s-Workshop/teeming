@@ -32,7 +32,7 @@ class MoteSwarmNumbersTest {
         assertEquals(40, MoteSwarm.LOOSEN_TICKS);
         assertEquals(10, MoteSwarm.WRAP_TICKS);
         assertEquals(0.15, MoteSwarm.DRIFT_SPEED);
-        assertEquals(5, MoteSwarm.XP);
+        assertEquals(10, MoteSwarm.XP);
         assertEquals(8, MoteSwarm.SHOWN_BIT);
     }
 
@@ -55,7 +55,7 @@ class MoteSwarmNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("mote_swarm");
         assertEquals(30.0F, row.health());
-        assertEquals(1.0F, row.attack());
+        assertEquals(1.2F, row.attack());
         assertEquals(0.0F, row.armor());
         assertEquals(1.5F, row.width());
         assertEquals(1.5F, row.height());

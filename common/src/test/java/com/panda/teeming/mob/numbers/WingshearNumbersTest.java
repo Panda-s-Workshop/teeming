@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Wingshear's numbers against its roster row, written out as plain values: HP 30, Atk 6, Arm 2, 1.4 x 0.6; screech
+ * The Wingshear's numbers against its roster row, written out as plain values: HP 30, Atk 8.5, Arm 2, 1.4 x 0.6; screech
  * 16 t; hunts gliders within 48; a hit ends the glide and no glide again for 40 t; a firework's speed outruns it; the
  * open sky over the End by the spawner's sky rule, weight 0, groups of 1 to 2; second look Dusk Shear; drops void
  * membrane. Its own numbers (chase 1.25 b/t, dive 1.5 b/t, lost after 8 blocks, circles off 100 t) are its design.
@@ -38,7 +38,7 @@ class WingshearNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("wingshear");
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(1.4F, row.width());
         assertEquals(0.6F, row.height());

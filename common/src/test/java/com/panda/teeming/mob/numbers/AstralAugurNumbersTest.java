@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Astral Augur's numbers against its roster row, written out as plain values: HP 34, Atk 4, Arm 2, 0.7 x 2.1;
+ * The Astral Augur's numbers against its roster row, written out as plain values: HP 34, Atk 8.5, Arm 2, 0.7 x 2.1;
  * channel 24 t; 3 circles of radius 1.5 on and near the target, 9 damage each; a hit breaks the channel; main island
  * (the spawner's rule) and End highlands, weight 4, groups of 1; second look Dusk Augur; drops star mote. A channel
  * every 100 t, the 16-block reach, the flank layout (2.6 blocks out, 50 degrees either side of straight away), the
@@ -23,7 +23,7 @@ class AstralAugurNumbersTest {
         assertEquals(24, AstralAugur.TELL_TICKS);
         assertEquals(3, AstralAugur.CIRCLES);
         assertEquals(1.5, AstralAugur.CIRCLE_RADIUS);
-        assertEquals(9.0F, AstralAugur.STRIKE_DAMAGE);
+        assertEquals(20.0F, AstralAugur.STRIKE_DAMAGE);
         assertEquals(100, AstralAugur.CAST_EVERY);
         assertEquals(16.0, AstralAugur.CAST_RANGE);
     }
@@ -81,12 +81,12 @@ class AstralAugurNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("astral_augur");
         assertEquals(34.0F, row.health());
-        assertEquals(4.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.1F, row.height());
         assertEquals(24, row.tellTicks());
-        assertEquals(9.0F, row.blow());
+        assertEquals(20.0F, row.blow());
         assertEquals(4, row.weight());
         assertEquals(1, row.groupMin());
         assertEquals(1, row.groupMax());

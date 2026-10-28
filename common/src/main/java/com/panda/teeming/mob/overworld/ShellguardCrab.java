@@ -68,6 +68,7 @@ public class ShellguardCrab extends TeemingAnimal {
 
     public ShellguardCrab(EntityType<? extends ShellguardCrab> type, Level level) {
         super(type, level, Step.values());
+        xpReward = 5;                                      // fightable when provoked: the Overworld band's low end
         this.moveControl = new SidestepControl(this);
     }
 

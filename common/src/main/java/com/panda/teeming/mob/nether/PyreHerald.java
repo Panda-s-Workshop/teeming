@@ -116,7 +116,7 @@ public class PyreHerald extends TeemingMonster {
 
     public PyreHerald(EntityType<? extends PyreHerald> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 6;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

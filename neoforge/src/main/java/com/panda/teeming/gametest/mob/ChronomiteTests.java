@@ -40,8 +40,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * to full speed once out, or as one strikes: a slowed arrow still hits a pig for 2, not 1), and attack speed to x0.6
  * (a player's 4.0 to 2.4); a creative player is left alone. Its 20-point shell takes every blow first (8 leaves 12 and
  * its health whole; a blow past the shell reaches its health through armour 6), its cracks growing through stages 1 to
- * 3; when it cracks the field ends that tick and stays gone, also across a save. The bite: an 8-tick tell, then 5 to
- * whatever is still in reach. Health 26, attack 5, armour 6, 0.9 x 0.7; End midlands and barrens, weight 4, alone.
+ * 3; when it cracks the field ends that tick and stays gone, also across a save. The bite: an 8-tick tell, then 8.5 to
+ * whatever is still in reach. Health 26, attack 8.5, armour 6, 0.9 x 0.7; End midlands and barrens, weight 4, alone.
  * Every slowing of a body outside this arena is vetoed. Every number is checked against a plain value.
  */
 public final class ChronomiteTests {
@@ -138,8 +138,8 @@ public final class ChronomiteTests {
     // ---- the bite ------------------------------------------------------------------------------------------------------
 
     /**
-     * The tell holds exactly 8 ticks, still and harmless to the pig in reach; then the bite takes 5 from it (armour 0
-     * takes all 5).
+     * The tell holds exactly 8 ticks, still and harmless to the pig in reach; then the bite takes 8.5
+     * from it (armour 0 takes all 8.5).
      */
     private static void tell(GameTestHelper helper) {
         Chronomite m = mite(helper, AT);
@@ -158,7 +158,7 @@ public final class ChronomiteTests {
             helper.assertTrue(m.bites() == 1, "the bite landed, bites " + m.bites() + ", phase " + m.phase());
             helper.assertTrue(ticks[0] == 8, "the tell lasts 8 ticks, saw " + ticks[0]);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 5.0F) < 0.01F, "the bite takes 5, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 8.5F) < 0.01F, "the bite takes 8.5, the pig lost " + lost);
         });
     }
 
@@ -210,7 +210,8 @@ public final class ChronomiteTests {
 
     /**
      * Failing it: a survival player at its jaws inside the field moves at 0.04 (x0.4 of 0.1) and attacks at 2.4 (x0.6
-     * of 4.0, 40 % slower), and is bitten for its attack of 5, scaled by difficulty as every mob's blow on a player is.
+     * of 4.0, 40 % slower), and is bitten for its attack of 8.5, scaled by difficulty as every mob's blow on a
+     * player is.
      */
     private static void failure(GameTestHelper helper) {
         Chronomite m = mite(helper, AT);
@@ -223,9 +224,9 @@ public final class ChronomiteTests {
         });
         float expected = switch (helper.getLevel().getDifficulty()) {
             case PEACEFUL -> 0.0F;
-            case EASY -> 3.5F;
-            case NORMAL -> 5.0F;
-            case HARD -> 7.5F;
+            case EASY -> 5.25F;
+            case NORMAL -> 8.5F;
+            case HARD -> 12.75F;
         };
         helper.succeedWhen(() -> {
             helper.assertTrue(m.bites() == 1, "it bit the player");
@@ -427,13 +428,13 @@ public final class ChronomiteTests {
 
     // ---- stats and home ---------------------------------------------------------------------------------------------
 
-    /** Health 26, attack 5, armour 6, a 0.9 x 0.7 hitbox, a 20-point shell. */
+    /** Health 26, attack 8.5, armour 6, a 0.9 x 0.7 hitbox, a 20-point shell. */
     private static void stats(GameTestHelper helper) {
         Chronomite m = mite(helper, AT);
         m.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(m.getMaxHealth() == 26.0F && m.getHealth() == 26.0F, "health 26, got " + m.getHealth() + "/" + m.getMaxHealth());
-            helper.assertTrue(m.getAttributeValue(Attributes.ATTACK_DAMAGE) == 5.0, "attack 5, got " + m.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(m.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + m.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(m.getArmorValue() == 6, "armour 6, got " + m.getArmorValue());
             helper.assertTrue(Math.abs(m.getBbWidth() - 0.9F) < 0.01F && Math.abs(m.getBbHeight() - 0.7F) < 0.01F,
                     "a 0.9 x 0.7 hitbox, got " + m.getBbWidth() + " x " + m.getBbHeight());

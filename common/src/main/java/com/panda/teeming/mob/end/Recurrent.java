@@ -50,8 +50,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>It keeps the last 60 ticks of where it stood and how much health it had. A blow that would kill it winds it back
  * instead: it snaps back to where it stood 60 ticks before, with the health it had then, leaving a trail of reversed
- * motes along the way it came and a reversed chime, and stands dazed for 20 ticks. It does this once in 60 ticks: a
- * kill within 60 ticks of a rewind is final. While it can rewind its face glows; for the 60 ticks after a rewind, and
+ * motes along the way it came and a reversed chime, and stands dazed for 20 ticks. It does this once in 30 ticks: a
+ * kill within 30 ticks of a rewind is final. While it can rewind its face glows; for the 30 ticks after a rewind, and
  * for good once its anchor is broken, the face is dark.
  *
  * <p>Its time anchor is a small floating hourglass with 4 health that it unfolds the first time it fights. The anchor
@@ -88,8 +88,11 @@ public class Recurrent extends TeemingMonster {
 
     /** A killing blow sends it back to where it stood, with the health it had, this many ticks before. */
     public static final int REWIND_BACK = 60;
-    /** After a rewind, a kill within this many ticks is final. */
-    public static final int REWIND_EVERY = 60;
+    /**
+     * After a rewind, a kill within this many ticks is final. Shorter than the End reference player takes to kill it
+     * (about 35 ticks), so without the anchor it rewinds more than once, and breaking the anchor is worth the reach.
+     */
+    public static final int REWIND_EVERY = 30;
     /** Ticks of its own past it keeps: one more than it winds back. */
     public static final int HISTORY = REWIND_BACK + 1;
     /** It stands dazed this long after a rewind: a second's opening to close in for the final kill. */
@@ -310,7 +313,7 @@ public class Recurrent extends TeemingMonster {
         return best >= 0 ? best : oldest;
     }
 
-    /** True while a killing blow would wind it back (its anchor whole, its last rewind 60 ticks or more ago). */
+    /** True while a killing blow would wind it back (its anchor whole, its last rewind 30 ticks or more ago). */
     private boolean canRewindNow(long now) {
         return !anchorBroken && now - rewoundAt >= REWIND_EVERY;
     }

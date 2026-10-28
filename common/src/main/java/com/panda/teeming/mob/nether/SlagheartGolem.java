@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.TeemingMod;
 import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Gauge;
@@ -11,11 +12,13 @@ import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -31,7 +34,8 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.AbstractThrownPotion;
-import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
+import net.minecraft.world.entity.projectile.ItemSupplier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.core.component.DataComponents;
@@ -42,15 +46,20 @@ import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Slagheart Golem: heat 0–12 rises by 1 for every hit it takes and every 3 s while it fights; its cracks
- * glow in four stages (heat / 3). At 12 it shakes for 1 s (tell), smoke tracing the 5-block reach on the ground, and
- * erupts: 10 damage and fire within 5 blocks, a ring of flame along that edge, heat back to 6. Counter: a snowball cools it by 2, splash water by 4, powder snow by 12; at heat 0 it is quenched for
- * 3 s and takes ×1.5. A hit from a Quench Charm holder cools it by 1 instead of heating it.
+ * Slagheart Golem: heat 0–12 starts at 6 and rises by 2 for every hit it takes and by 1 every 3 s while it fights, so
+ * a straight melee fight brings it to full heat with time to erupt before it falls; its cracks glow in four stages
+ * (heat / 3). At 12 it shakes for 1 s (tell), smoke tracing the 5-block reach on the ground, and erupts: 10 damage and
+ * fire within 5 blocks, a ring of flame along that edge, heat back to 6. Counter: a thrown cold item
+ * ({@code #teeming:cold_items}, snowballs by default) cools it by 2, splash water by 4, powder snow by 12; at heat 0 it
+ * is quenched for 3 s and takes ×1.5. A hit from a Quench Charm holder cools it by 1 instead of heating it.
  */
 public class SlagheartGolem extends TeemingMonster {
     public enum Step implements Phase { IDLE, TELL, ERUPT, QUENCHED }
 
     public static final int MAX_HEAT = 12;
+    /** The heat it spawns with, and what each hit it takes adds. */
+    public static final int START_HEAT = 6;
+    public static final int HEAT_PER_HIT = 2;
     public static final int HEAT_EVERY = 60;
     public static final int AFTER_ERUPTION = 6;
     public static final int TELL_TICKS = 20;
@@ -58,7 +67,10 @@ public class SlagheartGolem extends TeemingMonster {
     public static final double ERUPT_RADIUS = 5.0;
     private static final int RING_POINTS = 40;
     public static final float ERUPT_DAMAGE = 10.0F;
+    /** How much a thrown cold item, splash water and powder snow cool it. */
     public static final int SNOWBALL = 2, SPLASH = 4, POWDER_SNOW = 12;
+    /** Thrown items that cool it as a snowball does: snowballs by default, and whatever a pack adds. */
+    public static final TagKey<Item> COLD_ITEMS = TagKey.create(Registries.ITEM, TeemingMod.id("cold_items"));
     public static final int QUENCH_TICKS = 60;
     public static final float QUENCHED_DAMAGE = 1.5F;
 
@@ -66,10 +78,10 @@ public class SlagheartGolem extends TeemingMonster {
     private static final Telegraph RUMBLE = Telegraph.particles(ParticleTypes.LAVA, 3, 0.5, 0.6);
 
     /**
-     * Heat: whole steps from 3, a glow stage per 3 heat, no heat from blows while quenched. At 0 it is quenched; at 12,
+     * Heat: whole steps from 6, a glow stage per 3 heat, no heat from blows while quenched. At 0 it is quenched; at 12,
      * idle, the eruption starts; the eruption leaves it at 6.
      */
-    private final Gauge heat = new Gauge(this, "Heat", MAX_HEAT).whole().from(3)
+    private final Gauge heat = new Gauge(this, "Heat", MAX_HEAT).whole().from(START_HEAT)
             .stages(v -> Math.min(3, (int) v / 3))
             .sealedWhen(() -> core().in(Step.QUENCHED))
             .every(HEAT_EVERY, 1)
@@ -233,13 +245,14 @@ public class SlagheartGolem extends TeemingMonster {
     // ---- hits and quenching ----------------------------------------------------------------------------------------
 
     /**
-     * Snowballs, splash water and drowning cool it and do no damage. Any other blow that lands heats it by 1, except
-     * fire, and except a blow from a Quench Charm holder, which cools it by {@link Charms#QUENCH_COOL} instead.
+     * Thrown cold items, splash water and drowning cool it and do no damage. Any other blow that lands heats it by
+     * {@link #HEAT_PER_HIT}, except fire, and except a blow from a Quench Charm holder, which cools it by
+     * {@link Charms#QUENCH_COOL} instead.
      */
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         Entity direct = source.getDirectEntity();
-        if (direct instanceof Snowball) {
+        if (cold(direct)) {
             cool(SNOWBALL, source.getEntity());
             return false;
         }
@@ -255,9 +268,14 @@ public class SlagheartGolem extends TeemingMonster {
         if (hurt && !source.is(DamageTypeTags.IS_FIRE)) {
             int cools = Charms.hitCools(source.getEntity());           // a Quench Charm holder's hit is a cooling hit
             if (cools > 0) cool(cools, source.getEntity());
-            else heat.fill(1);                                         // sealed while quenched
+            else heat.fill(HEAT_PER_HIT);                              // sealed while quenched
         }
         return hurt;
+    }
+
+    /** A thrown item (not a potion: splash water has its own rule) in {@link #COLD_ITEMS}. */
+    public static boolean cold(@Nullable Entity direct) {
+        return direct instanceof ItemSupplier thrown && !(direct instanceof AbstractThrownPotion) && thrown.getItem().is(COLD_ITEMS);
     }
 
     /** Splash water reaches it through this (vanilla hurts water-sensitive mobs with it); so do rain and water. */

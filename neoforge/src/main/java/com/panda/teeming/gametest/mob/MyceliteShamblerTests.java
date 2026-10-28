@@ -39,8 +39,9 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * Mycelite Shambler: health 24, attack 3, armour 0, a 1.0 x 1.8 hitbox. When it dies it bursts, as its body vanishes
  * a second after the killing blow, into two of the next size: scale 0.7 and 12 health, then scale 0.45 and 6 health,
  * which don't burst. Each burst puffs Poison I for 40 ticks onto everything within 2 blocks but shamblers. A shambler
- * that burns or dies to fire doesn't burst and doesn't puff. Loot (the spore sac) only drops from a death that
- * doesn't burst.
+ * that burns or dies to fire doesn't burst and doesn't puff. A line yields once whichever way it ends: the first
+ * shambler's death drops the loot (one spore sac), burst or burned, and those that come out of a burst drop none; a
+ * death by fire pays the experience the line it ends would still have given (8 for a full-grown one).
  *
  * <p>The shambler stands in the middle of the arena with its goals cleared; still pigs stand in for whoever is near
  * the burst. Kills use a generic source unless the test is about who killed it, so the new shamblers have no target
@@ -71,6 +72,8 @@ public final class MyceliteShamblerTests {
         TeemingGameTests.timeLimit("mycelite_shambler_small_attack", 200);
         out.accept("mycelite_shambler_home", MyceliteShamblerTests::home);
         out.accept("mycelite_shambler_burst_cancel", MyceliteShamblerTests::burstCancel);
+        out.accept("mycelite_shambler_one_yield", MyceliteShamblerTests::oneYieldPerLine);
+        TeemingGameTests.timeLimit("mycelite_shambler_one_yield", 200);
     }
 
     // ---- set-up --------------------------------------------------------------------------------------------------
@@ -167,7 +170,8 @@ public final class MyceliteShamblerTests {
 
     /**
      * The counter: a shambler that is burning when it dies doesn't burst. No new shamblers, no poison on the pig a
-     * block away, no spores step; it drops its spore sac (loot comes from a death that doesn't burst).
+     * block away, no spores step; it drops its spore sac, and it pays the whole line's experience (8: what a line
+     * fought down to its smallest gives), so using fire never pays less than letting it split.
      */
     private static void burningDoesntBurst(GameTestHelper helper) {
         MyceliteShambler s = shambler(helper);
@@ -179,6 +183,8 @@ public final class MyceliteShamblerTests {
             kill(helper, s);
             helper.assertTrue(!s.willBurst(), "a burning shambler won't burst");
             helper.assertTrue(!s.core().flag(MyceliteShambler.FLAG_BURSTING), "and doesn't show it will");
+            helper.assertTrue(s.xp() == MyceliteShambler.lineXp(MyceliteShambler.LARGE) && s.xp() == 8,
+                    "a burned full-grown one pays the whole line's 8 experience, pays " + s.xp());
         });
         helper.runAtTickTime(4, () -> helper.assertTrue(sporeSacs(helper) == 1, "it drops one spore sac, found " + sporeSacs(helper)));
         helper.runAtTickTime(2 + DEATH_TICKS + 6, () -> {
@@ -211,8 +217,8 @@ public final class MyceliteShamblerTests {
     /**
      * Failing the counter: a full-grown Crimson Cap shambler killed by a plain blow bursts into exactly two Crimson Cap
      * shamblers of scale 0.7 with 12 of 12 health and a 0.7 x 1.26 hitbox, each a Mycelite Shambler (a monster that
-     * counts against the caps like any other). The pig a block away gets Poison I for 40 ticks. No spore sac drops
-     * from a death that bursts.
+     * counts against the caps like any other). The pig a block away gets Poison I for 40 ticks. The first shambler's
+     * death drops the line's one spore sac though it bursts, and the two that come out of it are sprouts of its line.
      */
     private static void burstsInTwo(GameTestHelper helper) {
         MyceliteShambler s = shambler(helper);
@@ -251,7 +257,8 @@ public final class MyceliteShamblerTests {
             }
             helper.assertTrue(poisonLevel[0] == 0, "the pig gets Poison I, amplifier " + poisonLevel[0]);
             helper.assertTrue(poisonLeft[0] > 37 && poisonLeft[0] <= 40, "for 40 ticks, " + poisonLeft[0] + " left when first seen");
-            helper.assertTrue(sporeSacs(helper) == 0, "a death that bursts drops no spore sac, found " + sporeSacs(helper));
+            helper.assertTrue(sporeSacs(helper) == 1, "the first death drops the line's one spore sac, found " + sporeSacs(helper));
+            helper.assertTrue(!s.sprout() && kids.stream().allMatch(MyceliteShambler::sprout), "the two that came out are sprouts of its line");
             helper.succeed();
         });
     }
@@ -502,6 +509,41 @@ public final class MyceliteShamblerTests {
         helper.runAtTickTime(2 + DEATH_TICKS + 6, () -> {
             helper.assertTrue(near(helper, s).isEmpty(), "nothing bursts out, found " + near(helper, s).size());
             helper.assertTrue(!poisoned(pig), "no poison");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * One yield per line: a full-grown shambler killed by plain blows, then both shamblers that burst out of it, then
+     * the four smallest that burst out of those. Seven deaths, one spore sac (the first one's), and every death after
+     * the first a sprout, which counts as no Field Guide kill and drops no loot or trophy.
+     */
+    private static void oneYieldPerLine(GameTestHelper helper) {
+        MyceliteShambler s = shambler(helper);
+        List<MyceliteShambler> line = new ArrayList<>();
+        int[] deaths = {0};
+        helper.runAtTickTime(1, () -> {
+            kill(helper, s);
+            deaths[0]++;
+        });
+        for (int wave = 1; wave <= 2; wave++) {
+            int at = 1 + wave * (DEATH_TICKS + 6);
+            helper.runAtTickTime(at, () -> {
+                List<MyceliteShambler> alive = near(helper, s);
+                helper.assertTrue(!alive.isEmpty(), "the burst left shamblers to kill");
+                for (MyceliteShambler k : alive) {
+                    k.removeFreeWill();
+                    helper.assertTrue(k.sprout(), "every one that came out of a burst is a sprout of the line");
+                    line.add(k);
+                    kill(helper, k);
+                    deaths[0]++;
+                }
+            });
+        }
+        helper.runAtTickTime(1 + 3 * (DEATH_TICKS + 6), () -> {
+            helper.assertTrue(deaths[0] == 7, "seven deaths in the line, counted " + deaths[0]);
+            helper.assertTrue(near(helper, s).isEmpty(), "the smallest burst into nothing more");
+            helper.assertTrue(sporeSacs(helper) == 1, "the whole line drops one spore sac, found " + sporeSacs(helper));
             helper.succeed();
         });
     }

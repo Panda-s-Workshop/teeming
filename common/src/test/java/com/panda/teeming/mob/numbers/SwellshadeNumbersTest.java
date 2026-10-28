@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Swellshade's numbers against its row, written out as plain values: HP 24 growing to 48, Atk 4 growing to 8, Arm
+ * The Swellshade's numbers against its row, written out as plain values: HP 24 growing to 48, Atk 4.5 growing to 9, Arm
  * 0, 0.8 x 1.6 growing to twice that, no tell on the row; every 200 ticks +0.25 scale and +25 % health and damage, up to
  * x2; End midlands, weight 4, alone; second look Gloom Swell; drops void ichor. Then the calls made here: the 16-tick
  * breath and 10-tick pulse round a swell, the blow's 8-tick wind-up and its reach, the experience and the extra ichor
@@ -42,7 +42,7 @@ class SwellshadeNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("swellshade");
         assertEquals(24.0F, row.health());
-        assertEquals(4.0F, row.attack());
+        assertEquals(4.5F, row.attack());
         assertEquals(0.0F, row.armor());
         assertEquals(0.8F, row.width());
         assertEquals(1.6F, row.height());
@@ -56,9 +56,9 @@ class SwellshadeNumbersTest {
         assertEquals(RosterStats.Dim.END, row.dim());
         assertEquals("gloom_swell", row.secondLook());
         assertEquals("void_ichor", row.material());
-        // full size is x2: 24 -> 48 health, 4 -> 8 attack
+        // full size is x2: 24 -> 48 health, 4.5 -> 9 attack
         assertEquals(48.0, row.health() * (1.0 + Swellshade.GROW_STEP * Swellshade.MAX_STEPS), 1.0E-9);
-        assertEquals(8.0, row.attack() * (1.0 + Swellshade.GROW_STEP * Swellshade.MAX_STEPS), 1.0E-9);
+        assertEquals(9.0, row.attack() * (1.0 + Swellshade.GROW_STEP * Swellshade.MAX_STEPS), 1.0E-9);
     }
 
     @Test

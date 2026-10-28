@@ -33,7 +33,7 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Brinkram: a 20-tick paw (still, harmless) before the charge; the charge runs 0.5 blocks a tick, hits for 8 and throws
+ * Brinkram: a 20-tick paw (still, harmless) before the charge; the charge runs 0.5 blocks a tick, hits for 9 and throws
  * the victim 2.5 out along it and 0.4 up (less by knockback resistance, a survival player too); a wall stops it with a
  * head shake and nothing more. At an edge (a pit dug 7 deep, past the 4-block step that still counts as ground) it goes
  * over on a roll of 70 % (counted over 4000 rolls) and skids to a stop otherwise: both ways are run with the roll fixed.
@@ -141,14 +141,14 @@ public final class BrinkramTests {
         });
     }
 
-    /** Failing the counter: a target that stays in line takes the charge, 8 (its attack) for a pig with no armour. */
+    /** Failing the counter: a target that stays in line takes the charge, 9 (its attack) for a pig with no armour. */
     private static void failure(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
         Brinkram r = lineUp(helper, pig);
         helper.succeedWhen(() -> {
             float lost = 100.0F - pig[0].getHealth();
             helper.assertTrue(lost > 0.0F, "the charge lands");
-            helper.assertTrue(Math.abs(lost - 8.0F) < 0.01F, "the charge hits for 8, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 9.0F) < 0.01F, "the charge hits for 9, the pig lost " + lost);
             helper.assertTrue(r.edgeRolls() == 0, "flat ground has no edge");
         });
     }
@@ -437,7 +437,7 @@ public final class BrinkramTests {
         });
     }
 
-    /** Close in, it butts instead: a 10-tick wind-up hurting nothing, then the butt lands for 8 (its attack). */
+    /** Close in, it butts instead: a 10-tick wind-up hurting nothing, then the butt lands for 9 (its attack). */
     private static void butt(GameTestHelper helper) {
         Brinkram r = ram(helper, 4.5, 5.5);
         Pig pig = pig(helper, 5.9, 5.5);
@@ -455,7 +455,7 @@ public final class BrinkramTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(start[0] >= 0 && hit[0] >= 0, "a wind-up, then the butt");
             helper.assertTrue(hit[0] - start[0] == 10, "the butt lands 10 ticks after the wind-up starts, " + (hit[0] - start[0]));
-            helper.assertTrue(Math.abs(lost[0] - 8.0F) < 0.01F, "the butt hits for 8, lost " + lost[0]);
+            helper.assertTrue(Math.abs(lost[0] - 9.0F) < 0.01F, "the butt hits for 9, lost " + lost[0]);
         });
     }
 
@@ -478,13 +478,13 @@ public final class BrinkramTests {
 
     // ---- the row ---------------------------------------------------------------------------------------------------
 
-    /** Health 40, attack 8, armour 6, a 1.2 x 1.4 hitbox. */
+    /** Health 40, attack 9, armour 6, a 1.2 x 1.4 hitbox. */
     private static void stats(GameTestHelper helper) {
         Brinkram r = ram(helper, 5.5, 5.5);
         r.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(r.getMaxHealth() == 40.0F && r.getHealth() == 40.0F, "health 40, got " + r.getHealth() + "/" + r.getMaxHealth());
-            helper.assertTrue(r.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.0, "attack 8, got " + r.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(r.getAttributeValue(Attributes.ATTACK_DAMAGE) == 9.0, "attack 9, got " + r.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(r.getArmorValue() == 6, "armour 6, got " + r.getArmorValue());
             helper.assertTrue(Math.abs(r.getBbWidth() - 1.2F) < 0.01F && Math.abs(r.getBbHeight() - 1.4F) < 0.01F,
                     "a 1.2 x 1.4 hitbox, got " + r.getBbWidth() + " x " + r.getBbHeight());

@@ -8,7 +8,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Resonant Triad's numbers, written out as plain values: HP 16 each, Atk 4, Arm 0, 0.6 x 0.9; the singer rotates every
+ * The Resonant Triad's numbers, written out as plain values: HP 16 each, Atk 8.5, Arm 0, 0.6 x 0.9; the singer rotates every
  * 60 ticks; while all three live only the singer takes damage; the sky and the end highlands, weight 3, groups of 3; second
  * look Rose Triad; drops void crystal. The rest (the 10 tick tell before the song passes, the 8 tick crackle, the zap of 1 x
  * its attack within 5 blocks every 40 ticks) is its design. The GameTests check the numbers are applied; this checks they
@@ -70,7 +70,7 @@ class ResonantTriadNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("resonant_triad");
         assertEquals(16.0F, row.health());
-        assertEquals(4.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(0.0F, row.armor());
         assertEquals(0.6F, row.width());
         assertEquals(0.9F, row.height());

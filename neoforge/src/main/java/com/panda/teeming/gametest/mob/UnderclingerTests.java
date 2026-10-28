@@ -40,7 +40,7 @@ import net.minecraft.world.phys.Vec3;
  * Underclinger. The arena holds an island of end stone: a back wall solid to the floor (x 1..10, z 8..9, y 1..5) and an
  * overhang one block thick in front of it (y 5, z 5..7) with open air under it down to the floor, its rim facing north
  * (z 5); a fall onto the floor stands in for the void. A pig (or a survival player) at the rim is reached for 10 ticks
- * and moves not at all meanwhile, then hooked for the clinger's attack (6), held 20 ticks, and dragged exactly 2.0
+ * and moves not at all meanwhile, then hooked for the clinger's attack (8.5), held 20 ticks, and dragged exactly 2.0
  * blocks north, out from the island, over 4 ticks, after which it falls to the floor. A blow while it reaches or holds
  * makes it let go at once (no drag) and retreat exactly 40 ticks, reaching for no one, before it reaches again. It stays
  * pressed to the underside the whole time, never leaves it for open air, and ignores prey away from an edge, prey 1.5
@@ -184,7 +184,7 @@ public final class UnderclingerTests {
     // ---- the hold and the drag -------------------------------------------------------------------------------------
 
     /**
-     * Failing the counter: the hooks close for 6 (its attack; a pig has no armour), and the pig is dragged out over the
+     * Failing the counter: the hooks close for 8.5 (its attack; a pig has no armour), and the pig is dragged out over the
      * edge and falls to the floor 2 blocks out from the rim block it stood on.
      */
     private static void failure(GameTestHelper helper) {
@@ -196,7 +196,7 @@ public final class UnderclingerTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(lost[0] >= 0.0F, "it held the pig");
-            helper.assertTrue(Math.abs(lost[0] - 6.0F) < 0.01F, "the hooks hit for 6, the pig lost " + lost[0]);
+            helper.assertTrue(Math.abs(lost[0] - 8.5F) < 0.01F, "the hooks hit for 8.5, the pig lost " + lost[0]);
             Vec3 at = rel(helper, pig[0]);
             helper.assertTrue(Math.abs(at.y - 1.0) < 0.01, "the pig fell to the floor, at " + at);
             helper.assertTrue(Math.abs(at.z - 3.5) < 0.01 && Math.abs(at.x - 5.5) < 0.01, "2 blocks out from where it stood, at " + at);
@@ -314,7 +314,7 @@ public final class UnderclingerTests {
             helper.assertTrue(end[0] >= 0, "the retreat ended");
             helper.assertTrue(end[0] - start[0] == 40, "it retreated 40 ticks, " + (end[0] - start[0]));
             helper.assertTrue(again[0] > end[0], "then it reached again");
-            helper.assertTrue(pig[0].getHealth() >= 94.0F - 0.01F, "only the one hook landed, health " + pig[0].getHealth());
+            helper.assertTrue(pig[0].getHealth() >= 91.5F - 0.01F, "only the one hook landed, health " + pig[0].getHealth());
         });
     }
 
@@ -543,7 +543,7 @@ public final class UnderclingerTests {
         });
     }
 
-    /** Health 28, attack 6, armour 2, a 1.0 x 0.6 hitbox. */
+    /** Health 28, attack 8.5, armour 2, a 1.0 x 0.6 hitbox. */
     private static void stats(GameTestHelper helper) {
         Underclinger u = helper.spawn(ModMobs.UNDERCLINGER.get(), new Vec3(5.5, 1, 5.5));
         u.core().setLook("base", true);
@@ -551,7 +551,7 @@ public final class UnderclingerTests {
         TestPlayers.whenDone(helper, u::discard);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(u.getMaxHealth() == 28.0F && u.getHealth() == 28.0F, "health 28, got " + u.getHealth() + "/" + u.getMaxHealth());
-            helper.assertTrue(u.getAttributeValue(Attributes.ATTACK_DAMAGE) == 6.0, "attack 6, got " + u.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(u.getAttributeValue(Attributes.ATTACK_DAMAGE) == 8.5, "attack 8.5, got " + u.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(u.getArmorValue() == 2, "armour 2, got " + u.getArmorValue());
             helper.assertTrue(Math.abs(u.getBbWidth() - 1.0F) < 0.01F && Math.abs(u.getBbHeight() - 0.6F) < 0.01F,
                     "a 1.0 x 0.6 hitbox, got " + u.getBbWidth() + " x " + u.getBbHeight());

@@ -18,7 +18,7 @@ class ShardlingColossusNumbersTest {
     @Test
     void mechanic() {
         assertEquals(16, ShardlingColossus.TELL_TICKS);
-        assertEquals(8.0F, ShardlingColossus.SPLIT_HIT);
+        assertEquals(12.0F, ShardlingColossus.SPLIT_HIT);
         assertEquals(0.5F, ShardlingColossus.SPLIT_BELOW);
         assertEquals(0.7F, ShardlingColossus.HALF_SCALE);
         assertEquals(0.5F, ShardlingColossus.HALF_SHARE);

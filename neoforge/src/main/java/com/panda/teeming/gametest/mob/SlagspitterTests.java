@@ -34,7 +34,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Slagspitter: a 16-tick tell that does nothing yet; a glob spat in an arc at targets 6 to 20 blocks away that does 5
+ * Slagspitter: a 16-tick tell that does nothing yet; a glob spat in an arc at targets 6 to 20 blocks away that does 6
  * and leaves a burning patch of radius 1.5 for 80 ticks; a hop away from survival players within 5 blocks, which also
  * spoils a tell in progress; a nip of 3 up close; one tell every 60 ticks. Every number is checked against a plain
  * value.
@@ -194,7 +194,7 @@ public final class SlagspitterTests {
     }
 
     /**
-     * Failing the counter: the pig stays put 8.5 blocks off. The glob hits it for exactly 5, a patch opens at its feet,
+     * Failing the counter: the pig stays put 8.5 blocks off. The glob hits it for exactly 6, a patch opens at its feet,
      * and it catches fire.
      */
     private static void globHitsAndBurns(GameTestHelper helper) {
@@ -208,7 +208,7 @@ public final class SlagspitterTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(log.hits.size() == 1 && s.globHits() == 1, "the glob hit the pig, hits " + log.hits);
-            helper.assertTrue(Math.abs(lost[0] - 5.0F) < 0.01F, "the glob does 5, the pig lost " + lost[0]);
+            helper.assertTrue(Math.abs(lost[0] - 6.0F) < 0.01F, "the glob does 6, the pig lost " + lost[0]);
             helper.assertTrue(s.patches().size() == 1, "a patch opened, " + s.patches().size());
             Vec3 c = s.patches().getFirst();
             helper.assertTrue(Math.hypot(c.x - pig.getX(), c.z - pig.getZ()) < 0.3 && Math.abs(c.y - pig.getY()) < 0.05,
@@ -379,7 +379,7 @@ public final class SlagspitterTests {
         });
     }
 
-    /** A listener that cancels the "patch" step stops the patch: the glob still hits for 5, but nothing burns. */
+    /** A listener that cancels the "patch" step stops the patch: the glob still hits for 6, but nothing burns. */
     private static void patchCancel(GameTestHelper helper) {
         Pig pig = pig(helper, 9.5, 9.5);
         Slagspitter s = still(helper, 3.5, 3.5);

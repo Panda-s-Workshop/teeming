@@ -8,7 +8,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Slagspitter's numbers, written out as plain values: HP 20, Atk 3 (glob 5), Arm 2, 0.9 x 0.8; a 16-tick ring;
+ * The Slagspitter's numbers, written out as plain values: HP 20, Atk 3 (glob 6), Arm 2, 0.9 x 0.8; a 16-tick ring;
  * globs at targets 6 to 20 blocks away; a burning patch of radius 1.5 for 80 t; it hops away from players within 5;
  * nether wastes, weight 15, groups of 1 to 2; second look Basalt Spitter; drops slag gland. The glob's flight, the hop's
  * leap, the 60-tick wait between tells and the 3 s of fire are its design. The GameTests check the numbers are
@@ -20,7 +20,7 @@ class SlagspitterNumbersTest {
         assertEquals(16, Slagspitter.TELL_TICKS);
         assertEquals(6.0, Slagspitter.MIN_RANGE);
         assertEquals(20.0, Slagspitter.MAX_RANGE);
-        assertEquals(5.0F, Slagspitter.GLOB_DAMAGE);
+        assertEquals(6.0F, Slagspitter.GLOB_DAMAGE);
         assertEquals(1.5, Slagspitter.PATCH_RADIUS);
         assertEquals(80, Slagspitter.PATCH_TICKS);
         assertEquals(5.0, Slagspitter.HOP_RANGE);
@@ -50,7 +50,7 @@ class SlagspitterNumbersTest {
         assertEquals(0.9F, row.width());
         assertEquals(0.8F, row.height());
         assertEquals(16, row.tellTicks());
-        assertEquals(5.0F, row.blow());
+        assertEquals(6.0F, row.blow());
         assertEquals(15, row.weight());
         assertEquals(1, row.groupMin());
         assertEquals(2, row.groupMax());

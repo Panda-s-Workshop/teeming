@@ -41,13 +41,15 @@ class GrandOrreryNumbersTest {
         assertEquals(0.25, GrandOrrery.MOTE_SPEED);
         assertEquals(0.15, GrandOrrery.SLOW_RING_SPEED);
         assertEquals(12.0, GrandOrrery.MOTE_RANGE);
+        assertEquals(12.0, GrandOrrery.CAST_RANGE);
+        assertEquals(10.0F, GrandOrrery.MOTE_PIERCE);
         assertEquals(128, GrandOrrery.CAP_RADIUS);
         assertEquals(100, GrandOrrery.XP);
     }
 
     @Test
     void houseRules() {
-        // a tell lasts at least 8 ticks (a mote is 1x its attack, so 10 isn't needed; it holds 20 anyway)
+        // a tell of at least 10 ticks before a blow of 1.5x its attack or more (a mote is 6 + 10 through armour)
         assertTrue(GrandOrrery.TELL_TICKS >= 10);
         // a punish window is 40-100 ticks, and a punish multiplier x1.5-x2
         assertTrue(GrandOrrery.OPEN_TICKS >= 40 && GrandOrrery.OPEN_TICKS <= 100);
@@ -59,6 +61,8 @@ class GrandOrreryNumbersTest {
         // motes reach past where it keeps station, and it keeps station well inside its casting range
         assertTrue(GrandOrrery.MOTE_RANGE > Math.hypot(GrandOrrery.KEEP_DISTANCE, GrandOrrery.HOVER_UP));
         assertTrue(GrandOrrery.KEEP_DISTANCE < GrandOrrery.CAST_RANGE);
+        // it casts only where its motes reach: a player out past a mote's flight is never cast at
+        assertTrue(GrandOrrery.CAST_RANGE <= GrandOrrery.MOTE_RANGE);
         // open, it comes down from its station to its target's height within the sinking time
         assertTrue(GrandOrrery.SINK_SPEED * GrandOrrery.SINK_TICKS >= GrandOrrery.HOVER_UP - GrandOrrery.SINK_UP);
         assertTrue(GrandOrrery.SINK_TICKS < GrandOrrery.OPEN_TICKS);
@@ -203,11 +207,15 @@ class GrandOrreryNumbersTest {
 
     @Test
     void motesAgainstTheReferencePlayer() {
-        // one mote of 6 on the End's reference player (netherite: armour 20, toughness 12; Protection IV left out): 1.49
-        float mote = afterArmor(6.0F, 20, 12);
-        assertEquals(1.488F, mote, 0.01F);
-        assertTrue(20.0F / mote >= 3.0F);
-        // on Hard (mob projectiles x1.5 to players): still 8.9 motes to die
-        assertTrue(20.0F / afterArmor(9.0F, 20, 12) > 3.0F);
+        // one mote, 6 through armour and 10 past it, on the End's reference player (netherite: armour 20, toughness 12;
+        // Protection IV, -64 %): (0.54 + 3.6) = 4.14, so 4.8 motes kill: between the apex's 3 and 5
+        float protection = 1.0F - 16.0F / 25.0F;
+        float mote = (afterArmor(6.0F, 20, 12) + GrandOrrery.MOTE_PIERCE) * protection;
+        assertEquals(4.136F, mote, 0.01F);
+        assertTrue(20.0F / mote >= 3.0F && 20.0F / mote <= 5.0F, "three to five motes kill, " + 20.0F / mote);
+        // without the piercing share it would take 37 motes, and a pattern stood in would cost nothing
+        assertTrue(20.0F / (afterArmor(6.0F, 20, 12) * protection) > 30.0F);
+        // on Hard (mob blows x1.5 to players) no mote is nearly a kill: 3.2 motes
+        assertTrue(20.0F / ((afterArmor(9.0F, 20, 12) + GrandOrrery.MOTE_PIERCE * 1.5F) * protection) > 1.5F);
     }
 }

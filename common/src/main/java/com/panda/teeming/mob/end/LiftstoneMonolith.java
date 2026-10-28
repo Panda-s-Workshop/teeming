@@ -93,8 +93,11 @@ public class LiftstoneMonolith extends TeemingMonster {
     /** The slam drives each victim straight down 1.5 blocks a tick: from 6 up, it lands on the slam's fourth tick. */
     public static final double SLAM_SPEED = 1.5;
     public static final int SLAM_TICKS = 4;
-    /** What the landing does, its whole blow (the same as its attack). */
-    public static final float SLAM_DAMAGE = 12.0F;
+    /**
+     * What the landing does, its whole blow: a slam the End reference player (netherite, Protection IV) survives at
+     * least 3 and at most 5 times, so an apex lift left unbroken is a real risk.
+     */
+    public static final float SLAM_DAMAGE = 27.0F;
     /** A solid block within this many blocks over a victim's head stops its lift. */
     public static final double ROOF_REACH = 3.0;
     /** From one rise to the next: 8 s. */

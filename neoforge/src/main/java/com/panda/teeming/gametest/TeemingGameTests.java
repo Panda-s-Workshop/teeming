@@ -50,6 +50,7 @@ public final class TeemingGameTests {
         FUNCTIONS.register("looks_built", () -> TeemingGameTests::looksBuilt);
         FUNCTIONS.register("spawn_caps", () -> TeemingGameTests::spawnCaps);
         FUNCTIONS.register("spawn_caps_config", () -> TeemingGameTests::spawnCapsConfig);
+        FUNCTIONS.register("balance_xp_bands", () -> TeemingGameTests::xpBands);
         SpawnTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         FieldGuideTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         TrophyTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
@@ -107,6 +108,42 @@ public final class TeemingGameTests {
     }
 
     // ---- tests -------------------------------------------------------------------------------------------------
+
+    /**
+     * Every mob's experience against the experience bands: hostiles and neutrals pay 5-10 in the Overworld, 8-15 in the
+     * Nether and 10-20 in the End, apex mobs 100; passive creatures pay what vanilla's animals do (1-3), and the
+     * Driftsong, a 120-health giant, 10.
+     */
+    private static void xpBands(GameTestHelper helper) {
+        List<String> off = new ArrayList<>();
+        for (RosterStats.Entry row : RosterStats.ALL) {
+            var type = TeemingSpawns.type(row);
+            if (type.isEmpty()) {
+                off.add(row.id() + " has no entity type");
+                continue;
+            }
+            var mob = type.get().create(helper.getLevel(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            if (mob == null) {
+                off.add(row.id() + " could not be made");
+                continue;
+            }
+            int xp = mob.getExperienceReward(helper.getLevel(), null);
+            int lo, hi;
+            if (row.apex()) {
+                lo = hi = 100;
+            } else if (row.cat() == RosterStats.Cat.CREATURE) {
+                lo = 1;
+                hi = row.id().equals("driftsong") ? 10 : 3;
+            } else {
+                lo = switch (row.dim()) { case OVERWORLD -> 5; case NETHER -> 8; case END -> 10; };
+                hi = switch (row.dim()) { case OVERWORLD -> 10; case NETHER -> 15; case END -> 20; };
+            }
+            if (xp < lo || xp > hi) off.add("%s %d outside %d-%d".formatted(row.id(), xp, lo, hi));
+            mob.discard();
+        }
+        helper.assertTrue(off.isEmpty(), "experience off its band: " + off);
+        helper.succeed();
+    }
 
     /** The mod's own registrations reached the game's registries. */
     private static void modLoaded(GameTestHelper helper) {

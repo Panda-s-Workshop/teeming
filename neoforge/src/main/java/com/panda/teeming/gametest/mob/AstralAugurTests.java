@@ -44,7 +44,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Astral Augur: every 100 ticks, with a target within 16 blocks in its sight, it channels for 24 ticks (the tell, which
  * hurts nothing) while three circles of radius 1.5 fill in on the ground, one under the target and two behind it. Then
- * each circle strikes: 9 to everything inside, once however many circles it stands in, with no knockback. A hit during
+ * each circle strikes: 20 to everything inside, once however many circles it stands in, with no knockback. A hit during
  * the channel breaks it: the circles fade, nothing strikes, it flinches for 20 ticks and a halo mote cracks off and drops
  * as a star mote; it casts one circle fewer for each mote lost, down to its last.
  *
@@ -241,19 +241,21 @@ public final class AstralAugurTests {
     }
 
     /**
-     * Failing the counter: a survival player stays in the circle under them. The strike hits them for 9 (mob damage to
-     * players scales with difficulty: 5.5 on Easy, 13.5 on Hard) as the augur's own attack, which goes through armour, and
+     * Failing the counter: a survival player stays in the circle under them. The strike hits them for 20 (mob damage to
+     * players scales with difficulty: 11 on Easy, 30 on Hard; the player has 40 health) as the augur's own attack, which goes through armour, and
      * doesn't move them.
      */
     private static void failure(GameTestHelper helper) {
         AstralAugur a = augur(helper, AT);
         ServerPlayer p = TestPlayers.survivor(helper, MARK);
+        p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);         // the blow leaves it standing on any difficulty
+        p.setHealth(40.0F);
         a.setTarget(p);
         float before = p.getHealth();
         float expected = switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 5.5F;
-            case HARD -> 13.5F;
-            default -> 9.0F;
+            case EASY -> 11.0F;
+            case HARD -> 30.0F;
+            default -> 20.0F;
         };
         Vec3 stood = p.position();
         long[] struckAt = {-1};
@@ -283,7 +285,7 @@ public final class AstralAugurTests {
 
     /**
      * Radius 1.5: of two pigs placed by the middle circle as it opens, toward the augur (where no other circle lies),
-     * the one 1.4 blocks from its centre is struck for 9 and the one 1.6 blocks out is untouched.
+     * the one 1.4 blocks from its centre is struck for 20 and the one 1.6 blocks out is untouched.
      */
     private static void circleRadius(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
@@ -308,14 +310,14 @@ public final class AstralAugurTests {
             helper.assertTrue(in[0] != null && a.strikes() == 1, "the circles struck, phase " + a.phase());
             helper.assertTrue(Math.abs(radii[0] - 1.5) < 1.0E-6 && Math.abs(radii[1] - 1.5) < 1.0E-6, "every circle has radius 1.5, "
                     + radii[0] + ".." + radii[1]);
-            helper.assertTrue(near(in[0].getHealth(), 31.0F), "1.4 blocks from the centre is inside: 40 -> 31, got " + in[0].getHealth());
+            helper.assertTrue(near(in[0].getHealth(), 20.0F), "1.4 blocks from the centre is inside: 40 -> 20, got " + in[0].getHealth());
             helper.assertTrue(near(out[0].getHealth(), 40.0F), "1.6 blocks out is outside: unhurt, got " + out[0].getHealth());
         });
     }
 
     /**
-     * 9 damage each: a pig at the middle of each of the three circles loses exactly 9. A fourth pig where the middle
-     * circle and a flank overlap is in two circles and still loses 9, once.
+     * 20 damage each: a pig at the middle of each of the three circles loses exactly 20. A fourth pig where the middle
+     * circle and a flank overlap is in two circles and still loses 20, once.
      */
     private static void damage(GameTestHelper helper) {
         Pig[] pig = new Pig[1];
@@ -331,9 +333,9 @@ public final class AstralAugurTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(both[0] != null && a.strikes() == 1, "the circles struck, phase " + a.phase());
-            helper.assertTrue(near(pig[0].getHealth(), 31.0F), "the pig in the middle circle: 40 -> 31, got " + pig[0].getHealth());
-            for (Pig f : flanks) helper.assertTrue(near(f.getHealth(), 31.0F), "a pig in a flank circle: 40 -> 31, got " + f.getHealth());
-            helper.assertTrue(near(both[0].getHealth(), 31.0F), "in two circles at once it still loses 9, got " + both[0].getHealth());
+            helper.assertTrue(near(pig[0].getHealth(), 20.0F), "the pig in the middle circle: 40 -> 20, got " + pig[0].getHealth());
+            for (Pig f : flanks) helper.assertTrue(near(f.getHealth(), 20.0F), "a pig in a flank circle: 40 -> 20, got " + f.getHealth());
+            helper.assertTrue(near(both[0].getHealth(), 20.0F), "in two circles at once it still loses 20, got " + both[0].getHealth());
             long times = a.lastStruck().stream().filter(e -> e == both[0]).count();
             helper.assertTrue(times == 1, "and it was struck once, " + times + " times");
             helper.assertTrue(a.lastStruck().size() == 4, "four pigs struck, " + a.lastStruck().size());
@@ -387,7 +389,7 @@ public final class AstralAugurTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(struck[0] >= 0.0, "the circles struck, phase " + a.phase());
-            helper.assertTrue(near(pig[0].getHealth(), 31.0F) && near(control.getHealth(), 31.0F), "both lost 9");
+            helper.assertTrue(near(pig[0].getHealth(), 20.0F) && near(control.getHealth(), 20.0F), "both lost 20");
             helper.assertTrue(struck[0] < 0.01, "the struck pig was not moved, motion " + struck[0]);
             helper.assertTrue(knocked[0] > 0.1, "the control was knocked back, motion " + knocked[0]);
         });
@@ -411,7 +413,7 @@ public final class AstralAugurTests {
             helper.assertTrue(second[0] >= 0, "it channelled twice, first at " + first[0] + ", cooldown " + a.cooldown());
             long gap = second[0] - first[0];
             helper.assertTrue(Math.abs(gap - 100) <= 1, "100 ticks from one channel to the next, took " + gap);
-            helper.assertTrue(a.strikes() == 1 && near(pig[0].getHealth(), 31.0F), "the first strike landed, health " + pig[0].getHealth());
+            helper.assertTrue(a.strikes() == 1 && near(pig[0].getHealth(), 20.0F), "the first strike landed, health " + pig[0].getHealth());
         });
     }
 
@@ -514,7 +516,7 @@ public final class AstralAugurTests {
 
     /**
      * The backhand up close: with a pig in reach and its channel not ready, it winds up for 10 ticks (the pig unhurt the
-     * while), then strikes for its attack, 4.
+     * while), then strikes for its attack, 8.5.
      */
     private static void swipe(GameTestHelper helper) {
         AstralAugur a = augur(helper, AT);
@@ -538,7 +540,7 @@ public final class AstralAugurTests {
             helper.assertTrue(first[0] <= 3, "a target in reach starts the wind-up at once, at " + first[0]);
             helper.assertTrue(Math.abs(winding[0] - 10) <= 1, "the wind-up lasts 10 ticks, lasted " + winding[0]);
             helper.assertTrue(!early[0], "nothing lands during the wind-up");
-            helper.assertTrue(near(pig.getHealth(), 36.0F), "the blow does its attack, 4: 40 -> 36, got " + pig.getHealth());
+            helper.assertTrue(near(pig.getHealth(), 31.5F), "the blow does its attack, 8.5: 40 -> 31.5, got " + pig.getHealth());
         });
     }
 
@@ -563,14 +565,14 @@ public final class AstralAugurTests {
         });
     }
 
-    /** Health 34, attack 4, armour 2, a 0.7 x 2.1 hitbox. */
+    /** Health 34, attack 8.5, armour 2, a 0.7 x 2.1 hitbox. */
     private static void stats(GameTestHelper helper) {
         AstralAugur a = helper.spawn(ModMobs.ASTRAL_AUGUR.get(), AT);
         a.removeFreeWill();
         a.core().setLook(LookDef.BASE, true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(near(a.getMaxHealth(), 34.0F) && near(a.getHealth(), 34.0F), "health 34, got " + a.getHealth() + "/" + a.getMaxHealth());
-            helper.assertTrue(Math.abs(a.getAttributeValue(Attributes.ATTACK_DAMAGE) - 4.0) < 0.01, "attack 4");
+            helper.assertTrue(Math.abs(a.getAttributeValue(Attributes.ATTACK_DAMAGE) - 8.5) < 0.01, "attack 8.5");
             helper.assertTrue(Math.abs(a.getAttributeValue(Attributes.ARMOR) - 2.0) < 0.01, "armour 2");
             helper.assertTrue(Math.abs(a.getBbWidth() - 0.7F) < 0.02F && Math.abs(a.getBbHeight() - 2.1F) < 0.02F,
                     "hitbox 0.7 x 2.1, got " + a.getBbWidth() + " x " + a.getBbHeight());

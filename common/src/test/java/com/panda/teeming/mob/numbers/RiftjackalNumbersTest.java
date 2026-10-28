@@ -17,7 +17,7 @@ import java.util.function.IntUnaryOperator;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Riftjackal's numbers against its row, written out as plain values: HP 26 (alpha 40), Atk 6, Arm 2, 0.8 x 0.9,
+ * The Riftjackal's numbers against its row, written out as plain values: HP 26 (alpha 40), Atk 8.5, Arm 2, 0.8 x 0.9,
  * tell 8 (the crouch); it blinks to your side or back every 60 t, up to 4 blocks from you, and bites for its attack;
  * each rift lasts 60 t and throws whoever steps in 8 blocks away onto safe ground; End highlands, weight 4, packs of 2
  * to 3; second look Starbitten; drops rift essence. Then the safe-teleport rule on mock columns (never the void, a drop
@@ -60,7 +60,7 @@ class RiftjackalNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("riftjackal");
         assertEquals(26.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.8F, row.width());
         assertEquals(0.9F, row.height());

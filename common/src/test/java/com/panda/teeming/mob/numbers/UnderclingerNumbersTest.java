@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Underclinger's numbers against its row, written out as plain values: HP 28, Atk 6, Arm 2, 1.0 x 0.6, tell 10
+ * The Underclinger's numbers against its row, written out as plain values: HP 28, Atk 8.5, Arm 2, 1.0 x 0.6, tell 10
  * (the reach); it grabs prey at an edge or on a bridge and drags it 2 blocks out; a hit makes it let go; island
  * undersides (the spawner's underside rule), one at a time; second look Pale Clinger; drops void membrane. The GameTests
  * check the numbers are applied in the world; this checks they are the right numbers.
@@ -52,7 +52,7 @@ class UnderclingerNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("underclinger");
         assertEquals(28.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(1.0F, row.width());
         assertEquals(0.6F, row.height());

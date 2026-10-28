@@ -115,7 +115,7 @@ public class Quakehopper extends TeemingMonster {
 
     public Quakehopper(EntityType<? extends Quakehopper> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 6;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

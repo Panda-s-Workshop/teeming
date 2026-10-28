@@ -55,9 +55,11 @@ import org.jspecify.annotations.Nullable;
  * Failing it costs a growing crowd (one becomes up to four) and the poison of each burst.
  *
  * <p>The split comes on death, not on any hit: the health of each size is then what it takes to burst it, and a
- * fast weapon can't multiply the crowd. Loot drops from each death that doesn't burst (a smallest one, or any size
- * killed by fire), so a whole line drops once per smallest shambler or once for a burned one; experience drops from
- * every death, by size. Every size is a Mycelite Shambler, so the split shamblers count against the local and
+ * fast weapon can't multiply the crowd. A line (the first shambler and everything that bursts out of it) yields once,
+ * whichever way it ends: the first shambler's death drops the loot and the trophy roll and counts as the Field Guide
+ * kill, burst or burned, and the shamblers that come out of a burst drop none of them. Experience drops by size from
+ * every death, and a death by fire also pays what the line it ends would still have given ({@link #lineXp}), so a
+ * burned line yields exactly what a line fought down to its smallest does and the counter never pays less. Every size is a Mycelite Shambler, so the split shamblers count against the local and
  * monster caps like any other, and they despawn like any other unless the first one was kept.
  *
  * <p>The size is kept as the visual stage ({@code MobCore.stage}: 2 full-grown, 1 middle, 0 smallest), synced to
@@ -87,10 +89,13 @@ public class MyceliteShambler extends TeemingMonster {
     public static final int POISON_LEVEL = 0;              // amplifier 0 = Poison I
     /** Ticks a fresh shambler spends standing up out of the burst before it may fight. */
     public static final int SPROUT_TICKS = 10;
-    /** Experience for a kill, by size. */
-    public static final int XP_LARGE = 5;
-    public static final int XP_MEDIUM = 2;
-    public static final int XP_SMALL = 1;
+    /**
+     * Experience for a kill, by size: a whole line fought down to its smallest pays 6 + 2 x 1 + 4 x 0 = 8, inside the
+     * Overworld's 5-10 as one full-grown kill is.
+     */
+    public static final int XP_LARGE = 6;
+    public static final int XP_MEDIUM = 1;
+    public static final int XP_SMALL = 0;
 
     /** Flag bit: the dying shambler will burst (the model swells its cap and sacs). */
     public static final int FLAG_BURSTING = 0;
@@ -104,6 +109,8 @@ public class MyceliteShambler extends TeemingMonster {
     private int appliedSize = -1;
     /** Server: set at death when this death bursts. */
     private boolean bursts;
+    /** Came out of a burst: part of a line that already yielded its loot, trophy roll and Field Guide kill. Saved. */
+    private boolean sprout;
     private @Nullable LivingEntity killer;
 
     public MyceliteShambler(EntityType<? extends MyceliteShambler> type, Level level) {
@@ -163,6 +170,28 @@ public class MyceliteShambler extends TeemingMonster {
         return size == LARGE ? HEALTH_LARGE : size == MEDIUM ? HEALTH_MEDIUM : HEALTH_SMALL;
     }
 
+    public static int xpOf(int size) {
+        return Line.xpOf(size);
+    }
+
+    public static int lineXp(int size) {
+        return Line.xp(size);
+    }
+
+    /** Experience by size, as plain numbers (JUnit reads them without loading the mob). */
+    public static final class Line {
+        private Line() {}
+
+        public static int xpOf(int size) {
+            return size == LARGE ? XP_LARGE : size == MEDIUM ? XP_MEDIUM : XP_SMALL;
+        }
+
+        /** Everything a shambler of {@code size} and the line that would burst out of it pay when fought down to the smallest. */
+        public static int xp(int size) {
+            return size >= SMALL ? XP_SMALL : xpOf(size) + SPLIT_COUNT * xp(size + 1);
+        }
+    }
+
     /** Server: makes it this size; {@code fresh} also fills its health. Public as a test hook. */
     public void setSize(int size, boolean fresh) {
         core().setStage(GROWN - Math.clamp(size, LARGE, SMALL));
@@ -179,7 +208,7 @@ public class MyceliteShambler extends TeemingMonster {
         appliedSize = size;
         set(Attributes.SCALE, scaleOf(size) / SCALE_LARGE);
         set(Attributes.MAX_HEALTH, healthOf(size) / HEALTH_LARGE);
-        xpReward = size == LARGE ? XP_LARGE : size == MEDIUM ? XP_MEDIUM : XP_SMALL;
+        xpReward = xpOf(size);
         refreshDimensions();
         if (fresh || getHealth() > getMaxHealth()) setHealth(getMaxHealth());
     }
@@ -219,6 +248,7 @@ public class MyceliteShambler extends TeemingMonster {
             killer = source.getEntity() instanceof LivingEntity by ? by : null;
             bursts = size() < SMALL && !fire && MechanicEvent.post(this, "burst", killer);
             core().setFlag(FLAG_BURSTING, bursts);
+            if (fire) xpReward = lineXp(size());                               // the counter pays the whole line
             if (size() < SMALL && fire && level() instanceof ServerLevel level) scorch(level);
         }
         super.die(source);
@@ -232,10 +262,21 @@ public class MyceliteShambler extends TeemingMonster {
         level.playSound(null, getX(), y, getZ(), ModSounds.MYCELITE_SHAMBLER_SCORCH.get(), getSoundSource(), 1.0F, 1.0F);
     }
 
-    /** Loot only from a death that ends its line: one that doesn't burst. */
+    /** Loot (and the trophy roll in it) once per line: from the first shambler's death, burst or burned. */
     @Override
     protected boolean shouldDropLoot(ServerLevel level) {
-        return !bursts && super.shouldDropLoot(level);
+        return !sprout && super.shouldDropLoot(level);
+    }
+
+    /** One Field Guide kill per line: the first shambler's. */
+    @Override
+    protected boolean countsAsKill() {
+        return !sprout;
+    }
+
+    /** True for a shambler that came out of a burst. Public as a test hook. */
+    public boolean sprout() {
+        return sprout;
     }
 
     /** The body vanishes a second after death (vanilla's death time); a bursting one bursts then. */
@@ -266,6 +307,7 @@ public class MyceliteShambler extends TeemingMonster {
             double sign = i % 2 == 0 ? -1.0 : 1.0;
             MyceliteShambler child = convertTo(type, new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, getTeam()),
                     EntitySpawnReason.TRIGGERED, c -> {
+                        c.sprout = true;
                         c.core().setLook(look.isEmpty() ? "base" : look, true);
                         c.setSize(next, true);
                         c.snapTo(getX() + side.x * gap * sign, getY() + 0.1, getZ() + side.z * gap * sign,
@@ -311,6 +353,11 @@ public class MyceliteShambler extends TeemingMonster {
         return target != null && target.isAlive() && !(target instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
+    /** The experience its death pays (by size; the whole remaining line's for a death by fire). Public as a test hook. */
+    public int xp() {
+        return xpReward;
+    }
+
     /** True from the killing blow until the burst, for a death that bursts. Public as a test hook. */
     public boolean willBurst() {
         return bursts;
@@ -322,12 +369,14 @@ public class MyceliteShambler extends TeemingMonster {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("Size", size());
+        output.putBoolean("Sprout", sprout);
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         core().setStage(GROWN - Math.clamp(input.getIntOr("Size", LARGE), LARGE, SMALL));
+        sprout = input.getBooleanOr("Sprout", false);
         appliedSize = -1;                                                      // re-applied on the next tick
     }
 

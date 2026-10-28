@@ -69,7 +69,7 @@ public class Levimoth extends TeemingMonster {
     public Levimoth(EntityType<? extends Levimoth> type, Level level) {
         super(type, level, Step.values());
         moveControl = new FlyingMoveControl<>(this, 20, true);
-        xpReward = 5;
+        xpReward = 10;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

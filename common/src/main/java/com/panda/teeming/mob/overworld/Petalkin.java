@@ -88,6 +88,7 @@ public class Petalkin extends TeemingAnimal {
 
     public Petalkin(EntityType<? extends Petalkin> type, Level level) {
         super(type, level, Step.values());
+        xpReward = 5;                                      // fightable when provoked: the Overworld band's low end
     }
 
     public static AttributeSupplier.Builder createAttributes() {

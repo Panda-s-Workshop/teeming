@@ -79,7 +79,7 @@ public class Gatecaster extends TeemingMonster {
     /** It weaves at targets this close, and in its sight. */
     public static final double CAST_RANGE = 16.0;
     /** The bolt's hit on the first thing it meets, and the burst at its feet when a shield turns it back. */
-    public static final float BOLT_DAMAGE = 6.0F;
+    public static final float BOLT_DAMAGE = 8.5F;
     /** The gate opens this far behind (or beside) the target, across the ground. */
     public static final double GATE_NEAR = 3.0;
     public static final double GATE_FAR = 5.0;
@@ -576,7 +576,7 @@ public class Gatecaster extends TeemingMonster {
         burst(level, blocker);
     }
 
-    /** Its own bolt bursts at its feet: 6, with the one who turned it back as the cause, past any hurt cooldown. */
+    /** Its own bolt bursts at its feet: 8.5, with the one who turned it back as the cause, past any hurt cooldown. */
     private void burst(ServerLevel level, LivingEntity blocker) {
         Vec3 at = position();
         level.sendParticles(STREAK, true, true, at.x, at.y + 0.3, at.z, 24, 0.5, 0.2, 0.5, 0.0);

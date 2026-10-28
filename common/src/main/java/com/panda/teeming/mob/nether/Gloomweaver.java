@@ -118,7 +118,7 @@ public class Gloomweaver extends TeemingMonster {
 
     public Gloomweaver(EntityType<? extends Gloomweaver> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 6;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

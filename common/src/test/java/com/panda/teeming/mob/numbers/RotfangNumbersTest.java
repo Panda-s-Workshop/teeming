@@ -10,7 +10,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Rotfang's numbers against its row, written out as plain values: HP 26, Atk 6, Arm 2, 0.8 x 0.8, a 10-tick tell
+ * The Rotfang's numbers against its row, written out as plain values: HP 26, Atk 8.5, Arm 2, 0.8 x 0.8, a 10-tick tell
  * (the snarl); its bite gives Void Rot for 160 ticks (no natural regeneration, healing x0.5); End barrens, weight 5,
  * groups of 1-2; second look Blight Fang; drops void ichor. The GameTests check the numbers are applied in the world;
  * this checks they are the right numbers.
@@ -41,7 +41,7 @@ class RotfangNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("rotfang");
         assertEquals(26.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.8F, row.width());
         assertEquals(0.8F, row.height());

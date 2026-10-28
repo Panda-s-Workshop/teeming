@@ -4,7 +4,7 @@
     "has_the_recipe": {
       "trigger": "minecraft:recipe_unlocked",
       "conditions": {
-        "recipes": "teeming:ember_wing_to_blaze_powder"
+        "recipes": "teeming:ember_wing_to_fire_charge"
       }
     },
     "has_item_0": {
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "teeming:ember_wing_to_blaze_powder"
+      "teeming:ember_wing_to_fire_charge"
     ]
   }
 }

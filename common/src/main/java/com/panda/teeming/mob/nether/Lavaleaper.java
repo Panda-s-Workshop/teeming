@@ -120,7 +120,7 @@ public class Lavaleaper extends TeemingMonster {
         setPathfindingMalus(PathType.LAVA, 0.0F);
         setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
         setPathfindingMalus(PathType.FIRE, 0.0F);
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

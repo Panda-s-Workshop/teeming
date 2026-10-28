@@ -38,10 +38,10 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Swellshade: asleep it never grows; from the tick it takes a foe it swells exactly every 200 ticks, after a 16-tick
  * breath, one step a time: +0.25 scale, +25 % health and attack (a hurt shade gains the 6 health too), four steps to x2
- * (1.6 x 3.2, health 48, attack 8) and never a fifth. Its blow: an 8-tick wind-up, then its attack to a target still in
+ * (1.6 x 3.2, health 48, attack 9) and never a fifth. Its blow: an 8-tick wind-up, then its attack to a target still in
  * reach, and its reach grows with it. Killed fresh it is snuffed out and drops 1 void ichor and 10 experience; full size
  * drops 3 and 20. A swell waits for headroom, a vetoed swell doesn't happen, and size and clock survive a reload. Health
- * 24, attack 4, armour 0, 0.8 x 1.6; End midlands at weight 4, alone. Every number is checked against a plain value.
+ * 24, attack 4.5, armour 0, 0.8 x 1.6; End midlands at weight 4, alone. Every number is checked against a plain value.
  * Nothing it does reaches past its own arena: its foe is set by each test, and its follow range is 1.
  */
 public final class SwellshadeTests {
@@ -128,7 +128,10 @@ public final class SwellshadeTests {
 
     // ---- the blow (the tell) ---------------------------------------------------------------------------------------------
 
-    /** Its blow: an 8-tick wind-up, held still and harmless, then 4 damage to the pig in reach (armour 0 takes all 4). */
+    /**
+     * Its blow: an 8-tick wind-up, held still and harmless, then 4.5 damage to the pig in reach (armour 0 takes all
+     * 4.5).
+     */
     private static void tell(GameTestHelper helper) {
         Swellshade s = shade(helper, new Vec3(6.5, 1, 5.0));
         Pig pig = pig(helper, 6.5, 1, 6.25);                               // a gap of 0.4 between the hitboxes
@@ -145,7 +148,7 @@ public final class SwellshadeTests {
             helper.assertTrue(s.strikes() == 1, "the blow landed, strikes " + s.strikes() + ", phase " + s.phase());
             helper.assertTrue(ticks[0] == 8, "the wind-up lasts 8 ticks, saw " + ticks[0]);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 4.0F) < 0.01F, "the blow takes 4, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 4.5F) < 0.01F, "the blow takes 4.5, the pig lost " + lost);
         });
     }
 
@@ -169,8 +172,8 @@ public final class SwellshadeTests {
     }
 
     /**
-     * Its reach grows with it: with 2 blocks between the hitboxes a full-size shade's blow lands for 8, and a fresh one's
-     * misses.
+     * Its reach grows with it: with 2 blocks between the hitboxes a full-size shade's blow lands for 9, and a fresh
+     * one's misses.
      */
     private static void reachGrows(GameTestHelper helper) {
         Swellshade big = shade(helper, new Vec3(8.0, 1, 3.5));
@@ -186,8 +189,8 @@ public final class SwellshadeTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(big.core().in(Step.STRIKE) || big.cooldown() > 0, "the big one swung");
             helper.assertTrue(small.core().in(Step.STRIKE) || small.cooldown() > 0, "the small one swung");
-            helper.assertTrue(big.strikes() == 1 && Math.abs(100.0F - bigPig.getHealth() - 8.0F) < 0.01F,
-                    "the full-size blow lands for 8, the pig has " + bigPig.getHealth());
+            helper.assertTrue(big.strikes() == 1 && Math.abs(100.0F - bigPig.getHealth() - 9.0F) < 0.01F,
+                    "the full-size blow lands for 9, the pig has " + bigPig.getHealth());
             helper.assertTrue(small.strikes() == 0 && smallPig.getHealth() >= 100.0F, "the fresh one's falls short");
         });
     }
@@ -236,7 +239,7 @@ public final class SwellshadeTests {
 
     /**
      * Failing it: 200 ticks after it wakes it swells, after a 16-tick breath: scale 1.25, a 1.0 x 2.0 hitbox, max health
-     * 30, attack 5, and the hurt shade (20 of 24) gains the 6 health: 26.
+     * 30, attack 5.625, and the hurt shade (20 of 24) gains the 6 health: 26.
      */
     private static void failure(GameTestHelper helper) {
         Swellshade s = shade(helper);
@@ -254,7 +257,7 @@ public final class SwellshadeTests {
             helper.assertTrue(swelled[0] >= 0, "it swelled");
             helper.assertTrue(swelled[0] - woke[0] == 200, "200 ticks after it woke, saw " + (swelled[0] - woke[0]));
             helper.assertTrue(inhale[0] == 16, "a 16-tick breath before it, saw " + inhale[0]);
-            assertSize(helper, s, 1.25, 1.0, 2.0, 30.0, 5.0);
+            assertSize(helper, s, 1.25, 1.0, 2.0, 30.0, 5.625);
             helper.assertTrue(near(s.getHealth(), 26.0), "the 6 health it gains is added: 26, got " + s.getHealth());
             helper.assertTrue(s.swells() == 1, "one swell, " + s.swells());
         });
@@ -262,7 +265,7 @@ public final class SwellshadeTests {
 
     /**
      * Four swells, at 200, 400, 600 and 800 ticks after it wakes, each one step bigger, to x2: scale 2, a 1.6 x 3.2
-     * hitbox, health 48 (full, since every gain is added), attack 8, 20 experience.
+     * hitbox, health 48 (full, since every gain is added), attack 9, 20 experience.
      */
     private static void growth(GameTestHelper helper) {
         Swellshade s = shade(helper);
@@ -280,7 +283,7 @@ public final class SwellshadeTests {
             for (int n = 1; n <= 4; n++) {
                 helper.assertTrue(at[n] - woke[0] == 200L * n, "swell " + n + " at " + 200 * n + " ticks, saw " + (at[n] - woke[0]));
             }
-            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 8.0);
+            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 9.0);
             helper.assertTrue(near(s.getHealth(), 48.0), "at full health, 48, got " + s.getHealth());
             helper.assertTrue(s.experience() == 20, "20 experience, " + s.experience());
         });
@@ -294,7 +297,7 @@ public final class SwellshadeTests {
         s.setGrowClock(Swellshade.GROW_EVERY - 5);
         helper.runAtTickTime(30, () -> {
             helper.assertTrue(s.steps() == 4 && s.swells() == 0, "still 4 steps, no swell, " + s.steps());
-            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 8.0);
+            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 9.0);
             helper.succeed();
         });
     }
@@ -304,7 +307,7 @@ public final class SwellshadeTests {
         Swellshade s = shade(helper);
         helper.runAtTickTime(230, () -> {
             helper.assertTrue(!s.awake() && s.steps() == 0 && s.swells() == 0, "asleep and fresh");
-            assertSize(helper, s, 1.0, 0.8, 1.6, 24.0, 4.0);
+            assertSize(helper, s, 1.0, 0.8, 1.6, 24.0, 4.5);
             helper.succeed();
         });
     }
@@ -333,7 +336,7 @@ public final class SwellshadeTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(swelled[0] >= 0, "it swelled once there was room");
             helper.assertTrue(swelled[0] - cleared[0] <= 1, "at once, " + (swelled[0] - cleared[0]) + " ticks after");
-            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 8.0);
+            assertSize(helper, s, 2.0, 1.6, 3.2, 48.0, 9.0);
         });
     }
 
@@ -350,7 +353,7 @@ public final class SwellshadeTests {
         helper.runAtTickTime(20, () -> {
             helper.assertTrue(s.steps() == 0 && s.swells() == 0, "no swell");
             helper.assertTrue(s.growClock() > 0 && s.growClock() < 20, "its clock started over, " + s.growClock());
-            assertSize(helper, s, 1.0, 0.8, 1.6, 24.0, 4.0);
+            assertSize(helper, s, 1.0, 0.8, 1.6, 24.0, 4.5);
             helper.succeed();
         });
     }
@@ -374,7 +377,7 @@ public final class SwellshadeTests {
 
     /**
      * Saved and loaded at 2 steps, hurt to 30 of 36, 150 ticks into its clock: the copy keeps its size (scale 1.5, health
-     * 30 of 36, attack 6), stays awake without a foe, and swells on time.
+     * 30 of 36, attack 6.75), stays awake without a foe, and swells on time.
      */
     private static void saveLoad(GameTestHelper helper) {
         Swellshade s = shade(helper);
@@ -396,7 +399,7 @@ public final class SwellshadeTests {
             level.addFreshEntity(c);
             c.removeFreeWill();
             TestPlayers.whenDone(helper, c::discard);
-            assertSize(helper, c, 1.5, 1.2, 2.4, 36.0, 6.0);
+            assertSize(helper, c, 1.5, 1.2, 2.4, 36.0, 6.75);
             helper.assertTrue(near(c.getHealth(), 30.0), "its health kept, 30, got " + c.getHealth());
             helper.assertTrue(c.awake() && c.steps() == 2 && c.getTarget() == null, "awake at 2 steps, with no foe");
             copy[0] = c;
@@ -412,19 +415,19 @@ public final class SwellshadeTests {
             long took = swelledAt[0] - savedAt[0];
             helper.assertTrue(clockAtLoad[0] >= 150 && clockAtLoad[0] <= 153, "its clock kept, " + clockAtLoad[0]);
             helper.assertTrue(Math.abs(took - expect) <= 1, "on time: " + expect + " ticks after the load, took " + took);
-            assertSize(helper, copy[0], 1.75, 1.4, 2.8, 42.0, 7.0);
+            assertSize(helper, copy[0], 1.75, 1.4, 2.8, 42.0, 7.875);
         });
     }
 
     // ---- stats and home ---------------------------------------------------------------------------------------------
 
-    /** Health 24, attack 4, armour 0, a 0.8 x 1.6 hitbox, fresh. */
+    /** Health 24, attack 4.5, armour 0, a 0.8 x 1.6 hitbox, fresh. */
     private static void stats(GameTestHelper helper) {
         Swellshade s = shade(helper);
         s.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(s.getMaxHealth() == 24.0F && s.getHealth() == 24.0F, "health 24, got " + s.getHealth() + "/" + s.getMaxHealth());
-            helper.assertTrue(s.getAttributeValue(Attributes.ATTACK_DAMAGE) == 4.0, "attack 4, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(s.getAttributeValue(Attributes.ATTACK_DAMAGE) == 4.5, "attack 4.5, got " + s.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(s.getArmorValue() == 0, "armour 0, got " + s.getArmorValue());
             helper.assertTrue(Math.abs(s.getBbWidth() - 0.8F) < 0.01F && Math.abs(s.getBbHeight() - 1.6F) < 0.01F,
                     "a 0.8 x 1.6 hitbox, got " + s.getBbWidth() + " x " + s.getBbHeight());

@@ -99,7 +99,7 @@ public class KeeningShade extends TeemingMonster {
 
     public KeeningShade(EntityType<? extends KeeningShade> type, Level level) {
         super(type, level, Step.values());
-        xpReward = 5;
+        xpReward = 8;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

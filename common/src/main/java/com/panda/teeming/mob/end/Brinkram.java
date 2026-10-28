@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Brinkram: a heavy End ram with curled purpur horns. Tell: for 1 s it paws the ground, snorts and lowers its head
- * while dust kicks up. Then it charges in a straight line at 0.5 b/t for up to 16 blocks. A hit does its attack (8)
+ * while dust kicks up. Then it charges in a straight line at 0.5 b/t for up to 16 blocks. A hit does its attack (9)
  * and throws the victim 2.5 b/t out along the charge and 0.4 up, less by the victim's knockback resistance: with an
  * island's edge behind you, that is over the void. A wall stops the charge and it shakes its head for 1 s, no more.
  *

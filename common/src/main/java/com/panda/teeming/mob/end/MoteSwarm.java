@@ -84,7 +84,7 @@ public class MoteSwarm extends TeemingMonster {
     public static final double DRIFT_SPEED = 0.15;
     /** A sweep reaches whatever is this far across (and a quarter block up or down) from the body the blow was aimed at. */
     public static final double SWEEP_ACROSS = 1.0, SWEEP_UP = 0.25;
-    public static final int XP = 5;
+    public static final int XP = 10;
 
     /** Glow stages: its usual glow, and the gather and surge's flare. */
     public static final int STAGE_CALM = 0, STAGE_FLARE = 1;

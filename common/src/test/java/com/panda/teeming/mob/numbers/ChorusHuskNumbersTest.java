@@ -9,7 +9,7 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Chorus Husk's numbers against its row, written out as plain values: HP 30, Atk 6, Arm 2, 0.7 x 2.0, tell 20
+ * The Chorus Husk's numbers against its row, written out as plain values: HP 30, Atk 8.5, Arm 2, 0.7 x 2.0, tell 20
  * (the swell as it dies); the burst teleports everything within 4 blocks as chorus fruit does, up to 8 blocks away; End
  * highlands, weight 5, groups of 1 to 2; second look Blooming Husk; drops chorus silk. Then the calls made here: the
  * blow's 8-tick wind-up, the shortest teleport, the fruit a spared burst leaves. The GameTests check the numbers are
@@ -42,7 +42,7 @@ class ChorusHuskNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("chorus_husk");
         assertEquals(30.0F, row.health());
-        assertEquals(6.0F, row.attack());
+        assertEquals(8.5F, row.attack());
         assertEquals(2.0F, row.armor());
         assertEquals(0.7F, row.width());
         assertEquals(2.0F, row.height());

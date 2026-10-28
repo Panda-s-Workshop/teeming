@@ -21,11 +21,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +39,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Liftstone Monolith: a 20-tick rise that moves and hurts no one yet; then everything within 6 blocks is lifted straight
- * up 6 blocks over 20 ticks, held 10, and slammed back down for 12, with no fall damage on top; a solid block within 3
+ * up 6 blocks over 20 ticks, held 10, and slammed back down for 27, with no fall damage on top; a solid block within 3
  * over a head stops that lift; it rises again 160 ticks after it last rose; a pull that caught on a roof splits the
  * capstone for 80 ticks with armour 0. Health 250, attack 12, armour 12, a 1.6 x 4.0 hitbox, 100 experience, one in 128
  * blocks, placed alone on the End's main island once the dragon is dead by the Teeming spawner's rare apex rule, never
@@ -112,12 +118,12 @@ public final class LiftstoneMonolithTests {
         }
     }
 
-    /** The slam's 12 as the game scales mob blows to players at this difficulty. */
+    /** The slam's 27 as the game scales mob blows to players at this difficulty. */
     private static float slamHere(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 7.0F;          // min(12 / 2 + 1, 12)
-            case HARD -> 18.0F;         // 12 x 1.5
-            default -> 12.0F;
+            case EASY -> 14.5F;         // min(27 / 2 + 1, 27)
+            case HARD -> 40.5F;         // 27 x 1.5
+            default -> 27.0F;
         };
     }
 
@@ -179,7 +185,7 @@ public final class LiftstoneMonolithTests {
 
     /**
      * The counter: a pig under a stone 2 blocks over its head stays on the floor untouched, while a pig in the open 3
-     * blocks the other way is lifted and slammed for 12. The pull caught on the roof, so the capstone splits: the heart
+     * blocks the other way is lifted and slammed for 27. The pull caught on the roof, so the capstone splits: the heart
      * shows gold, every other glow is dark, armour 0, and a blow of 10 takes exactly 10.
      */
     private static void roofAndPunish(GameTestHelper helper) {
@@ -196,7 +202,7 @@ public final class LiftstoneMonolithTests {
             if (split[0] || !m.core().in(Step.CRACKED)) return;
             split[0] = true;
             helper.assertTrue(r.rise < 0.01 && lost(roofed) == 0.0F, "under the roof the pig never left the floor, rose " + r.rise + ", lost " + lost(roofed));
-            helper.assertTrue(o.rise > 5.9 && Math.abs(lost(open) - 12.0F) < 0.01F, "in the open the pig was lifted and slammed, rose " + o.rise + ", lost " + lost(open));
+            helper.assertTrue(o.rise > 5.9 && Math.abs(lost(open) - 27.0F) < 0.01F, "in the open the pig was lifted and slammed, rose " + o.rise + ", lost " + lost(open));
             helper.assertTrue(m.vulnerable() && m.core().stage() == 0, "split, the heart shows gold and nothing else glows, stage " + m.core().stage());
             helper.assertTrue(m.getArmorValue() == 0, "split, armour 0, got " + m.getArmorValue());
             float before = m.getHealth();
@@ -209,16 +215,19 @@ public final class LiftstoneMonolithTests {
 
     /**
      * Failing it: a survival player in the open 3 blocks off (the roof over the arena opened) is lifted straight up 6
-     * blocks, never moved sideways, slammed back onto the spot it stood on and loses exactly the slam (12 on Normal, as
-     * the game scales mob blows), and nothing more in the 20 ticks after it lands.
+     * blocks, never moved sideways, slammed back onto the spot it stood on and loses exactly the slam (27 on Normal, as
+     * the game scales mob blows; the player has 50 health so a slam on Hard leaves it standing), and nothing more in the
+     * 20 ticks after it lands.
      */
     private static void slammedPlayer(GameTestHelper helper) {
         openRoof(helper);
         LiftstoneMonolith m = unaware(helper);
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(MID + 3.0, 1, MID));
+        p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(50.0);
+        p.setHealth(50.0F);
         float each = slamHere(helper);
         Track t = new Track(p.position());
-        float[] health = {20.0F, -1.0F};
+        float[] health = {50.0F, -1.0F};
         long[] landed = {-1};
         boolean[] lifted = {false};
         helper.runAtTickTime(1, () -> {
@@ -306,7 +315,7 @@ public final class LiftstoneMonolithTests {
 
     /**
      * A solid block within 3 over the head stops the lift: a pig with a stone 2.1 over its head stays down; a pig with
-     * a stone 3.1 over its head is lifted, stops under that stone (3.1 up, not 6) and is still slammed for 12.
+     * a stone 3.1 over its head is lifted, stops under that stone (3.1 up, not 6) and is still slammed for 27.
      */
     private static void roof(GameTestHelper helper) {
         LiftstoneMonolith m = unaware(helper);
@@ -329,13 +338,13 @@ public final class LiftstoneMonolithTests {
             checked[0] = true;
             helper.assertTrue(l.rise < 0.01 && lost(low) == 0.0F, "2.1 under a stone: never lifted, never hurt, rose " + l.rise + ", lost " + lost(low));
             helper.assertTrue(Math.abs(h.rise - 3.1) < 0.02, "3.1 under a stone: lifted until it meets it, rose " + h.rise);
-            helper.assertTrue(Math.abs(lost(high) - 12.0F) < 0.01F && Math.abs(high.getY() - h.start.y) < 0.01, "and slammed back down for 12, lost " + lost(high));
+            helper.assertTrue(Math.abs(lost(high) - 27.0F) < 0.01F && Math.abs(high.getY() - h.start.y) < 0.01, "and slammed back down for 27, lost " + lost(high));
         });
         helper.succeedWhen(() -> helper.assertTrue(checked[0], "the pull ran, phase " + m.phase()));
     }
 
     /**
-     * The slam: a pig with its own physics is lifted and slammed, loses exactly 12 on landing, lands where it stood,
+     * The slam: a pig with its own physics is lifted and slammed, loses exactly 27 on landing, lands where it stood,
      * and loses nothing more in the 20 ticks after (no fall damage on top). A pig dropped 5.4 blocks beside it, out of
      * reach, takes the game's fall damage of 2 (the fall less 3, rounded down), so falls do hurt in this arena.
      */
@@ -365,14 +374,14 @@ public final class LiftstoneMonolithTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(landed[0] > 0 && helper.getTick() >= landed[0] + 20, "it landed, and 20 ticks passed");
             helper.assertTrue(t.rise > 5.8, "it was lifted, rose " + t.rise);
-            helper.assertTrue(Math.abs(atLanding[0] - 12.0F) < 0.01F, "the landing costs 12, cost " + atLanding[0]);
-            helper.assertTrue(Math.abs(lost(pig) - 12.0F) < 0.01F, "and nothing more after it (no fall damage), lost " + lost(pig));
+            helper.assertTrue(Math.abs(atLanding[0] - 27.0F) < 0.01F, "the landing costs 27, cost " + atLanding[0]);
+            helper.assertTrue(Math.abs(lost(pig) - 27.0F) < 0.01F, "and nothing more after it (no fall damage), lost " + lost(pig));
             helper.assertTrue(Math.abs(pig.getY() - t.start.y) < 0.05 && t.drift < 0.05, "it lands where it stood");
             helper.assertTrue(Math.abs(lost(control) - 2.0F) < 0.01F, "a 5.4-block fall costs the game's 2, cost " + lost(control));
         });
     }
 
-    /** A pig caught in mid-air, half a block over the floor, is slammed onto the floor under it (not back into the air) for 12. */
+    /** A pig caught in mid-air, half a block over the floor, is slammed onto the floor under it (not back into the air) for 27. */
     private static void midair(GameTestHelper helper) {
         LiftstoneMonolith m = unaware(helper);
         Pig pig = pig(helper, 3.0, 0.5, 0);
@@ -384,7 +393,7 @@ public final class LiftstoneMonolithTests {
             if (done[0] || !lifted[0] || m.held().contains(pig)) return;
             done[0] = true;
             helper.assertTrue(Math.abs(pig.getY() - floor) < 0.01, "slammed onto the floor, " + (pig.getY() - floor) + " over it");
-            helper.assertTrue(Math.abs(lost(pig) - 12.0F) < 0.01F, "for 12, lost " + lost(pig));
+            helper.assertTrue(Math.abs(lost(pig) - 27.0F) < 0.01F, "for 27, lost " + lost(pig));
         });
         helper.succeedWhen(() -> helper.assertTrue(done[0], "the pig was lifted and slammed"));
     }
@@ -472,39 +481,49 @@ public final class LiftstoneMonolithTests {
     }
 
     /**
-     * A survival player in the End's reference armour (a netherite set: armour 20, toughness 12) survives three slams,
-     * each costing what the armour formula says for the slam at this difficulty: 3.55 on Normal (1.79 on Easy, 6.19 on
-     * Hard).
+     * A survival player in the End's reference gear (a netherite set, armour 20 and toughness 12, Protection IV on every
+     * piece) survives three slams on Normal and Easy, two on Hard, each costing what the armour formula and Protection
+     * say for the slam at this difficulty: 4.04 on Normal (1.65 on Easy, 7.64 on Hard).
      */
     private static void surviveThree(GameTestHelper helper) {
         LiftstoneMonolith m = unaware(helper);
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(MID + 3.0, 1, MID));
-        // the set's numbers straight on the player: its equipment would only count once it ticks
-        p.getAttribute(Attributes.ARMOR).setBaseValue(20.0);
-        p.getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(12.0);
-        // d becomes d x (1 - (20 - d / 5) / 25); mob blows to players scale with difficulty first
-        float each = switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 1.792F;
-            case HARD -> 6.192F;
-            default -> 3.552F;
+        var protection = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.PROTECTION);
+        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+        Item[] set = {Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS};
+        for (int i = 0; i < 4; i++) {
+            ItemStack piece = new ItemStack(set[i]);
+            piece.enchant(protection, 4);
+            p.setItemSlot(slots[i], piece);
+        }
+        // mob blows to players scale with difficulty first; then d x (1 - (20 - d / 5) / 25), then x 0.36 for Protection 16
+        Difficulty difficulty = helper.getLevel().getDifficulty();
+        float each = switch (difficulty) {
+            case EASY -> 1.6495F;
+            case HARD -> 7.6399F;
+            default -> 4.0435F;
         };
+        int survived = difficulty == Difficulty.HARD ? 2 : 3;
         float[] health = {20.0F};
-        helper.runAtTickTime(3, () -> {
-            helper.assertTrue(p.getArmorValue() == 20, "armour 20, got " + p.getArmorValue());
+        helper.runAtTickTime(10, () -> {
+            p.doTick();                            // a test player doesn't tick by itself, and the set counts once it has
+            helper.assertTrue(p.getArmorValue() == 20 && p.getAttributeValue(Attributes.ARMOR_TOUGHNESS) == 12.0,
+                    "armour 20 and toughness 12, got " + p.getArmorValue() + " and " + p.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
             health[0] = p.getHealth();
         });
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < survived; i++) {
             int slam = i + 1;
-            helper.runAtTickTime(4 + i * 25, () -> {
+            helper.runAtTickTime(12 + i * 25, () -> {
                 float before = p.getHealth();
                 helper.assertTrue(m.slamHit(helper.getLevel(), p), "slam " + slam + " lands on the player");
                 float cost = before - p.getHealth();
                 helper.assertTrue(Math.abs(cost - each) < 0.02F, "slam " + slam + " costs " + each + " here, cost " + cost);
             });
         }
-        helper.runAtTickTime(4 + 2 * 25 + 2, () -> {
-            helper.assertTrue(p.isAlive() && p.getHealth() > 0.0F, "the player lives through three slams, health " + p.getHealth());
-            helper.assertTrue(Math.abs(health[0] - p.getHealth() - 3 * each) < 0.05F, "three slams cost " + 3 * each + ", cost " + (health[0] - p.getHealth()));
+        helper.runAtTickTime(12 + (survived - 1) * 25 + 2, () -> {
+            helper.assertTrue(p.isAlive() && p.getHealth() > 0.0F, "the player lives through " + survived + " slams, health " + p.getHealth());
+            helper.assertTrue(Math.abs(health[0] - p.getHealth() - survived * each) < 0.05F, survived + " slams cost " + survived * each
+                    + ", cost " + (health[0] - p.getHealth()));
             helper.succeed();
         });
     }

@@ -12,7 +12,7 @@ import java.util.function.IntPredicate;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Brinkram's numbers against its row, written out as plain values: HP 40, Atk 8, Arm 6, 1.2 x 1.4, tell 20 (the
+ * The Brinkram's numbers against its row, written out as plain values: HP 40, Atk 9, Arm 6, 1.2 x 1.4, tell 20 (the
  * paw); a charge at 0.5 b/t whose hit throws 2.5 out and 0.4 up; at an edge with no ground ahead it goes over 70 % of
  * the time; End midlands, weight 5, alone or in pairs; second look Purpur Ram; drops gravity stone. Then the edge rule
  * on mock columns (a step down of 4 is ground, 5 or the void is an edge, a wall is never one). The GameTests check the
@@ -53,7 +53,7 @@ class BrinkramNumbersTest {
     void row() {
         RosterStats.Entry row = RosterStats.get("brinkram");
         assertEquals(40.0F, row.health());
-        assertEquals(8.0F, row.attack());
+        assertEquals(9.0F, row.attack());
         assertEquals(6.0F, row.armor());
         assertEquals(1.2F, row.width());
         assertEquals(1.4F, row.height());

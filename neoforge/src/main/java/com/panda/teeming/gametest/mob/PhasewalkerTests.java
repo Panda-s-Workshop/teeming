@@ -44,9 +44,9 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * phased: no damage of any kind lands (an arrow flies through it), and it floats at 0.15 blocks a tick straight through
  * a stone wall to its target, which it never hurts while phased. When the phased spell runs out inside a block it stays
  * phased and floats to open ground, and is never solid inside a block, not even after a reload. Solid, it strikes: an
- * 8-tick wind-up, then 7 to a target still in reach. The counter: 10 health lost in one solid spell cracks its glass
+ * 8-tick wind-up, then 9 to a target still in reach. The counter: 10 health lost in one solid spell cracks its glass
  * (11 from a player is 10.824 through armour 2), and a cracked walker leaks 12 health over a phased spell, never below
- * 1. Failing it: it walks through the wall a survival player hides behind and strikes. Health 32, attack 7, armour 2,
+ * 1. Failing it: it walks through the wall a survival player hides behind and strikes. Health 32, attack 9, armour 2,
  * 0.7 x 2.0, End midlands at weight 4, alone. Every number is checked against a plain value.
  */
 public final class PhasewalkerTests {
@@ -115,12 +115,12 @@ public final class PhasewalkerTests {
         return !helper.getLevel().noBlockCollision(w, w.getBoundingBox().deflate(1.0E-4));
     }
 
-    /** What its blow of 7 costs a player: scaled by difficulty, as every mob's blow on a player is. */
+    /** What its blow of 9 costs a player: scaled by difficulty, as every mob's blow on a player is. */
     private static float blowOnPlayer(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
-            case EASY -> 4.5F;
-            case HARD -> 10.5F;
-            default -> 7.0F;
+            case EASY -> 5.5F;
+            case HARD -> 13.5F;
+            default -> 9.0F;
         };
     }
 
@@ -183,7 +183,7 @@ public final class PhasewalkerTests {
 
     /**
      * Failing it: a survival player hides behind a stone wall. The walker fades out, floats through the wall without
-     * hurting it, turns solid beside it in open ground and strikes once for its 7 (scaled by difficulty).
+     * hurting it, turns solid beside it in open ground and strikes once for its 9 (scaled by difficulty).
      */
     private static void failure(GameTestHelper helper) {
         wall(helper, 5, 6);
@@ -460,7 +460,7 @@ public final class PhasewalkerTests {
 
     // ---- the blow -------------------------------------------------------------------------------------------------------
 
-    /** Its blow: an 8-tick wind-up, held still and harmless, then 7 damage to the pig in reach (armour 0 takes all 7). */
+    /** Its blow: an 8-tick wind-up, held still and harmless, then 9 damage to the pig in reach (armour 0 takes all 9). */
     private static void windup(GameTestHelper helper) {
         Phasewalker w = walker(helper, AT);
         Pig pig = pig(helper, 6.5, 1, 7.7);
@@ -477,7 +477,7 @@ public final class PhasewalkerTests {
             helper.assertTrue(w.strikes() == 1, "the blow landed, strikes " + w.strikes() + ", phase " + w.phase());
             helper.assertTrue(ticks[0] == 8, "the wind-up lasts 8 ticks, saw " + ticks[0]);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 7.0F) < 0.01F, "the blow takes 7, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 9.0F) < 0.01F, "the blow takes 9, the pig lost " + lost);
         });
     }
 
@@ -576,13 +576,13 @@ public final class PhasewalkerTests {
         });
     }
 
-    /** Health 32, attack 7, armour 2, a 0.7 x 2.0 hitbox. */
+    /** Health 32, attack 9, armour 2, a 0.7 x 2.0 hitbox. */
     private static void stats(GameTestHelper helper) {
         Phasewalker w = walker(helper, AT);
         w.setNoAi(true);
         helper.runAtTickTime(2, () -> {
             helper.assertTrue(w.getMaxHealth() == 32.0F && w.getHealth() == 32.0F, "health 32, got " + w.getHealth() + "/" + w.getMaxHealth());
-            helper.assertTrue(w.getAttributeValue(Attributes.ATTACK_DAMAGE) == 7.0, "attack 7, got " + w.getAttributeValue(Attributes.ATTACK_DAMAGE));
+            helper.assertTrue(w.getAttributeValue(Attributes.ATTACK_DAMAGE) == 9.0, "attack 9, got " + w.getAttributeValue(Attributes.ATTACK_DAMAGE));
             helper.assertTrue(w.getArmorValue() == 2, "armour 2, got " + w.getArmorValue());
             helper.assertTrue(Math.abs(w.getBbWidth() - 0.7F) < 0.01F && Math.abs(w.getBbHeight() - 2.0F) < 0.01F,
                     "a 0.7 x 2.0 hitbox, got " + w.getBbWidth() + " x " + w.getBbHeight());

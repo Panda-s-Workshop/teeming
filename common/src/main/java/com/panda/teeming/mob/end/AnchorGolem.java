@@ -87,7 +87,7 @@ public class AnchorGolem extends TeemingMonster {
     /** The ring where the anchor falls: its radius across, and how far over the ground a body still counts as in it. */
     public static final double STRIKE_RADIUS = 1.25;
     public static final double STRIKE_HEIGHT = 1.5;
-    /** The blow: x its attack (7), through armour. */
+    /** The blow: x its attack (9), through armour. */
     public static final float STRIKE = 1.0F;
     /** How long a blow weighs its victim down: 6 s. */
     public static final int HEAVY_TICKS = EffectNumbers.HEAVY_TICKS;
