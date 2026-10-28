@@ -6,6 +6,7 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.command.TeemingCommand;
 import com.panda.teeming.effect.NulledEffect;
 import com.panda.teeming.mob.look.Looks;
+import com.panda.teeming.mob.nether.PhantasmLantern;
 import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
@@ -71,6 +72,9 @@ public final class TeemingFabric implements ModInitializer {
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.SPAWN_EGGS).register(output -> ModMobs.EGGS.forEach(egg -> output.accept(egg.get())));
         ServerTickEvents.END_LEVEL_TICK.register(TeemingMod::onLevelTick);
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> TeemingCommand.register(dispatcher));
+        // a refused entity is turned away before it is added, as NeoForge cancels its join: discarded after the load
+        // event it would stay in the level's tick list until the level closed
+        ServerEntityEvents.ALLOW_LOAD.register((entity, level, reason, fromDisk) -> !PhantasmLantern.Illusions.isIllusion(entity));
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
             if (!TeemingMod.onEntityJoin(entity)) entity.discard();
         });
