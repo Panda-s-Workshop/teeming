@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "teeming:item/pearlshell_snail_spawn_egg"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/exile_wraith",
+      [
+        "minecraft:small_end_islands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:exile_wraith",
+      "weight": 7,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

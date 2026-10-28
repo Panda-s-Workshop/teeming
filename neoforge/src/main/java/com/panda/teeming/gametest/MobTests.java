@@ -80,6 +80,9 @@ import com.panda.teeming.gametest.mob.RotfangTests;
 import com.panda.teeming.gametest.mob.SpirebloomTests;
 import com.panda.teeming.gametest.mob.RiftmineSapperTests;
 import com.panda.teeming.gametest.mob.UnderclingerTests;
+import com.panda.teeming.gametest.mob.ExileWraithTests;
+import com.panda.teeming.gametest.mob.MoteSwarmTests;
+import com.panda.teeming.gametest.mob.PearlshellSnailTests;
 import com.panda.teeming.gametest.mob.WingshearTests;
 import com.panda.teeming.gametest.mob.GrandOrreryTests;
 import java.util.function.BiConsumer;
@@ -171,6 +174,9 @@ final class MobTests {
         SpirebloomTests.register(out);
         RiftmineSapperTests.register(out);
         UnderclingerTests.register(out);
+        ExileWraithTests.register(out);
+        MoteSwarmTests.register(out);
+        PearlshellSnailTests.register(out);
         WingshearTests.register(out);
         GrandOrreryTests.register(out);
     }

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/mote_swarm",
+      [
+        "minecraft:end_midlands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:mote_swarm",
+      "weight": 4,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/mote_swarm",
+      {
+        "type": "neoforge:not",
+        "value": {
+          "type": "neoforge:or",
+          "values": [
+            "#teeming:share_capped",
+            [
+              "minecraft:end_midlands",
+              "minecraft:small_end_islands"
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:mote_swarm",
+      "weight": 4,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

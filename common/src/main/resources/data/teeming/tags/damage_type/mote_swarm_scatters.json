@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:is_explosion",
+    "minecraft:dragon_breath",
+    "minecraft:lightning_bolt"
+  ]
+}

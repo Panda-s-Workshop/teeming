@@ -111,7 +111,11 @@ public final class SpawnTable {
             new Row("mnemovore", "minecraft:end_barrens", 3),
             new Row("rotfang", "minecraft:end_barrens", 4),
             new Row("spirebloom", "minecraft:end_barrens", 3),
-            new Row("riftmine_sapper", "minecraft:end_barrens", 3));
+            new Row("riftmine_sapper", "minecraft:end_barrens", 3),
+            new Row("exile_wraith", "minecraft:end_barrens", 3),
+            new Row("exile_wraith", "minecraft:small_end_islands", 7),
+            new Row("mote_swarm", "minecraft:end_midlands", 4),
+            new Row("mote_swarm", "minecraft:small_end_islands", 7));
 
     /** The mob's tuned rows, empty when it has none. */
     public static List<Row> tuned(String mob) {

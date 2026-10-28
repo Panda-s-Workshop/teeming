@@ -88,6 +88,9 @@ public final class MobBounds {
             Map.entry("spirebloom", new float[] {1.291F, 2.312F, 1.438F}),
             Map.entry("riftmine_sapper", new float[] {0.954F, 1.494F, 1.249F}),
             Map.entry("underclinger", new float[] {1.250F, 0.431F, 1.469F}),
+            Map.entry("exile_wraith", new float[] {0.981F, 1.902F, 0.841F}),
+            Map.entry("mote_swarm", new float[] {1.281F, 1.281F, 1.188F}),
+            Map.entry("pearlshell_snail", new float[] {0.562F, 0.763F, 1.380F}),
             Map.entry("wingshear", new float[] {2.791F, 0.339F, 1.809F}),
             Map.entry("grand_orrery", new float[] {2.112F, 1.544F, 1.958F})
     );
