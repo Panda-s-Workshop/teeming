@@ -56,6 +56,9 @@ import net.minecraft.world.phys.Vec3;
 final class EndCharmTests {
     private EndCharmTests() {}
 
+    /** The seed of the first rift jackal's rolls in `charm_rift` (each next jackal takes the next seed). */
+    private static final long RIFT_SEED = 4242L;
+
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("charm_grounding", EndCharmTests::grounding);
         TeemingGameTests.wide("charm_grounding");
@@ -301,6 +304,9 @@ final class EndCharmTests {
             }
         }
         helper.runAtTickTime(2, () -> {
+            // each jackal's rolls come from a seeded source, so the eight off-hand steps split the same way every run
+            // and the test can ask for some let through and some thrown without a one-in-256 miss
+            for (int j = 0; j < 5; j++) jackals.get(j).getRandom().setSeed(RIFT_SEED + j);
             for (int j = 0; j < 5; j++) {
                 for (int k = 0; k < 2; k++) {
                     int i = j * 2 + k;
@@ -341,6 +347,8 @@ final class EndCharmTests {
             helper.assertTrue(moved[1] == rolls, "main hand: every one of " + rolls + " burst teleports landed, " + moved[1] + " did");
             helper.assertTrue(moved[0] >= 72 && moved[0] <= 128, "off-hand: about " + rolls * (1.0 - Charms.RIFT_FAIL)
                     + " of " + rolls + " teleports landed (72 to 128), " + moved[0] + " did");
+            helper.assertTrue(stayed[0] >= 1 && stayed[0] <= offInRift.size() - 1, "off-hand: some of the " + offInRift.size()
+                    + " pigs stepping into a rift are let through and some thrown, " + stayed[0] + " let through");
             helper.assertTrue(stayed[1] == stayed[0], "the off-hand pigs a rift let through stayed in it: " + stayed[0] + " after its first tick, "
                     + stayed[1] + " 25 ticks on");
             int offTell = tell[0], mainTell = tell[1];

@@ -6,6 +6,9 @@ import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModCharms;
 import java.util.Map;
 import java.util.WeakHashMap;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -82,6 +85,32 @@ public final class Charms {
         return holder.getOffhandItem().is(charm.get());
     }
 
+    /** A chance charm that saved its holder says so at most this often, so a run of saves doesn't ring on every tick. */
+    public static final int FELT_COOLDOWN = 40;
+
+    /** The game time each holder last heard its charm save it (server side; weak, so no one is kept alive). */
+    private static final Map<LivingEntity, Long> FELT = new WeakHashMap<>();
+
+    /**
+     * Passes {@code saved} through; when a chance charm (Gilded Ward, Rift, Memory) has just saved {@code holder}, the
+     * charm chimes and sparks round it, so the save reads as the charm's and not as luck.
+     */
+    public static boolean felt(LivingEntity holder, boolean saved) {
+        if (!saved || !(holder.level() instanceof ServerLevel level)) return saved;
+        long now = level.getGameTime();
+        Long last = FELT.get(holder);
+        if (last != null && now - last < FELT_COOLDOWN) return true;
+        FELT.put(holder, now);
+        level.playSound(null, holder.getX(), holder.getY(), holder.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, holder.getSoundSource(), 1.2F, 1.4F);
+        level.sendParticles(ParticleTypes.ENCHANTED_HIT, holder.getX(), holder.getY() + holder.getBbHeight() * 0.6, holder.getZ(), 12, 0.4, 0.4, 0.4, 0.1);
+        return true;
+    }
+
+    /** The game time {@code holder} last heard its charm save it, or -1. Public as a test hook. */
+    public static long lastFelt(LivingEntity holder) {
+        return FELT.getOrDefault(holder, -1L);
+    }
+
     /** The share of a charge's or ram's throw that reaches {@code victim}: halved by the Shellward Charm. */
     public static double chargeThrow(LivingEntity victim) {
         return holds(victim, ModCharms.SHELLWARD_CHARM) ? SHELLWARD_THROW : 1.0;
@@ -141,7 +170,7 @@ public final class Charms {
 
     /** True when a theft from {@code victim} fails: a Gilded Ward Charm holder, and the thief's {@code random} rolls under {@link #GILDED_WARD_FAIL}. */
     public static boolean theftFails(LivingEntity victim, RandomSource random) {
-        return holds(victim, ModCharms.GILDED_WARD_CHARM) && random.nextFloat() < GILDED_WARD_FAIL;
+        return felt(victim, holds(victim, ModCharms.GILDED_WARD_CHARM) && random.nextFloat() < GILDED_WARD_FAIL);
     }
 
     /** Ticks Silenced lasts on {@code victim} when its source gives {@code ticks}: at most {@link #CLEAR_VOICE_SILENCED_TICKS} on a Clear Voice Charm holder. */
@@ -206,7 +235,7 @@ public final class Charms {
 
     /** True when a forced teleport of {@code target} fails: the Rift Charm's {@link #RIFT_FAIL}, rolled on {@code random}. */
     public static boolean teleportFails(LivingEntity target, RandomSource random) {
-        return holds(target, ModCharms.RIFT_CHARM) && random.nextDouble() < RIFT_FAIL;
+        return felt(target, holds(target, ModCharms.RIFT_CHARM) && random.nextDouble() < RIFT_FAIL);
     }
 
     /** Ticks an exit rift aimed at {@code target} shows before its bolt, from its usual {@code ticks}: the Rift Charm adds {@link #RIFT_EARLY}. */
@@ -230,7 +259,7 @@ public final class Charms {
 
     /** True when a theft of {@code target}'s experience fails: the Memory Charm's {@link #MEMORY_FAIL}, rolled on {@code random}. */
     public static boolean xpTheftFails(LivingEntity target, RandomSource random) {
-        return holds(target, ModCharms.MEMORY_CHARM) && random.nextDouble() < MEMORY_FAIL;
+        return felt(target, holds(target, ModCharms.MEMORY_CHARM) && random.nextDouble() < MEMORY_FAIL);
     }
 
     /**

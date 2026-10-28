@@ -31,6 +31,7 @@ final class CharmTests {
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("charms_craftable", CharmTests::craftable);
         out.accept("charm_shellward", CharmTests::shellward);
+        out.accept("charm_felt", CharmTests::felt);
         OverworldCharmTests.register(out);
         NetherCharmTests.register(out);
         EndCharmTests.register(out);
@@ -115,5 +116,33 @@ final class CharmTests {
             if (thrown[0] == null && player.getHealth() < full) thrown[0] = player.getDeltaMovement();
         });
         return thrown;
+    }
+
+    /**
+     * A chance charm that saves its holder says so: the first save from the off-hand chimes and is recorded on its tick,
+     * a second save within {@link Charms#FELT_COOLDOWN} stays quiet, and the same charm in the main hand never saves.
+     */
+    private static void felt(GameTestHelper helper) {
+        net.minecraft.world.entity.animal.pig.Pig off = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new Vec3(2.5, 1, 2.5));
+        net.minecraft.world.entity.animal.pig.Pig main = helper.spawn(net.minecraft.world.entity.EntityTypes.PIG, new Vec3(6.5, 1, 2.5));
+        off.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModCharms.GILDED_WARD_CHARM.get()));
+        main.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModCharms.GILDED_WARD_CHARM.get()));
+        helper.runAtTickTime(2, () -> {
+            net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(7);
+            long now = helper.getLevel().getGameTime();
+            int tries = 0;
+            while (!Charms.theftFails(off, random)) helper.assertTrue(++tries < 64, "the off-hand charm saved once in 64 rolls");
+            helper.assertTrue(Charms.lastFelt(off) == now, "the save chimed on its tick, recorded " + Charms.lastFelt(off) + ", now " + now);
+            for (int i = 0; i < 200; i++) Charms.theftFails(main, random);
+            helper.assertTrue(Charms.lastFelt(main) == -1, "the main-hand charm never saves, so never chimes");
+        });
+        helper.runAtTickTime(10, () -> {
+            long first = Charms.lastFelt(off);
+            net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create(11);
+            int tries = 0;
+            while (!Charms.theftFails(off, random)) helper.assertTrue(++tries < 64, "a second save");
+            helper.assertTrue(Charms.lastFelt(off) == first, "a save 8 ticks later stays quiet, recorded " + Charms.lastFelt(off) + ", first " + first);
+            helper.succeed();
+        });
     }
 }

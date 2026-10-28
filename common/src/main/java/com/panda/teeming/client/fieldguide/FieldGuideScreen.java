@@ -238,12 +238,16 @@ public class FieldGuideScreen extends Screen {
             boolean known = p.hasSeen(mob.id());
             Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
             g.text(font, String.format("%02d", mob.number()), b[0] + 3, b[1] + 2, INK_MUTED, false);
-            g.text(font, name, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
+            // a long name stops short of the trophy and reveal marks at the row's end
+            int room = b[2] - 20 - 22;
+            String shown = name.getString();
+            if (font.width(shown) > room) shown = font.plainSubstrByWidth(shown, room - font.width("…")) + "…";
+            g.text(font, shown, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
             if (p.revealed(mob.id())) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
             if (p.hasTrophy(mob.id())) g.text(font, "♛", b[0] + b[2] - 20, b[1] + 2, TROPHY, false);
         }
         // more rows above or below: a mark at the list's outer edge, where the wheel scrolls them in
-        int edge = x0 + L_X - 9;
+        int edge = x0 + L_X - 7;
         if (top > 0) g.text(font, "▲", edge, y0 + LIST_Y + 2, INK_MUTED, false);
         if (top + ROWS < list.size()) g.text(font, "▼", edge, y0 + LIST_Y + (ROWS - 1) * ROW_H + 2, INK_MUTED, false);
     }
