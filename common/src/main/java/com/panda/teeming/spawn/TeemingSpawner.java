@@ -5,6 +5,7 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Entry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -46,6 +47,11 @@ import org.jspecify.annotations.Nullable;
  * spawns it if the natural-spawn predicate agrees ({@link TeemingSpawns#check}: config, light, local caps), under the
  * vanilla per-player category cap. Spawns in the open world (not a structure) also keep the Teeming share of the
  * monsters round the player at the target ({@link SpawnTable#TARGET_SHARE}).
+ *
+ * <p>In the End an attempt first takes one of the End's rules at random ({@link #END_TURNS}) and looks only for that
+ * rule's spots, so each rule gets its share of attempts: open sky lies over almost every column, and picked among all
+ * rules at once it would take nearly every attempt from the rules that need an island's edge or underside. Only when
+ * that rule finds nothing does the attempt look for every rule as above.
  */
 public final class TeemingSpawner {
     public static final int EVERY = 200;
@@ -55,12 +61,20 @@ public final class TeemingSpawner {
     public static final int MAX_DISTANCE = 64;
     /** Columns an attempt tries until one holds a spot some mob accepts. */
     public static final int COLUMNS = 4;
+    /** Columns an End attempt tries on an edge rule's turn (underside, void air): edges are few. */
+    public static final int EDGE_COLUMNS = 12;
     /** The share cap counts the monsters within this many blocks of the player (vanilla's despawn range). */
     public static final int SHARE_RADIUS = 128;
     /** The End's main island region: vanilla's {@code the_end} biome covers 64 chunks around the origin. */
     public static final int MAIN_ISLAND_RADIUS = 1024;
     /** Empty blocks under a spot that make it a drop into the void (underside and void-air rules). */
     public static final int VOID_GAP = 4;
+    /** Blocks an underside or void-air rule walks from its column, in one direction, to find an island's edge. */
+    public static final int EDGE_WALK = 16;
+    /** How many blocks out from the edge a void-air spot stands (the edge check accepts land 1 to 4 to the side). */
+    public static final int EDGE_OFF = 3;
+    /** How far under an island's top an underside spot may lie. */
+    public static final int UNDERSIDE_DEPTH = 64;
     private static final int SCAN = 24;
     /** How far from the first of a group the others may stand (blocks, each way). */
     public static final int GROUP_SPREAD = 3;
@@ -81,6 +95,11 @@ public final class TeemingSpawner {
         public static @Nullable Rule of(String name) {
             if (name.isEmpty()) return null;
             return valueOf(name.toUpperCase(Locale.ROOT));
+        }
+
+        /** A rule that needs an island's edge or underside: its End turn tries {@link #EDGE_COLUMNS} columns. */
+        public boolean edge() {
+            return this == UNDERSIDE || this == VOID_AIR;
         }
 
         /** A structure's own spot: when an attempt finds one, only that structure's mobs may take it. */
@@ -130,7 +149,10 @@ public final class TeemingSpawner {
             };
         }
 
-        /** A spot of this rule in the column at x, z near height {@code y}, or null. */
+        /**
+         * A spot of this rule in the column at x, z near height {@code y}, or null. The underside and void-air rules
+         * ignore the height and may take a column up to {@link #EDGE_WALK} blocks away, at the nearest island edge.
+         */
         public @Nullable BlockPos find(ServerLevel level, int x, int y, int z, RandomSource random) {
             int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
             boolean empty = top <= level.getMinY();
@@ -148,11 +170,23 @@ public final class TeemingSpawner {
                 }
                 case SKY -> pos.setY(Math.max(top, 64) + 20 + random.nextInt(30));
                 case VOID_AIR -> {
-                    if (!empty) return null;
-                    pos.setY(y + random.nextInt(9) - 4);
+                    // off an island's edge, level with its ground: from the column, walk to the nearest edge; the spot
+                    // stands EDGE_OFF blocks out, so a wide body (the Brinkray's 3) clears the rock
+                    int[] edge = edgeAt(level, x, z, random);
+                    if (edge == null) return null;
+                    pos.set(edge[0] + (edge[0] - edge[2]) * (EDGE_OFF - 1), level.getHeight(Heightmap.Types.MOTION_BLOCKING, edge[2], edge[3]),
+                            edge[1] + (edge[1] - edge[3]) * (EDGE_OFF - 1));
+                }
+                case UNDERSIDE -> {
+                    // under the island in the column, else under the nearest edge: islands are deeper than a scan near
+                    // the player's height reaches, and a random column seldom lands beside an edge
+                    BlockPos here = empty ? null : underside(level, x, z);
+                    if (here != null) return here;
+                    int[] edge = edgeAt(level, x, z, random);
+                    return edge == null ? null : underside(level, edge[2], edge[3]);
                 }
                 default -> {
-                    for (int dy = SCAN; dy >= -SCAN; dy--) {   // fortress, bastion, fungus caps, undersides: scan the column
+                    for (int dy = SCAN; dy >= -SCAN; dy--) {   // fortress, bastion, fungus caps: scan the column
                         pos.setY(y + dy);
                         if (fits(level, pos)) return pos.immutable();
                     }
@@ -182,6 +216,11 @@ public final class TeemingSpawner {
         }
     }
 
+    /** The End's rules that place regular (not apex) mobs: each is a turn an End attempt may take first. */
+    public static final List<Rule> END_TURNS = Arrays.stream(Rule.values())
+            .filter(r -> r.dimension == Level.END && !r.apex() && RosterStats.ALL.stream().anyMatch(e -> Rule.of(e.spawner()) == r))
+            .toList();
+
     private TeemingSpawner() {}
 
     // ---- the tick -------------------------------------------------------------------------------------------------
@@ -207,28 +246,45 @@ public final class TeemingSpawner {
     /** One attempt near the player; {@code sharedOnly} leaves out structure and End rules. */
     public static @Nullable Mob attempt(ServerLevel level, ServerPlayer player, RandomSource random, boolean sharedOnly) {
         boolean apex = !sharedOnly && rollsApex(random);
-        for (int i = 0; i < COLUMNS; i++) {
-            double angle = random.nextDouble() * Mth.TWO_PI;
-            double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
-            int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
-            int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
-            if (!level.hasChunkAt(new BlockPos(x, player.getBlockY(), z))) continue;
-            List<Candidate> found = candidatesAt(level, x, player.getBlockY(), z, random, sharedOnly, apex);
-            if (found.isEmpty()) continue;
-            Candidate pick = pick(found, random);
-            MobCategory category = TeemingSpawns.category(pick.mob());
-            if (pick.shared()) {
-                // the share cap keeps Teeming to its share on top of vanilla's mobs, so the category cap is lifted by that share
-                if (!underCategoryCap(level, player, category, 1.0 / (1.0 - SpawnTable.TARGET_SHARE))) return null;
-                if (category == MobCategory.MONSTER && !shareAllows(level, player)) return null;
-            } else if (level.dimension() == Level.END && category == MobCategory.MONSTER) {
-                if (!endAllows(teemingNear(level, player, category))) return null;
-            } else if (!underCategoryCap(level, player, category, 1.0)) {
-                return null;
+        if (!sharedOnly && !apex && level.dimension() == Level.END && !END_TURNS.isEmpty()) {
+            Rule turn = END_TURNS.get(random.nextInt(END_TURNS.size()));
+            for (int i = 0; i < (turn.edge() ? EDGE_COLUMNS : COLUMNS); i++) {
+                BlockPos column = column(player, random);
+                if (!level.hasChunkAt(column)) continue;
+                List<Candidate> found = candidatesAt(level, column.getX(), column.getY(), column.getZ(), random, false, false, turn);
+                if (!found.isEmpty()) return place(level, player, pick(found, random), random);
             }
-            return spawnGroup(level, pick, random);
+        }
+        for (int i = 0; i < COLUMNS; i++) {
+            BlockPos column = column(player, random);
+            if (!level.hasChunkAt(column)) continue;
+            List<Candidate> found = candidatesAt(level, column.getX(), column.getY(), column.getZ(), random, sharedOnly, apex);
+            if (!found.isEmpty()) return place(level, player, pick(found, random), random);
         }
         return null;
+    }
+
+    /** A random column {@link #MIN_DISTANCE} to {@link #MAX_DISTANCE} blocks from the player, at the player's height. */
+    private static BlockPos column(ServerPlayer player, RandomSource random) {
+        double angle = random.nextDouble() * Mth.TWO_PI;
+        double distance = MIN_DISTANCE + random.nextDouble() * (MAX_DISTANCE - MIN_DISTANCE);
+        return new BlockPos(Mth.floor(player.getX() + Math.cos(angle) * distance), player.getBlockY(),
+                Mth.floor(player.getZ() + Math.sin(angle) * distance));
+    }
+
+    /** Spawns the picked candidate's group if its caps allow; the first mob spawned, or null. */
+    private static @Nullable Mob place(ServerLevel level, ServerPlayer player, Candidate pick, RandomSource random) {
+        MobCategory category = TeemingSpawns.category(pick.mob());
+        if (pick.shared()) {
+            // the share cap keeps Teeming to its share on top of vanilla's mobs, so the category cap is lifted by that share
+            if (!underCategoryCap(level, player, category, 1.0 / (1.0 - SpawnTable.TARGET_SHARE))) return null;
+            if (category == MobCategory.MONSTER && !shareAllows(level, player)) return null;
+        } else if (level.dimension() == Level.END && category == MobCategory.MONSTER) {
+            if (!endAllows(teemingNear(level, player, category))) return null;
+        } else if (!underCategoryCap(level, player, category, 1.0)) {
+            return null;
+        }
+        return spawnGroup(level, pick, random);
     }
 
     /**
@@ -242,11 +298,18 @@ public final class TeemingSpawner {
 
     /** As above; {@code apex}: the attempt won its apex roll, so apex mobs may take a spot too. */
     public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly, boolean apex) {
+        return candidatesAt(level, x, y, z, random, sharedOnly, apex, null);
+    }
+
+    /** As above; {@code only} not null: only that rule's mobs, and no share-capped biome-list monsters. */
+    public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly, boolean apex,
+                                               @Nullable Rule only) {
         List<Candidate> out = new ArrayList<>();
         Map<Rule, Optional<BlockPos>> spots = new EnumMap<>(Rule.class);
         for (Entry mob : RosterStats.ALL) {
             Rule rule = Rule.of(mob.spawner());
             if (rule == null || rule.dimension != level.dimension() || (sharedOnly && !rule.shared()) || (rule.apex() && !apex)) continue;
+            if (only != null && rule != only) continue;
             Optional<EntityType<? extends Mob>> type = TeemingSpawns.type(mob);
             if (type.isEmpty()) continue;
             if (rule.apex()) {
@@ -259,7 +322,7 @@ public final class TeemingSpawner {
             if (!mob.biomeSpawns() && !inTagOrUntagged(level, mob, pos)) continue;
             out.add(new Candidate(mob, type.get(), pos, rule));
         }
-        shareCappedCandidates(level, x, y, z, random, out);
+        if (only == null) shareCappedCandidates(level, x, y, z, random, out);
         return out;
     }
 
@@ -513,6 +576,39 @@ public final class TeemingSpawner {
             if (!air(level, pos.below(i))) return false;
         }
         return true;
+    }
+
+    /**
+     * An island's edge near the column at x, z: walking up to {@link #EDGE_WALK} blocks in one random direction, the
+     * first two neighbouring columns whose tops differ by more than {@link #VOID_GAP} (the ground drops away, or an
+     * island rises out of the void). {the lower column's x, z, the higher column's x, z}, or null with no edge within
+     * the walk or past the loaded chunks.
+     */
+    private static int @Nullable [] edgeAt(ServerLevel level, int x, int z, RandomSource random) {
+        Direction way = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+        int px = x, pz = z, before = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        for (int i = 1; i <= EDGE_WALK; i++) {
+            int nx = px + way.getStepX(), nz = pz + way.getStepZ();
+            if (!level.hasChunkAt(new BlockPos(nx, level.getMinY(), nz))) return null;
+            int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, nx, nz);
+            if (top - before > VOID_GAP) return new int[] {px, pz, nx, nz};
+            if (before - top > VOID_GAP) return new int[] {nx, nz, px, pz};
+            px = nx;
+            pz = nz;
+            before = top;
+        }
+        return null;
+    }
+
+    /** The highest underside spot in the land column at x, z, at most {@link #UNDERSIDE_DEPTH} under its top, or null. */
+    private static @Nullable BlockPos underside(ServerLevel level, int x, int z) {
+        int top = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, top, z);
+        for (int y = top - 1; y >= Math.max(level.getMinY() + VOID_GAP + 1, top - UNDERSIDE_DEPTH); y--) {
+            pos.setY(y);
+            if (Rule.UNDERSIDE.fits(level, pos)) return pos.immutable();
+        }
+        return null;
     }
 
     /** A solid block 1–4 blocks to the side, just below: the spot is beside an island's edge. */

@@ -15,9 +15,11 @@ import com.panda.teeming.spawn.TeemingSpawner.Candidate;
 import com.panda.teeming.spawn.TeemingSpawner.Rule;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -28,6 +30,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
@@ -43,6 +46,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -76,6 +80,7 @@ final class SpawnTests {
         out.accept("spawner_apex_island", SpawnTests::apexIsland);
         out.accept("spawn_end_open_sky", SpawnTests::endOpenSky);
         out.accept("spawner_open_air_flier", SpawnTests::openAirFlier);
+        out.accept("spawner_end_turns", SpawnTests::endTurns);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -775,6 +780,61 @@ final class SpawnTests {
             helper.assertTrue(first.getType() == type && placed.contains(first), "the first of the group is a Triad at the spot, found " + placed.size());
             helper.succeed();
         });
+    }
+
+    /**
+     * Each regular End rule takes its own turn: every one a row uses is a turn, and on the underside rule's turn only its
+     * mobs are offered. Under a 9 x 9 island at (1400, 150, -900) in the GameTest server's End the column holds an
+     * underside spot and, over the island, open sky: picked among all rules, the sky's fliers compete for it; on the
+     * underside turn the Underclinger and the Abyss Angler alone take the spot under the island. The underside is found
+     * however far under the player's height it lies, and from void 5 blocks off the island the void-air rule walks to
+     * its edge and stands 3 blocks out, where a Brinkray's 3-wide body clears the rock. The GameTest server's End is
+     * {@code the_end} everywhere, so the test paints end highlands round the island and puts the biome back.
+     */
+    private static void endTurns(GameTestHelper helper) {
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        int x = 1400;
+        int floor = 150;
+        int z = -900;
+        end.getChunk(x >> 4, z >> 4);
+        end.setChunkForced(x >> 4, z >> 4, true);
+        islandFloor(end, x, floor, z);
+        BlockPos from = new BlockPos(x - 8, floor - 24, z - 8), to = new BlockPos(x + 8, floor + 60, z + 8);
+        Holder<Biome> was = end.getBiome(new BlockPos(x, floor - 1, z));
+        FillBiomeCommand.fill(end, from, to, end.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.END_HIGHLANDS));
+        helper.assertTrue(TeemingSpawner.END_TURNS.equals(List.of(Rule.MAIN_ISLAND, Rule.UNDERSIDE, Rule.VOID_AIR, Rule.VOID_BELOW, Rule.SKY)),
+                "the End's turns are its five regular rules, got " + TeemingSpawner.END_TURNS);
+        helper.assertTrue(Rule.UNDERSIDE.edge() && Rule.VOID_AIR.edge() && !Rule.SKY.edge(), "the underside and void-air rules need edges");
+        RandomSource random = RandomSource.create(81);
+        List<Candidate> all = TeemingSpawner.candidatesAt(end, x, floor - 1, z, random, false, false);
+        List<Candidate> turn = TeemingSpawner.candidatesAt(end, x, floor - 1, z, random, false, false, Rule.UNDERSIDE);
+        BlockPos deep = Rule.UNDERSIDE.find(end, x, floor + 50, z, random);
+        BlockPos beside = new BlockPos(x + 4 + TeemingSpawner.EDGE_OFF, floor + 1, z);
+        List<BlockPos> walked = new ArrayList<>();
+        RandomSource ways = RandomSource.create(83);
+        for (int i = 0; i < 24; i++) {
+            BlockPos at = Rule.VOID_AIR.find(end, x + 9, floor + 1, z, ways);
+            if (at != null) walked.add(at);
+        }
+        boolean roomy = end.noCollision(ModMobs.BRINKRAY.get().getSpawnAABB(beside.getX() + 0.5, beside.getY(), beside.getZ() + 0.5));
+        FillBiomeCommand.fill(end, from, to, was);
+        end.setChunkForced(x >> 4, z >> 4, false);
+        helper.assertTrue(all.stream().anyMatch(c -> c.rule() == Rule.SKY), "among all rules the sky's fliers compete: " + ids(all));
+        helper.assertTrue(turn.stream().allMatch(c -> c.rule() == Rule.UNDERSIDE), "the underside turn offers only underside mobs: " + ids(turn));
+        Set<String> got = new HashSet<>();
+        for (Candidate c : turn) got.add(c.mob().id());
+        helper.assertTrue(got.equals(Set.of("underclinger", "abyss_angler")), "the Underclinger and the Abyss Angler, got " + got);
+        helper.assertTrue(turn.stream().allMatch(c -> c.pos().equals(new BlockPos(x, floor - 1, z))), "at the spot under the island: " + ids(turn));
+        helper.assertTrue(new BlockPos(x, floor - 1, z).equals(deep), "the underside is found 51 blocks under the player's height, got " + deep);
+        helper.assertTrue(walked.contains(beside), "from void 5 blocks out a void-air spot is found 3 blocks off the island's edge, level "
+                + "with its ground, " + beside.toShortString() + "; found " + walked);
+        helper.assertTrue(walked.stream().allMatch(p -> p.equals(beside)), "and nowhere else round the lone island: " + walked);
+        helper.assertTrue(roomy, "a Brinkray's body fits at " + beside.toShortString());
+        helper.succeed();
     }
 
     /** A mob standing still at x, y, z, kept from despawning. */
