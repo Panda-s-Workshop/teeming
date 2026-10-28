@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:trophy",
+      "components": {
+        "teeming:trophy_mob": {
+          "mob": "levimoth",
+          "look": "base"
+        },
+        "minecraft:enchantment_glint_override": true
+      }
+    },
+    "title": {
+      "translate": "advancements.teeming.the_whole_menagerie.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.the_whole_menagerie.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:mantelpiece"
+}

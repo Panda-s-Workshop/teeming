@@ -1,0 +1,42 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "teeming:basalt_behemoth"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:trophy",
+      "components": {
+        "teeming:trophy_mob": {
+          "mob": "basalt_behemoth",
+          "look": "base"
+        }
+      }
+    },
+    "title": {
+      "translate": "advancements.teeming.basalt_behemoth.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.basalt_behemoth.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:teeming"
+}

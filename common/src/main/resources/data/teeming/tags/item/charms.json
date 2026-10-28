@@ -3,6 +3,10 @@
     "teeming:shellward_charm",
     "teeming:hearth_charm",
     "teeming:hush_charm",
-    "teeming:antivenom_charm"
+    "teeming:antivenom_charm",
+    "teeming:quench_charm",
+    "teeming:tether_charm",
+    "teeming:gilded_ward_charm",
+    "teeming:clear_voice_charm"
   ]
 }

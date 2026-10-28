@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
@@ -70,7 +71,8 @@ import org.jspecify.annotations.Nullable;
  * newest piece in its jaws and the two pieces before it on its back, as small item displays riding it.
  *
  * <p>Counter: kill it before it gets away. Killed (or removed for good any other way) it drops its whole hoard. Failing
- * it: the stolen gold is gone with it.
+ * it: the stolen gold is gone with it. From a Gilded Ward Charm holder half its thefts fail: the bite lands, nothing is
+ * taken, and it doesn't run.
  */
 public class Aurovore extends TeemingMonster {
     /** IDLE, the sniff (tell), a bite that took nothing, running off with what it took. */
@@ -343,10 +345,14 @@ public class Aurovore extends TeemingMonster {
         return null;
     }
 
-    /** Takes {@link #STEAL_COUNT} item of loot from {@code victim} into its hoard; false if it has none (or vetoed). */
-    private boolean steal(ServerLevel level, LivingEntity victim) {
+    /**
+     * Takes {@link #STEAL_COUNT} item of loot from {@code victim} into its hoard; false if it has none, a Gilded Ward
+     * Charm turned it away ({@link Charms#GILDED_WARD_FAIL}, on its own random source), or a listener vetoed it. Public
+     * as a test hook.
+     */
+    public boolean steal(ServerLevel level, LivingEntity victim) {
         Loot loot = lootIn(victim);
-        if (loot == null || !MechanicEvent.post(this, "steal", victim)) return false;
+        if (loot == null || Charms.theftFails(victim, getRandom()) || !MechanicEvent.post(this, "steal", victim)) return false;
         ItemStack taken = loot.container().removeItem(loot.slot(), STEAL_COUNT);
         if (taken.isEmpty()) return false;
         loot.container().setChanged();

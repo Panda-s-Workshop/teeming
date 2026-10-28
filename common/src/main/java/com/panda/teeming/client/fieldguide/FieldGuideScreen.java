@@ -34,7 +34,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The Field Guide: an open book. Left page: tabs Overworld / Nether / End with seen counts, and the tab's
+ * The Field Guide: an open book. Left page: tabs Overworld / Nether / End with seen and trophy counts, and the tab's
  * creatures ("???" until seen, a crown once its trophy is owned). Right page: the chosen creature, an ink silhouette
  * until seen, then turning, with its home and role; its tell, counter and drops once the player has killed it three
  * times. Read-only: the data is the synced player attachment.
@@ -193,6 +193,9 @@ public class FieldGuideScreen extends Screen {
         long seen = list.stream().filter(m -> p.hasSeen(m.id())).count();
         String count = seen + " / " + list.size();
         g.text(font, count, x0 + L_X + L_W - SPINE_MARGIN - font.width(count), y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
+        long owned = list.stream().filter(m -> p.hasTrophy(m.id())).count();      // trophies owned, under the same crown as the rows
+        g.text(font, Component.literal("♛ ").withColor(TROPHY).append(Component.literal(owned + " / " + list.size()).withColor(INK_MUTED)),
+                x0 + L_X, y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
         if (list.isEmpty()) {
             g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.empty"), x0 + L_X, y0 + LIST_Y, L_W, INK_MUTED, false);
             return;

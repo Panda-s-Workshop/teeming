@@ -15,15 +15,23 @@ public final class ModCharms {
     public static final DeferredItem<CharmItem> HEARTH_CHARM = ITEMS.registerItem("hearth_charm", CharmItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<CharmItem> HUSH_CHARM = ITEMS.registerItem("hush_charm", CharmItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<CharmItem> ANTIVENOM_CHARM = ITEMS.registerItem("antivenom_charm", CharmItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<CharmItem> QUENCH_CHARM = ITEMS.registerItem("quench_charm", CharmItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<CharmItem> TETHER_CHARM = ITEMS.registerItem("tether_charm", CharmItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<CharmItem> GILDED_WARD_CHARM = ITEMS.registerItem("gilded_ward_charm", CharmItem::new, p -> p.stacksTo(1));
+    public static final DeferredItem<CharmItem> CLEAR_VOICE_CHARM = ITEMS.registerItem("clear_voice_charm", CharmItem::new, p -> p.stacksTo(1));
 
-    public static final List<DeferredItem<CharmItem>> ALL = List.of(SHELLWARD_CHARM, HEARTH_CHARM, HUSH_CHARM, ANTIVENOM_CHARM);
+    public static final List<DeferredItem<CharmItem>> ALL = List.of(SHELLWARD_CHARM, HEARTH_CHARM, HUSH_CHARM, ANTIVENOM_CHARM, QUENCH_CHARM, TETHER_CHARM, GILDED_WARD_CHARM, CLEAR_VOICE_CHARM);
 
     /** Each charm's recipe for the GameTests: its ingredients as "item*count". */
     public static final Map<String, List<String>> RECIPES = Map.ofEntries(
             Map.entry("shellward_charm", List.of("teeming:tough_hide*2", "teeming:sand_scale*2", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
             Map.entry("hearth_charm", List.of("teeming:frost_core*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
             Map.entry("hush_charm", List.of("teeming:echo_membrane*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
-            Map.entry("antivenom_charm", List.of("teeming:venom_fang*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")));
+            Map.entry("antivenom_charm", List.of("teeming:venom_fang*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
+            Map.entry("quench_charm", List.of("teeming:frost_core*2", "teeming:slag_gland*2", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
+            Map.entry("tether_charm", List.of("teeming:vein_sac*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
+            Map.entry("gilded_ward_charm", List.of("teeming:gilded_gizzard*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")),
+            Map.entry("clear_voice_charm", List.of("teeming:soul_vertebra*4", "minecraft:gold_ingot*1", "minecraft:amethyst_shard*1")));
 
     private ModCharms() {}
 }

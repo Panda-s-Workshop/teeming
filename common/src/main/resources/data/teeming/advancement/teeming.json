@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:field_guide"
+    },
+    "title": {
+      "translate": "advancements.teeming.teeming.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.teeming.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "background": "minecraft:gui/advancements/backgrounds/stone"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

@@ -3,7 +3,12 @@ package com.panda.teeming.charm;
 import com.panda.teeming.item.CharmItem;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModCharms;
+import java.util.Map;
+import java.util.WeakHashMap;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.jspecify.annotations.Nullable;
 
 /**
  * What each counter charm changes, and the one check every mechanic makes: a charm counts only in its holder's
@@ -34,6 +39,39 @@ public final class Charms {
 
     /** Antivenom Charm: the share of its length that Poison from a Teeming mob lasts on its holder. */
     public static final double ANTIVENOM_POISON = 0.5;
+
+    /**
+     * Quench Charm: heat a hit from its holder takes off a heat-builder, where any other hit adds heat. A heat-builder is
+     * a mob whose heat gauge rises with the blows it takes and erupts when full (the Slagheart Golem); the holder's hit
+     * is a cooling hit like a snowball's, so it also stops an eruption being told.
+     */
+    public static final int QUENCH_COOL = 1;
+    /**
+     * Quench Charm: the share of each burn that reaches its holder while it burns with the fire a burning patch lit
+     * (the patch's after-burn included). A burning patch is a mob's area of burning ground (the Slagspitter's); vanilla
+     * burning deals the damage, so the burn is halved where vanilla applies it, before armour.
+     */
+    public static final float QUENCH_PATCH_BURN = 0.5F;
+
+    /**
+     * Tether Charm: ticks a tether holds its holder before it snaps, as the mob's own counter would snap it. A tether is
+     * a line a mob keeps on a victim at range for as long as range and sight allow (the Veinleech's vein); a pull that
+     * drags its victim in and ends by itself well within this (the Fortress Jailer's chain) is not one.
+     */
+    public static final int TETHER_SNAP_TICKS = 40;
+
+    /**
+     * Gilded Ward Charm: the chance a theft from its holder fails, rolled on the thief's own random source each time it
+     * would take something: an item (the Aurovore's bite) or an effect (the Siphonjelly's sting). A failed theft takes
+     * nothing; the blow that carried it still lands.
+     */
+    public static final float GILDED_WARD_FAIL = 0.5F;
+
+    /** Clear Voice Charm: ticks Silenced lasts on its holder, whatever length its source gives (a wail gives 80). */
+    public static final int CLEAR_VOICE_SILENCED_TICKS = 20;
+
+    /** Who burns with a patch's fire, and the game time that fire runs out (server side; weak, so no one is kept alive). */
+    private static final Map<LivingEntity, Long> PATCH_FIRE = new WeakHashMap<>();
 
     /** True when {@code holder} has {@code charm} in the off-hand. */
     public static boolean holds(LivingEntity holder, DeferredItem<CharmItem> charm) {
@@ -68,5 +106,42 @@ public final class Charms {
     /** Ticks a Teeming mob's Poison of {@code ticks} lasts on {@code target}, after the Antivenom Charm. */
     public static int poisonTicks(LivingEntity target, int ticks) {
         return (int) Math.round(ticks * poisonLength(target));
+    }
+
+    /** Heat a hit from {@code attacker} takes off a heat-builder: {@link #QUENCH_COOL} from a Quench Charm holder, else 0 (the hit heats it). */
+    public static int hitCools(@Nullable Entity attacker) {
+        return attacker instanceof LivingEntity holder && holds(holder, ModCharms.QUENCH_CHARM) ? QUENCH_COOL : 0;
+    }
+
+    /** A burning patch has just set {@code burning} on fire for {@code fireTicks}: until that fire is out it burns with a patch's fire. */
+    public static void litByPatch(LivingEntity burning, int fireTicks) {
+        if (burning.level().isClientSide()) return;
+        PATCH_FIRE.put(burning, burning.level().getGameTime() + fireTicks);
+    }
+
+    /** A burn of {@code amount} on {@code burning}: halved by the Quench Charm while it burns with a patch's fire. */
+    public static float patchBurn(LivingEntity burning, float amount) {
+        Long out = PATCH_FIRE.get(burning);
+        if (out == null) return amount;
+        if (burning.level().getGameTime() > out) {
+            PATCH_FIRE.remove(burning);
+            return amount;
+        }
+        return holds(burning, ModCharms.QUENCH_CHARM) ? amount * QUENCH_PATCH_BURN : amount;
+    }
+
+    /** True when a tether that has held {@code victim} for {@code heldTicks} snaps: at {@link #TETHER_SNAP_TICKS} on a Tether Charm holder. */
+    public static boolean tetherSnaps(LivingEntity victim, int heldTicks) {
+        return heldTicks >= TETHER_SNAP_TICKS && holds(victim, ModCharms.TETHER_CHARM);
+    }
+
+    /** True when a theft from {@code victim} fails: a Gilded Ward Charm holder, and the thief's {@code random} rolls under {@link #GILDED_WARD_FAIL}. */
+    public static boolean theftFails(LivingEntity victim, RandomSource random) {
+        return holds(victim, ModCharms.GILDED_WARD_CHARM) && random.nextFloat() < GILDED_WARD_FAIL;
+    }
+
+    /** Ticks Silenced lasts on {@code victim} when its source gives {@code ticks}: at most {@link #CLEAR_VOICE_SILENCED_TICKS} on a Clear Voice Charm holder. */
+    public static int silencedTicks(LivingEntity victim, int ticks) {
+        return holds(victim, ModCharms.CLEAR_VOICE_CHARM) ? Math.min(ticks, CLEAR_VOICE_SILENCED_TICKS) : ticks;
     }
 }

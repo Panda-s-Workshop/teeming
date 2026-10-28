@@ -1,0 +1,42 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "teeming:liftstone_monolith"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:trophy",
+      "components": {
+        "teeming:trophy_mob": {
+          "mob": "liftstone_monolith",
+          "look": "base"
+        }
+      }
+    },
+    "title": {
+      "translate": "advancements.teeming.liftstone_monolith.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.liftstone_monolith.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:basalt_behemoth"
+}

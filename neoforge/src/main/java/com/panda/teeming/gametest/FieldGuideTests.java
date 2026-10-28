@@ -1,5 +1,6 @@
 package com.panda.teeming.gametest;
 
+import com.mojang.authlib.GameProfile;
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
@@ -9,16 +10,31 @@ import com.panda.teeming.registry.ModComponents;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.trophy.TrophyMob;
+import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-/** A real ServerPlayer near a mob gets its entry, a wall hides it, three kills reveal it, a held trophy is owned for good. */
+/**
+ * A real ServerPlayer near a mob gets its entry, a wall hides it, three kills reveal it, a held trophy is owned for good:
+ * through a save and load and through death.
+ */
 final class FieldGuideTests {
     private FieldGuideTests() {}
 
@@ -26,6 +42,7 @@ final class FieldGuideTests {
         out.accept("fieldguide_seen", FieldGuideTests::seen);
         out.accept("fieldguide_reveal", FieldGuideTests::reveal);
         out.accept("fieldguide_trophy_owned", FieldGuideTests::trophyOwned);
+        out.accept("fieldguide_trophy_kept", FieldGuideTests::trophyKept);
     }
 
     private static ServerPlayer player(GameTestHelper helper, double x, double z) {
@@ -68,6 +85,50 @@ final class FieldGuideTests {
         player.getInventory().setItem(3, ItemStack.EMPTY);                             // placed on a shelf, say
         FieldGuide.look(player);
         helper.assertTrue(FieldGuide.get(player).hasTrophy("slagheart_golem"), "it stays owned once the trophy leaves the inventory");
+        helper.succeed();
+    }
+
+    /**
+     * What the guide holds, owned trophies included, is the player's for good: saved and loaded with the player (the
+     * loader's attachment serializer, as a relog does), and carried over when they die and respawn (the server's real
+     * respawn, which hands the new player a copy). The trophy itself is gone by then: it dropped with the inventory.
+     */
+    private static void trophyKept(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-trophy-keeper"), false);
+        ServerPlayer player = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        player.setGameMode(GameType.SURVIVAL);
+        if (!player.connection.hasClientLoaded()) player.connection.handleAcceptPlayerLoad(new ServerboundPlayerLoadedPacket());
+        player.snapTo(helper.absoluteVec(new Vec3(1.5, 1, 1.5)));
+        ServerPlayer[] current = {player};
+        TestPlayers.whenDone(helper, () -> level.getServer().getPlayerList().remove(current[0]));
+        FieldGuide.set(player, FieldGuideProgress.EMPTY.withKill("thornhorn", "base"));
+        ItemStack trophy = ModItems.TROPHY.get().getDefaultInstance();
+        trophy.set(ModComponents.TROPHY_MOB.get(), new TrophyMob("levimoth", "base"));
+        player.getInventory().setItem(0, trophy);
+        FieldGuide.look(player);
+        helper.assertTrue(FieldGuide.get(player).hasTrophy("levimoth"), "held on the beat, the Levimoth trophy is owned");
+
+        var registries = level.registryAccess();
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
+        player.saveWithoutId(out);
+        ServerPlayer loaded = new ServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
+        loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, registries, out.buildResult()));
+        FieldGuideProgress saved = FieldGuide.get(loaded);
+        helper.assertTrue(saved.hasTrophy("levimoth") && saved.killsOf("thornhorn") == 1, "saved and loaded, the guide keeps it: " + saved);
+
+        player.getInventory().setItem(0, ItemStack.EMPTY);                 // no trophy left to find again after the respawn
+        player.hurtServer(level, player.damageSources().genericKill(), Float.MAX_VALUE);
+        helper.assertTrue(player.isDeadOrDying(), "the player dies");
+        ServerPlayer respawned = level.getServer().getPlayerList().respawn(player, false, Entity.RemovalReason.KILLED);
+        current[0] = respawned;
+        helper.assertTrue(respawned != player, "the respawn is a new player");
+        FieldGuideProgress after = FieldGuide.get(respawned);
+        helper.assertTrue(after.hasTrophy("levimoth"), "after death and respawn the trophy is still owned: " + after);
+        helper.assertTrue(after.killsOf("thornhorn") == 1 && after.hasSeen("thornhorn"), "and the rest of the guide too: " + after);
         helper.succeed();
     }
 

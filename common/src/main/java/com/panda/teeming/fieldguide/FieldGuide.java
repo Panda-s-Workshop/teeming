@@ -1,6 +1,7 @@
 package com.panda.teeming.fieldguide;
 
 import com.panda.teeming.TeemingConfig;
+import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.platform.Services;
 import com.panda.teeming.registry.ModComponents;
@@ -18,7 +19,8 @@ import net.minecraft.world.item.ItemStack;
  * The Field Guide's server side. "Seen": a Teeming mob within 24 blocks that the player has a line of sight
  * to, checked every 20 ticks per player against nearby Teeming mobs only. A player kill counts too; the third kill
  * (config {@code fieldguide.killsToReveal}) reveals the mob's tell, counter, drops and looks. A trophy in the player's inventory, checked on the same beat, marks
- * that mob's trophy as owned for good. The client turns the synced changes into toasts.
+ * that mob's trophy as owned for good. The client turns the synced changes into toasts. Every write, and every look,
+ * awards the advancements the progress has earned ({@link TeemingAdvancements#fromProgress}).
  */
 public final class FieldGuide {
     public static final double SEEN_RANGE = 24.0;
@@ -33,6 +35,7 @@ public final class FieldGuide {
     /** Replaces the player's progress (server). Public for tests and commands. */
     public static void set(Player player, FieldGuideProgress progress) {
         Services.PLATFORM.setFieldGuide(player, progress);
+        if (player instanceof ServerPlayer server) TeemingAdvancements.fromProgress(server, progress);
     }
 
     /** Server, after each level tick: each player is checked once every 20 ticks, spread by entity id. */
@@ -56,6 +59,7 @@ public final class FieldGuide {
         }
         after = withTrophies(player, after);
         if (after != before) set(player, after);
+        else TeemingAdvancements.fromProgress(player, after);     // progress from before the advancements existed
         return fresh;
     }
 

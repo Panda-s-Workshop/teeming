@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:chorus_silk"
+    },
+    "title": {
+      "translate": "advancements.teeming.end_naturalist.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.end_naturalist.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:nether_naturalist"
+}

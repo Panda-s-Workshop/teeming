@@ -1,0 +1,42 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "teeming:grand_orrery"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:trophy",
+      "components": {
+        "teeming:trophy_mob": {
+          "mob": "grand_orrery",
+          "look": "base"
+        }
+      }
+    },
+    "title": {
+      "translate": "advancements.teeming.grand_orrery.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.grand_orrery.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:liftstone_monolith"
+}

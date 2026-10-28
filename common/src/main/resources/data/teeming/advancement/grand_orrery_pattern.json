@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:star_mote"
+    },
+    "title": {
+      "translate": "advancements.teeming.grand_orrery_pattern.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.grand_orrery_pattern.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:magma_tortoise_ride"
+}

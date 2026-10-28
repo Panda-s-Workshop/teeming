@@ -1,0 +1,33 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "teeming:trophy",
+      "components": {
+        "teeming:trophy_mob": {
+          "mob": "levimoth",
+          "look": "base"
+        }
+      }
+    },
+    "title": {
+      "translate": "advancements.teeming.mantelpiece.title"
+    },
+    "description": {
+      "translate": "advancements.teeming.mantelpiece.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "teeming:teeming"
+}

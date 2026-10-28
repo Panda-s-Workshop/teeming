@@ -32,6 +32,7 @@ final class CharmTests {
         out.accept("charms_craftable", CharmTests::craftable);
         out.accept("charm_shellward", CharmTests::shellward);
         OverworldCharmTests.register(out);
+        NetherCharmTests.register(out);
     }
 
     private static ItemStack stack(String part) {

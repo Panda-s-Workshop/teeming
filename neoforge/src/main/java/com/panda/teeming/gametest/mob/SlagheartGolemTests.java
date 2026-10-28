@@ -1,5 +1,8 @@
 package com.panda.teeming.gametest.mob;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
+import com.panda.teeming.gametest.AdvancementTests;
+import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.mob.nether.SlagheartGolem.Step;
 import com.panda.teeming.registry.ModMobs;
@@ -7,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -32,6 +36,7 @@ public final class SlagheartGolemTests {
         out.accept("slagheart_golem_heat_clock", SlagheartGolemTests::heatClock);
         out.accept("slagheart_golem_splash", SlagheartGolemTests::splash);
         out.accept("slagheart_golem_quench_length", SlagheartGolemTests::quenchLength);
+        out.accept("slagheart_golem_feat", SlagheartGolemTests::feat);
     }
 
     private static SlagheartGolem golem(GameTestHelper helper) {
@@ -160,6 +165,42 @@ public final class SlagheartGolemTests {
             helper.getLevel().addFreshEntity(potion);
         });
         helper.succeedWhen(() -> helper.assertTrue(golem.heat() == 9 - SlagheartGolem.SPLASH, "splash water cools it by 4, heat " + golem.heat()));
+    }
+
+    /**
+     * Cooled Off: the snowball that brings a golem to heat 0 and quenches it earns its thrower the advancement. Here a
+     * survival player's first snowball takes heat 4 to 2 (nothing yet), their second quenches it (earned); a snowball
+     * nobody threw quenches a second golem and earns nobody anything.
+     */
+    private static void feat(GameTestHelper helper) {
+        SlagheartGolem golem = golem(helper);
+        SlagheartGolem other = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(9.5, 1, 9.5));
+        other.setNoAi(true);
+        ServerPlayer thrower = TestPlayers.survivor(helper, new Vec3(1.5, 1, 1.5));
+        golem.setHeat(4);
+        other.setHeat(2);
+        Snowball stray = helper.spawn(EntityTypes.SNOWBALL, new Vec3(9.5, 2.5, 6.5));
+        stray.setDeltaMovement(0, 0, 0.8);
+        throwAt(helper, thrower, 2);
+        helper.runAtTickTime(12, () -> {
+            helper.assertTrue(other.core().in(Step.QUENCHED), "the stray snowball quenches the other golem, heat " + other.heat());
+            helper.assertTrue(golem.heat() == 2 && !golem.core().in(Step.QUENCHED), "the first snowball cools 4 to 2, heat " + golem.heat());
+            helper.assertTrue(!AdvancementTests.done(helper, thrower, TeemingAdvancements.SLAGHEART_QUENCH), "cooling short of 0 earns nothing");
+        });
+        throwAt(helper, thrower, 14);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(golem.heat() == 0 && golem.core().in(Step.QUENCHED), "the second snowball quenches it, heat " + golem.heat());
+            helper.assertTrue(AdvancementTests.done(helper, thrower, TeemingAdvancements.SLAGHEART_QUENCH), "and earns its thrower Cooled Off");
+        });
+    }
+
+    /** At tick {@code at}, a snowball thrown by {@code thrower} flies into the golem at the arena's middle. */
+    private static void throwAt(GameTestHelper helper, ServerPlayer thrower, int at) {
+        helper.runAtTickTime(at, () -> {
+            Snowball ball = helper.spawn(EntityTypes.SNOWBALL, new Vec3(5.5, 2.5, 2.5));
+            ball.setOwner(thrower);
+            ball.setDeltaMovement(0, 0, 0.8);
+        });
     }
 
     /** Quenched lasts 60 ticks. */

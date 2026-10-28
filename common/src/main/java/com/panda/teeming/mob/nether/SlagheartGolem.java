@@ -1,5 +1,7 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Gauge;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
@@ -11,6 +13,7 @@ import com.panda.teeming.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -36,12 +39,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Slagheart Golem: heat 0–12 rises by 1 for every hit it takes and every 3 s while it fights; its cracks
  * glow in four stages (heat / 3). At 12 it shakes for 1 s (tell), smoke tracing the 5-block reach on the ground, and
  * erupts: 10 damage and fire within 5 blocks, a ring of flame along that edge, heat back to 6. Counter: a snowball cools it by 2, splash water by 4, powder snow by 12; at heat 0 it is quenched for
- * 3 s and takes ×1.5.
+ * 3 s and takes ×1.5. A hit from a Quench Charm holder cools it by 1 instead of heating it.
  */
 public class SlagheartGolem extends TeemingMonster {
     public enum Step implements Phase { IDLE, TELL, ERUPT, QUENCHED }
@@ -132,10 +136,22 @@ public class SlagheartGolem extends TeemingMonster {
 
     /** A cooling hit: lowers the heat with a hiss. */
     public void cool(int amount) {
+        cool(amount, null);
+    }
+
+    /**
+     * A cooling hit from {@code by} (the thrower of a snowball or splash water; null for powder snow, rain or water). The
+     * hit that brings the heat to 0 and quenches it earns its thrower, if a player, the Cooled Off advancement.
+     */
+    public void cool(int amount, @Nullable Entity by) {
         if (!MechanicEvent.post(this, "cool", null)) return;
-        if (!core().in(Step.QUENCHED)) STEAM.play(this);
+        boolean wasQuenched = core().in(Step.QUENCHED);
+        if (!wasQuenched) STEAM.play(this);
         if (core().in(Step.TELL)) core().end();     // quenching the tell stops the eruption
         setHeat(heat() - amount);
+        if (!wasQuenched && core().in(Step.QUENCHED) && by instanceof ServerPlayer player) {
+            TeemingAdvancements.award(player, TeemingAdvancements.SLAGHEART_QUENCH);
+        }
     }
 
     @Override
@@ -215,15 +231,19 @@ public class SlagheartGolem extends TeemingMonster {
 
     // ---- hits and quenching ----------------------------------------------------------------------------------------
 
+    /**
+     * Snowballs, splash water and drowning cool it and do no damage. Any other blow that lands heats it by 1, except
+     * fire, and except a blow from a Quench Charm holder, which cools it by {@link Charms#QUENCH_COOL} instead.
+     */
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         Entity direct = source.getDirectEntity();
         if (direct instanceof Snowball) {
-            cool(SNOWBALL);
+            cool(SNOWBALL, source.getEntity());
             return false;
         }
         if (direct instanceof AbstractThrownPotion potion && potion.getItem().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.WATER)) {
-            cool(SPLASH);
+            cool(SPLASH, source.getEntity());
             return false;
         }
         if (source.is(DamageTypeTags.IS_DROWNING)) {
@@ -231,7 +251,11 @@ public class SlagheartGolem extends TeemingMonster {
             return false;
         }
         boolean hurt = super.hurtServer(level, source, core().in(Step.QUENCHED) ? amount * QUENCHED_DAMAGE : amount);
-        if (hurt && !source.is(DamageTypeTags.IS_FIRE)) heat.fill(1);      // sealed while quenched
+        if (hurt && !source.is(DamageTypeTags.IS_FIRE)) {
+            int cools = Charms.hitCools(source.getEntity());           // a Quench Charm holder's hit is a cooling hit
+            if (cools > 0) cool(cools);
+            else heat.fill(1);                                         // sealed while quenched
+        }
         return hurt;
     }
 

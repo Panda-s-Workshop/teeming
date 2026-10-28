@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -53,7 +54,8 @@ import org.jspecify.annotations.Nullable;
  * <p>Counter: kill it while it holds your effect and you get it back with the time it had left, added to whatever of
  * that effect you still have, as long as you are alive and within 32 blocks; anyone else, or farther, and the effect
  * is lost with it. Or fight it without buffs: a sting that finds nothing to take starves it: for 100 ticks it sinks
- * low, dim and limp, and can't sting at all.
+ * low, dim and limp, and can't sting at all. From a Gilded Ward Charm holder half its siphons fail: the sting lands and
+ * takes nothing.
  *
  * <p>Its glow is the stolen effect's own colour, picked from twelve hues by the nearest; effects whose colour lies
  * in the band of weak-point gold are shown orange or lime instead, so it never glows gold. The sting places and
@@ -317,8 +319,9 @@ public class Siphonjelly extends TeemingMonster {
 
     /**
      * Takes up to {@link #STEAL_CAP} ticks of the target's longest beneficial effect and puts them on itself; the target
-     * keeps the rest. Returns what it took, or null if it holds one already, there was nothing, or a listener stopped
-     * it. Public as a test hook.
+     * keeps the rest. Returns what it took, or null if it holds one already, there was nothing, a Gilded Ward Charm
+     * turned it away ({@link Charms#GILDED_WARD_FAIL}, on its own random source), or a listener stopped it. Public as a
+     * test hook.
      */
     public @Nullable MobEffectInstance siphon(ServerLevel level, LivingEntity target) {
         if (held != null) return null;
@@ -327,7 +330,7 @@ public class Siphonjelly extends TeemingMonster {
         int take = best.isInfiniteDuration() ? STEAL_CAP : Math.min(STEAL_CAP, best.getDuration());
         MobEffectInstance mine = copy(best, take);
         if (take <= 0 || !canBeAffected(mine)) return null;
-        if (!MechanicEvent.post(this, "siphon", target)) return null;
+        if (Charms.theftFails(target, getRandom()) || !MechanicEvent.post(this, "siphon", target)) return null;
         if (!best.isInfiniteDuration()) {
             int keep = best.getDuration() - take;
             target.removeEffect(best.getEffect());

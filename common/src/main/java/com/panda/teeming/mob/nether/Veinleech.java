@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -39,6 +40,7 @@ import org.jspecify.annotations.Nullable;
  * the leech each time it drinks. Counter: put a block, a tree or a corner between you, or get past 10 blocks: the vein
  * snaps (it also snaps if the target is already out of sight or reach when the tell ends) and the leech lies stunned
  * for 40 ticks, unable to move, bite or latch. It waits 2 s after the stun before it rears again; meanwhile it bites.
+ * On a Tether Charm holder the vein snaps by itself once it has held for 40 ticks, as if the counter had broken it.
  *
  * <p>The vein is not an entity: the leech faces its victim while it holds, and tells clients how long the vein is and
  * how steeply it runs through its synced flags, so the model can lay the vein from its mouth to the victim. Nothing is
@@ -206,20 +208,23 @@ public class Veinleech extends TeemingMonster {
         level.sendParticles(ParticleTypes.CRIMSON_SPORE, at.x, at.y, at.z, 6, 0.2, 0.2, 0.2, 0.02);
     }
 
-    /** One tick of the hold: it checks range and sight, drinks once a second, and keeps the vein on its victim. */
+    /**
+     * One tick of the hold: it checks range and sight, drinks once a second, and keeps the vein on its victim. A hold
+     * on a Tether Charm holder snaps at {@link Charms#TETHER_SNAP_TICKS}, before that tick's drink.
+     */
     private void latchTick(ServerLevel level, @Nullable LivingEntity target) {
         holdStill();
         if (!valid(target)) {
             rest();                                                              // the victim died or went creative
             return;
         }
-        if (!inReach(target)) {
+        int t = core().elapsed();
+        if (!inReach(target) || Charms.tetherSnaps(target, t)) {
             snap(level, target);
             return;
         }
         face(target);
         showVein(target);
-        int t = core().elapsed();
         if (t > 0 && t % DRAIN_INTERVAL == 0) drink(level, target);
         if (tickCount % 2 == 0) {
             // blood drifts along the vein where the swelling is, from the victim toward the leech

@@ -1,14 +1,19 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAnimal;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.registry.ModSounds;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -73,6 +78,8 @@ public class MagmaTortoise extends TeemingAnimal {
     private static final double ARRIVE = 0.4;
     private static final double LOOK_AHEAD = 0.4;     // lava must go on this far past the front of its shell
     private static final double DECK_BELOW = 0.15, DECK_ABOVE = 0.1;
+    /** A player carried this far across lava in one ride earns Lava Ferry. */
+    public static final double FERRY_BLOCKS = 16.0;
 
     private static final Telegraph FED = Telegraph.particles(ParticleTypes.FLAME, 10, 0.25, 0.7).withSpeed(0.03)
             .withSound(ModSounds.MAGMA_TORTOISE_FED.get(), 1.0F, 1.0F);
@@ -81,6 +88,8 @@ public class MagmaTortoise extends TeemingAnimal {
 
     /** Where it is paddling to, server side; null when it rests. */
     private @Nullable Vec3 wanted;
+    /** Server: each player on its shell and how far it has carried them across lava since they stepped on. */
+    private final Map<UUID, Double> rides = new HashMap<>();
 
     public MagmaTortoise(EntityType<? extends MagmaTortoise> type, Level level) {
         super(type, level, Step.values());
@@ -287,13 +296,34 @@ public class MagmaTortoise extends TeemingAnimal {
         if (!(level() instanceof ServerLevel level)) return;
         if (core().in(Step.FOLLOW)) EAGER.trail(this, 20);
         paddleCues(level);
+        if (!rides.isEmpty()) rides.keySet().removeIf(id -> !(level.getEntity(id) instanceof Player p) || !carries(p));   // stepped off
     }
 
     /** Moves everything standing on {@code shell} (its box before it moved) by {@code moved}, as a shulker's lid lifts. */
     private void carryRiders(AABB shell, Vec3 moved) {
         if (moved.lengthSqr() < 1.0E-10) return;
         AABB deck = new AABB(shell.minX, shell.maxY - DECK_BELOW, shell.minZ, shell.maxX, shell.maxY + DECK_ABOVE, shell.maxZ);
-        for (Entity rider : level().getEntities(this, deck, e -> onDeck(e, shell))) rider.move(MoverType.SHULKER, moved);
+        for (Entity rider : level().getEntities(this, deck, e -> onDeck(e, shell))) {
+            rider.move(MoverType.SHULKER, moved);
+            if (rider instanceof ServerPlayer player) ferry(player, moved);
+        }
+    }
+
+    /**
+     * Lava Ferry: the distance it swims through lava while a player stands on its shell counts toward their ride, and
+     * at {@link #FERRY_BLOCKS} the player earns the advancement. Only its own movement in lava counts (not the
+     * player's steps on the shell), and stepping off starts the count again.
+     */
+    private void ferry(ServerPlayer player, Vec3 moved) {
+        if (!isInLava()) return;
+        double step = moved.horizontalDistance();
+        double ridden = rides.merge(player.getUUID(), step, Double::sum);
+        if (ridden >= FERRY_BLOCKS && ridden - step < FERRY_BLOCKS) TeemingAdvancements.award(player, TeemingAdvancements.MAGMA_TORTOISE_RIDE);
+    }
+
+    /** How far it has carried {@code player} across lava in their current ride (server). Public as a test hook. */
+    public double ridden(Player player) {
+        return rides.getOrDefault(player.getUUID(), 0.0);
     }
 
     private boolean onDeck(Entity e, AABB shell) {

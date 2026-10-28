@@ -1,6 +1,8 @@
 package com.panda.teeming.gametest.mob;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.advancement.TeemingAdvancements;
+import com.panda.teeming.gametest.AdvancementTests;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.Shot;
@@ -85,6 +87,10 @@ public final class GrandOrreryTests {
         out.accept("grand_orrery_home", GrandOrreryTests::home);
         out.accept("grand_orrery_spawn_rule", GrandOrreryTests::spawnRule);
         out.accept("grand_orrery_cap", GrandOrreryTests::cap);
+        out.accept("grand_orrery_feat", h -> feat(h, true));
+        TeemingGameTests.timeLimit("grand_orrery_feat", 160);
+        out.accept("grand_orrery_feat_struck", h -> feat(h, false));
+        TeemingGameTests.timeLimit("grand_orrery_feat_struck", 160);
     }
 
     // ---- set-up ----------------------------------------------------------------------------------------------------
@@ -467,6 +473,44 @@ public final class GrandOrreryTests {
             helper.assertTrue(lost(inGap, health[0]) == 0.0F, "standing in the gap, the player loses nothing, lost " + lost(inGap, health[0]));
             helper.assertTrue(lost(onLine, health[1]) >= each - 0.01F, "on a mote's line, the player is struck, lost " + lost(onLine, health[1]));
             helper.assertTrue(pig.getHealth() < pig.getMaxHealth(), "and the pig it aimed at is struck");
+        });
+    }
+
+    /**
+     * Between the Stars: a double ring aimed at a survival player 5 blocks out. {@code step}: once the motes have left,
+     * the player steps 7.5 degrees round into the gap between two lanes and stands there; untouched, they earn the
+     * advancement once the last mote is spent, not before. Otherwise they stand where it aimed, the aimed mote strikes
+     * them, and they earn nothing.
+     */
+    private static void feat(GameTestHelper helper, boolean step) {
+        GrandOrrery o = hanging(helper);
+        ServerPlayer p = TestPlayers.survivor(helper, out(HANG, -90.0, 5.0));
+        float[] health = {20.0F};
+        boolean[] stepped = {false}, early = {false};
+        helper.runAtTickTime(1, () -> {
+            health[0] = p.getHealth();
+            o.setNextPattern(Step.DOUBLE_RING);
+            helper.assertTrue(o.spinUp(p), "it spins up at the player");
+        });
+        helper.onEachTick(() -> {
+            if (step && !stepped[0] && o.core().in(Step.DOUBLE_RING) && o.fired() > 0) {
+                stepped[0] = true;
+                p.snapTo(helper.absoluteVec(out(HANG, -90.0 + 7.5, 5.0)));
+            }
+            if (!o.motes().isEmpty() && AdvancementTests.done(helper, p, TeemingAdvancements.GRAND_ORRERY_PATTERN)) early[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(o.core().in(Step.OPEN) && o.motes().isEmpty(), "the pattern is over and every mote spent, phase " + o.phase());
+            helper.assertTrue(o.fired() == 24, "the whole double ring flew, " + o.fired());
+            if (step) {
+                helper.assertTrue(stepped[0], "the player stepped aside");
+                helper.assertTrue(lost(p, health[0]) == 0.0F, "in the gap nothing touches them, lost " + lost(p, health[0]));
+                helper.assertTrue(AdvancementTests.done(helper, p, TeemingAdvancements.GRAND_ORRERY_PATTERN), "untouched, they earn Between the Stars");
+                helper.assertTrue(!early[0], "not while motes were still flying");
+            } else {
+                helper.assertTrue(o.strikes() >= 1 && lost(p, health[0]) > 0.0F, "standing on the aim, they are struck, lost " + lost(p, health[0]));
+                helper.assertTrue(!AdvancementTests.done(helper, p, TeemingAdvancements.GRAND_ORRERY_PATTERN), "struck, they earn nothing");
+            }
         });
     }
 

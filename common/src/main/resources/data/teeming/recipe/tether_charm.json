@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "teeming:vein_sac",
+    "teeming:vein_sac",
+    "teeming:vein_sac",
+    "teeming:vein_sac",
+    "minecraft:gold_ingot",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "teeming:tether_charm"
+  }
+}

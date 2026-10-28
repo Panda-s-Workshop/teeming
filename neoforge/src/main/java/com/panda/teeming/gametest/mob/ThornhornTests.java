@@ -1,5 +1,8 @@
 package com.panda.teeming.gametest.mob;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
+import com.panda.teeming.gametest.AdvancementTests;
+import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.overworld.Thornhorn;
 import com.panda.teeming.mob.overworld.Thornhorn.Step;
@@ -10,6 +13,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.level.block.Blocks;
@@ -26,6 +30,7 @@ public final class ThornhornTests {
         out.accept("mechanic_event_cancel", ThornhornTests::cancelledTell);
         out.accept("thornhorn_charge_numbers", ThornhornTests::chargeNumbers);
         out.accept("thornhorn_stun_length", ThornhornTests::stunLength);
+        out.accept("thornhorn_feat", ThornhornTests::feat);
     }
 
     /** A Thornhorn 9 blocks from its target, cooldown cleared. */
@@ -117,6 +122,32 @@ public final class ThornhornTests {
             // value, so a wrong constant fails)
             helper.assertTrue(Math.abs(pigSpeed[0] - 1.8) <= 0.05,
                     "the gore knocks the target back at 1.6, its speed on the hit was " + pigSpeed[0]);
+        });
+    }
+
+    /**
+     * Sidestep: a Thornhorn charging a survival player who has stepped aside (a wall goes up in their place) stuns itself,
+     * and that player earns the advancement at the stun. A second player standing by, never charged, earns nothing.
+     */
+    private static void feat(GameTestHelper helper) {
+        Thornhorn horn = helper.spawn(ModMobs.THORNHORN.get(), new Vec3(1.5, 1, 5.5));
+        ServerPlayer charged = TestPlayers.survivor(helper, new Vec3(10.5, 1, 5.5));
+        ServerPlayer bystander = TestPlayers.survivor(helper, new Vec3(1.5, 1, 10.5));
+        horn.setTarget(charged);
+        horn.resetCooldown();
+        helper.runAtTickTime(6, () -> {
+            helper.assertTrue(!AdvancementTests.done(helper, charged, TeemingAdvancements.THORNHORN_WALL), "nothing earned during the tell");
+            for (int z = 2; z <= 9; z++) for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(6, y, z), Blocks.STONE);
+        });
+        boolean[] beforeStun = {false};
+        helper.onEachTick(() -> {
+            if (!horn.core().in(Step.STUNNED) && AdvancementTests.done(helper, charged, TeemingAdvancements.THORNHORN_WALL)) beforeStun[0] = true;
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(horn.core().in(Step.STUNNED), "the charge ends in the wall, phase " + horn.phase());
+            helper.assertTrue(AdvancementTests.done(helper, charged, TeemingAdvancements.THORNHORN_WALL), "the player it charged earns Sidestep");
+            helper.assertTrue(!beforeStun[0], "not before the stun");
+            helper.assertTrue(!AdvancementTests.done(helper, bystander, TeemingAdvancements.THORNHORN_WALL), "the bystander earns nothing");
         });
     }
 

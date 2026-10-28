@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
@@ -12,6 +13,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -181,9 +183,15 @@ public class Thornhorn extends TeemingAnimal {
         return e != this && e.isAlive() && !(e instanceof Thornhorn) && !(e instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
-    /** The counter landed: it ran into a wall. Public as a test hook. */
+    /**
+     * The counter landed: it ran into a wall. A charge at a player that ends this way earns that player the Sidestep
+     * advancement: the Thornhorn was charging (not posed or stunned by a hook) and the one it charged is a player.
+     * Public as a test hook.
+     */
     public void stun(ServerLevel level) {
+        LivingEntity charged = core().in(Step.CHARGE) ? core().target() : null;
         if (!startPhase(Step.STUNNED, STUN_TICKS, null)) return;
+        if (charged instanceof ServerPlayer player && player.isAlive()) TeemingAdvancements.award(player, TeemingAdvancements.THORNHORN_WALL);
         setDeltaMovement(-chargeDir.x * 0.2, 0.2, -chargeDir.z * 0.2);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_STUNNED.get(), getSoundSource(), 1.0F, 1.0F);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.THORNHORN_HORN_CRACK.get(), getSoundSource(), 1.0F, 1.0F);

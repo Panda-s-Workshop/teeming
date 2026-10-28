@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.effect.EffectNumbers;
 import com.panda.teeming.effect.SilencedEffect;
 import com.panda.teeming.mob.MechanicEvent;
@@ -39,7 +40,8 @@ import org.jspecify.annotations.Nullable;
  * blocks in its sight, it draws a long breath for 16 ticks (tell): it holds still, its chest caves in, its head tips
  * back and soul wisps are pulled into its mouth with a rising breath. Then it wails: a ring of sound runs out from it,
  * and every player within 10 blocks who has a line of sight to it at that moment is Silenced for 80 ticks (no item use:
- * no eating, no potions, no shield, no bow, nothing thrown). Creative and spectating players are never touched.
+ * no eating, no potions, no shield, no bow, nothing thrown); a Clear Voice Charm holder for 20 only. Creative and
+ * spectating players are never touched.
  *
  * <p>Counter: break its line of sight while it breathes in: step behind a block or a tree (or out of its reach). A wail
  * that silences no one tears its voice: for 200 ticks it is voiceless. It sinks to the ground, its jaw hanging, soul
@@ -206,7 +208,8 @@ public class KeeningShade extends TeemingMonster {
 
     /**
      * The wail: every player within 10 blocks who can see it, and isn't creative or spectating, is Silenced for 80
-     * ticks. Returns how many it silenced. Run when the wail starts.
+     * ticks ({@link Charms#CLEAR_VOICE_SILENCED_TICKS} on a Clear Voice Charm holder). Returns how many it silenced.
+     * Run when the wail starts.
      */
     private int wail(ServerLevel level) {
         wails++;
@@ -216,7 +219,7 @@ public class KeeningShade extends TeemingMonster {
             if (!hears(p)) continue;
             lastReached.add(p);
             if (!MechanicEvent.post(this, "silence", p)) continue;
-            ModEffects.give(p, ModEffects.SILENCED, SILENCE_TICKS, this);
+            ModEffects.give(p, ModEffects.SILENCED, Charms.silencedTicks(p, SILENCE_TICKS), this);
             if (SilencedEffect.silenced(p)) silenced++;
         }
         lastSilenced = silenced;

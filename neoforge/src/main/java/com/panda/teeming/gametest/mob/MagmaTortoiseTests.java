@@ -1,6 +1,8 @@
 package com.panda.teeming.gametest.mob;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.advancement.TeemingAdvancements;
+import com.panda.teeming.gametest.AdvancementTests;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
@@ -76,6 +78,9 @@ public final class MagmaTortoiseTests {
         out.accept("magma_tortoise_fire_immune", MagmaTortoiseTests::fireImmune);
         out.accept("magma_tortoise_stats", MagmaTortoiseTests::stats);
         out.accept("magma_tortoise_spawns", MagmaTortoiseTests::spawns);
+        out.accept("magma_tortoise_feat", MagmaTortoiseTests::feat);
+        TeemingGameTests.wide("magma_tortoise_feat");
+        TeemingGameTests.timeLimit("magma_tortoise_feat", 420);
     }
 
     // ---- set-up ----------------------------------------------------------------------------------------------------
@@ -421,6 +426,42 @@ public final class MagmaTortoiseTests {
             helper.assertTrue(Math.abs(rode - went) < 0.15, "carrying the player as far, " + rode + " of " + went);
             helper.assertTrue(t.carries(p), "who is still on the shell");
             helper.succeed();
+        });
+    }
+
+    /**
+     * Lava Ferry: a survival player standing on its shell while it swims a long pool (in the wide arena: lava two deep
+     * from x = 1 to 24, z 1..7) earns the advancement once it has carried them 16 blocks across the lava, not before.
+     */
+    private static void feat(GameTestHelper helper) {
+        for (int x = 0; x <= 25; x++) {
+            for (int z = 0; z <= 8; z++) {
+                for (int y = 1; y <= 2; y++) {
+                    boolean wall = x == 0 || x == 25 || z == 0 || z == 8;
+                    helper.setBlock(new BlockPos(x, y, z), wall ? Blocks.STONE : Blocks.LAVA);
+                }
+            }
+        }
+        MagmaTortoise t = tortoise(helper, 3.5, 4.5, -90.0F);
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(0.5, 3, 0.5));
+        double[] startX = {0};
+        double[] whenEarned = {-1};
+        helper.runAtTickTime(20, () -> {
+            p.snapTo(t.getX(), t.getBoundingBox().maxY, t.getZ(), -90.0F, 0.0F);
+            helper.assertTrue(t.carries(p), "the player stands on the shell");
+            startX[0] = t.getX();
+            t.paddleTo(helper.absoluteVec(new Vec3(23.5, 2.4, 4.5)));
+        });
+        helper.onEachTick(() -> {
+            if (whenEarned[0] < 0 && AdvancementTests.done(helper, p, TeemingAdvancements.MAGMA_TORTOISE_RIDE)) whenEarned[0] = t.ridden(p);
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(whenEarned[0] >= 0, "not earned yet: carried " + t.ridden(p) + " of 16, swum " + (t.getX() - startX[0])
+                    + ", still on the shell " + t.carries(p));
+            helper.assertTrue(whenEarned[0] >= MagmaTortoise.FERRY_BLOCKS && whenEarned[0] < MagmaTortoise.FERRY_BLOCKS + 0.2,
+                    "earned at 16 blocks carried, not before: " + whenEarned[0]);
+            helper.assertTrue(Math.abs(MagmaTortoise.FERRY_BLOCKS - 16.0) < 1.0E-9, "a ride of 16 blocks, " + MagmaTortoise.FERRY_BLOCKS);
+            helper.assertTrue(t.carries(p), "the player rode all the way on the shell");
         });
     }
 

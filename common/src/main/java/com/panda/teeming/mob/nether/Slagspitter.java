@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.nether;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Shot;
@@ -47,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * flies 0.6 blocks a tick across the ground, never homes, and stops at the first block or hitbox: a hit does 5 as a
  * mob's projectile, so a shield raised toward the spitter takes it. Where the glob lands the ground burns for 80
  * ticks: anyone standing within 1.5 blocks of the spot is set on fire. The patch is an area the spitter owns, never a
- * fire block. One tell every 60 ticks.
+ * fire block. One tell every 60 ticks. A Quench Charm holder takes half of each burn from the fire a patch lit.
  *
  * <p>A survival player within 5 blocks makes it hop away to get its range back: a leap toward a spot away from the
  * player, or straight away from them when no spot is found. Counter: close the distance. A player who comes within 5
@@ -112,7 +113,7 @@ public class Slagspitter extends TeemingMonster {
     // ---- the burning patches: areas it owns, never fire blocks ------------------------------------------------------
 
     private final Zone patches = new Zone(Zone.Shape.disc(PATCH_RADIUS, PATCH_HEIGHT), MAX_PATCHES)
-            .affects(this::burns, e -> e.igniteForTicks(PATCH_FIRE_TICKS))
+            .affects(this::burns, this::burn)
             .drawn(this::drawPatch);
 
     public Slagspitter(EntityType<? extends Slagspitter> type, Level level) {
@@ -494,6 +495,15 @@ public class Slagspitter extends TeemingMonster {
     /** Opens a burning patch at {@code spot} at once, as a glob would. Public as a test hook. */
     public boolean openPatch(Vec3 spot) {
         return level() instanceof ServerLevel level && splat(level, spot);
+    }
+
+    /**
+     * A tick in a patch: on fire for at least {@link #PATCH_FIRE_TICKS} more. Vanilla burning deals the damage; that
+     * fire is marked as a patch's, so a Quench Charm holder takes {@link Charms#QUENCH_PATCH_BURN} of each burn.
+     */
+    private void burn(LivingEntity e) {
+        e.igniteForTicks(PATCH_FIRE_TICKS);
+        Charms.litByPatch(e, PATCH_FIRE_TICKS);
     }
 
     /** Who a patch burns: anything alive standing in it but slagspitters, spectators and creative players. */

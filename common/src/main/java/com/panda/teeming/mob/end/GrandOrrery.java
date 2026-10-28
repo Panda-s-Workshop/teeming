@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Shot;
@@ -9,10 +10,14 @@ import com.panda.teeming.mob.nether.Flamewright.Patterns;
 import com.panda.teeming.mob.nether.Flamewright.Patterns.Launch;
 import com.panda.teeming.registry.ModSounds;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -248,6 +253,8 @@ public class GrandOrrery extends TeemingMonster {
     private double pitch;
     private int fired;
     private int strikes;
+    /** The pattern being watched for Between the Stars (null when none is); see {@link Watch}. */
+    private @Nullable Watch watch;
     /** Test hooks: it hangs where it is (it still casts); it never starts a spin-up of its own. */
     private boolean anchored;
     private boolean holdFire;
@@ -479,6 +486,7 @@ public class GrandOrrery extends TeemingMonster {
         }
         castTick(level);
         motes.tick(level);
+        watchTick();
     }
 
     /** The spin-up: motes stream in to the core from all round, and the chime climbs. */
@@ -519,11 +527,44 @@ public class GrandOrrery extends TeemingMonster {
             pitch = valid(target) ? pitchTo(target) : 0.0;
             setFacing(aim);
             playSound(ModSounds.GRAND_ORRERY_RELEASE.get(), 1.4F, 1.0F);
+            watch = target instanceof ServerPlayer player && valid(player) && corePos().distanceTo(player.position()) <= MOTE_RANGE
+                    ? new Watch(player) : null;
         }
         lastElapsed = t;
         while (launched < plan.size() && plan.get(launched).tick() <= t) {
             int index = launched++;
-            if (MechanicEvent.post(this, "mote", core().target())) launch(level, aim + plan.get(index).yaw(), Plan.speed(now, index));
+            if (MechanicEvent.post(this, "mote", core().target())) {
+                Shot mote = launch(level, aim + plan.get(index).yaw(), Plan.speed(now, index));
+                if (watch != null) watch.left.add(mote);
+            }
+        }
+        if (watch != null && launched >= plan.size()) watch.allOut = true;
+    }
+
+    /**
+     * Between the Stars: the player a pattern is aimed at, standing within a mote's reach of the core as it begins,
+     * earns the advancement once every mote of that pattern has left and faded without one touching them (a mote a
+     * shield takes still touched them). A pattern cut short (the orrery dies before its last mote leaves, or is removed
+     * before its motes are spent) earns nothing.
+     */
+    private static final class Watch {
+        final ServerPlayer player;
+        final Set<Shot> left = Collections.newSetFromMap(new IdentityHashMap<>());
+        boolean allOut;
+        boolean touched;
+
+        Watch(ServerPlayer player) {
+            this.player = player;
+        }
+    }
+
+    /** Resolves the watched pattern once its last mote is gone. */
+    private void watchTick() {
+        if (watch == null || !watch.allOut || !watch.left.isEmpty()) return;
+        Watch done = watch;
+        watch = null;
+        if (!done.touched && done.player.isAlive() && !done.player.isRemoved()) {
+            TeemingAdvancements.award(done.player, TeemingAdvancements.GRAND_ORRERY_PATTERN);
         }
     }
 
@@ -535,12 +576,14 @@ public class GrandOrrery extends TeemingMonster {
     }
 
     /** One mote from the core, at {@code yaw}, dipped by the pattern's pitch. */
-    private void launch(ServerLevel level, double yaw, double speed) {
+    private Shot launch(ServerLevel level, double yaw, double speed) {
         Vec3 dir = Lanes.direction(yaw, pitch);
         Vec3 from = corePos().add(Patterns.direction(yaw).scale(RELEASE_OUT * getScale()));
-        flying.add(motes.fire(Shot.Path.line(from, dir, speed, MOTE_RANGE)));
+        Shot mote = motes.fire(Shot.Path.line(from, dir, speed, MOTE_RANGE));
+        flying.add(mote);
         fired++;
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, true, true, from.x, from.y, from.z, 2, 0.05, 0.05, 0.05, 0.0);
+        return mote;
     }
 
     /** The core opens: its cage blooms, a deep bell, and a burst of gold from the core. */
@@ -583,6 +626,7 @@ public class GrandOrrery extends TeemingMonster {
      */
     private void strike(ServerLevel level, Shot shot, LivingEntity victim, Vec3 at) {
         flying.remove(shot);
+        if (watch != null && watch.left.remove(shot) && victim == watch.player) watch.touched = true;
         if (MechanicEvent.post(this, "mote_hit", victim)) {
             AstralAugur.GroundMarks.hurtInPlace(level, victim, Shot.damage(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE));
             strikes++;
@@ -595,6 +639,7 @@ public class GrandOrrery extends TeemingMonster {
     /** A mote meets a wall or flies its length: it fades in a few sparks where it stopped. */
     private void fade(ServerLevel level, Shot shot, Vec3 at, boolean blocked) {
         flying.remove(shot);
+        if (watch != null) watch.left.remove(shot);
         level.sendParticles(VIOLET, at.x, at.y, at.z, 3, 0.08, 0.08, 0.08, 0.0);
         if (blocked && random.nextInt(4) == 0) {
             level.playSound(null, at.x, at.y, at.z, ModSounds.GRAND_ORRERY_FIZZLE.get(), getSoundSource(), 0.5F, 1.0F);
@@ -637,6 +682,7 @@ public class GrandOrrery extends TeemingMonster {
     public void onRemoval(RemovalReason reason) {
         motes.clear();
         flying.clear();
+        watch = null;
         super.onRemoval(reason);
     }
 
