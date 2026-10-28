@@ -1,4 +1,13 @@
 {
+  "charm.save": {
+    "subtitle": "subtitles.teeming.charm.save",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.chime",
+        "type": "event"
+      }
+    ]
+  },
   "abyss_angler.ambient": {
     "subtitle": "subtitles.teeming.abyss_angler.ambient",
     "sounds": [

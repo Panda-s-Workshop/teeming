@@ -5,6 +5,9 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.advancement.TeemingAdvancements;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
+import com.panda.teeming.mob.MechanicEvent;
+import com.panda.teeming.mob.end.GrandOrrery;
+import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.registry.ModCharms;
 import com.panda.teeming.registry.ModComponents;
 import com.panda.teeming.registry.ModItems;
@@ -23,14 +26,19 @@ import java.util.stream.Collectors;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -59,6 +67,13 @@ public final class AdvancementTests {
         out.accept("advancement_trophies", AdvancementTests::trophies);
         out.accept("advancement_apex_kills", AdvancementTests::apexKills);
         out.accept("advancement_first_charm", AdvancementTests::firstCharm);
+        out.accept("advancement_cooled_off", AdvancementTests::cooledOff);
+        for (Stars how : Stars.values()) {
+            String name = "advancement_between_the_stars_" + how.name().toLowerCase(java.util.Locale.ROOT);
+            out.accept(name, h -> betweenTheStars(h, how));
+            TeemingGameTests.timeLimit(name, 160);
+            if (how == Stars.LEAVES) TeemingGameTests.wide(name);
+        }
     }
 
     /** Whether the player has earned {@code teeming:<key>}; fails the test if it isn't loaded. */
@@ -276,5 +291,128 @@ public final class AdvancementTests {
         helper.assertTrue(RosterStats.ALL.stream().filter(Entry::apex).map(Entry::id).collect(Collectors.toSet()).equals(apex.keySet()),
                 "the three apex creatures are the roster's apex rows");
         helper.succeed();
+    }
+
+    // ---- the feats whose rules are checked here as well as with their mobs ---------------------------------------
+
+    /**
+     * Cooled Off goes to the player whose own cooling hit quenches a Slagheart Golem, and a Quench Charm hit is one: a
+     * survival player with the charm in the off-hand strikes a still golem at heat 2, which cools it to 1 and earns
+     * nothing, then again, which quenches it and earns Cooled Off. A second player strikes a golem with a bare hand,
+     * which heats it, and the golem is then quenched by powder snow at its feet: powder snow has no one to earn it, so
+     * that player earns nothing though they were fighting it.
+     */
+    private static void cooledOff(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        SlagheartGolem charmed = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(2.5, 1, 2.5));
+        charmed.setNoAi(true);
+        charmed.setHeat(2);
+        ServerPlayer holder = TestPlayers.survivor(helper, new Vec3(4.5, 1, 2.5));
+        holder.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(ModCharms.QUENCH_CHARM.get()));
+        SlagheartGolem snowed = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(8.5, 1, 8.5));
+        snowed.setHeat(2);
+        ServerPlayer fighter = TestPlayers.survivor(helper, new Vec3(3.5, 1, 9.5));
+        helper.runAtTickTime(2, () -> {
+            helper.assertTrue(charmed.hurtServer(level, level.damageSources().playerAttack(holder), 1.0F), "the charm holder's first blow lands");
+            helper.assertTrue(charmed.heat() == 1 && !charmed.core().in(SlagheartGolem.Step.QUENCHED), "the charm hit cools 2 to 1, heat " + charmed.heat());
+            helper.assertTrue(!done(helper, holder, TeemingAdvancements.SLAGHEART_QUENCH), "cooling short of 0 earns nothing");
+            helper.assertTrue(snowed.hurtServer(level, level.damageSources().playerAttack(fighter), 1.0F), "the bare-handed blow lands");
+            helper.assertTrue(snowed.heat() == 3, "a bare-handed blow heats it, heat " + snowed.heat());
+        });
+        helper.runAtTickTime(25, () -> {                 // after the golem's 20-tick hurt cooldown
+            helper.assertTrue(charmed.hurtServer(level, level.damageSources().playerAttack(holder), 1.0F), "the charm holder's second blow lands");
+            helper.assertTrue(charmed.heat() == 0 && charmed.core().in(SlagheartGolem.Step.QUENCHED), "the second charm hit quenches it, heat " + charmed.heat());
+            helper.assertTrue(done(helper, holder, TeemingAdvancements.SLAGHEART_QUENCH), "and earns the charm holder Cooled Off");
+            helper.setBlock(helper.relativePos(snowed.blockPosition()), Blocks.POWDER_SNOW);
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(snowed.heat() == 0 && snowed.core().in(SlagheartGolem.Step.QUENCHED), "powder snow quenches the second golem, heat " + snowed.heat());
+            helper.assertTrue(!done(helper, fighter, TeemingAdvancements.SLAGHEART_QUENCH), "and earns the player fighting it nothing");
+        });
+    }
+
+    /** How the player meets the Grand Orrery's double ring in a Between the Stars test. */
+    private enum Stars {
+        /** Steps into the gap between two lanes and stays there, in reach: earns it. */
+        EARNS,
+        /** Steps out of the motes' range as they leave and back into the gap a few ticks later: earns nothing. */
+        LEAVES,
+        /** Stands where it aimed behind a stone wall the motes fade on, out of the orrery's sight: earns nothing. */
+        HIDES,
+        /** A listener cancels every mote, so none flies: earns nothing. */
+        CANCELLED
+    }
+
+    /**
+     * Between the Stars is earned only by staying in a pattern's reach, in range and in sight of the orrery, for the
+     * whole pattern, with at least one mote actually flying and none touching you. A hanging orrery with no goals casts
+     * a double ring (24 motes) at a survival player 5 blocks out, and the test waits until the pattern is over and
+     * every mote spent; in every case nothing touches the player. LEAVES runs in the wide arena, where 18 blocks out is
+     * clear of every wall; the others in a walled arena, so no mote leaves it.
+     */
+    private static void betweenTheStars(GameTestHelper helper, Stars how) {
+        Vec3 hang = how == Stars.LEAVES ? new Vec3(30.0, 2, 22.0) : new Vec3(3.0, 2, 5.5);
+        if (how != Stars.LEAVES) {
+            for (int y = 1; y <= 5; y++) {
+                for (int i = 0; i < 12; i++) {
+                    helper.setBlock(new BlockPos(i, y, 0), Blocks.STONE);
+                    helper.setBlock(new BlockPos(i, y, 11), Blocks.STONE);
+                    helper.setBlock(new BlockPos(0, y, i), Blocks.STONE);
+                    helper.setBlock(new BlockPos(11, y, i), Blocks.STONE);
+                }
+            }
+        }
+        if (how == Stars.HIDES) {                         // a wall 2 blocks out from the orrery, across the aim
+            for (int y = 1; y <= 5; y++) for (int z = 3; z <= 8; z++) helper.setBlock(new BlockPos(5, y, z), Blocks.STONE);
+        }
+        GrandOrrery o = helper.spawn(ModMobs.GRAND_ORRERY.get(), hang);
+        o.removeFreeWill();
+        o.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+        o.holdFire(true);
+        o.anchor(true);
+        TestPlayers.whenDone(helper, o::discard);
+        Vec3 gap = along(hang, 7.5, 5.0);
+        ServerPlayer p = TestPlayers.survivor(helper, along(hang, 0.0, 5.0));
+        if (how == Stars.CANCELLED) {
+            Consumer<MechanicEvent> veto = e -> {
+                if (e.mob() == o && e.step().equals("mote")) e.cancel();
+            };
+            MechanicEvent.listen(veto);
+            TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(veto));
+        }
+        float[] health = {20.0F};
+        long[] left = {-1};
+        boolean[] cast = {false}, moved = {false};
+        helper.runAtTickTime(1, () -> {
+            health[0] = p.getHealth();
+            o.setNextPattern(GrandOrrery.Step.DOUBLE_RING);
+            helper.assertTrue(o.spinUp(p), "it spins up at the player");
+        });
+        helper.onEachTick(() -> {
+            if (!o.core().in(GrandOrrery.Step.DOUBLE_RING)) return;
+            cast[0] = true;
+            if (o.fired() == 0) return;                     // the aim is taken as the first motes leave
+            boolean first = !moved[0];
+            moved[0] = true;
+            if (how == Stars.EARNS && first) p.snapTo(helper.absoluteVec(gap));
+            if (how == Stars.LEAVES && first) {
+                p.snapTo(helper.absoluteVec(along(hang, 0.0, 18.0)));
+                left[0] = helper.getTick();
+            }
+            if (how == Stars.LEAVES && left[0] >= 0 && helper.getTick() == left[0] + 5) p.snapTo(helper.absoluteVec(gap));
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(cast[0] && o.core().in(GrandOrrery.Step.OPEN) && o.motes().isEmpty(), "the pattern is over and every mote spent, phase " + o.phase());
+            helper.assertTrue(o.fired() == (how == Stars.CANCELLED ? 0 : 24), "motes flown: " + o.fired());
+            helper.assertTrue(health[0] - p.getHealth() == 0.0F, "nothing touched the player, lost " + (health[0] - p.getHealth()));
+            boolean earned = done(helper, p, TeemingAdvancements.GRAND_ORRERY_PATTERN);
+            helper.assertTrue(earned == (how == Stars.EARNS), how + ": earned Between the Stars " + earned);
+        });
+    }
+
+    /** {@code at} plus {@code distance} blocks round {@code degrees} from +X toward +Z, on the floor. */
+    private static Vec3 along(Vec3 at, double degrees, double distance) {
+        double r = Math.toRadians(degrees);
+        return new Vec3(at.x + Math.cos(r) * distance, 1, at.z + Math.sin(r) * distance);
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TeemingMod.MODID);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHARM_SAVE = sound("charm.save");
     public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_AMBIENT = sound("abyss_angler.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_HURT = sound("abyss_angler.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_DEATH = sound("abyss_angler.death");

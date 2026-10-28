@@ -6,6 +6,7 @@ import com.panda.teeming.registry.ModComponents;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.trophy.TrophyBlockEntity;
+import com.panda.teeming.trophy.TrophyChanceCondition;
 import com.panda.teeming.trophy.TrophyMob;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -32,6 +33,7 @@ final class TrophyTests {
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("trophy_drop_rate", TrophyTests::dropRate);
         out.accept("trophy_roundtrip", TrophyTests::roundtrip);
+        out.accept("trophy_chance_config", TrophyTests::chanceConfig);
     }
 
     private static LootParams params(GameTestHelper helper, Thornhorn mob, ServerPlayer player, boolean byPlayer) {
@@ -68,6 +70,33 @@ final class TrophyTests {
             for (ItemStack stack : table.getRandomItems(params(helper, mob, player, false), random)) if (stack.is(ModItems.TROPHY.get())) stray++;
         }
         helper.assertTrue(stray == 0, "deaths without a player drop no trophies, got " + stray);
+        helper.succeed();
+    }
+
+    /**
+     * The trophies.chance setting scales the roll: at 0.25 (ten times the default) 2,000 player kills drop about 500
+     * trophies; Looting adds in proportion and the chance stops at 1.
+     */
+    private static void chanceConfig(GameTestHelper helper) {
+        Thornhorn mob = helper.spawn(ModMobs.THORNHORN.get(), new Vec3(5.5, 1, 5.5));
+        mob.setNoAi(true);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        LootTable table = helper.getLevel().getServer().reloadableRegistries().getLootTable(mob.getType().getDefaultLootTable().orElseThrow());
+        RandomSource random = RandomSource.create(20261028L);
+        int[] trophies = new int[1];
+        double[] chances = new double[2];
+        TestConfig.run(c -> c.trophyChance = 0.25, () -> {
+            for (int i = 0; i < ROLLS; i++) {
+                for (ItemStack stack : table.getRandomItems(params(helper, mob, player, true), random)) if (stack.is(ModItems.TROPHY.get())) trophies[0]++;
+            }
+            chances[0] = new TrophyChanceCondition(0.025F, 0.01F).chanceAt(3);
+            chances[1] = new TrophyChanceCondition(0.10F, 0.02F).chanceAt(0);
+        });
+        double expected = ROLLS * 0.25, sigma = Math.sqrt(ROLLS * 0.25 * 0.75);
+        helper.assertTrue(Math.abs(trophies[0] - expected) <= 3 * sigma, trophies[0] + " trophies at chance 0.25, expected " + expected + " +- " + (int) (3 * sigma));
+        helper.assertTrue(Math.abs(chances[0] - 0.55) < 1e-6, "Looting III at ten times: 0.055 x 10, got " + chances[0]);
+        helper.assertTrue(chances[1] == 1.0, "an apex roll at ten times stops at 1, got " + chances[1]);
+        helper.assertTrue(Math.abs(new TrophyChanceCondition(0.025F, 0.01F).chanceAt(0) - 0.025) < 1e-6, "the default chance is back");
         helper.succeed();
     }
 

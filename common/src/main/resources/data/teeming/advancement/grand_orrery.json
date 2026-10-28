@@ -15,13 +15,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "grand_orrery",
-          "look": "base"
-        }
-      }
+      "id": "teeming:star_mote"
     },
     "title": {
       "translate": "advancements.teeming.grand_orrery.title"

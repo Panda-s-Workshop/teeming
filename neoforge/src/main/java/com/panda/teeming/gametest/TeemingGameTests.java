@@ -1,5 +1,6 @@
 package com.panda.teeming.gametest;
 
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
@@ -48,6 +49,7 @@ public final class TeemingGameTests {
         FUNCTIONS.register("spawns_resolve", () -> TeemingGameTests::spawnsResolve);
         FUNCTIONS.register("looks_built", () -> TeemingGameTests::looksBuilt);
         FUNCTIONS.register("spawn_caps", () -> TeemingGameTests::spawnCaps);
+        FUNCTIONS.register("spawn_caps_config", () -> TeemingGameTests::spawnCapsConfig);
         SpawnTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         FieldGuideTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         TrophyTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
@@ -55,6 +57,7 @@ public final class TeemingGameTests {
         MaterialTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         CharmTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         EffectTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
+        CommandTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
         MobTests.register((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
@@ -237,18 +240,33 @@ public final class TeemingGameTests {
         var area = new net.minecraft.world.phys.AABB(pos).inflate(TeemingSpawns.CAP_RADIUS);
         int already = level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, area, e -> e.getType() == type).size();
         List<net.minecraft.world.entity.Mob> placed = new ArrayList<>();
-        for (int i = already; i < TeemingSpawns.CAP; i++) {
+        for (int i = already; i < TeemingConfig.localCap(); i++) {
             var mob = helper.spawn(type, new net.minecraft.world.phys.Vec3(2.5 + placed.size() * 2, 1, 2.5));
             mob.setNoAi(true);
             placed.add(mob);
         }
-        helper.assertTrue(!TeemingSpawns.underCap(row, type, level, pos), TeemingSpawns.CAP + " nearby: another is refused");
+        helper.assertTrue(!TeemingSpawns.underCap(row, type, level, pos), TeemingConfig.localCap() + " nearby: another is refused");
         if (placed.isEmpty()) {
             helper.succeed();   // other tests filled the cap already; the refusal is what matters
             return;
         }
         placed.getLast().discard();
-        helper.assertTrue(TeemingSpawns.underCap(row, type, level, pos), (TeemingSpawns.CAP - 1) + " nearby: one more may spawn");
+        helper.assertTrue(TeemingSpawns.underCap(row, type, level, pos), (TeemingConfig.localCap() - 1) + " nearby: one more may spawn");
+        helper.succeed();
+    }
+
+    /** The local cap setting: at 1, one Levimoth nearby refuses another; the default comes back after. */
+    private static void spawnCapsConfig(GameTestHelper helper) {
+        RosterStats.Entry row = RosterStats.get("levimoth");
+        var type = TeemingSpawns.type(row).orElseThrow();
+        var level = helper.getLevel();
+        var pos = helper.absolutePos(new net.minecraft.core.BlockPos(5, 1, 5));
+        var mob = helper.spawn(type, new net.minecraft.world.phys.Vec3(2.5, 1, 2.5));
+        mob.setNoAi(true);
+        boolean[] under = new boolean[1];
+        TestConfig.run(c -> c.localCap = 1, () -> under[0] = TeemingSpawns.underCap(row, type, level, pos));
+        helper.assertTrue(!under[0], "with the local cap at 1, one nearby refuses another");
+        helper.assertTrue(TeemingConfig.localCap() == TeemingConfig.DEFAULT_LOCAL_CAP, "the loader's cap is back: " + TeemingConfig.localCap());
         helper.succeed();
     }
 }

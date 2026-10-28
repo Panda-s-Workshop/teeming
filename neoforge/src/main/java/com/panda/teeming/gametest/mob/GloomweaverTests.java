@@ -541,6 +541,8 @@ public final class GloomweaverTests {
                 @Override public boolean endMainIslandAfterDragon() { return loader.endMainIslandAfterDragon(); }
                 @Override public int killsToReveal() { return loader.killsToReveal(); }
                 @Override public boolean temporaryBlocks() { return false; }
+                @Override public int localCap() { return loader.localCap(); }
+                @Override public double trophyChance() { return loader.trophyChance(); }
             };
             boolean can, spun, walled;
             TeemingConfig.use(off);

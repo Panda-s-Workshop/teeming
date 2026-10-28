@@ -6,13 +6,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "thornhorn",
-          "look": "base"
-        }
-      }
+      "id": "teeming:tough_hide"
     },
     "title": {
       "translate": "advancements.teeming.thornhorn_wall.title"
@@ -29,5 +23,5 @@
       "done"
     ]
   ],
-  "parent": "teeming:teeming"
+  "parent": "teeming:first_charm"
 }

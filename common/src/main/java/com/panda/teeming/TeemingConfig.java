@@ -21,7 +21,16 @@ public final class TeemingConfig {
 
         /** False: no mob places even temporary blocks (the Gloomweaver raises no walls and only bites). */
         boolean temporaryBlocks();
+
+        /** At most this many of one Teeming mob type within 48 blocks (1..16); apex mobs and giants stay at 1 in 128. */
+        int localCap();
+
+        /** 0..1, the chance a player kill of an ordinary Teeming mob drops its trophy; apex chances and Looting scale with it. */
+        double trophyChance();
     }
+
+    public static final int DEFAULT_LOCAL_CAP = 3;
+    public static final double DEFAULT_TROPHY_CHANCE = 0.025;
 
     public static final Source DEFAULTS = new Source() {
         @Override public double spawningDensity() { return 1.0; }
@@ -30,6 +39,8 @@ public final class TeemingConfig {
         @Override public boolean endMainIslandAfterDragon() { return true; }
         @Override public int killsToReveal() { return 3; }
         @Override public boolean temporaryBlocks() { return true; }
+        @Override public int localCap() { return DEFAULT_LOCAL_CAP; }
+        @Override public double trophyChance() { return DEFAULT_TROPHY_CHANCE; }
     };
 
     private static Source source = DEFAULTS;
@@ -38,6 +49,11 @@ public final class TeemingConfig {
 
     public static void use(Source loaderConfig) {
         source = loaderConfig;
+    }
+
+    /** The source in use, so a test can wrap it and put it back. */
+    public static Source source() {
+        return source;
     }
 
     public static double spawningDensity() {
@@ -62,5 +78,14 @@ public final class TeemingConfig {
 
     public static boolean temporaryBlocks() {
         return source.temporaryBlocks();
+    }
+
+    public static int localCap() {
+        return Math.clamp(source.localCap(), 1, 16);
+    }
+
+    /** How many times the default trophy chance the config asks for (1 at the default). */
+    public static double trophyScale() {
+        return Math.clamp(source.trophyChance(), 0.0, 1.0) / DEFAULT_TROPHY_CHANCE;
     }
 }

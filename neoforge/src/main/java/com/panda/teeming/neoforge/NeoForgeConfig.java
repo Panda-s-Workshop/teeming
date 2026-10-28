@@ -27,6 +27,15 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
             .comment("False: no mob places even temporary blocks (the Gloomweaver raises no walls and only bites).")
             .define("griefing.temporary_blocks", true);
 
+    private static final ModConfigSpec.IntValue LOCAL_CAP = B
+            .comment("At most this many of one Teeming mob type within 48 blocks; apex mobs and giants stay at 1 in 128.")
+            .defineInRange("spawning.local_cap", TeemingConfig.DEFAULT_LOCAL_CAP, 1, 16);
+
+    private static final ModConfigSpec.DoubleValue TROPHY_CHANCE = B
+            .comment("The chance a player kill of an ordinary Teeming mob drops its trophy (apex mobs: four times it).",
+                    "Looting raises it in proportion.")
+            .defineInRange("trophies.chance", TeemingConfig.DEFAULT_TROPHY_CHANCE, 0.0, 1.0);
+
     private static final Map<String, ModConfigSpec.BooleanValue> ENABLED = new HashMap<>();
     private static final Map<String, ModConfigSpec.DoubleValue> CHANCE = new HashMap<>();
 
@@ -61,6 +70,16 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
     @Override
     public boolean temporaryBlocks() {
         return SPEC.isLoaded() ? TEMPORARY_BLOCKS.get() : TeemingConfig.DEFAULTS.temporaryBlocks();
+    }
+
+    @Override
+    public int localCap() {
+        return SPEC.isLoaded() ? LOCAL_CAP.get() : TeemingConfig.DEFAULTS.localCap();
+    }
+
+    @Override
+    public double trophyChance() {
+        return SPEC.isLoaded() ? TROPHY_CHANCE.get() : TeemingConfig.DEFAULTS.trophyChance();
     }
 
     @Override

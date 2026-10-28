@@ -532,6 +532,8 @@ final class SpawnTests {
             @Override public boolean endMainIslandAfterDragon() { return false; }
             @Override public int killsToReveal() { return loader.killsToReveal(); }
             @Override public boolean temporaryBlocks() { return loader.temporaryBlocks(); }
+            @Override public int localCap() { return loader.localCap(); }
+            @Override public double trophyChance() { return loader.trophyChance(); }
         });
         try {
             body.run();

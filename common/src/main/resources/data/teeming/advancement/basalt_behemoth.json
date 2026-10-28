@@ -15,13 +15,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "basalt_behemoth",
-          "look": "base"
-        }
-      }
+      "id": "teeming:molten_heart"
     },
     "title": {
       "translate": "advancements.teeming.basalt_behemoth.title"

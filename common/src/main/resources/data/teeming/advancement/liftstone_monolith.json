@@ -15,13 +15,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "liftstone_monolith",
-          "look": "base"
-        }
-      }
+      "id": "teeming:gravity_stone"
     },
     "title": {
       "translate": "advancements.teeming.liftstone_monolith.title"

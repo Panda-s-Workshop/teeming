@@ -4,6 +4,7 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
 import com.panda.teeming.registry.ModItems;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,8 @@ import org.jspecify.annotations.Nullable;
  * no packet is needed. The first progress after joining is taken as it is, without toasts.
  */
 public final class FieldGuideWatcher {
+    /** More changes than this in one tick show as one toast. */
+    public static final int EACH_UP_TO = 3;
     private static @Nullable FieldGuideProgress last;
 
     private FieldGuideWatcher() {}
@@ -27,14 +30,22 @@ public final class FieldGuideWatcher {
         }
         FieldGuideProgress now = FieldGuide.get(mc.player);
         if (last != null && now != last) {
-            for (String mob : now.seen()) {
-                if (!last.hasSeen(mob)) toast(mc, "seen", mob);
-            }
-            for (String mob : now.kills().keySet()) {
-                if (now.revealed(mob) && !last.revealed(mob)) toast(mc, "revealed", mob);
-            }
+            FieldGuideProgress before = last;
+            toasts(mc, "seen", now.seen().stream().filter(mob -> !before.hasSeen(mob)).toList());
+            toasts(mc, "revealed", now.kills().keySet().stream().filter(mob -> now.revealed(mob) && !before.revealed(mob)).toList());
         }
         last = now;
+    }
+
+    /** One toast per mob, or a single one naming the count when more than {@link #EACH_UP_TO} change at once (a command). */
+    private static void toasts(Minecraft mc, String kind, List<String> mobs) {
+        if (mobs.size() <= EACH_UP_TO) {
+            mobs.forEach(mob -> toast(mc, kind, mob));
+            return;
+        }
+        mc.gui.toastManager().addToast(new FieldGuideToast(Component.translatable("toast.teeming.field_guide." + kind),
+                Component.translatable("toast.teeming.field_guide.many", mobs.size()), new ItemStack(ModItems.FIELD_GUIDE.get()), kind + ":many"));
+        if (mc.player != null) mc.player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.2F);
     }
 
     private static void toast(Minecraft mc, String kind, String mob) {

@@ -6,13 +6,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "slagheart_golem",
-          "look": "base"
-        }
-      }
+      "id": "teeming:frost_core"
     },
     "title": {
       "translate": "advancements.teeming.slagheart_quench.title"

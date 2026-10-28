@@ -140,8 +140,9 @@ public class SlagheartGolem extends TeemingMonster {
     }
 
     /**
-     * A cooling hit from {@code by} (the thrower of a snowball or splash water; null for powder snow, rain or water). The
-     * hit that brings the heat to 0 and quenches it earns its thrower, if a player, the Cooled Off advancement.
+     * A cooling hit from {@code by} (the thrower of a snowball or splash water, or a Quench Charm holder who struck it;
+     * null for powder snow, rain or water). The hit that brings the heat to 0 and quenches it earns {@code by}, if a
+     * player, the Cooled Off advancement; powder snow, rain and water have no one to earn it.
      */
     public void cool(int amount, @Nullable Entity by) {
         if (!MechanicEvent.post(this, "cool", null)) return;
@@ -253,7 +254,7 @@ public class SlagheartGolem extends TeemingMonster {
         boolean hurt = super.hurtServer(level, source, core().in(Step.QUENCHED) ? amount * QUENCHED_DAMAGE : amount);
         if (hurt && !source.is(DamageTypeTags.IS_FIRE)) {
             int cools = Charms.hitCools(source.getEntity());           // a Quench Charm holder's hit is a cooling hit
-            if (cools > 0) cool(cools);
+            if (cools > 0) cool(cools, source.getEntity());
             else heat.fill(1);                                         // sealed while quenched
         }
         return hurt;

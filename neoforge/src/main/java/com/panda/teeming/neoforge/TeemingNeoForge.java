@@ -3,10 +3,11 @@ package com.panda.teeming.neoforge;
 import com.panda.teeming.DevExit;
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.command.TeemingCommand;
 import com.panda.teeming.mob.look.Looks;
+import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.spawn.TeemingSpawns;
-import com.panda.teeming.platform.registry.DeferredRegister;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -19,6 +20,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
@@ -37,6 +39,7 @@ public final class TeemingNeoForge {
         TeemingConfig.use(new NeoForgeConfig());
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> DevExit.onServerStopped(e.getServer().isDedicatedServer()));
         NeoForge.EVENT_BUS.addListener((AddServerReloadListenersEvent e) -> e.addListener(Looks.ID, new Looks()));
+        NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent e) -> TeemingCommand.register(e.getDispatcher()));
         modBus.addListener((EntityAttributeCreationEvent e) -> ModMobs.attributes(e::put));
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof ServerLevel level) TeemingMod.onLevelTick(level);

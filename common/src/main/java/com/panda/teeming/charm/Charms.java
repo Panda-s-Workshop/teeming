@@ -4,11 +4,11 @@ import com.panda.teeming.item.CharmItem;
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModCharms;
+import com.panda.teeming.registry.ModSounds;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -93,7 +93,8 @@ public final class Charms {
 
     /**
      * Passes {@code saved} through; when a chance charm (Gilded Ward, Rift, Memory) has just saved {@code holder}, the
-     * charm chimes and sparks round it, so the save reads as the charm's and not as luck.
+     * charm chimes and sparks round it, so the save reads as the charm's and not as luck. The chime is the charm's own
+     * sound event, so its subtitle names the charm and not the amethyst its sound is borrowed from.
      */
     public static boolean felt(LivingEntity holder, boolean saved) {
         if (!saved || !(holder.level() instanceof ServerLevel level)) return saved;
@@ -101,7 +102,7 @@ public final class Charms {
         Long last = FELT.get(holder);
         if (last != null && now - last < FELT_COOLDOWN) return true;
         FELT.put(holder, now);
-        level.playSound(null, holder.getX(), holder.getY(), holder.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, holder.getSoundSource(), 1.2F, 1.4F);
+        level.playSound(null, holder.getX(), holder.getY(), holder.getZ(), ModSounds.CHARM_SAVE.get(), holder.getSoundSource(), 1.2F, 1.4F);
         level.sendParticles(ParticleTypes.ENCHANTED_HIT, holder.getX(), holder.getY() + holder.getBbHeight() * 0.6, holder.getZ(), 12, 0.4, 0.4, 0.4, 0.1);
         return true;
     }

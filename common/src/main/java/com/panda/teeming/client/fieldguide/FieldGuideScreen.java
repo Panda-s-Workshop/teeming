@@ -1,6 +1,7 @@
 package com.panda.teeming.client.fieldguide;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.fieldguide.FieldGuide;
 import com.panda.teeming.fieldguide.FieldGuideProgress;
@@ -19,6 +20,7 @@ import java.util.Map;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,7 +52,12 @@ public class FieldGuideScreen extends Screen {
     static final int SPINE_MARGIN = 8;
     static final int MODEL_Y = 10, MODEL_H = 52, FLIP_Y = H - 22;
     static final int SILHOUETTE_W = 124, SILHOUETTE_H = 50, DROPS_Y = FLIP_Y - 30;
-    static final int INK = 0xFF34261A, INK_MUTED = 0xFF7A6650, ACCENT = 0xFF3E5A30, SELECT = 0x3343602F, TROPHY = 0xFFA87A22;
+    static final int INK = 0xFF34261A, INK_MUTED = 0xFF7A6650, ACCENT = 0xFF3E5A30, SELECT = 0x3343602F;
+    /** The trophy crown, drawn from the book's sheet beside the book: a text glyph that small reads as a sprig. */
+    static final int CROWN_U = 304, CROWN_V = 0, CROWN_W = 9, CROWN_H = 7;
+    /** The reveal mark at a row's end, and the room left between a row's marks and between them and its name. */
+    static final String STAR = "✦";
+    static final int MARK_GAP = 2, NAME_GAP = 3;
 
     private static final Dim[] TABS = Dim.values();
     private final Map<String, LivingEntity> portraits = new HashMap<>();
@@ -78,10 +85,15 @@ public class FieldGuideScreen extends Screen {
         return false;
     }
 
-    /** The registered creatures of a dimension, in roster order. */
+    /**
+     * The creatures of a dimension the guide lists, in roster order: registered roster mobs the config hasn't switched
+     * off, the same set the Naturalist and Knowledge advancements count, so the tab's counts and theirs agree.
+     */
     public static List<Entry> entries(Dim dim) {
         List<Entry> out = new ArrayList<>();
-        for (Entry mob : RosterStats.ALL) if (mob.dim() == dim && TeemingSpawns.type(mob).isPresent()) out.add(mob);
+        for (Entry mob : RosterStats.ALL) {
+            if (mob.dim() == dim && TeemingSpawns.type(mob).isPresent() && TeemingConfig.mobEnabled(mob.id())) out.add(mob);
+        }
         return out;
     }
 
@@ -122,6 +134,50 @@ public class FieldGuideScreen extends Screen {
         return top;
     }
 
+    /** The selected row of the open tab. */
+    public int selected() {
+        return selected;
+    }
+
+    /**
+     * How list row {@code i} lays out, or null when it is scrolled off the page: the marks sit at the row's end (the
+     * reveal star outermost, the trophy crown inside it), and the name, cut with "…" when it is too long, ends
+     * {@link #NAME_GAP} short of the first of them. {@code nameRight} is the name's right edge (exclusive),
+     * {@code crownX} and {@code starX} the marks' left edges; a mark the row doesn't carry is -1.
+     */
+    public RowLayout rowLayout(int i) {
+        int[] b = rowBounds(i);
+        List<Entry> list = entries(TABS[tab]);
+        if (b == null || i >= list.size()) return null;
+        return layout(b, list.get(i), progress());
+    }
+
+    public record RowLayout(int nameX, String name, int nameRight, int crownX, int starX) {
+        /** The left edge of the row's first mark, or -1 when it carries none. */
+        public int marksX() {
+            return crownX >= 0 ? crownX : starX;
+        }
+    }
+
+    private RowLayout layout(int[] b, Entry mob, FieldGuideProgress p) {
+        int right = b[0] + b[2] - 2;
+        int starX = -1, crownX = -1;
+        if (p.revealed(mob.id())) {
+            starX = right - font.width(STAR);
+            right = starX - MARK_GAP;
+        }
+        if (p.hasTrophy(mob.id())) {
+            crownX = right - CROWN_W;
+            right = crownX - MARK_GAP;
+        }
+        int end = crownX >= 0 ? crownX : starX >= 0 ? starX : b[0] + b[2] - 2 + NAME_GAP;
+        int nameX = b[0] + 20, room = end - NAME_GAP - nameX;
+        Component name = p.hasSeen(mob.id()) ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
+        String shown = name.getString();
+        if (font.width(shown) > room) shown = font.plainSubstrByWidth(shown, room - font.width("…")) + "…";
+        return new RowLayout(nameX, shown, nameX + font.width(shown), crownX, starX);
+    }
+
     /** Scrolls so row {@code i} is on the page, moving as little as it can. */
     private void reveal(int i) {
         if (i < top) top = i;
@@ -155,6 +211,30 @@ public class FieldGuideScreen extends Screen {
         top -= (int) Math.signum(dy);
         clampTop();
         return true;
+    }
+
+    /** Up and down move the selection a row, Page Up and Page Down a page; the list scrolls to keep it in view. */
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        int step = event.isUp() ? -1 : event.isDown() ? 1
+                : event.key() == InputConstants.KEY_PAGEUP ? -ROWS : event.key() == InputConstants.KEY_PAGEDOWN ? ROWS : 0;
+        if (step == 0 || entries(TABS[tab]).isEmpty()) return super.keyPressed(event);
+        move(step);
+        return true;
+    }
+
+    /** Moves the selection {@code step} rows; a page's step scrolls the page with it, so the selection keeps its place on it. */
+    private void move(int step) {
+        int size = entries(TABS[tab]).size();
+        int to = Mth.clamp(Math.min(selected, size - 1) + step, 0, size - 1);
+        if (Math.abs(step) >= ROWS) {
+            top += step;
+            clampTop();
+        }
+        if (to != selected) {
+            show(tab, to);
+            turn();
+        }
     }
 
     @Override
@@ -221,12 +301,13 @@ public class FieldGuideScreen extends Screen {
             centered(g, tabName(t), b[0] + b[2] / 2, b[1] + 2, on ? 0xFFF4EAD0 : INK);
         }
         List<Entry> list = entries(TABS[tab]);
+        int countY = y0 + TAB_Y + TAB_H + 4;
         long seen = list.stream().filter(m -> p.hasSeen(m.id())).count();
-        String count = seen + " / " + list.size();
-        g.text(font, count, x0 + L_X + L_W - SPINE_MARGIN - font.width(count), y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
+        Component count = Component.translatable("screen.teeming.field_guide.seen_count", seen, list.size());
+        g.text(font, count, x0 + L_X + L_W - SPINE_MARGIN - font.width(count), countY, INK_MUTED, false);
         long owned = list.stream().filter(m -> p.hasTrophy(m.id())).count();      // trophies owned, under the same crown as the rows
-        g.text(font, Component.literal("♛ ").withColor(TROPHY).append(Component.literal(owned + " / " + list.size()).withColor(INK_MUTED)),
-                x0 + L_X, y0 + TAB_Y + TAB_H + 4, INK_MUTED, false);
+        crown(g, x0 + L_X, countY);
+        g.text(font, owned + " / " + list.size(), x0 + L_X + CROWN_W + NAME_GAP, countY, INK_MUTED, false);
         if (list.isEmpty()) {
             g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.empty"), x0 + L_X, y0 + LIST_Y, L_W, INK_MUTED, false);
             return;
@@ -235,17 +316,11 @@ public class FieldGuideScreen extends Screen {
             int[] b = rowBounds(i);
             Entry mob = list.get(i);
             if (i == selected || in(mx, my, b)) g.fill(b[0], b[1], b[0] + b[2], b[1] + b[3], SELECT);
-            boolean known = p.hasSeen(mob.id());
-            Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
             g.text(font, String.format("%02d", mob.number()), b[0] + 3, b[1] + 2, INK_MUTED, false);
-            // a long name stops short of the marks this row draws at its end (the crown 20 in, the reveal star 10 in)
-            int end = p.hasTrophy(mob.id()) ? b[2] - 20 : p.revealed(mob.id()) ? b[2] - 10 : b[2] - 2;
-            int room = end - 20 - 2;
-            String shown = name.getString();
-            if (font.width(shown) > room) shown = font.plainSubstrByWidth(shown, room - font.width("…")) + "…";
-            g.text(font, shown, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
-            if (p.revealed(mob.id())) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
-            if (p.hasTrophy(mob.id())) g.text(font, "♛", b[0] + b[2] - 20, b[1] + 2, TROPHY, false);
+            RowLayout row = layout(b, mob, p);           // a long name stops short of the marks at the row's end
+            g.text(font, row.name(), row.nameX(), b[1] + 2, p.hasSeen(mob.id()) ? INK : INK_MUTED, false);
+            if (row.starX() >= 0) g.text(font, STAR, row.starX(), b[1] + 2, ACCENT, false);
+            if (row.crownX() >= 0) crown(g, row.crownX(), b[1] + 2);
         }
         // more rows above or below: a mark at the list's outer edge, where the wheel scrolls them in
         int edge = x0 + L_X - 7;
@@ -279,9 +354,11 @@ public class FieldGuideScreen extends Screen {
                     SILHOUETTE_W, SILHOUETTE_H);
         }
         int ty = y + MODEL_H + 3;
-        if (known && p.hasTrophy(mob.id())) {
-            Component crowned = name.copy().append(Component.literal(" ♛").withColor(TROPHY));   // its trophy is owned
-            centered(g, crowned, x + R_W / 2, ty, INK);
+        if (known && p.hasTrophy(mob.id())) {                 // its trophy is owned: the name and the crown, centred together
+            int w = font.width(name) + NAME_GAP + CROWN_W;
+            int nx = x + (R_W - w) / 2;
+            g.text(font, name, nx, ty, INK, false);
+            crown(g, nx + font.width(name) + NAME_GAP, ty);
         } else {
             centered(g, name, x + R_W / 2, ty, INK);
         }
@@ -300,6 +377,11 @@ public class FieldGuideScreen extends Screen {
         } else {
             g.text(font, Component.translatable("screen.teeming.field_guide.kills", p.killsOf(mob.id()), p.revealAt()), x, y0 + FLIP_Y, INK_MUTED, false);
         }
+    }
+
+    /** The trophy crown, its top on the cap line of text drawn at {@code y}. */
+    private void crown(GuiGraphicsExtractor g, int x, int y) {
+        g.blit(RenderPipelines.GUI_TEXTURED, BOOK, x, y, CROWN_U, CROWN_V, CROWN_W, CROWN_H, 512, 256);
     }
 
     /** Centred ink without a shadow (shadows smear on parchment). */

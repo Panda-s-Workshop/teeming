@@ -4,9 +4,12 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.charm.Charms;
 import com.panda.teeming.item.CharmItem;
 import com.panda.teeming.mob.MechanicEvent;
+import com.panda.teeming.mob.end.AbyssAngler;
 import com.panda.teeming.mob.end.AnchorGolem;
 import com.panda.teeming.mob.end.Brinkram;
+import com.panda.teeming.mob.end.Brinkray;
 import com.panda.teeming.mob.end.ChorusHusk;
+import com.panda.teeming.mob.end.ExileWraith;
 import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.Levimoth;
 import com.panda.teeming.mob.end.LiftstoneMonolith;
@@ -16,6 +19,9 @@ import com.panda.teeming.mob.end.Pullstar;
 import com.panda.teeming.mob.end.Riftjackal;
 import com.panda.teeming.mob.end.RiftmineSapper;
 import com.panda.teeming.mob.end.Rotfang;
+import com.panda.teeming.mob.end.Spirebloom;
+import com.panda.teeming.mob.end.Underclinger;
+import com.panda.teeming.mob.end.WarpseedBloom;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModCharms;
@@ -25,17 +31,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.Item;
@@ -44,6 +53,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -68,6 +78,13 @@ final class EndCharmTests {
         TeemingGameTests.timeLimit("charm_rift", 120);
         out.accept("charm_rot_ward", EndCharmTests::rotWard);
         out.accept("charm_memory", EndCharmTests::memory);
+        out.accept("charm_grounding_underclinger", EndCharmTests::groundingUnderclinger);
+        out.accept("charm_grounding_angler", EndCharmTests::groundingAngler);
+        out.accept("charm_grounding_spirebloom", EndCharmTests::groundingSpirebloom);
+        out.accept("charm_grounding_brinkray", EndCharmTests::groundingBrinkray);
+        out.accept("charm_rift_warpseed", EndCharmTests::riftWarpseed);
+        out.accept("charm_rift_exile", EndCharmTests::riftExile);
+        TeemingGameTests.wide("charm_rift_exile");
     }
 
     /** A still pig with 100 health holding {@code charm} in {@code hand}, removed when the test ends wherever it went. */
@@ -245,8 +262,8 @@ final class EndCharmTests {
      * expected, a spread of 7.1 (sqrt(200 x 0.25)); the test allows 4 spreads either way, 72 to 128, which a fair 50 %
      * misses about once in 16,000 runs while a charm that did nothing (200) or everything (0) never passes.</li>
      * <li>A rift rolls once per step in: 8 off-hand pigs and 2 main-hand pigs each stand in a Riftjackal's rift. Both
-     * main-hand pigs are thrown at once; the off-hand pigs that a rift let through on the first tick are all still
-     * standing in it 25 ticks later (a roll every tick would throw nearly all of them).</li>
+     * main-hand pigs are thrown at once; the off-hand pigs that a rift spared (did not throw) on the first tick are all
+     * still standing in it 25 ticks later (a roll every tick would throw nearly all of them).</li>
      * <li>An exit rift opens {@link Charms#RIFT_EARLY} earlier: a Gatecaster's tell at the main-hand pig lasts 20 ticks
      * (a tick either way for when the counting callback runs), at the off-hand pig exactly 10 more, and both lock their
      * aim 12 ticks in.</li>
@@ -305,7 +322,7 @@ final class EndCharmTests {
         }
         helper.runAtTickTime(2, () -> {
             // each jackal's rolls come from a seeded source, so the eight off-hand steps split the same way every run
-            // and the test can ask for some let through and some thrown without a one-in-256 miss
+            // and the test can ask for some spared and some thrown without a one-in-256 miss
             for (int j = 0; j < 5; j++) jackals.get(j).getRandom().setSeed(RIFT_SEED + j);
             for (int j = 0; j < 5; j++) {
                 for (int k = 0; k < 2; k++) {
@@ -348,8 +365,8 @@ final class EndCharmTests {
             helper.assertTrue(moved[0] >= 72 && moved[0] <= 128, "off-hand: about " + rolls * (1.0 - Charms.RIFT_FAIL)
                     + " of " + rolls + " teleports landed (72 to 128), " + moved[0] + " did");
             helper.assertTrue(stayed[0] >= 1 && stayed[0] <= offInRift.size() - 1, "off-hand: some of the " + offInRift.size()
-                    + " pigs stepping into a rift are let through and some thrown, " + stayed[0] + " let through");
-            helper.assertTrue(stayed[1] == stayed[0], "the off-hand pigs a rift let through stayed in it: " + stayed[0] + " after its first tick, "
+                    + " pigs stepping into a rift are spared and some thrown, " + stayed[0] + " spared");
+            helper.assertTrue(stayed[1] == stayed[0], "the off-hand pigs a rift spared stayed in it: " + stayed[0] + " after its first tick, "
                     + stayed[1] + " 25 ticks on");
             int offTell = tell[0], mainTell = tell[1];
             // both tells are counted by the same callback, so a tick either way for its order is the same tick on both
@@ -358,7 +375,7 @@ final class EndCharmTests {
             helper.assertTrue(offTell - mainTell == Charms.RIFT_EARLY, "off-hand: the exit rift shows " + Charms.RIFT_EARLY
                     + " ticks earlier, showed " + offTell + " against " + mainTell);
             helper.assertTrue(lockedAt13[0] && lockedAt13[1], "both aims locked " + Gatecaster.TRACK_TICKS + " ticks in");
-            TeemingMod.LOGGER.info("charm_rift: burst teleports landed off-hand {} / {} main hand {} / {}; rifts let {} of 8 through, {} still there 25 ticks on; exit rift {} / {} ticks",
+            TeemingMod.LOGGER.info("charm_rift: burst teleports landed off-hand {} / {} main hand {} / {}; rifts spared {} of 8 off-hand pigs (not thrown), {} still unmoved 25 ticks on; exit rift {} / {} ticks",
                     moved[0], rolls, moved[1], rolls, stayed[0], stayed[1], offTell, mainTell);
         });
     }
@@ -547,6 +564,328 @@ final class EndCharmTests {
                     took[0], tries, took[1], tries, offGuard, offLevel, mainGuard, mainLevel, sharp);
             helper.succeed();
         });
+    }
+
+    // ---- Grounding Charm at the remaining call sites ---------------------------------------------------------------
+
+    private static Vec3 rel(GameTestHelper helper, LivingEntity e) {
+        return helper.relativeVec(e.position());
+    }
+
+    /**
+     * An Underclinger's drag. An island of end stone (a back wall x 1..10, z 8..9, y 1..5, and an overhang at y 5,
+     * z 5..7, with open air under it), two Underclingers under its north rim at x 3 and x 8, and above each a pig on the
+     * rim: one holding a Grounding Charm in the off-hand, one in the main hand. From where it is held to where it is let
+     * go, the main-hand pig is dragged the full {@link Underclinger#PULL_DISTANCE} (2) north and the off-hand pig
+     * {@link Charms#GROUNDING} of it (1), neither of them across.
+     */
+    private static void groundingUnderclinger(GameTestHelper helper) {
+        for (int x = 1; x <= 10; x++) {
+            for (int y = 1; y <= 5; y++) for (int z = 8; z <= 9; z++) helper.setBlock(new BlockPos(x, y, z), Blocks.END_STONE);
+            for (int z = 5; z <= 7; z++) helper.setBlock(new BlockPos(x, 5, z), Blocks.END_STONE);
+        }
+        double[] off = dragged(helper, 3, InteractionHand.OFF_HAND), main = dragged(helper, 8, InteractionHand.MAIN_HAND);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(off[0] >= 0 && main[0] >= 0, "both pigs were held and dragged");
+            double full = Underclinger.PULL_DISTANCE, kept = full * Charms.GROUNDING;
+            helper.assertTrue(near(main[0], full, 0.01) && main[1] < 0.01, "main hand: dragged " + full + " north, saw " + main[0] + " north, " + main[1] + " across");
+            helper.assertTrue(near(off[0], kept, 0.01) && off[1] < 0.01, "off-hand: dragged " + kept + " north, saw " + off[0] + " north, " + off[1] + " across");
+            TeemingMod.LOGGER.info("charm_grounding_underclinger: dragged off-hand {} main hand {}", off[0], main[0]);
+        });
+    }
+
+    /**
+     * An Underclinger gripping the underside of the rim block at (x, 5, 6), aimed at a pig on the rim above it that
+     * keeps its physics and holds a Grounding Charm in {@code hand}; {north, across}, how far the pig moved from where it
+     * was held to where it was let go, or {-1, -1} until then.
+     */
+    private static double[] dragged(GameTestHelper helper, int x, InteractionHand hand) {
+        Underclinger u = helper.spawn(ModMobs.UNDERCLINGER.get(), new Vec3(x + 0.5, 4.4, 6.5));
+        u.core().setLook(LookDef.BASE, true);
+        u.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+        helper.assertTrue(u.hangUnder(helper.absolutePos(new BlockPos(x, 5, 6))), "the Underclinger grips the underside at x " + x);
+        u.resetCooldown();
+        TestPlayers.whenDone(helper, u::discard);
+        Pig pig = movingPig(helper, new Vec3(x + 0.5, 6, 5.5), ModCharms.GROUNDING_CHARM, hand);
+        u.setTarget(pig);
+        double[] moved = {-1, -1};
+        Vec3[] held = {null};
+        boolean[] pulling = {false};
+        helper.onEachTick(() -> {
+            if (held[0] == null && u.core().in(Underclinger.Step.HOLD)) held[0] = rel(helper, pig);
+            pulling[0] |= u.core().in(Underclinger.Step.PULL);
+            if (pulling[0] && moved[0] < 0 && !u.core().in(Underclinger.Step.PULL)) {
+                Vec3 at = rel(helper, pig);
+                moved[0] = held[0].z - at.z;
+                moved[1] = Math.abs(at.x - held[0].x);
+            }
+        });
+        return moved;
+    }
+
+    /** The north-ward steps of one reel, tick by tick, until the hold at the brink begins. */
+    private static final class Reel {
+        final List<Double> steps = new ArrayList<>();
+        boolean held;
+        Vec3 last;
+
+        List<Double> moving() {
+            return steps.stream().filter(d -> Math.abs(d) > 1.0E-4).toList();
+        }
+
+        double total() {
+            return steps.stream().mapToDouble(Double::doubleValue).sum();
+        }
+    }
+
+    /**
+     * An Abyss Angler's reel. An island of end stone one block thick (x 1..10, z 3..10, y 5) with its rim to the north,
+     * two Abyss Anglers under the rim at x 3 and x 8, and a pig 7 blocks inland from each: one holding a Grounding Charm
+     * in the off-hand, one in the main hand. Every tick of the reel but the last short step onto the brink, the
+     * main-hand pig moves the full {@link AbyssAngler#PULL_SPEED} (0.5) north and the off-hand pig
+     * {@link Charms#GROUNDING} of it (0.25); both end at the same brink, 6.05 blocks on.
+     */
+    private static void groundingAngler(GameTestHelper helper) {
+        for (int x = 1; x <= 10; x++) for (int z = 3; z <= 10; z++) helper.setBlock(new BlockPos(x, 5, z), Blocks.END_STONE);
+        Reel off = reeled(helper, 3, InteractionHand.OFF_HAND), main = reeled(helper, 8, InteractionHand.MAIN_HAND);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(off.held && main.held, "both reels ended in the hold at the brink");
+            double full = AbyssAngler.PULL_SPEED, kept = full * Charms.GROUNDING;
+            List<Double> m = main.moving(), o = off.moving();
+            for (int i = 0; i < m.size() - 1; i++) helper.assertTrue(near(m.get(i), full, 0.001), "main hand: reeled " + full + " a tick, steps " + m);
+            for (int i = 0; i < o.size() - 1; i++) helper.assertTrue(near(o.get(i), kept, 0.001), "off-hand: reeled " + kept + " a tick, steps " + o);
+            helper.assertTrue(m.size() >= 2 && o.size() >= 2 && m.getLast() <= full + 0.001 && o.getLast() <= kept + 0.001, "the last steps are short ones onto the brink, "
+                    + m + " and " + o);
+            helper.assertTrue(near(main.total(), 6.05, 0.01) && near(off.total(), 6.05, 0.01), "both reeled the 6.05 blocks to the brink, "
+                    + main.total() + " and " + off.total());
+            TeemingMod.LOGGER.info("charm_grounding_angler: reel steps off-hand {} main hand {}", o, m);
+        });
+    }
+
+    /**
+     * An Abyss Angler gripping the underside of the rim block at (x, 5, 3), aimed at a pig at (x + 0.5, 6, 9.5) that
+     * keeps its physics and holds a Grounding Charm in {@code hand}.
+     */
+    private static Reel reeled(GameTestHelper helper, int x, InteractionHand hand) {
+        AbyssAngler a = helper.spawn(ModMobs.ABYSS_ANGLER.get(), new Vec3(x + 0.5, 4, 3.5));
+        a.core().setLook(LookDef.BASE, true);
+        a.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+        helper.assertTrue(a.hangUnder(helper.absolutePos(new BlockPos(x, 5, 3))), "the Abyss Angler grips the underside at x " + x);
+        a.resetCooldown();
+        TestPlayers.whenDone(helper, a::discard);
+        Pig pig = movingPig(helper, new Vec3(x + 0.5, 6, 9.5), ModCharms.GROUNDING_CHARM, hand);
+        a.setTarget(pig);
+        Reel reel = new Reel();
+        helper.onEachTick(() -> {
+            if (a.core().in(AbyssAngler.Step.REEL) || (!reel.held && a.core().in(AbyssAngler.Step.HOLD))) {
+                Vec3 now = rel(helper, pig);
+                if (reel.last != null) reel.steps.add(reel.last.z - now.z);
+                reel.last = now;
+                if (a.core().in(AbyssAngler.Step.HOLD)) reel.held = true;
+            }
+        });
+        return reel;
+    }
+
+    /**
+     * A Spirebloom's knock-up. Two Spireblooms each send their line along the floor at a still pig 5 blocks off, one
+     * pig holding a Grounding Charm in the off-hand and one in the main hand. The spikes strike with no knockback of
+     * their own, so read the tick the strike lands (a still pig keeps the motion it is given): the main-hand pig is
+     * thrown straight up at the full {@link Spirebloom#KNOCK_UP} (0.6) and the off-hand pig at {@link Charms#GROUNDING}
+     * of it (0.3), neither across.
+     */
+    private static void groundingSpirebloom(GameTestHelper helper) {
+        Vec3[] off = spiked(helper, 2.5, InteractionHand.OFF_HAND), main = spiked(helper, 9.5, InteractionHand.MAIN_HAND);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(off[0] != null && main[0] != null, "the spikes struck both pigs");
+            double full = Spirebloom.KNOCK_UP, kept = full * Charms.GROUNDING;
+            helper.assertTrue(near(main[0].y, full, 0.01) && main[0].horizontalDistance() < 0.01, "main hand: thrown straight up at " + full + ", motion " + main[0]);
+            helper.assertTrue(near(off[0].y, kept, 0.01) && off[0].horizontalDistance() < 0.01, "off-hand: thrown straight up at " + kept + ", motion " + off[0]);
+            TeemingMod.LOGGER.info("charm_grounding_spirebloom: knock-up off-hand {} main hand {}", off[0], main[0]);
+        });
+    }
+
+    /** A Spirebloom at (1.5, 1, z) cracking the ground toward a still pig at (6.5, 1, z); the pig's motion the tick it is struck. */
+    private static Vec3[] spiked(GameTestHelper helper, double z, InteractionHand hand) {
+        Spirebloom b = helper.spawn(ModMobs.SPIREBLOOM.get(), new Vec3(1.5, 1, z));
+        b.core().setLook(LookDef.BASE, true);
+        b.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // blind to other arenas (0 would mean no limit)
+        TestPlayers.whenDone(helper, b::discard);
+        Pig pig = pig(helper, new Vec3(6.5, 1, z), ModCharms.GROUNDING_CHARM, hand);
+        helper.runAtTickTime(2, () -> helper.assertTrue(b.crack(pig), "the tell starts at the pig"));
+        Vec3[] thrown = {null};
+        helper.onEachTick(() -> {
+            if (thrown[0] == null && pig.getHealth() < 100.0F) thrown[0] = pig.getDeltaMovement();
+        });
+        return thrown;
+    }
+
+    /**
+     * A Brinkray's ram at the brink. A bridge of end stone one block wide (x 1..10, z 9, y 3) over the arena's floor,
+     * which each ray counts as open air below y 2 (the void under an island), and two Brinkrays, each banking 7 blocks
+     * north of a still pig on the bridge, one pig holding a Grounding Charm in the off-hand and one in the main hand.
+     * Read the tick the ram lands: the main-hand pig is thrown the full {@link Brinkray#KNOCKBACK} (1.8) on along the
+     * ram and {@link Brinkray#KNOCKBACK_UP} (0.3) up, the off-hand pig {@link Charms#GROUNDING} of each (0.9, 0.15).
+     */
+    private static void groundingBrinkray(GameTestHelper helper) {
+        for (int x = 1; x <= 10; x++) helper.setBlock(new BlockPos(x, 3, 9), Blocks.END_STONE);
+        Vec3[] off = rammed(helper, 3.5, InteractionHand.OFF_HAND), main = rammed(helper, 8.5, InteractionHand.MAIN_HAND);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(off[0] != null && main[0] != null, "both rams hit");
+            double g = Charms.GROUNDING, on = Brinkray.KNOCKBACK, up = Brinkray.KNOCKBACK_UP;
+            Vec3 m = main[0], o = off[0];
+            helper.assertTrue(near(m.horizontalDistance(), on, 0.01) && m.z > 0.0 && near(m.y, up, 0.01), "main hand: thrown " + on + " on and " + up + " up, motion " + m);
+            helper.assertTrue(near(o.horizontalDistance(), on * g, 0.01) && o.z > 0.0 && near(o.y, up * g, 0.01), "off-hand: thrown " + on * g + " on and "
+                    + up * g + " up, motion " + o);
+            TeemingMod.LOGGER.info("charm_grounding_brinkray: ram throw off-hand {} main hand {}", o, m);
+        });
+    }
+
+    /**
+     * A Brinkray hovering at its banking spot (x, 3.8, 2.5), the arena below y 2 its void, at a still pig on the bridge
+     * at (x, 4, 9.5) holding a Grounding Charm in {@code hand}; the pig's motion the tick the ram hits it.
+     */
+    private static Vec3[] rammed(GameTestHelper helper, double x, InteractionHand hand) {
+        Brinkray r = helper.spawn(ModMobs.BRINKRAY.get(), new Vec3(x, 3.8, 2.5));
+        r.core().setLook(LookDef.BASE, true);
+        r.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(10.0);
+        r.fakeVoid(helper.getBounds(), helper.absolutePos(new BlockPos(0, 2, 0)).getY());
+        r.glideAround(r.position(), 0.0);
+        TestPlayers.whenDone(helper, r::discard);
+        Pig pig = pig(helper, new Vec3(x, 4, 9.5), ModCharms.GROUNDING_CHARM, hand);
+        r.setTarget(pig);
+        Vec3[] thrown = {null};
+        helper.onEachTick(() -> {
+            if (thrown[0] == null && pig.getHealth() < 100.0F) thrown[0] = pig.getDeltaMovement();
+        });
+        return thrown;
+    }
+
+    // ---- Rift Charm at the remaining call sites --------------------------------------------------------------------
+
+    /**
+     * The first seed from {@link #RIFT_SEED} on whose fresh random the first {@code nextDouble} rolls under
+     * {@link Charms#RIFT_FAIL} ({@code saves}: the charm holds) or not (it lets the teleport through). A mob's random is
+     * a plain {@link RandomSource#create()}, so the same seed set on it rolls the same.
+     */
+    private static long riftSeed(boolean saves) {
+        for (long s = RIFT_SEED; ; s++) if ((RandomSource.create(s).nextDouble() < Charms.RIFT_FAIL) == saves) return s;
+    }
+
+    /** Seeds {@code mob}'s random with {@code seed} as it posts {@code step}, so the roll that follows is the seed's first. */
+    private static void seedBefore(GameTestHelper helper, Mob mob, String step, long seed) {
+        Consumer<MechanicEvent> seeding = e -> {
+            if (e.mob() == mob && e.step().equals(step)) mob.getRandom().setSeed(seed);
+        };
+        MechanicEvent.listen(seeding);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(seeding));
+    }
+
+    /** One lane of a forced-teleport pair: the mob, its pig and where the pig stood. */
+    private record Lane(Mob mob, Pig pig, Vec3 home) {
+        double moved() {
+            return Math.hypot(pig.getX() - home.x, pig.getZ() - home.z);
+        }
+    }
+
+    /**
+     * A Warpseed Bloom's seed, in three lanes, each a still bloom spitting one seed at a still pig 5 blocks east, the
+     * throw fixed at 3 blocks east and the bloom's roll seeded the tick before it rolls: a pig holding a Rift Charm in
+     * the off-hand with a roll the charm holds on, one holding it in the main hand with the same roll, and one holding
+     * it in the off-hand with a roll it lets through. Every seed hurts its pig. The off-hand pig whose charm held stays
+     * where it stood, unthrown, and its charm chimed; the main-hand pig is thrown exactly 3 blocks on the same roll, as
+     * is the off-hand pig whose roll the charm lets through (the charm fails {@link Charms#RIFT_FAIL} of throws, not all).
+     */
+    private static void riftWarpseed(GameTestHelper helper) {
+        long holds = riftSeed(true), letsThrough = riftSeed(false);
+        Lane saved = seedLane(helper, 2.5, InteractionHand.OFF_HAND, holds);
+        Lane main = seedLane(helper, 6.0, InteractionHand.MAIN_HAND, holds);
+        Lane thrown = seedLane(helper, 9.5, InteractionHand.OFF_HAND, letsThrough);
+        double throwBlocks = WarpseedBloom.WARP_NEAR;
+        helper.succeedWhen(() -> {
+            for (Lane l : List.of(saved, main, thrown)) helper.assertTrue(l.pig().getHealth() < 100.0F, "every seed struck its pig");
+            WarpseedBloom sb = (WarpseedBloom) saved.mob(), mb = (WarpseedBloom) main.mob(), tb = (WarpseedBloom) thrown.mob();
+            helper.assertTrue(sb.warps() == 0 && saved.moved() < 0.01, "off-hand, a roll the charm holds on: the pig stays where it stood, thrown "
+                    + sb.warps() + ", moved " + saved.moved());
+            helper.assertTrue(Charms.lastFelt(saved.pig()) >= 0, "and its charm chimed for the save");
+            helper.assertTrue(mb.warps() == 1 && near(main.moved(), throwBlocks, 0.01), "main hand, the same roll: thrown " + throwBlocks
+                    + " blocks, thrown " + mb.warps() + ", moved " + main.moved());
+            helper.assertTrue(tb.warps() == 1 && near(thrown.moved(), throwBlocks, 0.01) && Charms.lastFelt(thrown.pig()) == -1,
+                    "off-hand, a roll the charm lets through: thrown " + throwBlocks + " blocks with no chime, thrown " + tb.warps() + ", moved "
+                            + thrown.moved());
+            TeemingMod.LOGGER.info("charm_rift_warpseed: seeds {} (holds) and {} (lets through); moved off-hand saved {} main hand {} off-hand let through {}",
+                    holds, letsThrough, saved.moved(), main.moved(), thrown.moved());
+        });
+    }
+
+    /** A still Warpseed Bloom at (1.5, 1, z) that spits one seed, at tick 2, at a still pig at (6.5, 1, z) holding a Rift Charm in {@code hand}. */
+    private static Lane seedLane(GameTestHelper helper, double z, InteractionHand hand, long seed) {
+        Pig pig = pig(helper, new Vec3(6.5, 1, z), ModCharms.RIFT_CHARM, hand);
+        WarpseedBloom bloom = helper.spawn(ModMobs.WARPSEED_BLOOM.get(), new Vec3(1.5, 1, z));
+        bloom.core().setLook(LookDef.BASE, true);
+        bloom.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+        bloom.face(pig.position());
+        bloom.setTarget(pig);
+        bloom.setNoAi(true);
+        bloom.fixWarp(new WarpseedBloom.Warp(WarpseedBloom.WARP_NEAR, 0.0));       // 3 blocks toward +x
+        TestPlayers.whenDone(helper, bloom::discard);
+        // a seed that misses hurts and throws nothing outside this arena
+        Consumer<MechanicEvent> keep = e -> {
+            if (e.mob() == bloom && e.target() != null && (e.step().equals("seed_hit") || e.step().equals("warp"))
+                    && !helper.getBounds().contains(e.target().position())) e.cancel();
+        };
+        MechanicEvent.listen(keep);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(keep));
+        seedBefore(helper, bloom, "warp", seed);
+        helper.runAtTickTime(2, () -> helper.assertTrue(bloom.tell(pig), "the bloom tells at its pig"));
+        return new Lane(bloom, pig, pig.position());
+    }
+
+    /**
+     * An Exile Wraith's mark, in the wide arena (its floor's top is at y 0, open to the sky), in three lanes 14 blocks
+     * apart, each a still wraith marking a still pig, the sending fixed at 30 blocks east (onto the arena's floor) and
+     * the wraith's roll seeded as it sends: a pig holding a Rift Charm in the off-hand with a roll the charm holds on,
+     * one holding it in the main hand with the same roll, and one holding it in the off-hand with a roll it lets
+     * through. The off-hand pig whose charm held stays on its circle and its charm chimed; the main-hand pig is sent 30
+     * blocks on the same roll, as is the off-hand pig whose roll the charm lets through.
+     */
+    private static void riftExile(GameTestHelper helper) {
+        long holds = riftSeed(true), letsThrough = riftSeed(false);
+        Lane saved = markLane(helper, 6.5, InteractionHand.OFF_HAND, holds);
+        Lane main = markLane(helper, 20.5, InteractionHand.MAIN_HAND, holds);
+        Lane sent = markLane(helper, 34.5, InteractionHand.OFF_HAND, letsThrough);
+        helper.succeedWhen(() -> {
+            for (Lane l : List.of(saved, main, sent)) {
+                ExileWraith w = (ExileWraith) l.mob();
+                helper.assertTrue(w.marksCast() == 1 && w.mark() == null && !w.core().in(ExileWraith.Step.TELL), "every mark was cast and filled");
+            }
+            ExileWraith sw = (ExileWraith) saved.mob(), mw = (ExileWraith) main.mob(), tw = (ExileWraith) sent.mob();
+            helper.assertTrue(sw.exiles() == 0 && saved.moved() < 0.01, "off-hand, a roll the charm holds on: the pig stays on its circle, sent "
+                    + sw.exiles() + ", moved " + saved.moved());
+            helper.assertTrue(Charms.lastFelt(saved.pig()) >= 0, "and its charm chimed for the save");
+            helper.assertTrue(mw.exiles() == 1 && near(main.moved(), 30.0, 0.01), "main hand, the same roll: sent 30 blocks, sent " + mw.exiles()
+                    + ", moved " + main.moved());
+            helper.assertTrue(tw.exiles() == 1 && near(sent.moved(), 30.0, 0.01) && Charms.lastFelt(sent.pig()) == -1,
+                    "off-hand, a roll the charm lets through: sent 30 blocks with no chime, sent " + tw.exiles() + ", moved " + sent.moved());
+            TeemingMod.LOGGER.info("charm_rift_exile: seeds {} (holds) and {} (lets through); moved off-hand saved {} main hand {} off-hand let through {}",
+                    holds, letsThrough, saved.moved(), main.moved(), sent.moved());
+        });
+    }
+
+    /** A still Exile Wraith at (6.5, 0, z) that marks, at tick 2, a still pig at (10.5, 0, z) holding a Rift Charm in {@code hand}. */
+    private static Lane markLane(GameTestHelper helper, double z, InteractionHand hand, long seed) {
+        ExileWraith w = helper.spawn(ModMobs.EXILE_WRAITH.get(), new Vec3(6.5, 0, z));
+        w.core().setLook(LookDef.BASE, true);
+        w.removeFreeWill();
+        w.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+        w.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1.0);
+        w.setMarkCooldown(100000);                                                   // it marks only when the test says
+        w.fixRoll(new ExileWraith.Roll(30.0, 0.0));                                  // 30 blocks toward +x
+        TestPlayers.whenDone(helper, w::discard);
+        seedBefore(helper, w, "send", seed);
+        Pig pig = pig(helper, new Vec3(10.5, 0, z), ModCharms.RIFT_CHARM, hand);
+        helper.runAtTickTime(2, () -> helper.assertTrue(w.mark(pig), "the wraith marks its pig"));
+        return new Lane(w, pig, pig.position());
     }
 
     private static Holder<Enchantment> ench(GameTestHelper helper, ResourceKey<Enchantment> key) {

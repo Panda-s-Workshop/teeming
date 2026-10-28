@@ -35,8 +35,7 @@ import net.minecraft.world.phys.AABB;
  * registered mob its placement and the predicate that applies light, height, config and local caps.
  */
 public final class TeemingSpawns {
-    /** Default local cap: this many of one type within {@link #CAP_RADIUS}; apex mobs and passive giants: 1 in 128. */
-    public static final int CAP = 3;
+    /** Local caps: {@link TeemingConfig#localCap} of one type within {@link #CAP_RADIUS}; apex mobs and passive giants: 1 in 128. */
     public static final int CAP_RADIUS = 48;
     public static final int RARE_CAP_RADIUS = 128;
     /** Mobs capped at 1 in 128 blocks, besides the apex mobs. */
@@ -154,7 +153,7 @@ public final class TeemingSpawns {
     public static boolean underCap(Entry mob, EntityType<? extends Mob> type, ServerLevelAccessor level, BlockPos pos) {
         boolean rare = mob.apex() || GIANTS.contains(mob.id());
         int radius = rare ? RARE_CAP_RADIUS : CAP_RADIUS;
-        int cap = (int) Math.round((rare ? 1 : CAP) * Math.max(1.0, TeemingConfig.spawningDensity())); // density > 1 lifts the caps
+        int cap = (int) Math.round((rare ? 1 : TeemingConfig.localCap()) * Math.max(1.0, TeemingConfig.spawningDensity())); // density > 1 lifts the caps
         return level.getEntitiesOfClass(Mob.class, new AABB(pos).inflate(radius), e -> e.getType() == type).size() < cap;
     }
 }

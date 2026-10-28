@@ -6,13 +6,7 @@
   },
   "display": {
     "icon": {
-      "id": "teeming:trophy",
-      "components": {
-        "teeming:trophy_mob": {
-          "mob": "magma_tortoise",
-          "look": "base"
-        }
-      }
+      "id": "teeming:magma_scute"
     },
     "title": {
       "translate": "advancements.teeming.magma_tortoise_ride.title"

@@ -90,6 +90,31 @@ public record FieldGuideProgress(Set<String> seen, Map<String, Integer> kills, S
         return new FieldGuideProgress(p.seen, k, p.looks, p.trophies, p.revealAt);
     }
 
+    /** A copy with the mob seen in each of {@code looks} and killed often enough to be revealed. */
+    public FieldGuideProgress withRevealed(String mob, Iterable<String> looks) {
+        FieldGuideProgress p = withSeen(mob, "");
+        for (String look : looks) p = p.withSeen(mob, look);
+        if (p.revealed(mob)) return p;
+        Map<String, Integer> k = new LinkedHashMap<>(p.kills);
+        k.put(mob, revealAt);
+        return new FieldGuideProgress(p.seen, k, p.looks, p.trophies, p.revealAt);
+    }
+
+    /** A copy that has never seen the mob: no sighting, kills, looks or trophy; the same instance if it hadn't. */
+    public FieldGuideProgress without(String mob) {
+        String prefix = mob + "/";
+        if (!seen.contains(mob) && !kills.containsKey(mob) && !trophies.contains(mob) && looks.stream().noneMatch(l -> l.startsWith(prefix))) return this;
+        Set<String> s = new LinkedHashSet<>(seen);
+        s.remove(mob);
+        Map<String, Integer> k = new LinkedHashMap<>(kills);
+        k.remove(mob);
+        Set<String> l = new LinkedHashSet<>(looks);
+        l.removeIf(look -> look.startsWith(prefix));
+        Set<String> t = new LinkedHashSet<>(trophies);
+        t.remove(mob);
+        return new FieldGuideProgress(s, k, l, t, revealAt);
+    }
+
     public boolean hasTrophy(String mob) {
         return trophies.contains(mob);
     }

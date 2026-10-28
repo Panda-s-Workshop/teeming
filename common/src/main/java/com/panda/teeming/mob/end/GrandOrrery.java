@@ -527,31 +527,37 @@ public class GrandOrrery extends TeemingMonster {
             pitch = valid(target) ? pitchTo(target) : 0.0;
             setFacing(aim);
             playSound(ModSounds.GRAND_ORRERY_RELEASE.get(), 1.4F, 1.0F);
-            watch = target instanceof ServerPlayer player && valid(player) && corePos().distanceTo(player.position()) <= MOTE_RANGE
-                    ? new Watch(player) : null;
+            watch = target instanceof ServerPlayer player && inReach(player) ? new Watch(player) : null;
         }
         lastElapsed = t;
         while (launched < plan.size() && plan.get(launched).tick() <= t) {
             int index = launched++;
             if (MechanicEvent.post(this, "mote", core().target())) {
                 Shot mote = launch(level, aim + plan.get(index).yaw(), Plan.speed(now, index));
-                if (watch != null) watch.left.add(mote);
+                if (watch != null) {
+                    watch.left.add(mote);
+                    watch.fired++;
+                }
             }
         }
         if (watch != null && launched >= plan.size()) watch.allOut = true;
     }
 
     /**
-     * Between the Stars: the player a pattern is aimed at, standing within a mote's reach of the core as it begins,
-     * earns the advancement once every mote of that pattern has left and faded without one touching them (a mote a
-     * shield takes still touched them). A pattern cut short (the orrery dies before its last mote leaves, or is removed
-     * before its motes are spent) earns nothing.
+     * Between the Stars: the player a pattern is aimed at earns the advancement once every mote of that pattern has
+     * left and faded without one touching them (a mote a shield takes still touched them), if they stayed in its reach
+     * from the moment it began until its last mote was spent: within a mote's range of the core and in the orrery's
+     * sight every tick, so stepping out of range or behind cover, even for a moment, earns nothing. At least one mote
+     * must actually have flown: a pattern whose every mote a listener cancelled earns nothing. A pattern cut short (the
+     * orrery dies before its last mote leaves, or is removed before its motes are spent) earns nothing.
      */
     private static final class Watch {
         final ServerPlayer player;
         final Set<Shot> left = Collections.newSetFromMap(new IdentityHashMap<>());
+        int fired;
         boolean allOut;
         boolean touched;
+        boolean strayed;
 
         Watch(ServerPlayer player) {
             this.player = player;
@@ -560,12 +566,19 @@ public class GrandOrrery extends TeemingMonster {
 
     /** Resolves the watched pattern once its last mote is gone. */
     private void watchTick() {
-        if (watch == null || !watch.allOut || !watch.left.isEmpty()) return;
+        if (watch == null) return;
+        if (!inReach(watch.player)) watch.strayed = true;
+        if (!watch.allOut || !watch.left.isEmpty()) return;
         Watch done = watch;
         watch = null;
-        if (!done.touched && done.player.isAlive() && !done.player.isRemoved()) {
+        if (!done.touched && !done.strayed && done.fired > 0) {
             TeemingAdvancements.award(done.player, TeemingAdvancements.GRAND_ORRERY_PATTERN);
         }
+    }
+
+    /** In a pattern's reach: a valid target within a mote's range of the core, with nothing blocking the orrery's sight of it. */
+    private boolean inReach(ServerPlayer player) {
+        return valid(player) && corePos().distanceTo(player.position()) <= MOTE_RANGE && hasLineOfSight(player);
     }
 
     /** How far a pattern dips to pass from its core through the middle of {@code target}. */
