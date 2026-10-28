@@ -89,11 +89,14 @@ public final class MobDrops {
             Map.entry("spirebloom", List.of("teeming:void_crystal", "minecraft:end_stone", "teeming:trophy")),
             Map.entry("riftmine_sapper", List.of("teeming:gravity_stone", "minecraft:end_stone", "minecraft:flint", "teeming:trophy")),
             Map.entry("underclinger", List.of("teeming:void_membrane", "minecraft:end_stone", "teeming:trophy")),
+            Map.entry("abyss_angler", List.of("teeming:void_membrane", "minecraft:end_stone", "teeming:trophy")),
+            Map.entry("brinkray", List.of("teeming:void_membrane", "teeming:trophy")),
             Map.entry("exile_wraith", List.of("teeming:rift_essence", "minecraft:string", "teeming:trophy")),
             Map.entry("mote_swarm", List.of("teeming:star_mote", "minecraft:glowstone_dust", "teeming:trophy")),
             Map.entry("pearlshell_snail", List.of("teeming:trophy")),
             Map.entry("wingshear", List.of("teeming:void_membrane", "teeming:trophy")),
-            Map.entry("grand_orrery", List.of("teeming:star_mote", "minecraft:purpur_block", "minecraft:popped_chorus_fruit", "teeming:trophy"))
+            Map.entry("grand_orrery", List.of("teeming:star_mote", "minecraft:purpur_block", "minecraft:popped_chorus_fruit", "teeming:trophy")),
+            Map.entry("resonant_triad", List.of("teeming:void_crystal", "minecraft:amethyst_shard", "teeming:trophy"))
     );
 
     public static List<String> of(String mob) {

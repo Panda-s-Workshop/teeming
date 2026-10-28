@@ -171,6 +171,10 @@ public final class MobRenderers {
                 Set.of("base", "purpur_sapper"), 0.5F, 1.0F, 1, false));
         out.register(ModMobs.UNDERCLINGER.get(), ctx -> new TeemingRenderer<>(ctx, new UnderclingerModel(ctx.bakeLayer(CreatureLayers.UNDERCLINGER)), "underclinger",
                 Set.of(), 0.45F, 1.0F, 1, false));
+        out.register(ModMobs.ABYSS_ANGLER.get(), ctx -> new TeemingRenderer<>(ctx, new AbyssAnglerModel(ctx.bakeLayer(CreatureLayers.ABYSS_ANGLER)), "abyss_angler",
+                Set.of("base", "lantern_angler"), 0.5F, 1.0F, 1, true));
+        out.register(ModMobs.BRINKRAY.get(), ctx -> new TeemingRenderer<>(ctx, new BrinkrayModel(ctx.bakeLayer(CreatureLayers.BRINKRAY)), "brinkray",
+                Set.of("base", "starry_ray"), 1.2F, 1.0F, 3, false));
         out.register(ModMobs.EXILE_WRAITH.get(), ctx -> new TeemingRenderer<>(ctx, new ExileWraithModel(ctx.bakeLayer(CreatureLayers.EXILE_WRAITH)), "exile_wraith",
                 Set.of("base", "dusk_wraith"), 0.35F, 1.0F, 1, false));
         out.register(ModMobs.MOTE_SWARM.get(), ctx -> new TeemingRenderer<>(ctx, new MoteSwarmModel(ctx.bakeLayer(CreatureLayers.MOTE_SWARM)), "mote_swarm",
@@ -181,5 +185,7 @@ public final class MobRenderers {
                 Set.of("base", "dusk_shear"), 0.4F, 1.0F, 2, false));
         out.register(ModMobs.GRAND_ORRERY.get(), ctx -> new TeemingRenderer<>(ctx, new GrandOrreryModel(ctx.bakeLayer(CreatureLayers.GRAND_ORRERY)), "grand_orrery",
                 Set.of("base"), 0.9F, 1.0F, 3, true));
+        out.register(ModMobs.RESONANT_TRIAD.get(), ctx -> new TeemingRenderer<>(ctx, new ResonantTriadModel(ctx.bakeLayer(CreatureLayers.RESONANT_TRIAD)), "resonant_triad",
+                Set.of("base", "rose_triad"), 0.25F, 1.0F, 4, true));
     }
 }

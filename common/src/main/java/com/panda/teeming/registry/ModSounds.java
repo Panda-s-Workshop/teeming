@@ -10,6 +10,15 @@ import net.minecraft.sounds.SoundEvent;
 public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, TeemingMod.MODID);
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_AMBIENT = sound("abyss_angler.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_HURT = sound("abyss_angler.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_DEATH = sound("abyss_angler.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_TELL = sound("abyss_angler.tell");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_CAST = sound("abyss_angler.cast");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_HOOK = sound("abyss_angler.hook");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_REEL = sound("abyss_angler.reel");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_SNAP = sound("abyss_angler.snap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ABYSS_ANGLER_STUN = sound("abyss_angler.stun");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_AMBIENT = sound("anchor_golem.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_HURT = sound("anchor_golem.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ANCHOR_GOLEM_DEATH = sound("anchor_golem.death");
@@ -80,6 +89,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAM_BONK = sound("brinkram.bonk");
     public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAM_SKID = sound("brinkram.skid");
     public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAM_OVER = sound("brinkram.over");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_AMBIENT = sound("brinkray.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_HURT = sound("brinkray.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_DEATH = sound("brinkray.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_BANK = sound("brinkray.bank");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_RAM = sound("brinkray.ram");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BRINKRAY_CRASH = sound("brinkray.crash");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_GRAZER_AMBIENT = sound("chorus_grazer.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_GRAZER_HURT = sound("chorus_grazer.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHORUS_GRAZER_DEATH = sound("chorus_grazer.death");
@@ -463,6 +478,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_ANCHOR_HIT = sound("recurrent.anchor_hit");
     public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_ANCHOR_BREAK = sound("recurrent.anchor_break");
     public static final DeferredHolder<SoundEvent, SoundEvent> RECURRENT_UNRAVEL = sound("recurrent.unravel");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_AMBIENT = sound("resonant_triad.ambient");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_HURT = sound("resonant_triad.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_DEATH = sound("resonant_triad.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_SING = sound("resonant_triad.sing");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_RISE = sound("resonant_triad.rise");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_SHRUG = sound("resonant_triad.shrug");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_CRACKLE = sound("resonant_triad.crackle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_ZAP = sound("resonant_triad.zap");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RESONANT_TRIAD_BREAK = sound("resonant_triad.break");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_AMBIENT = sound("riftjackal.ambient");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_HURT = sound("riftjackal.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> RIFTJACKAL_DEATH = sound("riftjackal.death");

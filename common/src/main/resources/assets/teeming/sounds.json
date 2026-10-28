@@ -1,4 +1,152 @@
 {
+  "abyss_angler.ambient": {
+    "subtitle": "subtitles.teeming.abyss_angler.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.axolotl.idle_air",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.bubble_column.bubble_pop",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "abyss_angler.hurt": {
+    "subtitle": "subtitles.teeming.abyss_angler.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.axolotl.hurt",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:entity.slime.squish",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "abyss_angler.death": {
+    "subtitle": "subtitles.teeming.abyss_angler.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.axolotl.death",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.chorus_flower.death",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.6
+      }
+    ]
+  },
+  "abyss_angler.tell": {
+    "subtitle": "subtitles.teeming.abyss_angler.tell",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.loading_middle",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "abyss_angler.cast": {
+    "subtitle": "subtitles.teeming.abyss_angler.cast",
+    "sounds": [
+      {
+        "name": "minecraft:entity.fishing_bobber.throw",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:item.trident.throw",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.5
+      }
+    ]
+  },
+  "abyss_angler.hook": {
+    "subtitle": "subtitles.teeming.abyss_angler.hook",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.hit",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.phantom.bite",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "abyss_angler.reel": {
+    "subtitle": "subtitles.teeming.abyss_angler.reel",
+    "sounds": [
+      {
+        "name": "minecraft:item.crossbow.loading_end",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.fishing_bobber.retrieve",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "abyss_angler.snap": {
+    "subtitle": "subtitles.teeming.abyss_angler.snap",
+    "sounds": [
+      {
+        "name": "minecraft:item.lead.break",
+        "type": "event",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:block.tripwire.detach",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "abyss_angler.stun": {
+    "subtitle": "subtitles.teeming.abyss_angler.stun",
+    "sounds": [
+      {
+        "name": "minecraft:entity.puffer_fish.flop",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:entity.axolotl.hurt",
+        "type": "event",
+        "pitch": 0.4,
+        "volume": 0.7
+      }
+    ]
+  },
   "anchor_golem.ambient": {
     "subtitle": "subtitles.teeming.anchor_golem.ambient",
     "sounds": [
@@ -1107,6 +1255,105 @@
         "name": "minecraft:entity.goat.screaming.hurt",
         "type": "event",
         "pitch": 0.55
+      }
+    ]
+  },
+  "brinkray.ambient": {
+    "subtitle": "subtitles.teeming.brinkray.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:entity.glow_squid.ambient",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.3
+      }
+    ]
+  },
+  "brinkray.hurt": {
+    "subtitle": "subtitles.teeming.brinkray.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:entity.glow_squid.hurt",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_block.hit",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.5
+      }
+    ]
+  },
+  "brinkray.death": {
+    "subtitle": "subtitles.teeming.brinkray.death",
+    "sounds": [
+      {
+        "name": "minecraft:entity.glow_squid.death",
+        "type": "event",
+        "pitch": 0.55
+      },
+      {
+        "name": "minecraft:entity.firework_rocket.twinkle_far",
+        "type": "event",
+        "pitch": 0.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "brinkray.bank": {
+    "subtitle": "subtitles.teeming.brinkray.bank",
+    "sounds": [
+      {
+        "name": "minecraft:item.trident.riptide_3",
+        "type": "event",
+        "pitch": 0.55,
+        "volume": 1.4
+      },
+      {
+        "name": "minecraft:entity.ender_dragon.flap",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "brinkray.ram": {
+    "subtitle": "subtitles.teeming.brinkray.ram",
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.attack",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.2
+      },
+      {
+        "name": "minecraft:entity.breeze.wind_burst",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.8
+      }
+    ]
+  },
+  "brinkray.crash": {
+    "subtitle": "subtitles.teeming.brinkray.crash",
+    "sounds": [
+      {
+        "name": "minecraft:entity.generic.big_fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.3
+      },
+      {
+        "name": "minecraft:entity.ravager.stunned",
+        "type": "event",
+        "pitch": 1.2,
+        "volume": 0.9
       }
     ]
   },
@@ -7334,6 +7581,156 @@
       },
       {
         "name": "minecraft:block.sand.fall",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 0.8
+      }
+    ]
+  },
+  "resonant_triad.ambient": {
+    "subtitle": "subtitles.teeming.resonant_triad.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.xylophone",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.3
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "volume": 0.25
+      }
+    ]
+  },
+  "resonant_triad.hurt": {
+    "subtitle": "subtitles.teeming.resonant_triad.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:block.copper_grate.hit",
+        "type": "event",
+        "pitch": 1.6
+      },
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.7
+      }
+    ]
+  },
+  "resonant_triad.death": {
+    "subtitle": "subtitles.teeming.resonant_triad.death",
+    "sounds": [
+      {
+        "name": "minecraft:block.copper_bulb.break",
+        "type": "event",
+        "pitch": 1.5
+      },
+      {
+        "name": "minecraft:block.glass.break",
+        "type": "event",
+        "pitch": 1.3,
+        "volume": 0.9
+      }
+    ]
+  },
+  "resonant_triad.sing": {
+    "subtitle": "subtitles.teeming.resonant_triad.sing",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.bell",
+        "type": "event",
+        "pitch": 0.9,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.4
+      }
+    ]
+  },
+  "resonant_triad.rise": {
+    "subtitle": "subtitles.teeming.resonant_triad.rise",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.bell",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.note_block.chime",
+        "type": "event",
+        "pitch": 1.4,
+        "volume": 0.3
+      }
+    ]
+  },
+  "resonant_triad.shrug": {
+    "subtitle": "subtitles.teeming.resonant_triad.shrug",
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.iron_xylophone",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:block.amethyst_block.hit",
+        "type": "event",
+        "pitch": 1.8,
+        "volume": 0.4
+      }
+    ]
+  },
+  "resonant_triad.crackle": {
+    "subtitle": "subtitles.teeming.resonant_triad.crackle",
+    "sounds": [
+      {
+        "name": "minecraft:entity.guardian.attack",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:block.amethyst_block.resonate",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.3
+      }
+    ]
+  },
+  "resonant_triad.zap": {
+    "subtitle": "subtitles.teeming.resonant_triad.zap",
+    "sounds": [
+      {
+        "name": "minecraft:entity.lightning_bolt.impact",
+        "type": "event",
+        "pitch": 2.0,
+        "volume": 0.35
+      },
+      {
+        "name": "minecraft:block.glass.hit",
+        "type": "event",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "resonant_triad.break": {
+    "subtitle": "subtitles.teeming.resonant_triad.break",
+    "sounds": [
+      {
+        "name": "minecraft:block.bell.use",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:block.glass.break",
         "type": "event",
         "pitch": 0.7,
         "volume": 0.8

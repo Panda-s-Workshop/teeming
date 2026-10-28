@@ -81,11 +81,14 @@ import com.panda.teeming.gametest.mob.GeminiWatchersTests;
 import com.panda.teeming.gametest.mob.SpirebloomTests;
 import com.panda.teeming.gametest.mob.RiftmineSapperTests;
 import com.panda.teeming.gametest.mob.UnderclingerTests;
+import com.panda.teeming.gametest.mob.AbyssAnglerTests;
+import com.panda.teeming.gametest.mob.BrinkrayTests;
 import com.panda.teeming.gametest.mob.ExileWraithTests;
 import com.panda.teeming.gametest.mob.MoteSwarmTests;
 import com.panda.teeming.gametest.mob.PearlshellSnailTests;
 import com.panda.teeming.gametest.mob.WingshearTests;
 import com.panda.teeming.gametest.mob.GrandOrreryTests;
+import com.panda.teeming.gametest.mob.ResonantTriadTests;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -176,10 +179,13 @@ final class MobTests {
         SpirebloomTests.register(out);
         RiftmineSapperTests.register(out);
         UnderclingerTests.register(out);
+        AbyssAnglerTests.register(out);
+        BrinkrayTests.register(out);
         ExileWraithTests.register(out);
         MoteSwarmTests.register(out);
         PearlshellSnailTests.register(out);
         WingshearTests.register(out);
         GrandOrreryTests.register(out);
+        ResonantTriadTests.register(out);
     }
 }

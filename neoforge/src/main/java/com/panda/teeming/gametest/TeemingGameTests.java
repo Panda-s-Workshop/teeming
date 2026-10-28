@@ -8,8 +8,10 @@ import com.panda.teeming.spawn.TeemingSpawns;
 import com.panda.teeming.registry.ModTabs;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -21,6 +23,8 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -30,9 +34,12 @@ public final class TeemingGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
             DeferredRegister.create(Registries.TEST_FUNCTION, TeemingMod.MODID);
     private static final Identifier ARENA = TeemingMod.id("test_arena");
+    /** An empty box 100 wide, 48 high and 44 deep, open to the sky (written by the arena generator). */
+    private static final Identifier WIDE_ARENA = TeemingMod.id("test_arena_wide");
     /** Ticks a test may run before it fails; most finish well inside this. */
     private static final int DEFAULT_TICKS = 100;
     private static final Map<String, Integer> TIME_LIMITS = new HashMap<>();
+    private static final Set<String> WIDE = new HashSet<>();
 
     static {
         FUNCTIONS.register("mod_loaded", () -> TeemingGameTests::modLoaded);
@@ -59,6 +66,15 @@ public final class TeemingGameTests {
         TIME_LIMITS.put(name, ticks);
     }
 
+    /**
+     * Stands one test in the wide arena with no roof, for a test that builds far past a 12-block arena. Everything it
+     * builds stays inside the arena's chunks, which the test server keeps ticking: chunks a test forces fresh far away
+     * may not tick their mobs for hundreds of ticks in a full run.
+     */
+    public static void wide(String name) {
+        WIDE.add(name);
+    }
+
     public static void register(IEventBus modBus) {
         FUNCTIONS.register(modBus);
         modBus.addListener(TeemingGameTests::registerTests);
@@ -77,8 +93,11 @@ public final class TeemingGameTests {
             String name = entry.getId().getPath();
             if (!ONLY.isEmpty() && ONLY.stream().noneMatch(name::startsWith)) continue;
             ResourceKey<Consumer<GameTestHelper>> key = ResourceKey.create(Registries.TEST_FUNCTION, entry.getId());
-            event.registerTest(key.identifier(), new FunctionGameTestInstance(key, new TestData<>(env, ARENA,
-                    TIME_LIMITS.getOrDefault(entry.getId().getPath(), DEFAULT_TICKS), 0, true)));
+            int ticks = TIME_LIMITS.getOrDefault(name, DEFAULT_TICKS);
+            TestData<Holder<TestEnvironmentDefinition<?>>> data = WIDE.contains(name)
+                    ? new TestData<>(env, Level.OVERWORLD, WIDE_ARENA, ticks, 0, true, Rotation.NONE, false, 1, 1, true, 0)
+                    : new TestData<>(env, ARENA, ticks, 0, true);
+            event.registerTest(key.identifier(), new FunctionGameTestInstance(key, data));
         }
     }
 

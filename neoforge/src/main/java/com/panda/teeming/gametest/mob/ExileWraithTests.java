@@ -51,31 +51,34 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * takes the attack of 4 (armour counts: 2.72 through 10 armour), with no knockback and never at a body on a pillar. Killed
  * mid-mark or mid-wind-up it finishes nothing. Stats, home and spawn rule against plain values.
  *
- * <p>An exile reaches far past a 12-block arena, so the tests that let one happen run on a patch of sky far from every
- * arena ({@link Site}), where the test builds every block of land within reach itself. A patch forced fresh can take
- * many ticks before its mobs tick (past a hundred on a slow machine), so those tests count every step from the tick
- * their wraith first ticks, and have room for that wait in their time limits.
+ * <p>An exile reaches far past a 12-block arena, so the tests that let one happen stand in the wide arena with no roof
+ * and build every block of land within reach themselves, high in it ({@link Site}).
  */
 public final class ExileWraithTests {
     private ExileWraithTests() {}
 
-    /** The time limit of a test on a patch of sky: its own steps and up to 300 ticks of waiting for the patch to tick. */
+    /** The time limit of a test on a patch of sky, with room to spare: its steps count from the wraith's first tick. */
     private static final int SITE_TICKS = 400;
 
     public static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("exile_wraith_tell", ExileWraithTests::tell);
         TeemingGameTests.timeLimit("exile_wraith_tell", SITE_TICKS);
+        TeemingGameTests.wide("exile_wraith_tell");
         out.accept("exile_wraith_counter", ExileWraithTests::counter);
         out.accept("exile_wraith_failure", ExileWraithTests::failure);
         TeemingGameTests.timeLimit("exile_wraith_failure", SITE_TICKS);
+        TeemingGameTests.wide("exile_wraith_failure");
         out.accept("exile_wraith_radius", ExileWraithTests::radius);
         out.accept("exile_wraith_range", ExileWraithTests::range);
         out.accept("exile_wraith_far_land", ExileWraithTests::farLand);
         TeemingGameTests.timeLimit("exile_wraith_far_land", SITE_TICKS);
+        TeemingGameTests.wide("exile_wraith_far_land");
         out.accept("exile_wraith_no_land", ExileWraithTests::noLand);
         TeemingGameTests.timeLimit("exile_wraith_no_land", SITE_TICKS);
+        TeemingGameTests.wide("exile_wraith_no_land");
         out.accept("exile_wraith_once_per_200", ExileWraithTests::oncePer200);
         TeemingGameTests.timeLimit("exile_wraith_once_per_200", SITE_TICKS + 200);
+        TeemingGameTests.wide("exile_wraith_once_per_200");
         out.accept("exile_wraith_claw", ExileWraithTests::claw);
         out.accept("exile_wraith_armour", ExileWraithTests::armour);
         out.accept("exile_wraith_pillar", ExileWraithTests::pillar);
@@ -138,25 +141,23 @@ public final class ExileWraithTests {
     }
 
     /**
-     * A patch of open sky far from every arena: {@code k} times 30,000 blocks east of the arena and 100 up, each test with
-     * its own {@code k}, so no two tests' patches come near each other however the arenas are laid out, and no block laid
-     * here hangs over another test's arena (an open-sky check under it would fail). Every block the test lays is recorded
-     * and taken away when it ends, with the chunks it forced and the mobs it made there.
+     * A patch of open sky in the wide arena: its centre 64 blocks along, 8 in and 30 up, so pads from 62 blocks one way
+     * to 32 the other and 32 deep fit inside, and the arena's floor lies deeper than the landing search reaches (18
+     * blocks). Every block the test lays is recorded and taken away when it ends, with the mobs it made there.
      */
     private static final class Site {
         final GameTestHelper helper;
         final ServerLevel level;
         final BlockPos centre;
         final List<BlockPos> laid = new ArrayList<>();
-        final List<long[]> forced = new ArrayList<>();
         final List<Entity> made = new ArrayList<>();
 
-        Site(GameTestHelper helper, int k) {
+        Site(GameTestHelper helper) {
             this.helper = helper;
             this.level = helper.getLevel();
-            this.centre = helper.absolutePos(new BlockPos(6, 100, 6)).offset(30000 * k, 0, 0);
+            this.centre = helper.absolutePos(new BlockPos(64, 30, 8));
             TestPlayers.whenDone(helper, this::clear);
-            for (int dy = -20; dy <= 12; dy++) {
+            for (int dy = -18; dy <= 12; dy++) {
                 BlockPos p = centre.above(dy);
                 level.getChunk(p);
                 if (!level.getBlockState(p).isAir()) helper.fail("the patch of sky isn't open: " + level.getBlockState(p) + " at " + p);
@@ -183,12 +184,6 @@ public final class ExileWraithTests {
         }
 
         void lay(BlockPos pos, BlockState state) {
-            int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
-            if (forced.stream().noneMatch(c -> c[0] == cx && c[1] == cz)) {
-                level.setChunkForced(cx, cz, true);
-                level.getChunk(cx, cz);
-                forced.add(new long[] {cx, cz});
-            }
             level.setBlockAndUpdate(pos, state);
             laid.add(pos.immutable());
         }
@@ -227,7 +222,6 @@ public final class ExileWraithTests {
             for (BlockPos p : laid) {
                 if (level.hasChunkAt(p)) level.setBlockAndUpdate(p, Blocks.AIR.defaultBlockState());
             }
-            for (long[] c : forced) level.setChunkForced((int) c[0], (int) c[1], false);
         }
     }
 
@@ -239,7 +233,7 @@ public final class ExileWraithTests {
      * sent to the only land in reach, a pad 30 blocks east (the roll fixed at 30 blocks, due east).
      */
     private static void tell(GameTestHelper helper) {
-        Site site = new Site(helper, 1).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
+        Site site = new Site(helper).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
         ExileWraith w = site.wraith(-4.5, 0.5);
         Pig pig = site.pig(0.5, 1, 0.5);
         Vec3 start = pig.position();
@@ -316,7 +310,7 @@ public final class ExileWraithTests {
      * open sky over it, and unhurt (all 20 health).
      */
     private static void failure(GameTestHelper helper) {
-        Site site = new Site(helper, 2).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
+        Site site = new Site(helper).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
         ExileWraith w = site.wraith(-4.5, 0.5);
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(6.5, 1, 6.5));
         Vec3 start = site.at(0.5, 1, 0.5);
@@ -373,7 +367,7 @@ public final class ExileWraithTests {
     private static void farLand(GameTestHelper helper) {
         double a = Math.toRadians(135.0);
         int px = (int) Math.floor(Math.cos(a) * 42.0 + 0.5), pz = (int) Math.floor(Math.sin(a) * 42.0 + 0.5);
-        Site site = new Site(helper, 3).floor(0, 0, 0, 2).floor(-4, 0, 0, 1).floor(px, -9, pz, 2);
+        Site site = new Site(helper).floor(0, 0, 0, 2).floor(-4, 0, 0, 1).floor(px, -9, pz, 2);
         ExileWraith w = site.wraith(-3.5, 0.5);
         Pig pig = site.pig(0.5, 1, 0.5);
         Vec3 start = pig.position();
@@ -395,7 +389,7 @@ public final class ExileWraithTests {
      * mark fills, unhurt; the mark fizzles and the wraith isn't snagged.
      */
     private static void noLand(GameTestHelper helper) {
-        Site site = new Site(helper, 4).floor(0, 0, 0, 1).floor(15, 0, 0, 2).floor(-60, 0, 0, 2).floor(0, 0, 30, 2);
+        Site site = new Site(helper).floor(0, 0, 0, 1).floor(15, 0, 0, 2).floor(-60, 0, 0, 2).floor(0, 0, 30, 2);
         for (int dy = 3; dy <= 10; dy++) site.floor(0, dy, 30, 2);
         ExileWraith w = site.wraith(-0.5, -0.5);
         Pig pig = site.pig(0.5, 1, 0.5);
@@ -414,7 +408,7 @@ public final class ExileWraithTests {
      * itself.
      */
     private static void oncePer200(GameTestHelper helper) {
-        Site site = new Site(helper, 5).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
+        Site site = new Site(helper).floor(0, 0, 0, 5).floor(30, 0, 0, 2);
         ExileWraith w = site.wraith(-4.5, 0.5);
         ExileWraith other = site.wraith(-4.5, 3.5);
         Pig pig = site.pig(0.5, 1, 0.5);
