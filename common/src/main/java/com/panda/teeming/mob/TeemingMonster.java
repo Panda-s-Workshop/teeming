@@ -15,6 +15,7 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
@@ -70,6 +71,18 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
     public float getWalkTargetValue(BlockPos pos, LevelReader level) {
         RosterStats.Entry row = RosterStats.BY_ID.get(BuiltInRegistries.ENTITY_TYPE.getKey(getType()).getPath());
         return row != null && row.anyLight() ? 0.0F : super.getWalkTargetValue(pos, level);
+    }
+
+    /**
+     * End mobs pass natural spawning's question to the mob itself, as vanilla's enderman does. The End's islands lie
+     * under full sky light that never fades, where the walk-target answer above is negative, so an End mob could spawn
+     * from its biome list only in shade. Its spawn predicate still applies the End's darkness roll, as the enderman's
+     * does; where it walks still follows the light.
+     */
+    @Override
+    public boolean checkSpawnRules(LevelAccessor level, EntitySpawnReason reason) {
+        RosterStats.Entry row = RosterStats.BY_ID.get(BuiltInRegistries.ENTITY_TYPE.getKey(getType()).getPath());
+        return row != null && row.dim() == RosterStats.Dim.END || super.checkSpawnRules(level, reason);
     }
 
     /** A held mob ({@link #pin()}) is moved only as far as its hold allows and is never pushed or knocked back. */

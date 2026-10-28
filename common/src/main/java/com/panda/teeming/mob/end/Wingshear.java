@@ -276,11 +276,12 @@ public class Wingshear extends TeemingMonster {
         if (reach.intersects(target.getBoundingBox())) strike(level, target);
     }
 
-    /** The dive lands: its attack through armour, then the glide ends and the wings stay shut for 40 ticks. */
+    /** The dive lands: its attack through armour with no knockback, then the glide ends and the wings stay shut for 40 ticks. */
     private void strike(ServerLevel level, LivingEntity victim) {
         if (MechanicEvent.post(this, "dive_hit", victim)) {
             DamageSource source = damageSources().mobAttack(this);
-            boolean hurt = victim.hurtServer(level, source, (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * DIVE_HIT);
+            // in place: the dive moves no one sideways, so a player standing at an edge is never knocked over the void
+            boolean hurt = AstralAugur.GroundMarks.hurtInPlace(level, victim, source, (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * DIVE_HIT);
             if (hurt) {
                 hits++;
                 grounded.shut(level, victim);

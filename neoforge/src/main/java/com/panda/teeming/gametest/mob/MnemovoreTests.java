@@ -62,6 +62,8 @@ public final class MnemovoreTests {
         out.accept("mnemovore_steal_veto", MnemovoreTests::stealVeto);
         out.accept("mnemovore_repay", MnemovoreTests::repay);
         out.accept("mnemovore_death_once", MnemovoreTests::deathOnce);
+        out.accept("mnemovore_void_spill", MnemovoreTests::voidSpill);
+        out.accept("mnemovore_no_knockback", MnemovoreTests::noKnockback);
         out.accept("mnemovore_dies_mid_tell", MnemovoreTests::diesMidTell);
         out.accept("mnemovore_pillar", MnemovoreTests::pillar);
         out.accept("mnemovore_armour", MnemovoreTests::armour);
@@ -349,6 +351,55 @@ public final class MnemovoreTests {
             helper.assertTrue(m.isRemoved(), "the body is gone");
             helper.assertTrue(m.spills() == 1, "and it spilled once only, " + m.spills() + " times");
             helper.succeed();
+        });
+    }
+
+    /**
+     * Killed in the void below the world, holding 25 points, it still pays them back: the 28 points of orbs come out on
+     * the last ground it stood on, in its arena, where a player can pick them up, and none below the world's floor.
+     */
+    private static void voidSpill(GameTestHelper helper) {
+        Mnemovore m = vore(helper, 6.5, 6.5);
+        m.setMemories(25, 1);
+        Vec3 ground = m.position();
+        AABB box = AABB.ofSize(ground, 5.0, 4.0, 5.0);
+        helper.runAtTickTime(5, () -> {
+            helper.assertTrue(m.onGround(), "it stands on the arena floor first");
+            m.snapTo(m.getX(), helper.getLevel().getMinY() - 70.0, m.getZ());
+            m.hurtServer(helper.getLevel(), m.damageSources().fellOutOfWorld(), 1000.0F);
+        });
+        helper.runAtTickTime(8, () -> {
+            int found = orbs(helper, box);
+            helper.assertTrue(found == 28, "the 28 points come out on the ground it last stood on, found " + found);
+            int below = orbs(helper, new AABB(m.getX() - 4, helper.getLevel().getMinY() - 200, m.getZ() - 4, m.getX() + 4, helper.getLevel().getMinY(), m.getZ() + 4));
+            helper.assertTrue(below == 0, "none below the world's floor, found " + below);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The bite moves no one: a pig that keeps its physics, bitten, has no sideways motion on the tick it is hurt, so a
+     * player at an island's edge is never knocked over the void. Beside it a control pig hurt by the same kind of blow
+     * straight through the game's own hurt is knocked back, so the check would see knockback if the bite gave any.
+     */
+    private static void noKnockback(GameTestHelper helper) {
+        Mnemovore m = vore(helper, 5.5, 6.5);
+        Pig pig = pig(helper, 6.9, 6.5);
+        pig.setNoAi(false);
+        pig.removeFreeWill();
+        Pig control = pig(helper, 6.9, 9.5);
+        control.setNoAi(false);
+        control.removeFreeWill();
+        m.setTarget(pig);
+        helper.runAtTickTime(3, () -> {
+            control.hurtServer(helper.getLevel(), m.damageSources().mobAttack(m), 1.0F);
+            helper.assertTrue(control.getDeltaMovement().horizontalDistance() > 0.1, "the control pig is knocked back, " + control.getDeltaMovement());
+        });
+        helper.onEachTick(() -> {
+            if (pig.getHealth() < 100.0F) {
+                helper.assertTrue(pig.getDeltaMovement().horizontalDistance() < 1.0E-3, "the bite gives no knockback, " + pig.getDeltaMovement());
+                helper.succeed();
+            }
         });
     }
 

@@ -66,6 +66,7 @@ public final class PearlgulpTests {
         out.accept("pearlgulp_escape_clear", PearlgulpTests::escapeClear);
         out.accept("pearlgulp_bite", PearlgulpTests::bite);
         out.accept("pearlgulp_spill", PearlgulpTests::spill);
+        out.accept("pearlgulp_void_spill", PearlgulpTests::voidSpill);
         out.accept("pearlgulp_stats", PearlgulpTests::stats);
         out.accept("pearlgulp_save_load", PearlgulpTests::saveLoad);
         out.accept("pearlgulp_home", PearlgulpTests::home);
@@ -465,6 +466,29 @@ public final class PearlgulpTests {
                 pearls += item.getItem().getCount();
             }
             helper.assertTrue(pearls == 3, "it spills all 3 pearls it ate, the burnt one too, found " + pearls);
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Killed in the void below the world, owing 3 pearls, it still gives them back: all 3 come out on the last ground it
+     * stood on, in its arena, and none below the world's floor.
+     */
+    private static void voidSpill(GameTestHelper helper) {
+        Pearlgulp g = gulp(helper, 6.5, 6.5, 0.0F);
+        helper.runAtTickTime(5, () -> {
+            helper.assertTrue(g.onGround(), "it stands on the arena floor first");
+            g.setHeld(3);
+            for (ItemEntity item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds().inflate(2.0))) item.discard();
+            g.snapTo(g.getX(), helper.getLevel().getMinY() - 70.0, g.getZ());
+            g.hurtServer(helper.getLevel(), g.damageSources().fellOutOfWorld(), 1000.0F);
+        });
+        helper.runAtTickTime(9, () -> {
+            int pearls = 0;
+            for (ItemEntity item : helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds().inflate(2.0), i -> i.getItem().is(Items.ENDER_PEARL))) {
+                pearls += item.getItem().getCount();
+            }
+            helper.assertTrue(pearls == 3, "all 3 pearls come out on the ground it last stood on, found " + pearls);
             helper.succeed();
         });
     }

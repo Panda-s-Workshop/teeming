@@ -104,6 +104,14 @@ public final class TeemingSpawner {
             return this == APEX_GROUND || this == APEX_ISLAND || this == APEX_SKY;
         }
 
+        /**
+         * A spot in open air with nothing under it: the rule's own shape stands in for the mob's placement kind, so a
+         * flier whose biome list puts it on the ground (the Resonant Triad) can take it too.
+         */
+        public boolean openAir() {
+            return this == LAVA_SEA_AIR || this == VOID_AIR || this == VOID_BELOW || this == SKY || this == APEX_SKY;
+        }
+
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
         public boolean fits(ServerLevel level, BlockPos pos) {
             if (!air(level, pos)) return false;
@@ -390,16 +398,19 @@ public final class TeemingSpawner {
 
     /** Spawns the mob at a spot its rule found, if the natural-spawn predicate agrees. */
     public static @Nullable Mob spawn(ServerLevel level, Entry mob, EntityType<? extends Mob> type, BlockPos pos, RandomSource random) {
-        return spawn(level, mob, type, pos, random, new SpawnGroupData[1]);
+        return spawn(level, mob, type, pos, random, new SpawnGroupData[1], false);
     }
 
     /**
      * As above; {@code group} carries the spawn data from one member of a group to the next, as vanilla's spawner does,
-     * so a mob can match its look or link to the others of its group.
+     * so a mob can match its look or link to the others of its group. {@code openAir}: the spot is an open-air rule's
+     * ({@link Rule#openAir}), whose shape stands in for the mob's placement kind.
      */
     private static @Nullable Mob spawn(ServerLevel level, Entry mob, EntityType<? extends Mob> type, BlockPos pos, RandomSource random,
-                                       SpawnGroupData[] group) {
-        if (!TeemingSpawns.check(mob, type, level, EntitySpawnReason.NATURAL, pos, random)) return null;
+                                       SpawnGroupData[] group, boolean openAir) {
+        boolean ok = openAir ? TeemingSpawns.checkPlaced(mob, type, level, EntitySpawnReason.NATURAL, pos, random)
+                : TeemingSpawns.check(mob, type, level, EntitySpawnReason.NATURAL, pos, random);
+        if (!ok) return null;
         Mob created = type.create(level, EntitySpawnReason.NATURAL);
         if (created == null) return null;
         created.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
@@ -421,11 +432,12 @@ public final class TeemingSpawner {
      */
     public static @Nullable Mob spawnGroup(ServerLevel level, Candidate pick, RandomSource random) {
         SpawnGroupData[] group = new SpawnGroupData[1];
-        Mob first = spawn(level, pick.mob(), pick.type(), pick.pos(), random, group);
+        boolean openAir = pick.rule() != null && pick.rule().openAir();
+        Mob first = spawn(level, pick.mob(), pick.type(), pick.pos(), random, group, openAir);
         if (first == null) return null;
         for (int i = groupSize(pick.mob(), random) - 1; i > 0; i--) {
             BlockPos at = groupSpot(level, pick, random);
-            if (at != null) spawn(level, pick.mob(), pick.type(), at, random, group);
+            if (at != null) spawn(level, pick.mob(), pick.type(), at, random, group, openAir);
         }
         return first;
     }

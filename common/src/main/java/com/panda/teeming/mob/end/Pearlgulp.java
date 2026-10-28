@@ -116,6 +116,7 @@ public class Pearlgulp extends TeemingMonster {
             .withSound(ModSounds.PEARLGULP_GAPE.get(), 1.0F, 1.0F);
 
     private int held;
+    private final Footing footing = new Footing();
     /** Pearls burnt on blinks: their power is spent, but they are still owed back when it dies. */
     private int spent;
     private long blinkAt = NEVER;
@@ -215,6 +216,7 @@ public class Pearlgulp extends TeemingMonster {
     @Override
     public void tick() {
         super.tick();
+        footing.track(this);
         if (level() instanceof ServerLevel level && isAlive() && held < MAX_HELD) watch(level);
     }
 
@@ -476,16 +478,20 @@ public class Pearlgulp extends TeemingMonster {
         super.remove(reason);
     }
 
-    /** Spills every pearl it owes (held and burnt) where it stands, in a little burst. */
+    /**
+     * Spills every pearl it owes (held and burnt) where it stands, in a little burst (on the last ground it stood on, if
+     * it died in the void below the world).
+     */
     private void spill(ServerLevel level) {
         if (owed() <= 0) return;
         int n = owed();
         held = 0;
         spent = 0;
         showPouch();
-        ItemEntity dropped = spawnAtLocation(level, new ItemStack(Items.ENDER_PEARL, n), (float) (getBbHeight() * 0.5));
+        Vec3 at = footing.spill(this, position().add(0.0, getBbHeight() * 0.5, 0.0));
+        ItemEntity dropped = spawnAtLocation(level, new ItemStack(Items.ENDER_PEARL, n), at.subtract(position()));
         if (dropped != null) dropped.setDeltaMovement((random.nextDouble() - 0.5) * 0.2, 0.25, (random.nextDouble() - 0.5) * 0.2);
-        Vec3 m = mouth();
+        Vec3 m = footing.spill(this, mouth());
         level.sendParticles(PEARL, true, true, m.x, m.y, m.z, 16, 0.3, 0.25, 0.3, 0.0);
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, true, true, m.x, m.y, m.z, 20, 0.3, 0.25, 0.3, 0.1);
         level.playSound(null, getX(), getY(), getZ(), ModSounds.PEARLGULP_SPILL.get(), getSoundSource(), 1.0F, 1.0F);

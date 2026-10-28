@@ -32,6 +32,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weighted;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -40,10 +41,12 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -71,6 +74,8 @@ final class SpawnTests {
         out.accept("place_looks", SpawnTests::placeLooks);
         out.accept("spawner_apex", SpawnTests::apex);
         out.accept("spawner_apex_island", SpawnTests::apexIsland);
+        out.accept("spawn_end_open_sky", SpawnTests::endOpenSky);
+        out.accept("spawner_open_air_flier", SpawnTests::openAirFlier);
     }
 
     private static boolean ok(GameTestHelper helper, String id, BlockPos rel) {
@@ -259,8 +264,9 @@ final class SpawnTests {
     /**
      * In each End biome, read from the live spawn lists: vanilla's monsters are unchanged, and Teeming's share of the
      * monsters, counted as mobs (each entry's weight times its mean group, so the endermen's groups of 4 count), stays
-     * at or under {@link SpawnTable#END_SHARE_MAX}; the plan for all 40 End rows lands each outer biome near its target
-     * (half, a third on the small islands). The spawner's own End cap counts Teeming monsters alone: it has room
+     * at or under {@link SpawnTable#END_SHARE_MAX}; with all 40 End rows in, each outer biome's live share is its planned
+     * share and lands near its target (half, a third on the small islands), and the main island's list holds none of
+     * them. The spawner's own End cap counts Teeming monsters alone: it has room
      * with any number of endermen about, and stops at half the vanilla per-player cap.
      */
     private static void spawnShareEnd(GameTestHelper helper) {
@@ -287,6 +293,16 @@ final class SpawnTests {
             if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
             double got = oursMobs + vanillaMobs > 0 ? oursMobs / (oursMobs + vanillaMobs) : 0.0;
             if (got > SpawnTable.END_SHARE_MAX) wrong.add(String.format(Locale.ROOT, "%s: Teeming %.0f of %.0f mobs, %.1f %%", name, oursMobs, oursMobs + vanillaMobs, got * 100));
+            // every End mob is in, so the live lists must give each outer biome its planned share (about half, a third on
+            // the small islands) and the main island none from its list; deleting a biome modifier fails this
+            Double plan = SpawnTable.END_PLANNED_SHARE.get(e.getKey());
+            if (plan == null) {
+                if (oursMobs > 0) wrong.add(String.format(Locale.ROOT, "%s: no biome-list Teeming monster expected, %.0f mobs", name, oursMobs));
+            } else {
+                double target = e.getKey().equals("minecraft:small_end_islands") ? 1.0 / 3.0 : SpawnTable.END_SHARE;
+                if (Math.abs(got - target) > SpawnTable.END_PLAN_RANGE || Math.abs(got - plan) > 0.001)
+                    wrong.add(String.format(Locale.ROOT, "%s: live share %.1f %%, planned %.1f %%, target %.1f %%", name, got * 100, plan * 100, target * 100));
+            }
             seen.add(String.format(Locale.ROOT, "%s %.1f %%", name, got * 100));
         }
         // the plan: the weights are set from all 40 End rows, so once every End mob is in, the three larger outer biomes
@@ -672,6 +688,91 @@ final class SpawnTests {
             for (int sx : standingX) end.setChunkForced(sx >> 4, z >> 4, false);
             end.setChunkForced(x >> 4, z >> 4, false);
             if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+            helper.succeed();
+        });
+    }
+
+    /**
+     * End mobs spawn from their lists on open island ground, as the enderman does. Natural spawning asks the mob itself
+     * whether it would stand at the spot and refuses a negative walk-target value, which the monster default gives
+     * anywhere lit, and the End's islands lie under full sky light. On an end stone floor at (1400, 150, -600) in the
+     * GameTest server's End, once the sky light there is full: a zombie, with the monster default, is refused (so the
+     * spot is lit), the enderman is taken, and so is every End monster that spawns from a biome list.
+     */
+    private static void endOpenSky(GameTestHelper helper) {
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        int x = 1400;
+        int floor = 150;
+        int z = -600;
+        end.getChunk(x >> 4, z >> 4);
+        end.setChunkForced(x >> 4, z >> 4, true);
+        islandFloor(end, x, floor, z);
+        BlockPos spot = new BlockPos(x, floor + 1, z);
+        helper.succeedWhen(() -> {
+            int sky = end.getBrightness(LightLayer.SKY, spot);
+            helper.assertTrue(sky == 15, "the spot is under full sky light, got " + sky);
+            helper.assertTrue(!takes(end, EntityTypes.ZOMBIE, spot), "a zombie, with the monster default, is refused on sky-lit ground");
+            helper.assertTrue(takes(end, EntityTypes.ENDERMAN, spot), "the enderman is taken on sky-lit End ground");
+            List<String> refused = new ArrayList<>();
+            int checked = 0;
+            for (RosterStats.Entry row : RosterStats.ALL) {
+                if (row.dim() != RosterStats.Dim.END || !row.biomeSpawns() || row.passive()) continue;
+                var type = TeemingSpawns.type(row);
+                if (type.isEmpty()) continue;
+                checked++;
+                if (!takes(end, type.get(), spot)) refused.add(row.id());
+            }
+            helper.assertTrue(checked > 0, "no End list monster is registered");
+            helper.assertTrue(refused.isEmpty(), "End list monsters refused on open sky-lit ground: " + refused);
+            end.setChunkForced(x >> 4, z >> 4, false);
+        });
+    }
+
+    /** Natural spawning's question to the mob itself at the spot: its own spawn rules (the walk-target value) and room. */
+    private static boolean takes(ServerLevel level, EntityType<?> type, BlockPos pos) {
+        if (!(type.create(level, EntitySpawnReason.NATURAL) instanceof Mob mob)) return false;
+        mob.snapTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0F, 0.0F);
+        boolean ok = mob.checkSpawnRules(level, EntitySpawnReason.NATURAL) && mob.checkSpawnObstruction(level);
+        mob.discard();
+        return ok;
+    }
+
+    /**
+     * An open-air rule's spot goes to a flier whose biome list puts it on the ground: the Resonant Triad's sky rule places
+     * it, though its ground placement refuses every spot with air under it. In the GameTest server's End at
+     * (1400, 200, -700), out past the main island under the open sky: the spot fits the sky rule and not the ground
+     * placement, and the spawner places a triad there within 20 seeded tries (each passes the End's darkness roll about
+     * half the time).
+     */
+    private static void openAirFlier(GameTestHelper helper) {
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        BlockPos spot = new BlockPos(1400, 200, -700);
+        end.getChunk(spot.getX() >> 4, spot.getZ() >> 4);
+        end.setChunkForced(spot.getX() >> 4, spot.getZ() >> 4, true);   // so the placed mobs are found and removed
+        RosterStats.Entry row = RosterStats.get("resonant_triad");
+        var type = ModMobs.RESONANT_TRIAD.get();
+        helper.assertTrue(Rule.of(row.spawner()) == Rule.SKY && Rule.SKY.openAir(), "the Triad's rule is the open-air sky, got " + row.spawner());
+        helper.assertTrue(row.place() == Place.GROUND, "its biome list puts it on the ground, got " + row.place());
+        helper.assertTrue(Rule.SKY.fits(end, spot), "open sky at " + spot.toShortString());
+        helper.assertTrue(!TeemingSpawns.placeOk(row, type, end, spot), "its ground placement refuses the open-air spot");
+        helper.assertTrue(end.getDifficulty() != Difficulty.PEACEFUL, "monsters spawn at this difficulty");
+        helper.runAtTickTime(5, () -> {
+            RandomSource random = RandomSource.create(89);
+            Mob first = null;
+            for (int i = 0; i < 20 && first == null; i++) first = TeemingSpawner.spawnGroup(end, new Candidate(row, type, spot, Rule.SKY), random);
+            List<Mob> placed = end.getEntitiesOfClass(Mob.class, new AABB(spot).inflate(8), e -> e.getType() == type);
+            placed.forEach(Mob::discard);
+            end.setChunkForced(spot.getX() >> 4, spot.getZ() >> 4, false);
+            helper.assertTrue(first != null, "20 tries placed no Triad at an open-sky spot");
+            helper.assertTrue(first.getType() == type && placed.contains(first), "the first of the group is a Triad at the spot, found " + placed.size());
             helper.succeed();
         });
     }

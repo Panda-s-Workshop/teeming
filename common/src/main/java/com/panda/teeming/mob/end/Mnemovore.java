@@ -79,6 +79,7 @@ public class Mnemovore extends TeemingMonster {
 
     /** Experience points it has eaten and owes back. */
     private int memories;
+    private final Footing footing = new Footing();
     /** Levels it has eaten (its glyphs show them). */
     private int levels;
     private long gapeAt = NEVER;
@@ -258,7 +259,7 @@ public class Mnemovore extends TeemingMonster {
         boolean took = false;
         if (canBite(victim) && MobCore.gap(this, victim) <= BITE_HOLD && hasLineOfSight(victim) && MechanicEvent.post(this, "bite", victim)) {
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE;
-            if (victim.hurtServer(level, damageSources().mobAttack(this), damage)) {
+            if (AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), damage)) {
                 bites++;
                 setLastHurtMob(victim);
                 took = victim instanceof Player player && steal(level, player);
@@ -363,7 +364,16 @@ public class Mnemovore extends TeemingMonster {
         super.remove(reason);
     }
 
-    /** Spills everything it ate, plus a tenth, as experience orbs from its mouth; its glyphs go dark. */
+    @Override
+    public void tick() {
+        super.tick();
+        footing.track(this);
+    }
+
+    /**
+     * Spills everything it ate, plus a tenth, as experience orbs from its mouth (on the last ground it stood on, if it
+     * died in the void below the world); its glyphs go dark.
+     */
     private void spill(ServerLevel level) {
         if (memories <= 0) return;
         int points = repay(memories);
@@ -371,7 +381,7 @@ public class Mnemovore extends TeemingMonster {
         memories = 0;
         levels = 0;
         showGlyphs();
-        Vec3 m = mouth();
+        Vec3 m = footing.spill(this, mouth());
         ExperienceOrb.award(level, m, points);
         level.sendParticles(PALE, true, true, m.x, m.y, m.z, 14, 0.35, 0.25, 0.35, 0.0);
         level.sendParticles(GLYPH, true, true, m.x, m.y, m.z, 14, 0.35, 0.25, 0.35, 0.0);

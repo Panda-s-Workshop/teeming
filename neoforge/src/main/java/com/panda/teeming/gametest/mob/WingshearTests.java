@@ -67,6 +67,7 @@ public final class WingshearTests {
         out.accept("wingshear_chase_speed", WingshearTests::chaseSpeed);
         out.accept("wingshear_dive_speed", WingshearTests::diveSpeed);
         out.accept("wingshear_dive_damage", WingshearTests::diveDamage);
+        out.accept("wingshear_no_knockback", WingshearTests::noKnockback);
         out.accept("wingshear_armour", WingshearTests::armour);
         out.accept("wingshear_dies_mid_tell", WingshearTests::diesMidTell);
         out.accept("wingshear_range", WingshearTests::range);
@@ -411,6 +412,35 @@ public final class WingshearTests {
             float lost = 100.0F - pig.getHealth();
             helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the dive takes 6, the pig lost " + lost);
             helper.assertTrue(w.core().in(Step.RECOVER), "it pulls up after the hit, has " + w.core().phase().step());
+        });
+    }
+
+    /**
+     * The dive moves no one sideways: a pig that keeps its physics, struck, has no sideways motion on the tick it is hurt,
+     * so a player it is set on while standing at an edge (a Vigil Owl's call hands it any marked player) is never knocked
+     * over the void. A control pig hurt by the same kind of blow straight through the game's own hurt is knocked back.
+     */
+    private static void noKnockback(GameTestHelper helper) {
+        Wingshear w = shear(helper, SHEAR_AT);
+        Pig pig = pig(helper, new Vec3(8.5, 1, 5.5));
+        pig.setNoAi(false);
+        pig.removeFreeWill();
+        Pig control = pig(helper, new Vec3(3.5, 1, 9.5));
+        control.setNoAi(false);
+        control.removeFreeWill();
+        contain(helper, w, pig);
+        w.setTarget(pig);
+        helper.runAtTickTime(3, () -> {
+            control.hurtServer(helper.getLevel(), w.damageSources().mobAttack(w), 1.0F);
+            helper.assertTrue(control.getDeltaMovement().horizontalDistance() > 0.3, "the control pig is knocked back, " + control.getDeltaMovement());
+        });
+        helper.onEachTick(() -> {
+            if (pig.getHealth() < 100.0F) {
+                // the diving body brushes the pig as it passes (entity push, up to about a tenth, by how far it overlaps);
+                // a blow's knockback is 0.4, as the control shows
+                helper.assertTrue(pig.getDeltaMovement().horizontalDistance() < 0.2, "the dive gives no knockback, " + pig.getDeltaMovement());
+                helper.succeed();
+            }
         });
     }
 

@@ -87,7 +87,12 @@ public final class TeemingSpawns {
     /** The spawn predicate. Natural and chunk-generation spawns get every rule; spawners, eggs and commands only the place. */
     public static boolean check(Entry mob, EntityType<? extends Mob> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos,
                                 RandomSource random) {
-        if (!placeOk(mob, type, level, pos)) return false;
+        return placeOk(mob, type, level, pos) && checkPlaced(mob, type, level, reason, pos, random);
+    }
+
+    /** The spawn predicate past the placement kind, for a spot whose shape a spawner rule has already settled. */
+    public static boolean checkPlaced(Entry mob, EntityType<? extends Mob> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos,
+                                      RandomSource random) {
         boolean natural = reason == EntitySpawnReason.NATURAL || reason == EntitySpawnReason.CHUNK_GENERATION;
         if (!natural) return true;
         if (!TeemingConfig.mobEnabled(mob.id())) return false;
