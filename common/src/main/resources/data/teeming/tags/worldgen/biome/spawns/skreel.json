@@ -4,6 +4,11 @@
     "minecraft:windswept_gravelly_hills",
     "minecraft:windswept_forest",
     "minecraft:stony_peaks",
-    "minecraft:jagged_peaks"
+    "minecraft:jagged_peaks",
+    "#minecraft:is_hill",
+    {
+      "id": "#c:is_hill",
+      "required": false
+    }
   ]
 }

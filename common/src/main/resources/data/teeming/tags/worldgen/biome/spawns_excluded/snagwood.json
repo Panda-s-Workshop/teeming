@@ -1,5 +1,10 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:birch_forest",
+    "minecraft:dappled_forest",
+    "minecraft:flower_forest",
+    "minecraft:forest",
+    "minecraft:old_growth_birch_forest"
   ]
 }

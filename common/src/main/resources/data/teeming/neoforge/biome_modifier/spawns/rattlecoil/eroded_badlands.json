@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/rattlecoil/eroded_badlands",
+      [
+        "minecraft:eroded_badlands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:rattlecoil",
+      "weight": 51,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

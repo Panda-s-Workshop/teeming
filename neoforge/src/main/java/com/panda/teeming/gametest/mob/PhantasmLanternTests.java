@@ -94,6 +94,9 @@ public final class PhantasmLanternTests {
     /** A lantern at {@code at} that holds still, with a follow range of 1 and no release of its own coming. */
     private static PhantasmLantern lantern(GameTestHelper helper, Vec3 at) {
         PhantasmLantern l = helper.spawn(ModMobs.PHANTASM_LANTERN.get(), at);
+        // its illusions all pop when fewer of the chunks round it tick, and a neighbouring arena's chunks stop ticking
+        // when that arena's batch ends: keep the ring round this arena ticking so only the test decides
+        TestPlayers.keepTicking(helper, 16);
         l.stayPut();
         l.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);   // 0 would mean no limit at all
         l.setUntilConjure(100000);

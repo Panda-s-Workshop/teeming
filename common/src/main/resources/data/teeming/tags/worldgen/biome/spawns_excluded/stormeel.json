@@ -1,5 +1,8 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:deep_lukewarm_ocean",
+    "minecraft:lukewarm_ocean",
+    "minecraft:warm_ocean"
   ]
 }

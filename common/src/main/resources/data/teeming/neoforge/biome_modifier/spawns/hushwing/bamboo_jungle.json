@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hushwing/bamboo_jungle",
+      [
+        "minecraft:bamboo_jungle"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hushwing",
+      "weight": 35,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 4
+      }
+    }
+  ]
+}

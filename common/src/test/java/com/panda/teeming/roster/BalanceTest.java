@@ -110,7 +110,7 @@ class BalanceTest {
     private static Entry form(Entry e, String id, float health, float attack) {
         return new Entry(e.number(), id, e.dim(), e.cat(), e.apex(), health, attack, e.armor(), e.width(), e.height(),
                 e.tellTicks(), e.blow(), health, attack, e.weight(), e.groupMin(), e.groupMax(), e.secondLook(),
-                e.material(), e.place(), e.anyLight(), e.maxY(), e.spawner());
+                e.material(), e.place(), e.anyLight(), e.maxY(), e.spawner(), e.surface());
     }
 
     static float afterArmor(float damage, float armor, float toughness) {

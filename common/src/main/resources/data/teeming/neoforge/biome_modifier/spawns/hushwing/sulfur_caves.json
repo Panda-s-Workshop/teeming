@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hushwing/sulfur_caves",
+      [
+        "minecraft:sulfur_caves"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hushwing",
+      "weight": 20,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 4
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/vinedrop_strangler/sparse_jungle",
+      [
+        "minecraft:sparse_jungle"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:vinedrop_strangler",
+      "weight": 68,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

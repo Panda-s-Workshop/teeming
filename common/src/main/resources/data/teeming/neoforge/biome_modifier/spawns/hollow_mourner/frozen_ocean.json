@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hollow_mourner/frozen_ocean",
+      [
+        "minecraft:frozen_ocean"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hollow_mourner",
+      "weight": 137,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

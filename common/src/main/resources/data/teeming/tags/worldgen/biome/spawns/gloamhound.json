@@ -1,6 +1,9 @@
 {
   "values": [
     "#minecraft:is_taiga",
-    "minecraft:snowy_taiga"
+    {
+      "id": "#c:is_taiga",
+      "required": false
+    }
   ]
 }

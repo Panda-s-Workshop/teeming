@@ -1,5 +1,8 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:grove",
+    "minecraft:jagged_peaks",
+    "minecraft:snowy_slopes"
   ]
 }

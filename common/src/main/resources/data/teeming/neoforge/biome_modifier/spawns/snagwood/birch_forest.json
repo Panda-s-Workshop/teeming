@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/snagwood/birch_forest",
+      [
+        "minecraft:birch_forest"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:snagwood",
+      "weight": 103,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

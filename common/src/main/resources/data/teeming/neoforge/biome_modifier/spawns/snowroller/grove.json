@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/snowroller/grove",
+      [
+        "minecraft:grove"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:snowroller",
+      "weight": 103,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

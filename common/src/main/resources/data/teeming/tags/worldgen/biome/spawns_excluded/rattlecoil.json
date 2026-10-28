@@ -1,5 +1,9 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:badlands",
+    "minecraft:eroded_badlands",
+    "minecraft:wooded_badlands",
+    "minecraft:desert"
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hushwing/lukewarm_ocean",
+      [
+        "minecraft:lukewarm_ocean"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hushwing",
+      "weight": 34,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 4
+      }
+    }
+  ]
+}

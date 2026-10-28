@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hollow_mourner/ice_spikes",
+      [
+        "minecraft:ice_spikes"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hollow_mourner",
+      "weight": 46,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

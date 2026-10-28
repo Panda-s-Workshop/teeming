@@ -1,6 +1,10 @@
 {
   "values": [
     "minecraft:warped_forest",
+    {
+      "id": "#c:primary_wood_type/warped",
+      "required": false
+    },
     "minecraft:crimson_forest"
   ]
 }

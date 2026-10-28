@@ -3,6 +3,10 @@
     "minecraft:end_highlands",
     "minecraft:end_midlands",
     "minecraft:end_barrens",
-    "minecraft:small_end_islands"
+    "minecraft:small_end_islands",
+    {
+      "id": "#c:is_outer_end_island",
+      "required": false
+    }
   ]
 }

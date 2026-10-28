@@ -2,6 +2,14 @@
   "values": [
     "minecraft:dark_forest",
     "minecraft:dripstone_caves",
-    "minecraft:lush_caves"
+    "minecraft:lush_caves",
+    {
+      "id": "#c:primary_wood_type/dark_oak",
+      "required": false
+    },
+    {
+      "id": "#c:is_lush",
+      "required": false
+    }
   ]
 }

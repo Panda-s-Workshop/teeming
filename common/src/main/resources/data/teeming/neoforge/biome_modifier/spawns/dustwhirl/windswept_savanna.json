@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/dustwhirl/windswept_savanna",
+      [
+        "minecraft:windswept_savanna"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:dustwhirl",
+      "weight": 97,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hollow_mourner/lush_caves",
+      [
+        "minecraft:lush_caves"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hollow_mourner",
+      "weight": 23,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

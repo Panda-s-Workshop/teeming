@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/shiverwraith/snowy_plains",
+      [
+        "minecraft:snowy_plains"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:shiverwraith",
+      "weight": 91,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

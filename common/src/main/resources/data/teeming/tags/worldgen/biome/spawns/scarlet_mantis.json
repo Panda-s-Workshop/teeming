@@ -1,6 +1,10 @@
 {
   "values": [
     "minecraft:crimson_forest",
+    {
+      "id": "#c:primary_wood_type/crimson",
+      "required": false
+    },
     "minecraft:nether_wastes"
   ]
 }

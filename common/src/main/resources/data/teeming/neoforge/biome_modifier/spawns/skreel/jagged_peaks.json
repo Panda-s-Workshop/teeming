@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/skreel/jagged_peaks",
+      [
+        "minecraft:jagged_peaks"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:skreel",
+      "weight": 46,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

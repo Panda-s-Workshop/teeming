@@ -1,5 +1,8 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:dark_forest",
+    "minecraft:lush_caves",
+    "minecraft:dripstone_caves"
   ]
 }

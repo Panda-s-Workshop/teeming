@@ -420,8 +420,8 @@ public final class SkreelTests {
     }
 
     /**
-     * Its home: windswept hills and stony and jagged peaks, weight 10 in groups of 1 to 2, in any light (a lit spot
-     * rates 0, as dark ones do).
+     * Its home: windswept hills and stony and jagged peaks, each at its tuned weight (roster weight 10 elsewhere in its
+     * tag), in groups of 1 to 2, in any light (a lit spot rates 0, as dark ones do).
      */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
@@ -431,8 +431,18 @@ public final class SkreelTests {
                 .map(h -> h.value()).orElse(null);
         helper.assertTrue(modifier instanceof BiomeModifiers.AddSpawnsBiomeModifier, "a spawn modifier for the Skreel, got " + modifier);
         var spawns = (BiomeModifiers.AddSpawnsBiomeModifier) modifier;
+        // each home biome has a tuned weight (the Overworld share): its own modifier at that weight, and the roster
+        // weight (for biome mods' biomes) leaves it out
         for (var biome : List.of(Biomes.WINDSWEPT_HILLS, Biomes.STONY_PEAKS, Biomes.JAGGED_PEAKS)) {
-            helper.assertTrue(spawns.biomes().contains(biomes.getOrThrow(biome)), "it spawns in " + biome.identifier());
+            String path = biome.identifier().getPath();
+            int want = com.panda.teeming.spawn.SpawnTable.tuned("skreel").stream().filter(r -> r.biome().equals(biome.identifier().toString()))
+                    .mapToInt(com.panda.teeming.spawn.SpawnTable.Row::weight).findFirst().orElse(0);
+            var tuned = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                    .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/skreel/" + path))).map(h -> h.value()).orElse(null);
+            helper.assertTrue(!spawns.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)), path + " has a tuned weight, so the roster weight leaves it out");
+            helper.assertTrue(tuned instanceof BiomeModifiers.AddSpawnsBiomeModifier t && want > 0
+                    && t.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)) && t.spawners().unwrap().getFirst().weight() == want,
+                    "it spawns in " + path + " at its tuned weight " + want + ", got " + tuned);
         }
         helper.assertTrue(!spawns.biomes().contains(biomes.getOrThrow(Biomes.PLAINS)), "not on the plains");
         var entries = spawns.spawners().unwrap();

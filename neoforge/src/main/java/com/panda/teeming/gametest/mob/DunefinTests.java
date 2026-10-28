@@ -490,7 +490,8 @@ public final class DunefinTests {
     }
 
     /**
-     * Its home: the biome modifier adds it to deserts and badlands at weight 20 in groups of 1 to 2; the sand placement takes a
+     * Its home: deserts and badlands (where its red look lives), each at its tuned weight, roster weight 20 elsewhere
+     * in its tag, in groups of 1 to 2; the sand placement takes a
      * spot on sand and refuses one on stone; and its spawn rules accept a spot beside a glowstone (any light).
      */
     private static void spawns(GameTestHelper helper) {
@@ -507,8 +508,19 @@ public final class DunefinTests {
         helper.assertTrue(spawner.weight() == 20, "spawn weight 20, got " + spawner.weight());
         helper.assertTrue(spawner.value().count().minInclusive() == 1 && spawner.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
-        helper.assertTrue(add.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.DESERT)), "deserts are its home");
-        helper.assertTrue(add.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.BADLANDS)), "badlands too, where its red look lives");
+        // each home biome has a tuned weight (the Overworld share): its own modifier at that weight, and the roster
+        // weight (for biome mods' biomes) leaves it out
+        for (var biome : List.of(Biomes.DESERT, Biomes.BADLANDS)) {
+            String path = biome.identifier().getPath();
+            int want = com.panda.teeming.spawn.SpawnTable.tuned("dunefin").stream().filter(r -> r.biome().equals(biome.identifier().toString()))
+                    .mapToInt(com.panda.teeming.spawn.SpawnTable.Row::weight).findFirst().orElse(0);
+            var tuned = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                    .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/dunefin/" + path))).map(h -> h.value()).orElse(null);
+            helper.assertTrue(!add.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)), path + " has a tuned weight, so the roster weight leaves it out");
+            helper.assertTrue(tuned instanceof BiomeModifiers.AddSpawnsBiomeModifier t && want > 0
+                    && t.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)) && t.spawners().unwrap().getFirst().weight() == want,
+                    "it spawns in " + path + " at its tuned weight " + want + ", got " + tuned);
+        }
 
         floor(helper, Blocks.SAND, 1, 4, 1, 4);
         helper.setBlock(new BlockPos(3, 2, 2), Blocks.GLOWSTONE);

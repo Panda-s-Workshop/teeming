@@ -1,5 +1,8 @@
 {
   "values": [
-    "#teeming:share_capped"
+    "#teeming:share_capped",
+    "minecraft:frozen_peaks",
+    "minecraft:ice_spikes",
+    "minecraft:snowy_plains"
   ]
 }

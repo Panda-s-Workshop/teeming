@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/skreel/windswept_gravelly_hills",
+      [
+        "minecraft:windswept_gravelly_hills"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:skreel",
+      "weight": 91,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

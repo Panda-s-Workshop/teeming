@@ -1,5 +1,9 @@
 {
   "values": [
-    "minecraft:cherry_grove"
+    "minecraft:cherry_grove",
+    {
+      "id": "#c:primary_wood_type/cherry",
+      "required": false
+    }
   ]
 }

@@ -98,6 +98,7 @@ public final class TeemingSpawns {
         double chance = TeemingConfig.spawnChance(mob.id()) * Math.min(1.0, TeemingConfig.spawningDensity());
         if (chance <= 0 || random.nextDouble() >= chance) return false;
         if (pos.getY() > mob.maxY()) return false;
+        if (mob.surface() && !level.canSeeSky(pos)) return false;
         if (!mob.passive()) {
             if (level.getDifficulty() == Difficulty.PEACEFUL) return false;
             if (level.getBiome(pos).is(NO_DEFAULT_MONSTERS)) return false; // mushroom fields, deep dark

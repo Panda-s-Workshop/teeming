@@ -488,8 +488,8 @@ public final class ShiverwraithTests {
     }
 
     /**
-     * Its home: snowy plains, ice spikes and frozen peaks, weight 10, one at a time, at night only (a lit spot rates
-     * below 0, which natural spawning refuses).
+     * Its home: snowy plains, ice spikes and frozen peaks, each at its tuned weight (roster weight 10 elsewhere in its
+     * tag), one at a time, at night only (a lit spot rates below 0, which natural spawning refuses).
      */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
@@ -499,8 +499,18 @@ public final class ShiverwraithTests {
                 .map(h -> h.value()).orElse(null);
         helper.assertTrue(modifier instanceof BiomeModifiers.AddSpawnsBiomeModifier, "a spawn modifier for the Shiverwraith, got " + modifier);
         var spawns = (BiomeModifiers.AddSpawnsBiomeModifier) modifier;
+        // each home biome has a tuned weight (the Overworld share): its own modifier at that weight, and the roster
+        // weight (for biome mods' biomes) leaves it out
         for (var biome : List.of(Biomes.SNOWY_PLAINS, Biomes.ICE_SPIKES, Biomes.FROZEN_PEAKS)) {
-            helper.assertTrue(spawns.biomes().contains(biomes.getOrThrow(biome)), "it spawns in " + biome.identifier());
+            String path = biome.identifier().getPath();
+            int want = com.panda.teeming.spawn.SpawnTable.tuned("shiverwraith").stream().filter(r -> r.biome().equals(biome.identifier().toString()))
+                    .mapToInt(com.panda.teeming.spawn.SpawnTable.Row::weight).findFirst().orElse(0);
+            var tuned = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
+                    .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/shiverwraith/" + path))).map(h -> h.value()).orElse(null);
+            helper.assertTrue(!spawns.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)), path + " has a tuned weight, so the roster weight leaves it out");
+            helper.assertTrue(tuned instanceof BiomeModifiers.AddSpawnsBiomeModifier t && want > 0
+                    && t.biomes().contains(access.lookupOrThrow(Registries.BIOME).getOrThrow(biome)) && t.spawners().unwrap().getFirst().weight() == want,
+                    "it spawns in " + path + " at its tuned weight " + want + ", got " + tuned);
         }
         helper.assertTrue(!spawns.biomes().contains(biomes.getOrThrow(Biomes.PLAINS)), "not on the plains");
         var entries = spawns.spawners().unwrap();

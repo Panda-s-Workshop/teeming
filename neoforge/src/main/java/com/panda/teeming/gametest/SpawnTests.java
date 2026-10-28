@@ -74,6 +74,8 @@ final class SpawnTests {
         out.accept("spawn_share", SpawnTests::spawnShare);
         out.accept("spawn_share_counts", SpawnTests::shareCounts);
         out.accept("spawn_share_end", SpawnTests::spawnShareEnd);
+        out.accept("spawn_share_overworld", SpawnTests::spawnShareOverworld);
+        out.accept("spawn_surface_only", SpawnTests::surfaceOnly);
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
         out.accept("spawner_apex", SpawnTests::apex);
@@ -264,6 +266,119 @@ final class SpawnTests {
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
         TeemingMod.LOGGER.info("spawn_share: {}", String.join(", ", seen));
         helper.succeed();
+    }
+
+    /**
+     * In each Overworld biome with a Teeming biome-list monster Teeming makes about 1 in 4 to 6 of the monster picks
+     * (17-25 %), read from the live spawn lists after the biome modifiers ran, with vanilla's own monster weights
+     * unchanged. Each kind is held against the vanilla weight that can stand where it does, since a spot in open water
+     * refuses every land pick and a land spot every open-water pick: the land mobs against vanilla's land monsters (all
+     * but the drowned), both above y 0 (without the mobs that spawn only below y 0, whose picks fail there) and below
+     * (all of them); the open-water mobs hold the whole weight nearest the target share of the drowned, at least 1 each.
+     * A biome with no vanilla monsters is share-capped and its list holds no Teeming monster.
+     */
+    private static void spawnShareOverworld(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
+        List<String> wrong = new ArrayList<>();
+        List<String> seen = new ArrayList<>();
+        for (Map.Entry<String, Integer> e : SpawnTable.VANILLA_OVERWORLD_MONSTER_WEIGHT.entrySet()) {
+            ResourceKey<Biome> key = ResourceKey.create(Registries.BIOME, Identifier.parse(e.getKey()));
+            Holder.Reference<Biome> biome = biomes.getOrThrow(key);
+            MobSpawnSettings settings = biome.value().getModifiedEnvironmentAttributes()
+                    .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
+            String name = key.identifier().getPath();
+            int vanilla = 0, drowned = 0, ours = 0, deep = 0, wet = 0, wetMobs = 0;
+            var monsters = settings.getMobsInCategory(MobCategory.MONSTER); // null where the biome lists no monster at all
+            for (Weighted<MobSpawnSettings.SpawnerData> w : monsters == null ? List.<Weighted<MobSpawnSettings.SpawnerData>>of() : monsters.unwrap()) {
+                EntityType<?> type = w.value().type();
+                if (!teeming(type)) {
+                    vanilla += w.weight();
+                    if (type == EntityTypes.DROWNED) drowned += w.weight();
+                    continue;
+                }
+                ours += w.weight();
+                RosterStats.Entry row = RosterStats.BY_ID.get(type.builtInRegistryHolder().key().identifier().getPath());
+                if (row == null) continue;
+                if (row.apex()) wrong.add(name + ": the apex " + row.id() + " is on its list");
+                if (row.dim() != RosterStats.Dim.OVERWORLD) wrong.add(name + ": " + row.id() + ", a " + row.dim() + " mob, is on its list");
+                if (row.maxY() <= 0) deep += w.weight();
+                if (row.place() == Place.WATER) {
+                    wet += w.weight();
+                    wetMobs++;
+                }
+            }
+            if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
+            int water = SpawnTable.VANILLA_OVERWORLD_WATER_WEIGHT.get(e.getKey());
+            if (drowned != water) wrong.add(name + ": vanilla open-water weight " + drowned + ", the table has " + water);
+            boolean capped = biome.is(TeemingSpawner.SHARE_CAPPED);
+            if (capped != SpawnTable.SHARE_CAPPED.contains(e.getKey())) wrong.add(name + ": share-capped " + capped + " against the table");
+            if (capped) {
+                if (ours != 0) wrong.add(name + ": share-capped, yet its list holds Teeming monster weight " + ours);
+                if (vanilla != 0) wrong.add(name + ": share-capped with vanilla monster weight " + vanilla + " to share with");
+                seen.add(name + " share-capped (vanilla " + vanilla + ")");
+                continue;
+            }
+            int land = vanilla - drowned;
+            int dry = ours - wet - deep;
+            double got = share(dry + deep, land);
+            if (got < SpawnTable.SHARE_MIN || got > SpawnTable.SHARE_MAX)
+                wrong.add(String.format(Locale.ROOT, "%s: Teeming land weight %d against vanilla land %d below y 0, %.1f %%", name, dry + deep, land, got * 100));
+            double up = share(dry, land);
+            if (up < SpawnTable.SHARE_MIN || up > SpawnTable.SHARE_MAX)
+                wrong.add(String.format(Locale.ROOT, "%s: Teeming land weight %d against vanilla land %d above y 0, %.1f %%", name, dry, land, up * 100));
+            if (wetMobs > 0) {
+                int want = wetMobs;
+                for (int t = wetMobs; t <= wetMobs + 4 * drowned; t++)
+                    if (Math.abs(share(t, drowned) - SpawnTable.TARGET_SHARE) < Math.abs(share(want, drowned) - SpawnTable.TARGET_SHARE)) want = t;
+                if (wet != want) wrong.add(name + ": open-water Teeming weight " + wet + " against the drowned's " + drowned + ", the rule gives " + want);
+            }
+            seen.add(String.format(Locale.ROOT, "%s land above y 0 %d/%d = %.1f %%, below %d/%d = %.1f %%%s", name, dry, dry + land,
+                    up * 100, dry + deep, dry + deep + land, got * 100,
+                    wetMobs > 0 ? " (open water " + wet + " against drowned " + drowned + ")" : ""));
+        }
+        if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
+        TeemingMod.LOGGER.info("spawn_share_overworld: {}", String.join(", ", seen));
+        helper.succeed();
+    }
+
+    /**
+     * A surface mob (the Shellguard Crab, the Thornhorn) spawns naturally only where the spot sees the sky, so the
+     * caves under its biomes stay free of it: open sand takes it, the same sand under a roof refuses it, and an egg
+     * still places it there. A passive ground mob without the rule (the Petalkin) takes both. Built high over far
+     * ground, where nothing else stands.
+     */
+    private static void surfaceOnly(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        RosterStats.Entry crab = RosterStats.get("shellguard_crab");
+        RosterStats.Entry thornhorn = RosterStats.get("thornhorn");
+        RosterStats.Entry petalkin = RosterStats.get("petalkin");
+        helper.assertTrue(crab.surface() && thornhorn.surface(), "the Shellguard Crab's and the Thornhorn's rows hold the sky rule");
+        helper.assertTrue(!petalkin.surface(), "the Petalkin's row doesn't hold the sky rule");
+        int x = 1800;
+        int y = 280;
+        int z = -1000;
+        level.getChunk(x >> 4, z >> 4);
+        level.setChunkForced(x >> 4, z >> 4, true);
+        for (int dx = -3; dx <= 3; dx++)
+            for (int dz = -2; dz <= 2; dz++) level.setBlockAndUpdate(new BlockPos(x + dx, y, z + dz), Blocks.SAND.defaultBlockState());
+        BlockPos open = new BlockPos(x - 2, y + 1, z);
+        BlockPos roofed = new BlockPos(x + 2, y + 1, z);
+        level.setBlockAndUpdate(roofed.above(2), Blocks.STONE.defaultBlockState());
+        RandomSource random = RandomSource.create(7);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(level.canSeeSky(open), "the open spot sees the sky");
+            helper.assertTrue(!level.canSeeSky(roofed), "the roofed spot doesn't see the sky");
+            var crabType = TeemingSpawns.type(crab).orElseThrow();
+            var hornType = TeemingSpawns.type(thornhorn).orElseThrow();
+            var petalType = TeemingSpawns.type(petalkin).orElseThrow();
+            helper.assertTrue(TeemingSpawns.check(crab, crabType, level, EntitySpawnReason.NATURAL, open, random), "the crab is taken on open sand");
+            helper.assertTrue(!TeemingSpawns.check(crab, crabType, level, EntitySpawnReason.NATURAL, roofed, random), "the crab is refused on roofed sand");
+            helper.assertTrue(TeemingSpawns.check(crab, crabType, level, EntitySpawnReason.SPAWN_ITEM_USE, roofed, random), "an egg still places it under a roof");
+            helper.assertTrue(TeemingSpawns.check(thornhorn, hornType, level, EntitySpawnReason.NATURAL, open, random), "the Thornhorn is taken on open ground");
+            helper.assertTrue(!TeemingSpawns.check(thornhorn, hornType, level, EntitySpawnReason.NATURAL, roofed, random), "the Thornhorn is refused under a roof");
+            helper.assertTrue(TeemingSpawns.check(petalkin, petalType, level, EntitySpawnReason.NATURAL, roofed, random), "the Petalkin is taken on roofed sand");
+            level.setChunkForced(x >> 4, z >> 4, false);
+        });
     }
 
     /**
