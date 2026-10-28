@@ -238,8 +238,9 @@ public class FieldGuideScreen extends Screen {
             boolean known = p.hasSeen(mob.id());
             Component name = known ? Component.translatable("entity.teeming." + mob.id()) : Component.translatable("screen.teeming.field_guide.unknown");
             g.text(font, String.format("%02d", mob.number()), b[0] + 3, b[1] + 2, INK_MUTED, false);
-            // a long name stops short of the trophy and reveal marks at the row's end
-            int room = b[2] - 20 - 22;
+            // a long name stops short of the marks this row draws at its end (the crown 20 in, the reveal star 10 in)
+            int end = p.hasTrophy(mob.id()) ? b[2] - 20 : p.revealed(mob.id()) ? b[2] - 10 : b[2] - 2;
+            int room = end - 20 - 2;
             String shown = name.getString();
             if (font.width(shown) > room) shown = font.plainSubstrByWidth(shown, room - font.width("…")) + "…";
             g.text(font, shown, b[0] + 20, b[1] + 2, known ? INK : INK_MUTED, false);
