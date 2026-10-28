@@ -83,15 +83,20 @@ public class VoidBloom extends TeemingMonster {
     public static final int NEXT_COLOR = 0x10061C;
     /** End-stone cream: some of the stain's blots fade into it as they age, so the stain seethes and a receding one thins out. */
     public static final int GROUND_COLOR = 0xD9D8A2;
-    private static final DustParticleOptions STAIN = new DustParticleOptions(STAIN_COLOR, 1.8F);
-    private static final DustColorTransitionOptions DEEP_FADING = new DustColorTransitionOptions(DEEP_COLOR, GROUND_COLOR, 2.6F);
+    // few, large blots inside, so the bloom and the ground still show; a dense, thin rim and a thin next ring, with
+    // ground between them, so the edge is what reads
+    private static final DustParticleOptions STAIN = new DustParticleOptions(STAIN_COLOR, 2.8F);
+    private static final DustColorTransitionOptions DEEP_FADING = new DustColorTransitionOptions(DEEP_COLOR, GROUND_COLOR, 3.2F);
     private static final DustParticleOptions DEEP = new DustParticleOptions(DEEP_COLOR, 2.0F);
-    private static final DustParticleOptions RIM = new DustParticleOptions(RIM_COLOR, 1.4F);
+    private static final DustParticleOptions RIM = new DustParticleOptions(RIM_COLOR, 1.7F);
     private static final DustParticleOptions EDGE = new DustParticleOptions(RIM_COLOR, 1.0F);
-    private static final DustParticleOptions NEXT_BIG = new DustParticleOptions(NEXT_COLOR, 2.4F);
-    private static final DustParticleOptions NEXT_SMALL = new DustParticleOptions(NEXT_COLOR, 1.3F);
-    /** Rim particles stand about this far apart along the edge. */
-    private static final double RIM_SPACING = 0.7;
+    private static final DustParticleOptions NEXT_BIG = new DustParticleOptions(NEXT_COLOR, 1.9F);
+    private static final DustParticleOptions NEXT_SMALL = new DustParticleOptions(NEXT_COLOR, 1.1F);
+    /** Rim particles stand about this far apart along the edge: close enough to draw an unbroken line. */
+    private static final double RIM_SPACING = 0.5;
+    /** Blots keep this far inside the rim, and off a clear patch round the stem (at most a block, half the radius). */
+    private static final double BLOT_INSET = 0.3;
+    private static final double CLEAR_ROUND_STEM = 1.0;
     /** The cup's lip, from its feet at scale 1: forward of the stem and half a block up. */
     public static final double CUP_FORWARD = 0.48;
     public static final double CUP_HEIGHT = 0.5;
@@ -259,17 +264,19 @@ public class VoidBloom extends TeemingMonster {
     }
 
     /**
-     * The stain on the ground: dark violet blots spread evenly over it, a darker rim at its edge, and through the tell
-     * the next ring, near-black, throbbing where it will land. Its blots are short-lived (a quarter fade into end-stone
-     * cream as they go), so a receding stain thins out behind its drawing-back edge.
+     * The stain on the ground: a few large dark violet blots spread over it, kept off the stem and inside the edge, a
+     * dense near-black rim at its edge (the line to stay outside), and through the tell the next ring, near-black,
+     * throbbing where it will land. Its blots are short-lived (a quarter fade into end-stone cream as they go), so a
+     * receding stain thins out behind its drawing-back edge.
      */
     private void draw(ServerLevel level, Vec3 c) {
         double r = stainRadius();
         if (r <= 0.05) return;
-        if (tickCount % 2 == 0) {
-            int blots = 3 + (int) (r * r * 0.8);
+        if (tickCount % 3 == 0) {
+            int blots = 1 + (int) (r * r * 0.25);
+            double outer = Math.max(0.2, r - BLOT_INSET), inner = Math.min(Math.min(CLEAR_ROUND_STEM, r * 0.5), outer * 0.5);
             for (int i = 0; i < blots; i++) {
-                double d = r * Math.sqrt(random.nextDouble()), a = random.nextDouble() * Math.PI * 2;
+                double d = Math.sqrt(inner * inner + (outer * outer - inner * inner) * random.nextDouble()), a = random.nextDouble() * Math.PI * 2;
                 level.sendParticles(random.nextInt(4) == 0 ? DEEP_FADING : STAIN, false, false, c.x + Math.cos(a) * d, c.y + 0.06,
                         c.z + Math.sin(a) * d, 1, 0.0, 0.0, 0.0, 0.0);
             }
