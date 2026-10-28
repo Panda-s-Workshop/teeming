@@ -7,6 +7,10 @@
     "teeming:quench_charm",
     "teeming:tether_charm",
     "teeming:gilded_ward_charm",
-    "teeming:clear_voice_charm"
+    "teeming:clear_voice_charm",
+    "teeming:grounding_charm",
+    "teeming:rift_charm",
+    "teeming:rot_ward_charm",
+    "teeming:memory_charm"
   ]
 }

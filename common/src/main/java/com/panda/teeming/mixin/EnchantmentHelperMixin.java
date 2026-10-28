@@ -39,6 +39,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * <li>the two lookups a client also runs for its own player (Quick Charge, Riptide) ask the player's status;</li>
  * <li>and the per-tick enchantment step keeps the attribute and location effects in step with the status.</li>
  * </ul>
+ * A Memory Charm holder's gear reads at half its levels instead ({@link NulledEffect#view}), so the lookups that ask
+ * about the bearer step aside for it ({@link NulledEffect#blanked}) and let the halved gear answer; Quick Charge and
+ * Riptide stay off for it too, as both sides must agree on them.
  * The methods are the same on both loaders (NeoForge only changes how the loops read the enchantments), so nothing here
  * depends on a loader.
  */
@@ -55,73 +58,73 @@ public abstract class EnchantmentHelperMixin {
 
     @Inject(method = "getItemEnchantmentLevel", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledLevel(Holder<Enchantment> enchantment, ItemInstance item, CallbackInfoReturnable<Integer> cir) {
-        if (item instanceof ItemStack stack && !enchantment.is(EnchantmentTags.CURSE) && NulledEffect.hides(stack)) cir.setReturnValue(0);
+        if (item instanceof ItemStack stack && !enchantment.is(EnchantmentTags.CURSE) && NulledEffect.hides(stack)) cir.setReturnValue(NulledEffect.level(stack, enchantment));
     }
 
     @Inject(method = "getRandomItemWith", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledMendsNothing(DataComponentType<?> component, LivingEntity entity, Predicate<ItemStack> filter,
                                                    CallbackInfoReturnable<Optional<EnchantedItemInUse>> cir) {
-        if (NulledEffect.nulled(entity)) cir.setReturnValue(Optional.empty());
+        if (NulledEffect.blanked(entity)) cir.setReturnValue(Optional.empty());
     }
 
     /** Sharpness, Smite, Power, Impaling, Density, Breach, Knockback and Punch: by the attacker, wherever the weapon is. */
     @Inject(method = {"modifyDamage", "modifyFallBasedDamage", "modifyArmorEffectiveness", "modifyKnockback"}, at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledAttacker(ServerLevel level, ItemStack weapon, Entity victim, DamageSource source, float amount,
                                                CallbackInfoReturnable<Float> cir) {
-        if (NulledEffect.nulled(source.getEntity())) cir.setReturnValue(amount);
+        if (NulledEffect.blanked(source.getEntity())) cir.setReturnValue(amount);
     }
 
     /** Fire Aspect, Channeling, Wind Burst: by the attacker. */
     @Inject(method = "doPostAttackEffectsWithItemSource", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledAfterHit(ServerLevel level, Entity victim, DamageSource source, ItemStack weapon, CallbackInfo ci) {
-        if (NulledEffect.nulled(source.getEntity())) ci.cancel();
+        if (NulledEffect.blanked(source.getEntity())) ci.cancel();
     }
 
     @Inject(method = "doPostAttackEffectsWithItemSourceOnBreak", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledAfterHitOnBreak(ServerLevel level, Entity victim, DamageSource source, ItemStack weapon,
                                                       Consumer<ItemStack> onBreak, CallbackInfo ci) {
-        if (NulledEffect.nulled(source.getEntity())) ci.cancel();
+        if (NulledEffect.blanked(source.getEntity())) ci.cancel();
     }
 
     /** Flame: by the shooter. */
     @Inject(method = "onProjectileSpawned", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledShot(ServerLevel level, ItemStack weapon, Projectile projectile, Consumer<ItemStack> onBreak, CallbackInfo ci) {
-        if (NulledEffect.nulled(projectile.getOwner())) ci.cancel();
+        if (NulledEffect.blanked(projectile.getOwner())) ci.cancel();
     }
 
     @Inject(method = "onHitBlock", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledHitBlock(ServerLevel level, ItemStack weapon, LivingEntity owner, Entity entity, EquipmentSlot slot, Vec3 at,
                                                BlockState state, Consumer<ItemStack> onBreak, CallbackInfo ci) {
-        if (NulledEffect.nulled(owner) || NulledEffect.nulledShooter(entity)) ci.cancel();
+        if (NulledEffect.blanked(owner) || NulledEffect.blankedShooter(entity)) ci.cancel();
     }
 
     /** Multishot. */
     @Inject(method = "processProjectileCount", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledCount(ServerLevel level, ItemStack weapon, Entity shooter, int count, CallbackInfoReturnable<Integer> cir) {
-        if (NulledEffect.nulledShooter(shooter)) cir.setReturnValue(count);
+        if (NulledEffect.blankedShooter(shooter)) cir.setReturnValue(count);
     }
 
     @Inject(method = "processProjectileSpread", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledSpread(ServerLevel level, ItemStack weapon, Entity shooter, float spread, CallbackInfoReturnable<Float> cir) {
-        if (NulledEffect.nulledShooter(shooter)) cir.setReturnValue(spread);
+        if (NulledEffect.blankedShooter(shooter)) cir.setReturnValue(spread);
     }
 
     /** Loyalty: a thrown trident comes back only to a thrower out of the ring. */
     @Inject(method = "getTridentReturnToOwnerAcceleration", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledLoyalty(ServerLevel level, ItemStack trident, Entity thrown, CallbackInfoReturnable<Integer> cir) {
-        if (NulledEffect.nulledShooter(thrown)) cir.setReturnValue(0);
+        if (NulledEffect.blankedShooter(thrown)) cir.setReturnValue(0);
     }
 
     /** Luck of the Sea. */
     @Inject(method = "getFishingLuckBonus", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledLuck(ServerLevel level, ItemStack rod, Entity fisher, CallbackInfoReturnable<Integer> cir) {
-        if (NulledEffect.nulledShooter(fisher)) cir.setReturnValue(0);
+        if (NulledEffect.blankedShooter(fisher)) cir.setReturnValue(0);
     }
 
     /** Lure. */
     @Inject(method = "getFishingTimeReduction", at = @At("HEAD"), cancellable = true)
     private static void teeming$nulledLure(ServerLevel level, ItemStack rod, Entity fisher, CallbackInfoReturnable<Float> cir) {
-        if (NulledEffect.nulledShooter(fisher)) cir.setReturnValue(0.0F);
+        if (NulledEffect.blankedShooter(fisher)) cir.setReturnValue(0.0F);
     }
 
     /** Quick Charge, on both sides. */

@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -284,11 +285,13 @@ public class Mnemovore extends TeemingMonster {
     /**
      * Takes one experience level from {@code player}, if they are alive, in survival and have one. They keep their
      * progress through the bar (as a fraction, the way vanilla takes levels for enchanting); the points they lose are
-     * kept as memories, exactly. Returns whether it took one.
+     * kept as memories, exactly. A Memory Charm in the player's off-hand makes half the thefts fail. Returns whether it
+     * took one. Public as a test hook.
      */
-    private boolean steal(ServerLevel level, Player player) {
+    public boolean steal(ServerLevel level, Player player) {
         if (!player.isAlive() || player.isCreative() || player.isSpectator() || player.experienceLevel < LEVELS_PER_BITE) return false;
         if (!MechanicEvent.post(this, "steal", player)) return false;
+        if (Charms.xpTheftFails(player, random)) return false;
         int lvl = player.experienceLevel;
         double progress = Mth.clamp(player.experienceProgress, 0.0F, 1.0F);
         double before = pointsAt(lvl, progress);

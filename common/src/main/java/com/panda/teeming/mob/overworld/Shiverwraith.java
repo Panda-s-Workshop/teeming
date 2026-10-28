@@ -179,16 +179,17 @@ public class Shiverwraith extends TeemingMonster {
 
     /**
      * One tick of the locked tether: it checks the hold, chills the target, heals itself once a second, draws the beam.
-     * A Hearth Charm in the target's off-hand halves the chill and the healing.
+     * A Hearth Charm in the target's off-hand halves the chill and the healing; a Tether Charm snaps it as a lost hold
+     * would, once it has held long enough.
      */
     private void tetherTick(ServerLevel level, @Nullable LivingEntity target) {
         holdStill();
-        if (!canHold(level, target)) {
+        int t = core().elapsed();
+        if (!canHold(level, target) || Charms.tetherSnaps(target, t)) {
             snap(level, target);
             return;
         }
         face(target);
-        int t = core().elapsed();
         if (MechanicEvent.post(this, "freeze", target)) chill(target, t);
         if (t > 0 && t % HEAL_INTERVAL == 0) {
             if (MechanicEvent.post(this, "heal", target)) {

@@ -1,5 +1,6 @@
 package com.panda.teeming.client.mob;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.Gatecaster.Gate;
 import com.panda.teeming.mob.end.Gatecaster.Step;
@@ -73,7 +74,8 @@ public class GatecasterModel extends TeemingModel {
         int flags = s.flags;
         boolean live = Gate.live(flags);
         // a phase held longer than its real length is a pose with nothing behind it (the harness poses each phase on a
-        // still mob): it shows a gate where one would be, and the bolt's first moments rather than their end
+        // still mob): it shows a gate where one would be, and the bolt's first moments rather than their end (a Rift
+        // Charm's longer tell is still a real one)
         float length = s.progress > 0.001F ? tm / s.progress : 0.0F;
 
         if (s.phase == Step.TELL.ordinal()) {
@@ -92,7 +94,7 @@ public class GatecasterModel extends TeemingModel {
             held.xScale = held.yScale = held.zScale = swell;
             spin += 0.004F * tm * tm;                                             // and it spins up
             float open = smooth(tm / 5.0F);
-            if (live || length > Gatecaster.TELL_TICKS + 2) showGate(flags, live, 0.2F + 0.8F * open, t, tm >= TRACK);
+            if (live || length > Gatecaster.TELL_TICKS + Charms.RIFT_EARLY + 2) showGate(flags, live, 0.2F + 0.8F * open, t, tm >= TRACK);
         } else if (s.phase == Step.BOLT.ordinal()) {
             boolean posed = length > Gatecaster.BOLT_TICKS + 2;
             float u = posed ? 0.2F : Mth.clamp(tm / Gatecaster.BOLT_TICKS, 0.0F, 1.0F);

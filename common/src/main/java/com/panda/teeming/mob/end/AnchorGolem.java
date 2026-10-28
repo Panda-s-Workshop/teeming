@@ -1,6 +1,7 @@
 package com.panda.teeming.mob.end;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.effect.EffectNumbers;
 import com.panda.teeming.effect.HeavyEffect;
 import com.panda.teeming.mob.MechanicEvent;
@@ -318,8 +319,9 @@ public class AnchorGolem extends TeemingMonster {
     }
 
     /**
-     * Makes {@code victim} Heavy for {@link #HEAVY_TICKS}. Any beneficial lift it had (Slow Falling) is held, with the
-     * time it had left, and given back when the weight lifts. Public as a test hook.
+     * Makes {@code victim} Heavy for {@link #HEAVY_TICKS} (half that with a Rot Ward Charm in the off-hand). Any
+     * beneficial lift it had (Slow Falling) is held, with the time it had left, and given back when the weight lifts.
+     * Public as a test hook.
      */
     public boolean weigh(ServerLevel level, LivingEntity victim) {
         if (!victim.isAlive() || !MechanicEvent.post(this, "weigh", victim)) return false;
@@ -328,7 +330,7 @@ public class AnchorGolem extends TeemingMonster {
             MobEffectInstance on = victim.getEffect(lift);
             if (on != null && on.getEffect().value().isBeneficial()) lifted.add(new MobEffectInstance(on));
         }
-        if (!ModEffects.give(victim, ModEffects.HEAVY, HEAVY_TICKS, this)) return false;
+        if (!ModEffects.give(victim, ModEffects.HEAVY, Charms.rotTicks(victim, HEAVY_TICKS), this)) return false;
         held.computeIfAbsent(victim.getUUID(), k -> new Held(victim)).kept.addAll(lifted);
         weighs++;
         double top = victim.getY() + victim.getBbHeight();

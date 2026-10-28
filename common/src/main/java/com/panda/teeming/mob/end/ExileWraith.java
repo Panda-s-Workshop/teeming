@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -446,10 +447,12 @@ public class ExileWraith extends TeemingMonster {
 
     /**
      * Sends {@code victim} away: {@link #exileDistance} blocks in a random direction onto other land ({@link #landing}),
-     * off any mount and shedding its riders. Returns where it landed, or null when there was nowhere (it stays).
+     * off any mount and shedding its riders. A Rift Charm in the victim's off-hand makes half the sendings fail. Returns
+     * where it landed, or null when there was nowhere or the charm held (it stays).
      */
     private @Nullable Vec3 exile(ServerLevel level, LivingEntity victim) {
         if (!MechanicEvent.post(this, "send", victim)) return null;
+        if (Charms.teleportFails(victim, random)) return null;
         Roll roll = fixedRoll != null ? fixedRoll : new Roll(exileDistance(random.nextDouble()), random.nextDouble() * Math.PI * 2);
         Vec3 from = victim.position();
         Vec3 to = landing(level, victim, from, roll.distance(), roll.angle());

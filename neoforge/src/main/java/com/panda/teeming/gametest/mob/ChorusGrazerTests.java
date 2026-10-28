@@ -917,6 +917,7 @@ public final class ChorusGrazerTests {
             data = g.finalizeSpawn(level, level.getCurrentDifficultyAt(g.blockPosition()), EntitySpawnReason.NATURAL, data);
             g.setNoAi(true);
             level.addFreshEntity(g);
+            g.setPersistenceRequired();                        // a natural spawn despawns while other tests' players are over 128 blocks off
             TestPlayers.whenDone(helper, g::discard);
             herd.add(g);
         }

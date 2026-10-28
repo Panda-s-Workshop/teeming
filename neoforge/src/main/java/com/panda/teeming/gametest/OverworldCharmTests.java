@@ -41,6 +41,7 @@ final class OverworldCharmTests {
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("charm_hearth", OverworldCharmTests::hearth);
         TeemingGameTests.timeLimit("charm_hearth", 140);
+        out.accept("charm_tether_frost", OverworldCharmTests::tetherFrost);
         out.accept("charm_hush", OverworldCharmTests::hush);
         out.accept("charm_antivenom", OverworldCharmTests::antivenom);
     }
@@ -65,23 +66,26 @@ final class OverworldCharmTests {
         final Shiverwraith wraith;
         final Pig pig;
         long locked = -1;
+        /** Ticks the tether held before it let go, or -1 while it holds. */
+        long held = -1;
         int at5 = -1, at25 = -1;
         float at65 = -1.0F;
 
-        Tether(GameTestHelper helper, double z, InteractionHand hand) {
+        Tether(GameTestHelper helper, double z, DeferredItem<CharmItem> charm, InteractionHand hand) {
             wraith = helper.spawn(ModMobs.SHIVERWRAITH.get(), new Vec3(1.5, 1, z));
             wraith.removeFreeWill();        // no wandering or clawing; its own phase machine still runs
             wraith.resetCooldown();
             // the base look now, so its first tick doesn't pick one and refill its health over the setHealth below
             wraith.core().setLook(LookDef.BASE, true);
             wraith.setHealth(10.0F);
-            pig = pig(helper, new Vec3(8.5, 1, z), ModCharms.HEARTH_CHARM, hand);
+            pig = pig(helper, new Vec3(8.5, 1, z), charm, hand);
             wraith.setTarget(pig);
         }
 
         void tick(long now) {
             if (locked < 0 && wraith.core().in(Shiverwraith.Step.TETHER)) locked = now;
             if (locked < 0) return;
+            if (held < 0 && !wraith.core().in(Shiverwraith.Step.TETHER)) held = now - locked;
             if (now == locked + 5) at5 = pig.getTicksFrozen();
             if (now == locked + 25) at25 = pig.getTicksFrozen();
             if (at65 < 0 && wraith.core().in(Shiverwraith.Step.TETHER) && wraith.core().elapsed() >= 65) at65 = wraith.getHealth();
@@ -101,8 +105,8 @@ final class OverworldCharmTests {
      * (11.5); healing comes in whole seconds, so those are exact.
      */
     private static void hearth(GameTestHelper helper) {
-        Tether off = new Tether(helper, 2.5, InteractionHand.OFF_HAND);
-        Tether main = new Tether(helper, 9.5, InteractionHand.MAIN_HAND);
+        Tether off = new Tether(helper, 2.5, ModCharms.HEARTH_CHARM, InteractionHand.OFF_HAND);
+        Tether main = new Tether(helper, 9.5, ModCharms.HEARTH_CHARM, InteractionHand.MAIN_HAND);
         helper.onEachTick(() -> {
             off.tick(helper.getTick());
             main.tick(helper.getTick());
@@ -123,6 +127,26 @@ final class OverworldCharmTests {
                     + " of the healing in 65 ticks, got " + (off.at65 - 10.0F));
             TeemingMod.LOGGER.info("charm_hearth: freeze over 20 ticks off-hand {} main hand {}; healed in 65 ticks off-hand {} main hand {}",
                     off.gain(), main.gain(), off.at65 - 10.0F, main.at65 - 10.0F);
+        });
+    }
+
+    /**
+     * The Tether Charm on a Shiverwraith's frost tether: the off-hand pig's tether snaps after
+     * {@link Charms#TETHER_SNAP_TICKS}, as a lost hold would; the main-hand pig's still holds 20 ticks later. The snap is
+     * checked on the tick the tether reaches the limit, and the reading lands within a tick of it.
+     */
+    private static void tetherFrost(GameTestHelper helper) {
+        Tether off = new Tether(helper, 2.5, ModCharms.TETHER_CHARM, InteractionHand.OFF_HAND);
+        Tether main = new Tether(helper, 9.5, ModCharms.TETHER_CHARM, InteractionHand.MAIN_HAND);
+        helper.onEachTick(() -> {
+            off.tick(helper.getTick());
+            main.tick(helper.getTick());
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(off.held >= 0, "the off-hand tether let go, phase " + off.wraith.phase());
+            helper.assertTrue(Math.abs(off.held - Charms.TETHER_SNAP_TICKS) <= 1, "the off-hand tether snaps at " + Charms.TETHER_SNAP_TICKS + " ticks, held " + off.held);
+            helper.assertTrue(main.locked >= 0 && helper.getTick() >= main.locked + Charms.TETHER_SNAP_TICKS + 20 && main.held < 0,
+                    "the main-hand tether still holds " + (Charms.TETHER_SNAP_TICKS + 20) + " ticks in, held " + main.held);
         });
     }
 

@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -308,10 +309,12 @@ public class ChorusHusk extends TeemingMonster {
      * Teleports {@code victim} as chorus fruit would: {@link #teleportDistance} blocks in a random direction onto safe
      * ground, off any mount and shedding its riders; when that direction is unsafe the next ones round the circle are
      * tried at the same distance, and with none safe it stays. Never onto a block that chorus fruit refuses
-     * ({@code #consumable_does_not_teleport_to}). Returns where it landed, or null.
+     * ({@code #consumable_does_not_teleport_to}). A Rift Charm in the victim's off-hand makes half of these fail.
+     * Returns where it landed, or null.
      */
     private @Nullable Vec3 teleport(ServerLevel level, LivingEntity victim) {
         if (!MechanicEvent.post(this, "teleport", victim)) return null;
+        if (Charms.teleportFails(victim, random)) return null;
         Teleport roll = fixedRoll != null ? fixedRoll : new Teleport(teleportDistance(random.nextDouble()), random.nextDouble() * Math.PI * 2);
         Vec3 from = victim.position();
         Vec3 to = SafeTeleport.InLevel.find(level, victim, from, roll.distance(), roll.angle(), p -> landable(level, p));

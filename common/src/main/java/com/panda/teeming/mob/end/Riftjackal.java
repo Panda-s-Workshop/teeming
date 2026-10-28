@@ -1,17 +1,21 @@
 package com.panda.teeming.mob.end;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Push;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Zone;
+import com.panda.teeming.registry.ModCharms;
 import com.panda.teeming.registry.ModSounds;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -153,6 +157,8 @@ public class Riftjackal extends TeemingMonster {
     private final Zone rifts = new Zone(new RiftShape(), 2)
             .affects(this::riftTakes, this::riftThrow)
             .drawn(this::drawRift);
+    /** Rift Charm holders its rifts let through, and the last tick each one stood in a rift. */
+    private final Map<LivingEntity, Long> spared = new WeakHashMap<>();
 
     public Riftjackal(EntityType<? extends Riftjackal> type, Level level) {
         super(type, level, Step.values());
@@ -559,9 +565,22 @@ public class Riftjackal extends TeemingMonster {
                 && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(e);
     }
 
-    /** A rift throws {@code victim} {@link #RIFT_THROW} blocks in a random direction onto safe ground, or does nothing. */
+    /**
+     * A rift throws {@code victim} {@link #RIFT_THROW} blocks in a random direction onto safe ground, or does nothing.
+     * A Rift Charm in the victim's off-hand makes half the steps into a rift fail: the roll is made on the first tick
+     * inside, and one it let through stays let through until it steps out (a tick out of every rift) and back in.
+     */
     private void riftThrow(LivingEntity victim) {
         if (!(level() instanceof ServerLevel level) || !MechanicEvent.post(this, "rift_throw", victim)) return;
+        if (!Charms.holds(victim, ModCharms.RIFT_CHARM)) {
+            spared.remove(victim);
+        } else {
+            long now = level.getGameTime();
+            Long last = spared.put(victim, now);
+            if (last != null && now - last <= 1) return;                // still standing where a rift let it through
+            if (Charms.teleportFails(victim, random)) return;
+            spared.remove(victim);
+        }
         Vec3 from = victim.position();
         Vec3 to = SafeTeleport.InLevel.find(level, victim, from, RIFT_THROW, random.nextDouble() * Math.PI * 2, p -> clearOfRifts(level, p));
         if (to == null) return;

@@ -1,11 +1,15 @@
 package com.panda.teeming.charm;
 
 import com.panda.teeming.item.CharmItem;
+import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.platform.registry.DeferredItem;
 import com.panda.teeming.registry.ModCharms;
 import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.jspecify.annotations.Nullable;
@@ -143,5 +147,106 @@ public final class Charms {
     /** Ticks Silenced lasts on {@code victim} when its source gives {@code ticks}: at most {@link #CLEAR_VOICE_SILENCED_TICKS} on a Clear Voice Charm holder. */
     public static int silencedTicks(LivingEntity victim, int ticks) {
         return holds(victim, ModCharms.CLEAR_VOICE_CHARM) ? Math.min(ticks, CLEAR_VOICE_SILENCED_TICKS) : ticks;
+    }
+
+    // ---- End charms --------------------------------------------------------------------------------------------------
+
+    /**
+     * Grounding Charm: the share of an End mob's pull, lift, Levitation or throw that reaches its holder. A pull draws
+     * half as fast (the Pullstar's drift, the Abyss Angler's reel) or half as far (the Underclinger's drag); a lift rises
+     * half as high (the Liftstone Monolith); Levitation a Teeming mob or its cloud gives (the Levimoth's dust) lasts half
+     * as long, so it lifts half as high; a throw, knock-up or launch (Brinkram, Brinkray, Spirebloom, Riftmine Sapper)
+     * sets half the motion. Vanilla's own shove from a blow is left as it is. Charges and rams also ask
+     * {@link #chargeThrow} (the Shellward Charm) and multiply the two: the off-hand holds one charm, so the product is
+     * 0.5 with either and never 0.25 (see {@link #endChargeThrow}).
+     */
+    public static final double GROUNDING = 0.5;
+
+    /** The share of an End mob's pull, lift or throw that reaches {@code target}: halved by the Grounding Charm. */
+    public static double grounded(LivingEntity target) {
+        return holds(target, ModCharms.GROUNDING_CHARM) ? GROUNDING : 1.0;
+    }
+
+    /**
+     * The share of an End charge's or ram's throw that reaches {@code victim}: halved by the Shellward Charm (charges and
+     * rams) or the Grounding Charm (End knockback). Only one charm fits the off-hand, so they never stack.
+     */
+    public static double endChargeThrow(LivingEntity victim) {
+        return chargeThrow(victim) * grounded(victim);
+    }
+
+    /**
+     * Levitation as it lands on {@code target}: {@code incoming} itself, or for a Grounding Charm holder Levitation from
+     * a Teeming mob (given by the mob itself or by a cloud it owns) with {@link #GROUNDING} of its length (at least a
+     * tick), the same strength and look.
+     */
+    public static MobEffectInstance levitation(LivingEntity target, MobEffectInstance incoming, @Nullable Entity source) {
+        if (!incoming.is(MobEffects.LEVITATION) || incoming.isInfiniteDuration() || !fromTeemingMob(source) || grounded(target) >= 1.0) return incoming;
+        int ticks = Math.max(1, (int) Math.round(incoming.getDuration() * GROUNDING));
+        return new MobEffectInstance(incoming.getEffect(), ticks, incoming.getAmplifier(), incoming.isAmbient(), incoming.isVisible(), incoming.showIcon());
+    }
+
+    private static boolean fromTeemingMob(@Nullable Entity source) {
+        return source instanceof TeemingCreature || source instanceof AreaEffectCloud cloud && cloud.getOwner() instanceof TeemingCreature;
+    }
+
+    /**
+     * Rift Charm: the chance a forced teleport from a Teeming mob fails on its holder, rolled once per teleport on the
+     * mob's own random: a warpseed's throw, a step into a Riftjackal's rift (one roll per step in, not per tick inside),
+     * an Exile Wraith's mark, and a Chorus Husk's death burst (a chorus-fruit teleport it forces on whoever stands near).
+     * A teleport a mob makes of itself, or a hold that moves its victim, is no forced teleport.
+     */
+    public static final double RIFT_FAIL = 0.5;
+
+    /**
+     * Rift Charm: an exit rift aimed at its holder opens this many ticks earlier before its bolt (the Gatecaster's gate):
+     * its tell runs this much longer, the extra time spent locked on the line of fire.
+     */
+    public static final int RIFT_EARLY = 10;
+
+    /** True when a forced teleport of {@code target} fails: the Rift Charm's {@link #RIFT_FAIL}, rolled on {@code random}. */
+    public static boolean teleportFails(LivingEntity target, RandomSource random) {
+        return holds(target, ModCharms.RIFT_CHARM) && random.nextDouble() < RIFT_FAIL;
+    }
+
+    /** Ticks an exit rift aimed at {@code target} shows before its bolt, from its usual {@code ticks}: the Rift Charm adds {@link #RIFT_EARLY}. */
+    public static int exitRiftTicks(@Nullable LivingEntity target, int ticks) {
+        return target != null && holds(target, ModCharms.RIFT_CHARM) ? ticks + RIFT_EARLY : ticks;
+    }
+
+    /** Rot Ward Charm: the share of its length that Void Rot or Heavy from a Teeming mob lasts on its holder. */
+    public static final double ROT_WARD = 0.5;
+
+    /** Ticks a Teeming mob's Void Rot or Heavy of {@code ticks} lasts on {@code target}, after the Rot Ward Charm. */
+    public static int rotTicks(LivingEntity target, int ticks) {
+        return holds(target, ModCharms.ROT_WARD_CHARM) ? (int) Math.round(ticks * ROT_WARD) : ticks;
+    }
+
+    /**
+     * Memory Charm: the chance a Teeming mob's theft of its holder's experience fails (the Mnemovore's bite still lands,
+     * but takes no level), rolled once per theft on the mob's own random.
+     */
+    public static final double MEMORY_FAIL = 0.5;
+
+    /** True when a theft of {@code target}'s experience fails: the Memory Charm's {@link #MEMORY_FAIL}, rolled on {@code random}. */
+    public static boolean xpTheftFails(LivingEntity target, RandomSource random) {
+        return holds(target, ModCharms.MEMORY_CHARM) && random.nextDouble() < MEMORY_FAIL;
+    }
+
+    /**
+     * Memory Charm: under enchantment suppression (a Nullcantor's ring, the Nulled status) its holder's gear keeps this
+     * share of each enchantment's level instead of none, rounded up, so every enchantment keeps at least level I:
+     * Protection IV works as II, Sharpness V as III, Mending I as I. Curses hold either way.
+     */
+    public static final double MEMORY_LEVELS = 0.5;
+
+    /** True when {@code holder}'s suppressed enchantments keep half their levels: the Memory Charm. */
+    public static boolean halvesNulling(LivingEntity holder) {
+        return holds(holder, ModCharms.MEMORY_CHARM);
+    }
+
+    /** An enchantment's {@code level} under suppression for a Memory Charm holder: {@link #MEMORY_LEVELS} of it, rounded up. */
+    public static int nulledLevel(int level) {
+        return level <= 0 ? 0 : (int) Math.ceil(level * MEMORY_LEVELS);
     }
 }

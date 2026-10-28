@@ -376,6 +376,7 @@ public final class GloamhoundTests {
             data = h.finalizeSpawn(level, level.getCurrentDifficultyAt(h.blockPosition()), EntitySpawnReason.NATURAL, data);
             h.setNoAi(true);
             level.addFreshEntity(h);
+            h.setPersistenceRequired();                        // a natural spawn despawns while other tests' players are over 128 blocks off
             TestPlayers.whenDone(helper, h::discard);
             group.add(h);
         }

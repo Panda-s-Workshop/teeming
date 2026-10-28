@@ -1,10 +1,13 @@
 package com.panda.teeming.effect;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.registry.ModEffects;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EnchantmentTags;
@@ -17,6 +20,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.jspecify.annotations.Nullable;
@@ -37,6 +41,11 @@ import org.jspecify.annotations.Nullable;
  * the client has too. The enchantments themselves are untouched: the item keeps them, shows them and works again the
  * moment its wearer steps out. Silk Touch is not an enchantment effect but a loot table rule on the tool and still
  * applies.
+ *
+ * <p>With a Memory Charm in the bearer's off-hand ({@link Charms#halvesNulling}) the suppression only halves: every
+ * lookup that reads the gear finds each enchantment at {@link Charms#nulledLevel} of its level instead of none, and
+ * the lookups that ask about the bearer instead of an item ({@link #blanked}) let the halved gear speak. Quick Charge
+ * and Riptide, the two a client also runs for its own player, stay off either way, so the client and the server agree.
  */
 public final class NulledEffect extends TeemingEffect {
     public static final int COLOR = 0x7A4FC9;
@@ -47,6 +56,8 @@ public final class NulledEffect extends TeemingEffect {
     private static final Map<LivingEntity, Long> HELD = new WeakHashMap<>();
     /** Creatures whose enchantments are switched off right now: their attribute and location effects are taken off. */
     private static final Set<LivingEntity> STRIPPED = ConcurrentHashMap.newKeySet();
+    /** The stripped creatures that hold a Memory Charm: their gear reads at half its levels instead of none. */
+    private static final Set<LivingEntity> HALVED = ConcurrentHashMap.newKeySet();
     private static volatile @Nullable Thread serverThread;
 
     public NulledEffect() {
@@ -81,6 +92,19 @@ public final class NulledEffect extends TeemingEffect {
         return e instanceof Projectile p ? nulled(p.getOwner()) : nulled(e);
     }
 
+    /**
+     * True while {@code e} is nulled with nothing left of its enchantments: nulled without a Memory Charm. A lookup that
+     * asks about the bearer rather than an item answers "none" only then; with the charm it reads the gear, halved.
+     */
+    public static boolean blanked(@Nullable Entity e) {
+        return nulled(e) && !Charms.halvesNulling((LivingEntity) e);
+    }
+
+    /** As {@link #blanked}, for the one who loosed {@code e}, or {@code e} itself. */
+    public static boolean blankedShooter(@Nullable Entity e) {
+        return e instanceof Projectile p ? blanked(p.getOwner()) : blanked(e);
+    }
+
     @Override
     protected boolean tick(ServerLevel level, LivingEntity entity, int amplifier) {
         return held(entity);
@@ -90,19 +114,33 @@ public final class NulledEffect extends TeemingEffect {
 
     /**
      * The stack an enchantment lookup should read in place of {@code stack}: the stack itself, unless it is the gear of
-     * a nulled creature; then a copy holding only its curses, or no stack at all when it has none. Server thread only:
-     * elsewhere it always answers the stack itself.
+     * a nulled creature; then a copy holding only its curses, or no stack at all when it has none. A Memory Charm
+     * holder's gear reads as a copy with every other enchantment at {@link Charms#nulledLevel} of its level. Server
+     * thread only: elsewhere it always answers the stack itself.
      */
     public static ItemStack view(ItemStack stack) {
         if (STRIPPED.isEmpty() || stack.isEmpty() || Thread.currentThread() != serverThread) return stack;
         ItemEnchantments all = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-        if (all.isEmpty() || !worn(stack)) return stack;
-        ItemEnchantments.Mutable curses = new ItemEnchantments.Mutable(all);
-        curses.removeIf(e -> !e.is(EnchantmentTags.CURSE));
-        if (curses.keySet().isEmpty()) return ItemStack.EMPTY;
+        if (all.isEmpty()) return stack;
+        LivingEntity wearer = wearer(stack);
+        if (wearer == null) return stack;
+        ItemEnchantments.Mutable kept = new ItemEnchantments.Mutable(all);
+        if (HALVED.contains(wearer)) {
+            for (Holder<Enchantment> e : List.copyOf(kept.keySet())) {
+                if (!e.is(EnchantmentTags.CURSE)) kept.set(e, Charms.nulledLevel(kept.getLevel(e)));
+            }
+        } else {
+            kept.removeIf(e -> !e.is(EnchantmentTags.CURSE));
+            if (kept.keySet().isEmpty()) return ItemStack.EMPTY;
+        }
         ItemStack copy = stack.copy();
-        copy.set(DataComponents.ENCHANTMENTS, curses.toImmutable());
+        copy.set(DataComponents.ENCHANTMENTS, kept.toImmutable());
         return copy;
+    }
+
+    /** The level of {@code enchantment} a lookup on {@code stack} should find: as {@link #view} shows the stack. */
+    public static int level(ItemStack stack, Holder<Enchantment> enchantment) {
+        return view(stack).getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).getLevel(enchantment);
     }
 
     /** True when a lookup on {@code stack} should see only its curses: it is the gear of a nulled creature. */
@@ -111,50 +149,54 @@ public final class NulledEffect extends TeemingEffect {
     }
 
     /**
-     * Whether {@code stack} is gear of a nulled creature: one of its equipment stacks, or equal to what it holds (block
-     * loot reads a copy of the tool that broke the block).
+     * The nulled creature whose gear {@code stack} is: one of its equipment stacks, or equal to what it holds (block
+     * loot reads a copy of the tool that broke the block); null when it is no one's.
      */
-    private static boolean worn(ItemStack stack) {
+    private static @Nullable LivingEntity wearer(ItemStack stack) {
         for (LivingEntity e : STRIPPED) {
             if (e.isRemoved()) {
                 STRIPPED.remove(e);
+                HALVED.remove(e);
                 continue;
             }
             for (EquipmentSlot slot : EquipmentSlot.VALUES) {
-                if (e.getItemBySlot(slot) == stack) return true;
+                if (e.getItemBySlot(slot) == stack) return e;
             }
-            if (ItemStack.matches(e.getMainHandItem(), stack) || ItemStack.matches(e.getOffhandItem(), stack)) return true;
+            if (ItemStack.matches(e.getMainHandItem(), stack) || ItemStack.matches(e.getOffhandItem(), stack)) return e;
         }
-        return false;
+        return null;
     }
 
     /**
      * Server, every tick for every creature (from the enchantment tick): when a player's status comes or goes, takes
      * off or puts back what its enchantments keep applied between lookups: the attribute modifiers (Efficiency, Depth
-     * Strider, Swift Sneak...) and the location effects (Soul Speed, Frost Walker).
+     * Strider, Swift Sneak...) and the location effects (Soul Speed, Frost Walker). A Memory Charm moved into or out of
+     * the off-hand while nulled puts everything back and strips it again, halved or not.
      */
     public static void sync(ServerLevel level, LivingEntity entity) {
         if (!(entity instanceof Player)) return;
         serverThread = Thread.currentThread();
         boolean on = entity.hasEffect(ModEffects.NULLED.holder());
-        boolean was = STRIPPED.contains(entity);
-        if (on && !was) strip(level, entity);
-        else if (!on && was) restore(level, entity);
+        boolean half = on && Charms.halvesNulling(entity);
+        if (STRIPPED.contains(entity) && (!on || half != HALVED.contains(entity))) restore(level, entity);
+        if (on && !STRIPPED.contains(entity)) strip(level, entity, half);
     }
 
-    private static void strip(ServerLevel level, LivingEntity entity) {
+    private static void strip(ServerLevel level, LivingEntity entity, boolean half) {
         // still unlisted, so these see the whole of each enchantment and take all of it off...
         EnchantmentHelper.stopLocationBasedEffects(entity);
         modifiers(entity, false);
+        if (half) HALVED.add(entity);
         STRIPPED.add(entity);
-        // ...then, listed, they see only the curses and put those back
+        // ...then, listed, they see only the curses (or, halved, half of every level) and put those back
         modifiers(entity, true);
         EnchantmentHelper.runLocationChangedEffects(level, entity);
     }
 
     private static void restore(ServerLevel level, LivingEntity entity) {
-        EnchantmentHelper.stopLocationBasedEffects(entity);      // the curses' own
+        EnchantmentHelper.stopLocationBasedEffects(entity);      // the curses' own, or the halved ones
         STRIPPED.remove(entity);
+        HALVED.remove(entity);
         modifiers(entity, true);
         EnchantmentHelper.runLocationChangedEffects(level, entity);
     }

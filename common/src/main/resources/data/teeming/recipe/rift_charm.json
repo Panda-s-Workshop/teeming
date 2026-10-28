@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "teeming:rift_essence",
+    "teeming:rift_essence",
+    "teeming:rift_essence",
+    "teeming:rift_essence",
+    "minecraft:gold_ingot",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "teeming:rift_charm"
+  }
+}

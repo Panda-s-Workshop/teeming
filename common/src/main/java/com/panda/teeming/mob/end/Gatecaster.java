@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Shot;
@@ -249,11 +250,13 @@ public class Gatecaster extends TeemingMonster {
 
     /**
      * Starts the tell at {@code target}: it faces the target and holds that facing, its hands glow, and the gate opens
-     * behind the target (or beside it, or nowhere). True if it started. Public as a test hook.
+     * behind the target (or beside it, or nowhere). A Rift Charm in the target's off-hand opens the gate
+     * {@link Charms#RIFT_EARLY} ticks earlier before the bolt: the tell runs that much longer, the aim still locking
+     * {@link #TRACK_TICKS} in, so the extra time is spent locked. True if it started. Public as a test hook.
      */
     public boolean weave(@Nullable LivingEntity target) {
         if (target == null || !core().idle() || castCooldown > 0 || !(level() instanceof ServerLevel level)) return false;
-        if (!startPhase(Step.TELL, TELL_TICKS, target)) return false;
+        if (!startPhase(Step.TELL, Charms.exitRiftTicks(target, TELL_TICKS), target)) return false;
         castCooldown = CAST_EVERY;
         tells++;
         holdStill();

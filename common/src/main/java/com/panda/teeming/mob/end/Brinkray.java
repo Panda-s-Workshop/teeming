@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
@@ -470,8 +471,8 @@ public class Brinkray extends TeemingMonster {
 
     /**
      * The ram lands: its attack, through armour. At a brink the victim is thrown on along the ram, 1.8 a tick and 0.3
-     * up, less by its knockback resistance; anywhere else it throws no one, so nobody but a player at the brink is
-     * ever moved out over the void.
+     * up, less by its knockback resistance and by half with a Shellward or a Grounding Charm in the off-hand; anywhere
+     * else it throws no one, so nobody but a player at the brink is ever moved out over the void.
      */
     private void hit(ServerLevel level, LivingEntity victim) {
         level.playSound(null, getX(), getY(), getZ(), ModSounds.BRINKRAY_RAM.get(), getSoundSource(), 1.5F, 0.8F);
@@ -482,7 +483,7 @@ public class Brinkray extends TeemingMonster {
                 hits++;
                 Vec3 across = ramDir.multiply(1, 0, 1);
                 across = across.lengthSqr() < 1.0E-6 ? heading : across.normalize();
-                double keep = 1.0 - Mth.clamp(victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0.0, 1.0);
+                double keep = (1.0 - Mth.clamp(victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE), 0.0, 1.0)) * Charms.endChargeThrow(victim);
                 if (brink && keep > 0.0 && MechanicEvent.post(this, "throw", victim)) {
                     lastThrow = new Vec3(across.x * KNOCKBACK * keep, KNOCKBACK_UP * keep, across.z * KNOCKBACK * keep);
                 } else {

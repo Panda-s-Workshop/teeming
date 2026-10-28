@@ -543,6 +543,9 @@ public final class RiftjackalTests {
             j.snapTo(at.x, at.y, at.z, 0.0F, 0.0F);
             data = j.finalizeSpawn(level, level.getCurrentDifficultyAt(j.blockPosition()), EntitySpawnReason.NATURAL, data);
             j.setNoAi(true);
+            // a natural spawn is removed at once while the nearest player is over 128 blocks off, and other tests'
+            // players can be: this test is about the pack a spawn forms, so the three stay
+            j.setPersistenceRequired();
             level.addFreshEntity(j);
             TestPlayers.whenDone(helper, j::discard);
             group.add(j);
@@ -553,7 +556,10 @@ public final class RiftjackalTests {
             helper.assertTrue(group.stream().filter(Riftjackal::isAlpha).count() == 1, "one alpha");
             helper.assertTrue(group.stream().allMatch(j -> j.packId().equals(pack)), "all three share one pack");
             helper.assertTrue(group.stream().allMatch(j -> j.look().equals(group.getFirst().look())), "all three wear the alpha's look");
-            helper.assertTrue(group.getFirst().pack().size() == 3, "the pack counts three");
+            List<Riftjackal> counted = group.getFirst().pack();
+            helper.assertTrue(counted.size() == 3, "the pack counts three, counted " + counted.size() + ": "
+                    + counted.stream().map(j -> j.getStringUUID().substring(0, 8) + "@" + j.blockPosition().toShortString() + (group.contains(j) ? "" : " (not ours)")).toList()
+                    + "; ours alive " + group.stream().map(Riftjackal::isAlive).toList());
             helper.succeed();
         });
     }

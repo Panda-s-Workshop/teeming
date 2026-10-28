@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
@@ -318,8 +319,9 @@ public class LiftstoneMonolith extends TeemingMonster {
     }
 
     /**
-     * The pull takes hold: everything in reach that a roof doesn't cover is held at its feet, ready to rise; each one
-     * a roof covers is left on the ground, and the pull catches on that roof.
+     * The pull takes hold: everything in reach that a roof doesn't cover is held at its feet, ready to rise (half as
+     * high with a Grounding Charm in the off-hand; the slam's damage stays); each one a roof covers is left on the
+     * ground, and the pull catches on that roof.
      */
     private void takeHold(ServerLevel level) {
         hoist.clear();
@@ -333,7 +335,7 @@ public class LiftstoneMonolith extends TeemingMonster {
                 caughtOn(level, v);
                 continue;
             }
-            if (MechanicEvent.post(this, "lift_take", v)) hoist.take(level, v, LIFT_HEIGHT);
+            if (MechanicEvent.post(this, "lift_take", v)) hoist.take(level, v, LIFT_HEIGHT * Charms.grounded(v));
         }
         playSound(ModSounds.LIFTSTONE_MONOLITH_LIFT.get(), 2.0F, 1.0F);
         level.sendParticles(ParticleTypes.END_ROD, true, true, getX(), getY() + 3.6, getZ(), 16, 0.6, 0.4, 0.6, 0.05);

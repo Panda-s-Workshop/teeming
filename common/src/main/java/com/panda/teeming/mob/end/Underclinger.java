@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
@@ -431,26 +432,31 @@ public class Underclinger extends TeemingMonster {
             cling();
             return;
         }
-        dragBy(level, v, PULL_DISTANCE / PULL_TICKS);
+        dragBy(level, v, dragLength(v) / PULL_TICKS);
         if (rim != null) crumbs(level, rim.lip(v), 2);
     }
 
-    /** The drag ran its length: whatever is left of the 2 blocks, then it lets go over the void. */
+    /** The drag ran its length: whatever is left of the 2 blocks (1 with a Grounding Charm), then it lets go over the void. */
     private void finishDrag(ServerLevel level) {
         LivingEntity v = grab.victim();
-        if (v != null && grab.holding(this, anchor)) dragBy(level, v, PULL_DISTANCE);
+        if (v != null && grab.holding(this, anchor)) dragBy(level, v, dragLength(v));
         letGo();
         rim = null;
         cooldown = COOLDOWN;
         cling();
     }
 
+    /** How far {@code v} is dragged out in all: {@link #PULL_DISTANCE}, half that with a Grounding Charm in the off-hand. */
+    private static double dragLength(LivingEntity v) {
+        return PULL_DISTANCE * Charms.grounded(v);
+    }
+
     /**
-     * Drags {@code v} up to {@code step} further straight out, never past {@link #PULL_DISTANCE} in all; anything solid
+     * Drags {@code v} up to {@code step} further straight out, never past {@link #dragLength} in all; anything solid
      * in the way ends the drag there.
      */
     private void dragBy(ServerLevel level, LivingEntity v, double step) {
-        double d = Math.min(step, PULL_DISTANCE - pulled);
+        double d = Math.min(step, dragLength(v) - pulled);
         if (d > 1.0E-9) {
             Vec3 move = new Vec3(out.getStepX() * d, 0.0, out.getStepZ() * d);
             AABB there = v.getBoundingBox().move(anchor.subtract(v.position())).move(move);

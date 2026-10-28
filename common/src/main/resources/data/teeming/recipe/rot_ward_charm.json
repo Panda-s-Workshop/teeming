@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "teeming:time_sand",
+    "teeming:time_sand",
+    "teeming:time_sand",
+    "teeming:time_sand",
+    "minecraft:gold_ingot",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "teeming:rot_ward_charm"
+  }
+}

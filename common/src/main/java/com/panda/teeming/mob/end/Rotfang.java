@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -268,10 +269,10 @@ public class Rotfang extends TeemingMonster {
         if (!startPhase(Step.BITE, BITE_TICKS, victim)) core().end();
     }
 
-    /** Void Rot on the bitten: lilac spots of rot burst on it and a wet hiss. */
+    /** Void Rot on the bitten (half as long with a Rot Ward Charm in the off-hand): lilac spots of rot burst on it and a wet hiss. */
     private void rot(ServerLevel level, LivingEntity victim) {
         if (!victim.isAlive() || !MechanicEvent.post(this, "rot", victim)) return;
-        if (!ModEffects.give(victim, ModEffects.VOID_ROT, ROT_TICKS, this)) return;
+        if (!ModEffects.give(victim, ModEffects.VOID_ROT, Charms.rotTicks(victim, ROT_TICKS), this)) return;
         rots++;
         double y = victim.getY() + victim.getBbHeight() * 0.6;
         level.sendParticles(ICHOR, true, true, victim.getX(), y, victim.getZ(), 14, victim.getBbWidth() * 0.4, victim.getBbHeight() * 0.3,
@@ -307,7 +308,8 @@ public class Rotfang extends TeemingMonster {
     /**
      * The counter worked: the split jaw snaps shut on its own foreleg. The Void Rot in {@code striker} drains out of
      * them, back into its jaw; it takes its own bite (its attack, through its own armour, credited to the striker, never
-     * swallowed by the hurt cooldown of the blow that turned it) and rots itself. The snarl's bite never comes.
+     * swallowed by the hurt cooldown of the blow that turned it) and rots itself (it asks the Rot Ward Charm like any
+     * holder). The snarl's bite never comes.
      */
     private void gnaw(ServerLevel level, LivingEntity striker) {
         if (!startPhase(Step.GNAW, GNAW_TICKS, striker)) return;
@@ -320,7 +322,7 @@ public class Rotfang extends TeemingMonster {
         damageCooldownTime = 0;
         DamageSource own = new DamageSource(damageSources().mobAttack(this).typeHolder(), this, striker);
         AstralAugur.GroundMarks.hurtInPlace(level, this, own, (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * SELF_BITE);
-        if (isAlive()) ModEffects.give(this, ModEffects.VOID_ROT, ROT_TICKS, striker);
+        if (isAlive()) ModEffects.give(this, ModEffects.VOID_ROT, Charms.rotTicks(this, ROT_TICKS), striker);
     }
 
     /** Draws the Void Rot out of {@code who}: a stream of ichor from them back into its jaw. */

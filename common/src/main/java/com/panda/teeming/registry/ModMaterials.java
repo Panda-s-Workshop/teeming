@@ -78,13 +78,13 @@ public final class ModMaterials {
             Map.entry("chain_link", List.of("craft 1 minecraft:iron_chain 1")),
             Map.entry("gilded_gizzard", List.of("craft 1 minecraft:gold_nugget 6", "charm gilded_ward_charm")),
             Map.entry("void_crystal", List.of("craft 1 minecraft:end_crystal 1 minecraft:glass*7 minecraft:ender_eye*1")),
-            Map.entry("gravity_stone", List.of("craft 4 minecraft:lodestone 1 minecraft:chiseled_stone_bricks*4 minecraft:iron_ingot*1")),
+            Map.entry("gravity_stone", List.of("craft 4 minecraft:lodestone 1 minecraft:chiseled_stone_bricks*4 minecraft:iron_ingot*1", "charm grounding_charm")),
             Map.entry("star_mote", List.of("craft 1 minecraft:glowstone_dust 2")),
-            Map.entry("void_ichor", List.of("brew minecraft:invisibility")),
+            Map.entry("void_ichor", List.of("brew minecraft:invisibility", "charm memory_charm")),
             Map.entry("purpur_fleece", List.of("craft 1 minecraft:purple_wool 1")),
             Map.entry("chorus_silk", List.of("brew minecraft:slow_falling")),
-            Map.entry("rift_essence", List.of("craft 4 minecraft:ender_pearl 1")),
-            Map.entry("time_sand", List.of("brew minecraft:swiftness")),
+            Map.entry("rift_essence", List.of("craft 4 minecraft:ender_pearl 1", "charm rift_charm")),
+            Map.entry("time_sand", List.of("brew minecraft:swiftness", "charm rot_ward_charm")),
             Map.entry("void_membrane", List.of("craft 1 minecraft:phantom_membrane 1")));
 
     private ModMaterials() {}

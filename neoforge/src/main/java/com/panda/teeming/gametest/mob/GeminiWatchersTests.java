@@ -258,6 +258,7 @@ public final class GeminiWatchersTests {
             if (i == 0) w.core().setLook("dusk_pair", true);       // the rare look, so a copy can't pass by chance
             w.setNoAi(true);
             level.addFreshEntity(w);
+            w.setPersistenceRequired();                        // a natural spawn despawns while other tests' players are over 128 blocks off
             TestPlayers.whenDone(helper, w::discard);
             made[i] = w;
         }

@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
 import com.panda.teeming.mob.Phase;
@@ -480,15 +481,15 @@ public class RiftmineSapper extends TeemingMonster {
     }
 
     /**
-     * Launches {@code v} straight up at {@link #LAUNCH_SPEED}: its sideways motion is zeroed, so it comes down where it
-     * went up. True if it was launched (a pack may veto each one).
+     * Launches {@code v} straight up at {@link #LAUNCH_SPEED} (half that with a Grounding Charm in the off-hand): its
+     * sideways motion is zeroed, so it comes down where it went up. True if it was launched (a pack may veto each one).
      */
     public boolean launch(ServerLevel level, LivingEntity v) {
         if (!launchable(v) || !MechanicEvent.post(this, "launch", v)) return false;
         if (v.isPassenger()) v.stopRiding();
         v.resetFallDistance();
         v.setOnGround(false);
-        Push.set(v, new Vec3(0.0, LAUNCH_SPEED, 0.0));
+        Push.set(v, new Vec3(0.0, LAUNCH_SPEED * Charms.grounded(v), 0.0));
         if (v instanceof Mob mob) mob.getNavigation().stop();
         launches++;
         return true;

@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
@@ -360,14 +361,14 @@ public class Spirebloom extends TeemingMonster {
         return e == core().target();
     }
 
-    /** One body on the line: its attack through armour, with no knockback, then a throw straight up. */
+    /** One body on the line: its attack through armour, with no knockback, then a throw straight up (half as hard with a Grounding Charm). */
     private void strikeHit(ServerLevel level, LivingEntity victim) {
         if (isDeadOrDying() || !MechanicEvent.post(this, "spike", victim)) return;
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * STRIKE;
         if (!AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), damage)) return;
         strikes++;
         setLastHurtMob(victim);
-        Push.set(victim, new Vec3(0.0, KNOCK_UP, 0.0));
+        Push.set(victim, new Vec3(0.0, KNOCK_UP * Charms.grounded(victim), 0.0));
         level.playSound(null, victim.getX(), victim.getY(), victim.getZ(), ModSounds.SPIREBLOOM_STRUCK.get(), getSoundSource(), 1.0F, 1.0F);
         level.sendParticles(STAR_DUST, true, true, victim.getX(), victim.getY() + 0.2, victim.getZ(), 10, 0.3, 0.1, 0.3, 0.0);
     }

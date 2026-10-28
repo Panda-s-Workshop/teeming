@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
@@ -561,15 +562,15 @@ public class AbyssAngler extends TeemingMonster {
     }
 
     /**
-     * One tick of the reel: {@code v} moves up to 0.5 blocks straight toward its brink across the ground. False, and
-     * nothing moves, once it is there, or when the next step would leave the ground (a drop deeper than a block), climb
-     * more than a step, or run into something solid.
+     * One tick of the reel: {@code v} moves up to 0.5 blocks straight toward its brink across the ground (half that with
+     * a Grounding Charm in the off-hand). False, and nothing moves, once it is there, or when the next step would leave
+     * the ground (a drop deeper than a block), climb more than a step, or run into something solid.
      */
     private boolean pullStep(ServerLevel level, LivingEntity v) {
         Vec3 to = brink(v);
         double dx = to.x - anchor.x, dz = to.z - anchor.z, d = Math.hypot(dx, dz);
         if (d < 1.0E-6) return false;
-        double step = Math.min(PULL_SPEED, d);
+        double step = Math.min(PULL_SPEED * Charms.grounded(v), d);
         double nx = anchor.x + dx / d * step, nz = anchor.z + dz / d * step;
         double ny = standY(level, nx, anchor.y, nz);
         if (Double.isNaN(ny)) return false;

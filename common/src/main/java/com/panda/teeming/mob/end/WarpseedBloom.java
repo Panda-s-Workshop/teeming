@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
@@ -362,10 +363,12 @@ public class WarpseedBloom extends TeemingMonster {
     /**
      * Throws {@code victim} {@link #warpDistance} blocks in a random direction onto safe ground; when the first
      * direction is unsafe the next ones round the circle are tried at the same distance, and with none safe nothing
-     * happens. Returns where it landed, or null.
+     * happens. A Rift Charm in the victim's off-hand makes half the throws fail (the seed's damage still lands).
+     * Returns where it landed, or null.
      */
     private @Nullable Vec3 warp(ServerLevel level, LivingEntity victim) {
         if (!warpable(victim) || !MechanicEvent.post(this, "warp", victim)) return null;
+        if (Charms.teleportFails(victim, random)) return null;
         Warp roll = fixedWarp != null ? fixedWarp : new Warp(warpDistance(random.nextDouble()), random.nextDouble() * Math.PI * 2);
         Vec3 from = victim.position();
         Vec3 to = SafeTeleport.InLevel.find(level, victim, from, roll.distance(), roll.angle(), p -> true);

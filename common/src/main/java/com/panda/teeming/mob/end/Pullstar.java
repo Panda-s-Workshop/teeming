@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Grab;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.MobCore;
@@ -268,11 +269,12 @@ public class Pullstar extends TeemingMonster {
 
     /**
      * The steady speed the pull draws {@code e} at now, in blocks a tick: 0.09, a quarter of that for a sneaking player,
-     * and 0 for anything out of reach, across open void, already touching it or not pulled at all, or while it is dim.
+     * half of either with a Grounding Charm in the off-hand, and 0 for anything out of reach, across open void, already
+     * touching it or not pulled at all, or while it is dim. A player's own client asks it too, and sees the same charm.
      */
     public double drift(LivingEntity e) {
         if (!pulls() || !pullable(e) || !inReach(e) || alongside(e) || voidBetween(e)) return 0.0;
-        return e.isShiftKeyDown() ? PULL_DRIFT * SNEAK_SHARE : PULL_DRIFT;
+        return (e.isShiftKeyDown() ? PULL_DRIFT * SNEAK_SHARE : PULL_DRIFT) * Charms.grounded(e);
     }
 
     /** Horizontally so close it is already pressed against the star: no more pull (no jitter in its middle). */
