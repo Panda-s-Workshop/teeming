@@ -8,6 +8,7 @@ import com.panda.teeming.mob.overworld.Dunefin;
 import com.panda.teeming.mob.overworld.Dunefin.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -505,7 +506,10 @@ public final class DunefinTests {
         List<Weighted<MobSpawnSettings.SpawnerData>> spawners = add.spawners().unwrap();
         helper.assertTrue(spawners.size() == 1 && spawners.getFirst().value().type() == ModMobs.DUNEFIN.get(), "one Dunefin spawner, " + spawners);
         Weighted<MobSpawnSettings.SpawnerData> spawner = spawners.getFirst();
-        helper.assertTrue(spawner.weight() == 20, "spawn weight 20, got " + spawner.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 20
+        int rest = SpawnTable.rest("dunefin", 20).weight();
+        helper.assertTrue(spawner.weight() == rest, "rest weight " + rest + ", got " + spawner.weight());
         helper.assertTrue(spawner.value().count().minInclusive() == 1 && spawner.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
         // each home biome has a tuned weight (the Overworld share): its own modifier at that weight, and the roster

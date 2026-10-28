@@ -22,12 +22,14 @@ import net.fabricmc.loader.api.FabricLoader;
 final class FabricConfig implements TeemingConfig.Source {
     private static final String HEADER = """
              Teeming (read at startup: restart after a change)
-             spawningDensity: multiplies how often every Teeming mob spawns (0 turns natural spawning off, 4 is the most;
-               below 1 it thins natural spawns, above 1 it raises the local caps)
+             spawningDensity: 0..4; below 1 each natural spawn that passed every other rule goes ahead with this chance (0 turns
+               them off); above 1 it only raises the local caps (spawning.local_cap times it, apex mobs and giants included),
+               and how often a Teeming mob is picked, and its share of each biome's spawns, stay the same
              endMainIslandAfterDragon: true keeps the main island's End mobs away until the dragon has been killed
              fieldguide.killsToReveal: 1..100, kills of a mob that reveal its tell, counter, drops and looks in the Field Guide
              griefing.temporary_blocks: false stops every mob placing even temporary blocks (the Gloomweaver raises no walls)
-             spawning.local_cap: 1..16, at most this many of one Teeming mob type within 48 blocks (apex mobs and giants: 1 in 128)
+             spawning.local_cap: 1..16, at most this many of one Teeming mob type within 48 blocks (apex mobs and giants: 1 in 128;
+               both times spawningDensity when it is above 1)
              trophies.chance: 0..1, the chance a player kill of an ordinary Teeming mob drops its trophy (apex mobs four times it)
              mobs.<id>.enabled: false stops that mob's natural spawns (eggs and commands still work)
              mobs.<id>.spawnChance: 0..1, the chance a natural spawn that passed every other rule goes ahead""";

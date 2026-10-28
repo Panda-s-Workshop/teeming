@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:mire_gulper",
-      "weight": 103,
+      "weight": 74,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

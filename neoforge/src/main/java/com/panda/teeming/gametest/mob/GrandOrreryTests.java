@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
@@ -775,7 +774,7 @@ public final class GrandOrreryTests {
 
     /**
      * Home: the open sky off the End's main island, placed only by the Teeming spawner's apex sky rule (after a won apex
-     * roll, none of its kind near); on no biome list, so no biome modifier, and its biome tag holds the outer End
+     * roll, none of its kind near); on no biome list, so no biome modifier, and its biome tag holds the outer End (and any modded End biome)
      * biomes; alone (groups of 1), weight 0; an apex, so its local cap is one in 128 blocks.
      */
     private static void home(GameTestHelper helper) {
@@ -784,8 +783,7 @@ public final class GrandOrreryTests {
         Rule rule = Rule.of(row.spawner());
         helper.assertTrue(rule == Rule.APEX_SKY && rule.apex() && rule.dimension == Level.END, "the apex sky rule places it, got '" + row.spawner() + "'");
         var access = helper.getLevel().registryAccess();
-        var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("grand_orrery"));
-        helper.assertTrue(tag.isPresent() && tag.get().size() == 4, "its biome tag holds the four outer End biomes");
+        TeemingGameTests.assertOuterEndTag(helper, "grand_orrery");
         helper.assertTrue(!row.biomeSpawns(), "on no biome list");
         helper.assertTrue(access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/grand_orrery"))).isEmpty(), "no biome modifier");

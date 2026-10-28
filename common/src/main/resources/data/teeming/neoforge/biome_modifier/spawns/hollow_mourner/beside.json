@@ -1,0 +1,25 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/hollow_mourner/beside",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/beside"
+      },
+      "#teeming:spawns_beside/hollow_mourner/beside"
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:hollow_mourner",
+      "weight": 71,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

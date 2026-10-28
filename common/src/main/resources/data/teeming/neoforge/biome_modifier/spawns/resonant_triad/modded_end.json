@@ -1,0 +1,24 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/resonant_triad/modded_end",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/resonant_triad/modded_end"
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:resonant_triad",
+      "weight": 1,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 3
+      }
+    }
+  ]
+}

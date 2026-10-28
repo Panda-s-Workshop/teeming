@@ -9,6 +9,7 @@ import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.mob.overworld.PuffcapShepherd;
 import com.panda.teeming.mob.overworld.PuffcapShepherd.Step;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -353,7 +354,7 @@ public final class PuffcapShepherdTests {
         });
     }
 
-    /** Home: the dark forest, spawn weight 15 in groups of exactly 1; the Glowcap is 15 % of them. */
+    /** Home: the dark forest, roster weight 15 in groups of exactly 1; the Glowcap is 15 % of them. */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("puffcap_shepherd"));
@@ -365,7 +366,10 @@ public final class PuffcapShepherdTests {
         Weighted<MobSpawnSettings.SpawnerData> entry = spawns.stream()
                 .filter(w -> w.value().type() == ModMobs.PUFFCAP_SHEPHERD.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 15, "spawn weight 15, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 15
+        int rest = SpawnTable.rest("puffcap_shepherd", 15).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "groups of 1, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         List<LookDef> looks = Looks.of("puffcap_shepherd");

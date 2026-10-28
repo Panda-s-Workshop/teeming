@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:gloamhound",
-      "weight": 108,
+      "weight": 78,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 3,

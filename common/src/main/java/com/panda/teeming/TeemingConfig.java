@@ -4,7 +4,7 @@ package com.panda.teeming;
 public final class TeemingConfig {
     /** Where the values come from. The defaults apply until the loader's config is loaded. */
     public interface Source {
-        /** Multiplies how often every Teeming mob spawns (0 turns natural spawning off, 4 is the most). */
+        /** 0..4: below 1 each natural spawn goes ahead with this chance (0 turns them off); above 1 it only raises the local caps. */
         double spawningDensity();
 
         /** Per mob: false stops its natural spawns (spawn eggs and commands still work). */
@@ -22,7 +22,7 @@ public final class TeemingConfig {
         /** False: no mob places even temporary blocks (the Gloomweaver raises no walls and only bites). */
         boolean temporaryBlocks();
 
-        /** At most this many of one Teeming mob type within 48 blocks (1..16); apex mobs and giants stay at 1 in 128. */
+        /** At most this many of one Teeming mob type within 48 blocks (1..16); apex mobs and giants 1 in 128; both times the density above 1. */
         int localCap();
 
         /** 0..1, the chance a player kill of an ordinary Teeming mob drops its trophy; apex chances and Looting scale with it. */

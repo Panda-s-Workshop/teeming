@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:puffcap_shepherd",
-      "weight": 15,
+      "weight": 218,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

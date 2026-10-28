@@ -12,7 +12,6 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawner;
-import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -600,7 +598,7 @@ public final class WingshearTests {
 
     /**
      * Home: the open sky over the outer End, only through the Teeming spawner's sky rule (which refuses the main island),
-     * on no biome list, its biome tag the four outer End biomes; a monster of the End; weight 0, groups of 1-2. The Dusk Shear is its
+     * on no biome list, its biome tag the four outer End biomes and any modded End biome; a monster of the End; weight 0, groups of 1-2. The Dusk Shear is its
      * second look; it drops void membrane.
      */
     private static void home(GameTestHelper helper) {
@@ -610,8 +608,7 @@ public final class WingshearTests {
         helper.assertTrue(row.spawner().equals("sky") && TeemingSpawner.Rule.SKY.dimension.equals(Level.END), "the End's sky rule places it");
         helper.assertTrue(TeemingSpawner.onMainIsland(new BlockPos(0, 100, 0)) && !TeemingSpawner.onMainIsland(new BlockPos(1100, 100, 0)),
                 "the sky rule's main-island test: the origin is the main island, 1100 out is the outer islands");
-        var tag = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("wingshear"));
-        helper.assertTrue(tag.isPresent() && tag.get().size() == 4, "its biome tag holds the four outer End biomes");
+        TeemingGameTests.assertOuterEndTag(helper, "wingshear");
         helper.assertTrue(row.weight() == 0, "weight 0, got " + row.weight());
         helper.assertTrue(row.groupMin() == 1 && row.groupMax() == 2, "groups of 1-2, got " + row.groupMin() + ".." + row.groupMax());
         List<LookDef> looks = Looks.of("wingshear");

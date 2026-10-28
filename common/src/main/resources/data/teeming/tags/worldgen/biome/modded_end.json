@@ -1,0 +1,9 @@
+{
+  "values": [
+    {
+      "id": "#c:is_end",
+      "required": false
+    },
+    "#minecraft:is_end"
+  ]
+}

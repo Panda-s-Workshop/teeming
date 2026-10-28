@@ -7,13 +7,17 @@
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/hollow_mourner"
+      },
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_beside/hollow_mourner"
       }
     ]
   },
   "spawners": [
     {
       "type": "teeming:hollow_mourner",
-      "weight": 5,
+      "weight": 355,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

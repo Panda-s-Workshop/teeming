@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:shiverwraith",
-      "weight": 10,
+      "weight": 236,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

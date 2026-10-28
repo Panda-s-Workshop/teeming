@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:vinedrop_strangler",
-      "weight": 68,
+      "weight": 75,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

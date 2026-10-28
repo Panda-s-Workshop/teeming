@@ -6,6 +6,7 @@ import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.overworld.Snagwood;
 import com.panda.teeming.mob.overworld.Snagwood.Step;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -218,7 +219,7 @@ public final class SnagwoodTests {
         });
     }
 
-    /** Home: forests (birch forests too), never the dark forest; spawn weight 15, alone. */
+    /** Home: forests (birch forests too), never the dark forest; roster weight 15, alone. */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("snagwood"));
@@ -232,7 +233,10 @@ public final class SnagwoodTests {
         Weighted<MobSpawnSettings.SpawnerData> entry = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).spawners().unwrap().stream()
                 .filter(w -> w.value().type() == ModMobs.SNAGWOOD.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 15, "spawn weight 15, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 15
+        int rest = SpawnTable.rest("snagwood", 15).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "alone, got groups of " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         helper.succeed();

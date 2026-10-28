@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:hollow_mourner",
-      "weight": 46,
+      "weight": 117,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

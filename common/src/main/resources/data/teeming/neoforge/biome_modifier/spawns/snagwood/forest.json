@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:snagwood",
-      "weight": 103,
+      "weight": 266,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

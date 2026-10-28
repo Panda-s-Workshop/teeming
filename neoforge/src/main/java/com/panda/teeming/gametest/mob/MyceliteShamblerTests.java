@@ -9,6 +9,7 @@ import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.mob.overworld.MyceliteShambler;
 import com.panda.teeming.mob.overworld.MyceliteShambler.Step;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -480,7 +481,10 @@ public final class MyceliteShamblerTests {
         Weighted<MobSpawnSettings.SpawnerData> entry = spawns.stream()
                 .filter(w -> w.value().type() == ModMobs.MYCELITE_SHAMBLER.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 15, "spawn weight 15, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 15
+        int rest = SpawnTable.rest("mycelite_shambler", 15).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "groups of 1, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         List<LookDef> looks = Looks.of("mycelite_shambler");

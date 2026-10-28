@@ -1,0 +1,24 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/echo_fencer/modded_end",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/echo_fencer/modded_end"
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:echo_fencer",
+      "weight": 1,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

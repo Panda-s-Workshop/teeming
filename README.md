@@ -28,9 +28,9 @@ on first start, and a newer version adds its new keys to an existing file.
 
 | Key | Default | What it does |
 |---|---|---|
-| `spawningDensity` | 1.0 | Multiplies how often every Teeming mob spawns (0 to 4; 0 turns natural spawning off, above 1 raises the local caps) |
+| `spawningDensity` | 1.0 | 0 to 4. Below 1 it thins natural spawns: each one that passed every other rule goes ahead with this chance (0 turns them off). Above 1 it only raises the local caps (`spawning.local_cap` times it, apex mobs and giants included); how often a Teeming mob is picked, and its share of each biome's spawns, stay the same |
 | `endMainIslandAfterDragon` | true | The main island's End mobs appear only after the dragon has been killed |
-| `spawning.local_cap` | 3 | At most this many of one Teeming mob type within 48 blocks (1 to 16); apex mobs and giants stay at 1 in 128 |
+| `spawning.local_cap` | 3 | At most this many of one Teeming mob type within 48 blocks (1 to 16); apex mobs and giants at 1 in 128. Both are multiplied by `spawningDensity` when it is above 1 |
 | `trophies.chance` | 0.025 | The chance a player kill of an ordinary Teeming mob drops its trophy (apex mobs four times it; Looting raises it in proportion) |
 | `fieldguide.killsToReveal` | 3 | Kills of a mob that reveal its tell, counter, drops and looks in the Field Guide (1 to 100) |
 | `griefing.temporary_blocks` | true | False stops every mob placing even temporary blocks (the Gloomweaver raises no walls) |
@@ -52,13 +52,19 @@ Nearly everything a pack would change is data under `data/teeming/`; spawn weigh
 - **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to
   give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that Teeming's own
   spawner places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty.
-  To switch a mob off either way, use `mobs.<id>.enabled`. `#teeming:share_capped` holds
-  biomes whose vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead.
+  To switch a mob off either way, use `mobs.<id>.enabled`. `#teeming:share_capped` holds Nether biomes whose
+  vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead. That spawner
+  doesn't run in the Overworld, so an Overworld biome added to the tag gets no Teeming monsters at all (the deep dark
+  and the mushroom fields are in it by default, where no monster spawns anyway). `#teeming:modded_end` (by default
+  `#c:is_end` and `#minecraft:is_end`) is how a biome mod's End biomes get the outer islands' mobs; vanilla's five End
+  biomes are always left out of it.
 - **How often and in what groups (NeoForge):** each biome-list mob's spawn weight and group size are NeoForge biome
-  modifiers. `data/teeming/neoforge/biome_modifier/spawns/<mob>.json` gives the mob its roster weight across its tag;
-  `spawns/<mob>/<biome>.json` gives it a weight tuned to one biome's monster list. Both stay inside the mob's tag.
-  Replace a file by id to change its `weight` or `count`. On Fabric these numbers are built into the mod, so a pack
-  can't change them; the server can only lower a mob with `mobs.<id>.spawnChance`.
+  modifiers. `data/teeming/neoforge/biome_modifier/spawns/<mob>/<biome>.json` gives it a weight tuned to one vanilla
+  biome's monster list. `spawns/<mob>.json` gives it the weight it carries in the biomes its tag reaches that are not
+  tuned (a biome mod's biomes), and `spawns/<mob>/beside.json` a smaller one where another mob already carries that
+  biome's share. All stay inside the mob's tag. Replace a file by id to change its `weight` or `count`. On Fabric these
+  numbers are built into the mod, so a pack can't change them; the server can only lower a mob with
+  `mobs.<id>.spawnChance`.
 - **Looks:** `data/teeming/teeming/looks/<mob>/<look>.json` with `weight` (0 switches a look off), and optionally
   `scale`, `attributes` and `biomes`. A new look id also needs its texture in a resource pack at
   `assets/teeming/textures/entity/<mob>/<look>.png`, and `<look>_weak.png` beside it for a mob with a weak point.

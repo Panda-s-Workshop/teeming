@@ -24,7 +24,9 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.locale.Language;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Rotation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -63,6 +65,25 @@ public final class TeemingGameTests {
     }
 
     private TeemingGameTests() {}
+
+    /**
+     * A spawner-placed outer End mob's biome tag: the four outer End biomes, and beyond them only End biomes, which a
+     * biome mod's End biomes reach through {@code #teeming:modded_end}. That tag also takes vanilla's main island; the
+     * spawner's rules keep these mobs off it by position, so a biome on the tag is not a place the mob spawns.
+     */
+    public static void assertOuterEndTag(GameTestHelper helper, String mob) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
+        var tag = biomes.get(TeemingSpawns.tag(mob));
+        helper.assertTrue(tag.isPresent(), "its biome tag is present");
+        for (String outer : List.of("end_highlands", "end_midlands", "end_barrens", "small_end_islands")) {
+            var key = ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace(outer));
+            helper.assertTrue(tag.get().contains(biomes.getOrThrow(key)), "its biome tag holds " + outer);
+        }
+        var end = biomes.get(BiomeTags.IS_END);
+        for (Holder<Biome> b : tag.get()) {
+            helper.assertTrue(end.isPresent() && end.get().contains(b), "its biome tag holds only End biomes, not " + b.getRegisteredName());
+        }
+    }
 
     /**
      * Gives one test longer than the default 100 ticks, for mechanics that need it (a cooldown timed through to the

@@ -13,6 +13,7 @@ import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.Collection;
 import java.util.List;
@@ -148,8 +149,15 @@ public final class TeemingCommand {
         int listed = listWeight(level, at, mob);
         if (listed > 0) source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.weight", biomeId(level.getBiome(at)), listed), false);
         TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
+        // left out: an outer End rule keeps off the main island by position, whose biome a broad End tag holds too; no
+        // monster spawns where no monster spawns, nor in a share-capped biome where no spawner runs (the Overworld's)
+        TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
+        boolean outer = rule != null && rule.dimension == Level.END && rule != TeemingSpawner.Rule.MAIN_ISLAND && rule != TeemingSpawner.Rule.APEX_ISLAND;
         List<String> here = level.getChunkSource().getGenerator().getBiomeSource().possibleBiomes().stream()
-                .filter(biome -> biome.is(tag)).map(TeemingCommand::biomeId).sorted().toList();
+                .filter(biome -> biome.is(tag) && !(outer && !mob.biomeSpawns() && biome.is(net.minecraft.world.level.biome.Biomes.THE_END))
+                        && !(!mob.passive() && (biome.is(TeemingSpawns.NO_DEFAULT_MONSTERS)
+                                || level.dimension() == Level.OVERWORLD && rule == null && biome.is(TeemingSpawner.SHARE_CAPPED))))
+                .map(TeemingCommand::biomeId).sorted().toList();
         int tagged = level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag).map(set -> set.size()).orElse(0);
         if (tagged == 0) {
             source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.anywhere"), false);
@@ -163,9 +171,39 @@ public final class TeemingCommand {
             source.sendSuccess(() -> biomes, false);
         }
         Holder<Biome> standing = level.getBiome(at);
-        boolean fits = tagged == 0 || standing.is(tag);
-        source.sendSuccess(() -> Component.translatable(fits ? "commands.teeming.spawns.here_yes" : "commands.teeming.spawns.here_no", biomeId(standing)), false);
+        String answer = whereYouStand(level, at, mob);
+        source.sendSuccess(() -> Component.translatable("commands.teeming.spawns." + answer, biomeId(standing)), false);
         return here.size();
+    }
+
+    /**
+     * Whether the mob spawns naturally at {@code pos}, as the lang key's last part: "here_yes" when the live spawn list
+     * there holds it; "here_spawner" when Teeming's spawner places it there (its rule's region holds the spot, or a
+     * share-capped Nether biome its tag holds); "here_no_monsters" for a monster where no monster spawns (mushroom
+     * fields, deep dark); "here_no_capped" for a monster whose tag holds a share-capped Overworld biome (its list there
+     * holds no Teeming monster and no spawner runs); "here_no_main_island" and "here_only_main_island" for an End rule
+     * on the wrong side of the main island's edge; else "here_no". Public for the GameTests.
+     */
+    public static String whereYouStand(ServerLevel level, BlockPos pos, RosterStats.Entry mob) {
+        Holder<Biome> biome = level.getBiome(pos);
+        if (!mob.passive() && biome.is(TeemingSpawns.NO_DEFAULT_MONSTERS)) return "here_no_monsters";
+        if (mob.biomeSpawns() && listWeight(level, pos, mob) > 0) return "here_yes";
+        TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
+        boolean inTag = biome.is(tag);
+        if (mob.biomeSpawns() && !mob.passive() && inTag && biome.is(TeemingSpawner.SHARE_CAPPED))
+            return level.dimension() == Level.NETHER ? "here_spawner" : "here_no_capped";
+        TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
+        if (rule == null || rule.dimension != level.dimension()) return "here_no";
+        // the spawner asks a spawner-only mob's tag (an empty one places it wherever its rule fits), not a biome-list mob's
+        int tagged = level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag).map(set -> set.size()).orElse(0);
+        if (!mob.biomeSpawns() && tagged > 0 && !inTag) return "here_no";
+        if (level.dimension() == Level.END) {
+            boolean main = TeemingSpawner.mainIsland(level, pos);
+            boolean wantsMain = rule == TeemingSpawner.Rule.MAIN_ISLAND || rule == TeemingSpawner.Rule.APEX_ISLAND;
+            if (main && !wantsMain) return "here_no_main_island";
+            if (wantsMain && (!main || !TeemingSpawner.mainIslandOpen(level))) return "here_only_main_island";
+        }
+        return "here_spawner";
     }
 
     /** The mob's weight in the live spawn list the game uses at {@code pos}, after every loader and data change; 0 if absent. */

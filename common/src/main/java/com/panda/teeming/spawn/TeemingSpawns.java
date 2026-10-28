@@ -24,6 +24,7 @@ import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -35,12 +36,18 @@ import net.minecraft.world.phys.AABB;
  * registered mob its placement and the predicate that applies light, height, config and local caps.
  */
 public final class TeemingSpawns {
-    /** Local caps: {@link TeemingConfig#localCap} of one type within {@link #CAP_RADIUS}; apex mobs and passive giants: 1 in 128. */
+    /** Local caps: {@link TeemingConfig#localCap} of one type within {@link #CAP_RADIUS}; apex mobs and passive giants: 1 in 128; both times the density above 1. */
     public static final int CAP_RADIUS = 48;
     public static final int RARE_CAP_RADIUS = 128;
     /** Mobs capped at 1 in 128 blocks, besides the apex mobs. */
     private static final Set<String> GIANTS = Set.of("driftsong");
-    private static final TagKey<Biome> NO_DEFAULT_MONSTERS = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "no_default_monsters"));
+    /** Biomes where no monster spawns naturally (mushroom fields, deep dark): the spawn predicate refuses every monster there. */
+    public static final TagKey<Biome> NO_DEFAULT_MONSTERS = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "no_default_monsters"));
+    /**
+     * A biome mod's End biomes reach the outer-island End mobs through this tag ({@code #c:is_end} and
+     * {@code #minecraft:is_end} by default); vanilla's five End biomes are left out wherever it is read.
+     */
+    public static final TagKey<Biome> MODDED_END = TagKey.create(Registries.BIOME, TeemingMod.id("modded_end"));
 
     private TeemingSpawns() {}
 
@@ -69,11 +76,13 @@ public final class TeemingSpawns {
     }
 
     private static <T extends Mob> void register(Placements out, EntityType<T> type, Entry mob) {
+        // Leaves refuse every mob but the ocelot and the parrot through ON_GROUND (each leaves block asks the type), so a
+        // canopy mob takes no vanilla placement and its own predicate asks for leaves below and room above.
         SpawnPlacementType placement = switch (mob.place()) {
-            case GROUND, SAND, LEAVES -> SpawnPlacementTypes.ON_GROUND;
+            case GROUND, SAND -> SpawnPlacementTypes.ON_GROUND;
             case WATER, SHALLOW -> SpawnPlacementTypes.IN_WATER;
             case LAVA -> SpawnPlacementTypes.IN_LAVA;
-            case CEILING, AIR, NONE -> SpawnPlacementTypes.NO_RESTRICTIONS;
+            case LEAVES, CEILING, AIR, NONE -> SpawnPlacementTypes.NO_RESTRICTIONS;
         };
         Heightmap.Types heightmap = switch (mob.place()) {
             case WATER, SHALLOW -> Heightmap.Types.OCEAN_FLOOR;
@@ -96,6 +105,7 @@ public final class TeemingSpawns {
         if (!natural) return true;
         if (!TeemingConfig.mobEnabled(mob.id())) return false;
         double chance = TeemingConfig.spawnChance(mob.id()) * Math.min(1.0, TeemingConfig.spawningDensity());
+        if (mob.place() == RosterStats.Place.WATER) chance *= SpawnTable.OPEN_WATER_CHANCE;   // it wins open water by default
         if (chance <= 0 || random.nextDouble() >= chance) return false;
         if (pos.getY() > mob.maxY()) return false;
         if (mob.surface() && !level.canSeeSky(pos)) return false;
@@ -136,12 +146,19 @@ public final class TeemingSpawns {
         return water <= 2 && level.getBlockState(above).isAir();
     }
 
+    /** The spot and the block over it are open, as vanilla's ground placement asks: no fluid, no full block, nothing that hurts. */
+    private static boolean roomAbove(ServerLevelAccessor level, EntityType<?> type, BlockPos pos) {
+        BlockPos up = pos.above();
+        return NaturalSpawner.isValidEmptySpawnBlock(level, pos, level.getBlockState(pos), level.getFluidState(pos), type)
+                && NaturalSpawner.isValidEmptySpawnBlock(level, up, level.getBlockState(up), level.getFluidState(up), type);
+    }
+
     /** Whether the mob's placement kind accepts the spot (no light, height or caps). Public for the placement GameTests. */
     public static boolean placeOk(Entry mob, EntityType<?> type, ServerLevelAccessor level, BlockPos pos) {
         return switch (mob.place()) {
             case GROUND -> level.getBlockState(pos.below()).isValidSpawn(level, pos.below(), type);
             case SAND -> level.getBlockState(pos.below()).is(BlockTags.SAND);
-            case LEAVES -> level.getBlockState(pos.below()).is(BlockTags.LEAVES);
+            case LEAVES -> level.getBlockState(pos.below()).is(BlockTags.LEAVES) && roomAbove(level, type, pos);
             case WATER -> level.getFluidState(pos).is(FluidTags.WATER) && level.getFluidState(pos.above()).is(FluidTags.WATER);
             case SHALLOW -> shallowWater(level, pos);
             case LAVA -> level.getFluidState(pos).is(FluidTags.LAVA) && level.getBlockState(pos.above()).isAir();

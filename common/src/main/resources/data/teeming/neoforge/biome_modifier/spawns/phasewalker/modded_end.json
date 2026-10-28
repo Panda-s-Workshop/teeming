@@ -1,0 +1,24 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/phasewalker/modded_end",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/phasewalker/modded_end"
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:phasewalker",
+      "weight": 1,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

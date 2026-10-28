@@ -1,0 +1,24 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/glimmerless/modded_end",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/glimmerless/modded_end"
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:glimmerless",
+      "weight": 1,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

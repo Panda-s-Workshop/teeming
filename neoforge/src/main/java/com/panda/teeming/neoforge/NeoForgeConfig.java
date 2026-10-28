@@ -11,8 +11,9 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
     private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
 
     private static final ModConfigSpec.DoubleValue SPAWNING_DENSITY = B
-            .comment("Multiplies how often every Teeming mob spawns (0 turns natural spawning off, 4 is the most).",
-                    "Below 1 it thins natural spawns; above 1 it raises the local caps.")
+            .comment("0 to 4. Below 1 it thins natural spawns: each one that passed every other rule goes ahead with this chance (0 turns them off).",
+                    "Above 1 it only raises the local caps (spawning.local_cap times it, apex mobs and giants included);",
+                    "how often a Teeming mob is picked, and its share of each biome's spawns, stay the same.")
             .defineInRange("spawningDensity", 1.0, 0.0, 4.0);
 
     private static final ModConfigSpec.BooleanValue END_MAIN_ISLAND_AFTER_DRAGON = B
@@ -28,7 +29,7 @@ public final class NeoForgeConfig implements TeemingConfig.Source {
             .define("griefing.temporary_blocks", true);
 
     private static final ModConfigSpec.IntValue LOCAL_CAP = B
-            .comment("At most this many of one Teeming mob type within 48 blocks; apex mobs and giants stay at 1 in 128.")
+            .comment("At most this many of one Teeming mob type within 48 blocks; apex mobs and giants 1 in 128. Both times spawningDensity above 1.")
             .defineInRange("spawning.local_cap", TeemingConfig.DEFAULT_LOCAL_CAP, 1, 16);
 
     private static final ModConfigSpec.DoubleValue TROPHY_CHANCE = B

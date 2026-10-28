@@ -7,6 +7,7 @@ import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.overworld.Dripfang;
 import com.panda.teeming.mob.overworld.Dripfang.Step;
 import com.panda.teeming.registry.ModMobs;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -242,7 +243,7 @@ public final class DripfangTests {
         });
     }
 
-    /** Home: dripstone caves; spawn weight 20, groups of 1 to 2. */
+    /** Home: dripstone caves; roster weight 20, groups of 1 to 2. */
     private static void home(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("dripfang"));
@@ -254,7 +255,10 @@ public final class DripfangTests {
         Weighted<MobSpawnSettings.SpawnerData> entry = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).spawners().unwrap().stream()
                 .filter(w -> w.value().type() == ModMobs.DRIPFANG.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 20, "spawn weight 20, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 20
+        int rest = SpawnTable.rest("dripfang", 20).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         helper.succeed();

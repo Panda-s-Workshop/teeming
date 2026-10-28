@@ -9,6 +9,7 @@ import com.panda.teeming.neoforge.NeoForgeConfig;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Place;
+import com.panda.teeming.spawn.OverworldShare;
 import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawner.Candidate;
@@ -43,6 +44,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -51,18 +53,24 @@ import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.common.world.BiomeModifiers;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jspecify.annotations.Nullable;
 
 /**
  * The special placements (sand, lava, ceiling, leaves, void air, underside) accept their spot and refuse a
  * plain floor, and main-island spawns stay shut while the dragon lives. Spots are built in the arena (its floor is y 0).
+ * Each biome-list placement kind is also asked the whole question natural spawning asks, in a sealed dark room: the
+ * type's vanilla placement, its spawn predicate, room for its spawn box, and the mob's own spawn rules and obstruction.
  */
 final class SpawnTests {
     private SpawnTests() {}
 
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
+        out.accept("placement_ground", SpawnTests::ground);
         out.accept("placement_sand", h -> place(h, "dunefin", Place.SAND, Blocks.SAND));
         out.accept("placement_leaves", h -> place(h, "vinedrop_strangler", Place.LEAVES, Blocks.JUNGLE_LEAVES));
+        out.accept("placement_water", SpawnTests::water);
         out.accept("placement_lava", SpawnTests::lava);
         out.accept("placement_shallow", SpawnTests::shallow);
         out.accept("placement_ceiling", SpawnTests::ceiling);
@@ -75,6 +83,7 @@ final class SpawnTests {
         out.accept("spawn_share_counts", SpawnTests::shareCounts);
         out.accept("spawn_share_end", SpawnTests::spawnShareEnd);
         out.accept("spawn_share_overworld", SpawnTests::spawnShareOverworld);
+        out.accept("spawn_rest_weights", SpawnTests::restWeights);
         out.accept("spawn_surface_only", SpawnTests::surfaceOnly);
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
@@ -90,13 +99,94 @@ final class SpawnTests {
         return TeemingSpawns.placeOk(mob, ModMobs.THORNHORN.get(), helper.getLevel(), helper.absolutePos(rel));
     }
 
-    /** A ground-kind placement: accepts a spot on its block, refuses one on the arena floor. */
+    /** A ground-kind placement: accepts a spot on its block, refuses one on the arena floor, and spawns there naturally. */
     private static void place(GameTestHelper helper, String id, Place kind, net.minecraft.world.level.block.Block block) {
         helper.assertTrue(RosterStats.get(id).place() == kind, id + " should be a " + kind + " mob");
+        helper.assertTrue(!ok(helper, id, new BlockPos(8, 1, 8)), id + " refuses the plain floor");
+        sealed(helper, 3);
         helper.setBlock(new BlockPos(3, 1, 3), block);
         helper.assertTrue(ok(helper, id, new BlockPos(3, 2, 3)), id + " accepts a spot on " + block);
-        helper.assertTrue(!ok(helper, id, new BlockPos(8, 1, 8)), id + " refuses the plain floor");
-        helper.succeed();
+        helper.succeedWhen(() -> helper.assertTrue(natural(helper, id, new BlockPos(3, 2, 3)),
+                id + ": natural spawning refuses its dark spot on " + block + " (" + why(helper, id, new BlockPos(3, 2, 3)) + ")"));
+    }
+
+    /** A plain ground monster (Hollow Mourner) spawns naturally on a dark stone floor. */
+    private static void ground(GameTestHelper helper) {
+        helper.assertTrue(RosterStats.get("hollow_mourner").place() == Place.GROUND, "hollow_mourner should be a ground mob");
+        sealed(helper, 3);
+        helper.succeedWhen(() -> helper.assertTrue(natural(helper, "hollow_mourner", new BlockPos(3, 1, 3)),
+                "hollow_mourner: natural spawning refuses a dark stone floor (" + why(helper, "hollow_mourner", new BlockPos(3, 1, 3)) + ")"));
+    }
+
+    /** An open-water mob (Stormeel) spawns naturally in water two deep, and natural spawning refuses it on dry floor. */
+    private static void water(GameTestHelper helper) {
+        helper.assertTrue(RosterStats.get("stormeel").place() == Place.WATER, "stormeel should be an open-water mob");
+        sealed(helper, 3);
+        for (int x = 2; x <= 4; x++)
+            for (int z = 2; z <= 4; z++)
+                for (int y = 1; y <= 2; y++) helper.setBlock(new BlockPos(x, y, z), Blocks.WATER);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(natural(helper, "stormeel", new BlockPos(3, 1, 3)),
+                    "stormeel: natural spawning refuses water two deep (" + why(helper, "stormeel", new BlockPos(3, 1, 3)) + ")");
+            helper.assertTrue(!natural(helper, "stormeel", new BlockPos(8, 1, 8)), "stormeel: natural spawning takes the dry floor");
+            // it wins open water by default, so its natural spawns go ahead only part of the time
+            RosterStats.Entry row = RosterStats.get("stormeel");
+            var type = TeemingSpawns.type(row).orElseThrow();
+            RandomSource random = RandomSource.create(17);
+            int passed = 0;
+            for (int i = 0; i < 600; i++)
+                if (TeemingSpawns.check(row, type, helper.getLevel(), EntitySpawnReason.NATURAL, helper.absolutePos(new BlockPos(3, 1, 3)), random)) passed++;
+            double rate = passed / 600.0;
+            helper.assertTrue(Math.abs(rate - SpawnTable.OPEN_WATER_CHANCE) < 0.07,
+                    "stormeel: natural spawns go ahead " + rate + " of the time, the open-water chance is " + SpawnTable.OPEN_WATER_CHANCE);
+        });
+    }
+
+    /**
+     * A sealed room: stone walls, floor and roof round the 3 by 3 room from (2, 1, 2) to (4, height, 4), so neither sky
+     * nor block light reaches it once the light engine has caught up. The test lays the spot's own blocks inside.
+     */
+    private static void sealed(GameTestHelper helper, int height) {
+        for (int x = 1; x <= 5; x++)
+            for (int z = 1; z <= 5; z++)
+                for (int y = 0; y <= height + 1; y++) {
+                    boolean inside = x >= 2 && x <= 4 && z >= 2 && z <= 4 && y >= 1 && y <= height;
+                    helper.setBlock(new BlockPos(x, y, z), inside ? Blocks.AIR : Blocks.STONE);
+                }
+    }
+
+    /**
+     * Natural spawning's whole question at the spot, in its own order: the type's vanilla placement
+     * ({@code SpawnPlacements.isSpawnPositionOk}), its spawn predicate for a natural spawn, a spawn box that collides with
+     * no block, then the mob itself: its spawn rules and its obstruction check.
+     */
+    private static boolean natural(GameTestHelper helper, String id, BlockPos rel) {
+        return why(helper, id, rel).equals("taken");
+    }
+
+    private static String placementName(net.minecraft.world.entity.SpawnPlacementType type) {
+        if (type == net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND) return "ON_GROUND";
+        if (type == net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER) return "IN_WATER";
+        if (type == net.minecraft.world.entity.SpawnPlacementTypes.IN_LAVA) return "IN_LAVA";
+        return type == net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS ? "NO_RESTRICTIONS" : String.valueOf(type);
+    }
+
+    /** The first step of natural spawning that refuses the mob at the spot, or "taken". */
+    private static String why(GameTestHelper helper, String id, BlockPos rel) {
+        ServerLevel level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(rel);
+        EntityType<? extends Mob> type = TeemingSpawns.type(RosterStats.get(id)).orElseThrow();
+        if (!SpawnPlacements.isSpawnPositionOk(type, level, pos)) return "the vanilla placement " + placementName(SpawnPlacements.getPlacementType(type)) + " refuses it";
+        // its predicate rolls (a spawn chance, the darkness roll): any of a dozen rolls of one seeded source passing counts
+        boolean rolled = false;
+        RandomSource random = RandomSource.create(1);
+        for (int i = 0; i < 12 && !rolled; i++) rolled = SpawnPlacements.checkSpawnRules(type, level, EntitySpawnReason.NATURAL, pos, random);
+        if (!rolled)
+            return "its spawn predicate refuses it (block light " + level.getBrightness(LightLayer.BLOCK, pos) + ", sky light "
+                    + level.getBrightness(LightLayer.SKY, pos) + ")";
+        if (!level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))) return "its spawn box hits a block";
+        if (!takes(level, type, pos)) return "the mob's own spawn rules or obstruction check refuse it";
+        return "taken";
     }
 
     /**
@@ -129,7 +219,12 @@ final class SpawnTests {
         for (int y = 1; y <= 3; y++) helper.setBlock(new BlockPos(8, y, 2), Blocks.WATER);
         helper.assertTrue(!ok(helper, "mire_gulper", new BlockPos(8, 1, 2)), "refuses water three deep");
         helper.assertTrue(!ok(helper, "mire_gulper", new BlockPos(2, 1, 6)), "refuses the dry floor");
-        helper.succeed();
+        // then natural spawning's whole question in a sealed pool one deep, three wide (the Gulper is 1.4 wide)
+        sealed(helper, 3);
+        for (int x = 2; x <= 4; x++)
+            for (int z = 2; z <= 4; z++) helper.setBlock(new BlockPos(x, 1, z), Blocks.WATER);
+        helper.succeedWhen(() -> helper.assertTrue(natural(helper, "mire_gulper", new BlockPos(3, 1, 3)),
+                "mire_gulper: natural spawning refuses its dark pool (" + why(helper, "mire_gulper", new BlockPos(3, 1, 3)) + ")"));
     }
 
     private static void lava(GameTestHelper helper) {
@@ -139,7 +234,12 @@ final class SpawnTests {
         helper.setBlock(new BlockPos(3, 2, 3), Blocks.STONE);
         helper.assertTrue(!ok(helper, "magma_tortoise", new BlockPos(3, 1, 3)), "refuses lava under a block");
         helper.assertTrue(!ok(helper, "magma_tortoise", new BlockPos(8, 1, 8)), "refuses dry air");
-        helper.succeed();
+        // natural spawning's whole question in a sealed lava pool one deep, three wide (the tortoise is 2.2 wide)
+        sealed(helper, 3);
+        for (int x = 2; x <= 4; x++)
+            for (int z = 2; z <= 4; z++) helper.setBlock(new BlockPos(x, 1, z), Blocks.LAVA);
+        helper.succeedWhen(() -> helper.assertTrue(natural(helper, "magma_tortoise", new BlockPos(3, 1, 3)),
+                "magma_tortoise: natural spawning refuses its lava pool (" + why(helper, "magma_tortoise", new BlockPos(3, 1, 3)) + ")"));
     }
 
     private static void ceiling(GameTestHelper helper) {
@@ -151,7 +251,12 @@ final class SpawnTests {
         helper.assertTrue(!ok(helper, "dripfang", new BlockPos(8, 3, 8)), "refuses open air");
         helper.setBlock(new BlockPos(5, 5, 5), Blocks.OAK_FENCE);
         helper.assertTrue(!ok(helper, "dripfang", new BlockPos(5, 3, 5)), "refuses a fence, whose underside isn't sturdy");
-        helper.succeed();
+        // natural spawning's whole question under the roof of a sealed room two high
+        helper.setBlock(new BlockPos(3, 5, 3), Blocks.AIR);
+        helper.setBlock(new BlockPos(5, 5, 5), Blocks.AIR);
+        sealed(helper, 2);
+        helper.succeedWhen(() -> helper.assertTrue(natural(helper, "dripfang", new BlockPos(3, 1, 3)),
+                "dripfang: natural spawning refuses the dark spot under a roof (" + why(helper, "dripfang", new BlockPos(3, 1, 3)) + ")"));
     }
 
     private static boolean fits(GameTestHelper helper, Rule rule, BlockPos rel) {
@@ -269,13 +374,14 @@ final class SpawnTests {
     }
 
     /**
-     * In each Overworld biome with a Teeming biome-list monster Teeming makes about 1 in 4 to 6 of the monster picks
-     * (17-25 %), read from the live spawn lists after the biome modifiers ran, with vanilla's own monster weights
-     * unchanged. Each kind is held against the vanilla weight that can stand where it does, since a spot in open water
-     * refuses every land pick and a land spot every open-water pick: the land mobs against vanilla's land monsters (all
-     * but the drowned), both above y 0 (without the mobs that spawn only below y 0, whose picks fail there) and below
-     * (all of them); the open-water mobs hold the whole weight nearest the target share of the drowned, at least 1 each.
-     * A biome with no vanilla monsters is share-capped and its list holds no Teeming monster.
+     * In each Overworld biome with a Teeming biome-list monster Teeming makes about 1 in 4 to 6 of the monsters
+     * (17-25 %), counted in mobs (each entry's weight times its mean group, since a pick places its whole group and
+     * vanilla's land monsters come four at a time), read from the live spawn lists after the biome modifiers ran, with
+     * vanilla's own monster weights unchanged. Each kind is held against the vanilla mobs that can stand where it does
+     * ({@link OverworldShare}): the carrying land mobs alone, then with the narrow-place mobs (the land above y 0) and with
+     * the below-y-0 mobs (the land below y 0), each against vanilla's land mobs (the slime and the ocelot uncounted), and
+     * the open-water mobs against the drowned, at the whole weight nearest the target, at least 1. A biome with no
+     * vanilla monsters is share-capped and its list holds no Teeming monster.
      */
     private static void spawnShareOverworld(GameTestHelper helper) {
         var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
@@ -287,10 +393,14 @@ final class SpawnTests {
             MobSpawnSettings settings = biome.value().getModifiedEnvironmentAttributes()
                     .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
             String name = key.identifier().getPath();
-            int vanilla = 0, drowned = 0, ours = 0, deep = 0, wet = 0, wetMobs = 0;
+            int vanilla = 0, drowned = 0, ours = 0, wetWeight = 0, wetRoster = 0;
+            List<OverworldShare.Entry> entries = new ArrayList<>();
+            List<RosterStats.Entry> wetRows = new ArrayList<>();
             var monsters = settings.getMobsInCategory(MobCategory.MONSTER); // null where the biome lists no monster at all
             for (Weighted<MobSpawnSettings.SpawnerData> w : monsters == null ? List.<Weighted<MobSpawnSettings.SpawnerData>>of() : monsters.unwrap()) {
                 EntityType<?> type = w.value().type();
+                entries.add(new OverworldShare.Entry(type.builtInRegistryHolder().key().identifier().toString(), w.weight(),
+                        w.value().count().minInclusive(), w.value().count().maxInclusive()));
                 if (!teeming(type)) {
                     vanilla += w.weight();
                     if (type == EntityTypes.DROWNED) drowned += w.weight();
@@ -301,10 +411,10 @@ final class SpawnTests {
                 if (row == null) continue;
                 if (row.apex()) wrong.add(name + ": the apex " + row.id() + " is on its list");
                 if (row.dim() != RosterStats.Dim.OVERWORLD) wrong.add(name + ": " + row.id() + ", a " + row.dim() + " mob, is on its list");
-                if (row.maxY() <= 0) deep += w.weight();
-                if (row.place() == Place.WATER) {
-                    wet += w.weight();
-                    wetMobs++;
+                if (OverworldShare.kind(row) == OverworldShare.Kind.WET) {
+                    wetWeight += w.weight();
+                    wetRoster += row.weight();
+                    wetRows.add(row);
                 }
             }
             if (vanilla != e.getValue()) wrong.add(name + ": vanilla monster weight " + vanilla + ", the biome file has " + e.getValue());
@@ -318,26 +428,61 @@ final class SpawnTests {
                 seen.add(name + " share-capped (vanilla " + vanilla + ")");
                 continue;
             }
-            int land = vanilla - drowned;
-            int dry = ours - wet - deep;
-            double got = share(dry + deep, land);
-            if (got < SpawnTable.SHARE_MIN || got > SpawnTable.SHARE_MAX)
-                wrong.add(String.format(Locale.ROOT, "%s: Teeming land weight %d against vanilla land %d below y 0, %.1f %%", name, dry + deep, land, got * 100));
-            double up = share(dry, land);
-            if (up < SpawnTable.SHARE_MIN || up > SpawnTable.SHARE_MAX)
-                wrong.add(String.format(Locale.ROOT, "%s: Teeming land weight %d against vanilla land %d above y 0, %.1f %%", name, dry, land, up * 100));
-            if (wetMobs > 0) {
-                int want = wetMobs;
-                for (int t = wetMobs; t <= wetMobs + 4 * drowned; t++)
-                    if (Math.abs(share(t, drowned) - SpawnTable.TARGET_SHARE) < Math.abs(share(want, drowned) - SpawnTable.TARGET_SHARE)) want = t;
-                if (wet != want) wrong.add(name + ": open-water Teeming weight " + wet + " against the drowned's " + drowned + ", the rule gives " + want);
+            OverworldShare.Shares got = OverworldShare.of(entries);
+            Double table = SpawnTable.VANILLA_OVERWORLD_LAND_MOBS.get(e.getKey());
+            if (table == null || Math.abs(table - got.vanillaLand()) > 0.01)
+                wrong.add(name + ": vanilla land mobs " + got.vanillaLand() + " on the live list, the table has " + table);
+            for (var check : List.of(Map.entry("carrying", got.carrying()), Map.entry("above y 0", got.surface()), Map.entry("below y 0", got.below()))) {
+                if (check.getValue() < SpawnTable.SHARE_MIN || check.getValue() > SpawnTable.SHARE_MAX)
+                    wrong.add(String.format(Locale.ROOT, "%s: Teeming %s share %.1f %% of the land mobs", name, check.getKey(), check.getValue() * 100));
             }
-            seen.add(String.format(Locale.ROOT, "%s land above y 0 %d/%d = %.1f %%, below %d/%d = %.1f %%%s", name, dry, dry + land,
-                    up * 100, dry + deep, dry + deep + land, got * 100,
-                    wetMobs > 0 ? " (open water " + wet + " against drowned " + drowned + ")" : ""));
+            for (RosterStats.Entry row : wetRows) {
+                // the open-water rule: the mobs nearest the target share against the drowned, its roster weight's part, at least 1
+                double want = SpawnTable.TARGET_SHARE / (1 - SpawnTable.TARGET_SHARE) * got.vanillaWater() * row.weight() / wetRoster
+                        / ((row.groupMin() + row.groupMax()) / 2.0);
+                int rule = Math.max(1, (int) Math.round(want));
+                int live = entries.stream().filter(x -> x.type().equals(TeemingMod.MODID + ":" + row.id())).mapToInt(OverworldShare.Entry::weight).sum();
+                if (live != rule) wrong.add(name + ": open-water weight of " + row.id() + " " + live + " against the drowned's " + drowned + ", the rule gives " + rule);
+            }
+            seen.add(String.format(Locale.ROOT, "%s in mobs: carrying %.1f %%, above y 0 %.1f %%, below %.1f %%%s", name, got.carrying() * 100,
+                    got.surface() * 100, got.below() * 100, wetWeight > 0 ? " (open water " + wetWeight + " against drowned " + drowned + ")" : ""));
         }
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));
         TeemingMod.LOGGER.info("spawn_share_overworld: {}", String.join(", ", seen));
+        helper.succeed();
+    }
+
+    /**
+     * A biome mod's biomes get the spawn table's weights on NeoForge as on Fabric: each Overworld monster's rest
+     * modifier ({@code spawns/<mob>}) carries {@link SpawnTable#REST}'s weight, and a split rest's beside part
+     * ({@code spawns/<mob>/beside}) its beside weight; each outer-island End mob's {@code spawns/<mob>/modded_end}
+     * carries {@link SpawnTable#MODDED_END}'s weight on a biome set that holds none of vanilla's five End biomes.
+     */
+    private static void restWeights(GameTestHelper helper) {
+        var access = helper.getLevel().registryAccess();
+        var modifiers = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
+        var biomes = access.lookupOrThrow(Registries.BIOME);
+        List<String> wrong = new ArrayList<>();
+        BiConsumer<String, Integer> weighs = (name, want) -> {
+            var modifier = modifiers.get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id(name))).map(Holder::value).orElse(null);
+            if (!(modifier instanceof BiomeModifiers.AddSpawnsBiomeModifier add)) {
+                wrong.add(name + ": no spawn modifier");
+                return;
+            }
+            int got = add.spawners().unwrap().getFirst().weight();
+            if (got != want) wrong.add(name + ": weight " + got + ", the table has " + want);
+            if (name.endsWith("/modded_end"))
+                for (String id : SpawnTable.VANILLA_END_BIOMES)
+                    if (add.biomes().contains(biomes.getOrThrow(ResourceKey.create(Registries.BIOME, Identifier.parse(id)))))
+                        wrong.add(name + " reaches the vanilla biome " + id);
+        };
+        for (SpawnTable.Rest rest : SpawnTable.REST) {
+            weighs.accept("spawns/" + rest.mob(), rest.weight());
+            if (rest.beside() >= 0) weighs.accept("spawns/" + rest.mob() + "/beside", rest.beside());
+        }
+        for (Map.Entry<String, Integer> e : SpawnTable.MODDED_END.entrySet()) weighs.accept("spawns/" + e.getKey() + "/modded_end", e.getValue());
+        if (biomes.get(TeemingSpawns.MODDED_END).isEmpty()) wrong.add("no #teeming:modded_end tag");
+        helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
         helper.succeed();
     }
 

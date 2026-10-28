@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:dunefin",
-      "weight": 20,
+      "weight": 24,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

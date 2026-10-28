@@ -9,6 +9,7 @@ import com.panda.teeming.mob.overworld.Shiverwraith;
 import com.panda.teeming.mob.overworld.Shiverwraith.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -517,7 +518,10 @@ public final class ShiverwraithTests {
         helper.assertTrue(entries.size() == 1, "one spawner entry, got " + entries.size());
         var entry = entries.getFirst();
         helper.assertTrue(entry.value().type() == ModMobs.SHIVERWRAITH.get(), "the entry spawns Shiverwraiths");
-        helper.assertTrue(entry.weight() == 10, "weight 10, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 10
+        int rest = SpawnTable.rest("shiverwraith", 10).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "one at a time, got " + entry.value().count().minInclusive() + " to " + entry.value().count().maxInclusive());
         helper.assertTrue(!RosterStats.get("shiverwraith").anyLight(), "it spawns only in the dark");

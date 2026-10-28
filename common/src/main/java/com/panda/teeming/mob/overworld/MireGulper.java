@@ -166,6 +166,12 @@ public class MireGulper extends TeemingMonster {
         return false;
     }
 
+    /** It spawns in its pool: only blocks and mobs count as obstruction (the default refuses any liquid in the hitbox). */
+    @Override
+    public boolean checkSpawnObstruction(LevelReader level) {
+        return level.isUnobstructed(this);
+    }
+
     /** It crawls along the bottom as fast as on land, sinks, and climbs out over a bank it walks into. */
     @Override
     protected void travelInWater(Vec3 input, double baseGravity, boolean isFalling, double oldY) {

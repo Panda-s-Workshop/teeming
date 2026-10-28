@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:snapmaw_bloom",
-      "weight": 10,
+      "weight": 226,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

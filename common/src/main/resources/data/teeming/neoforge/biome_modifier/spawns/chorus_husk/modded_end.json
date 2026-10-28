@@ -1,0 +1,24 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/chorus_husk/modded_end",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/chorus_husk/modded_end"
+      }
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:chorus_husk",
+      "weight": 1,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 2
+      }
+    }
+  ]
+}

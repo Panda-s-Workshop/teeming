@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:mycelite_shambler",
-      "weight": 15,
+      "weight": 118,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

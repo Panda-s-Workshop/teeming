@@ -6,15 +6,22 @@ import com.panda.teeming.fieldguide.FieldGuideProgress;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.mob.overworld.Thornhorn;
+import com.panda.teeming.command.TeemingCommand;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.commands.FillBiomeCommand;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.phys.Vec3;
 
 /** The {@code /teeming} commands, run through the server's real dispatcher with an operator's source. */
@@ -25,6 +32,7 @@ final class CommandTests {
         out.accept("command_guide", CommandTests::guide);
         out.accept("command_look", CommandTests::look);
         out.accept("command_spawns", CommandTests::spawns);
+        out.accept("command_spawns_where", CommandTests::spawnsWhere);
     }
 
     private static CommandSourceStack op(GameTestHelper helper) {
@@ -96,6 +104,32 @@ final class CommandTests {
             if (mob.dim() != RosterStats.Dim.OVERWORLD) helper.assertTrue(result == 0, mob.id() + " lists no Overworld biome");
         }
         helper.assertTrue(run(helper, "teeming spawns not_a_mob") == -1, "an unknown mob is refused");
+        helper.succeed();
+    }
+
+    /**
+     * "Where you stand" tells the truth: in the mushroom fields and the deep dark (both in the Hollow Mourner's and the
+     * Hushwing's tags, where no monster spawns) the answer is no; in the plains, whose live list holds the Mourner, yes.
+     * The arena's biome is set for each answer and put back after.
+     */
+    private static void spawnsWhere(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos at = helper.absolutePos(new BlockPos(1, 1, 1));
+        BlockPos from = at.offset(-4, -4, -4), to = at.offset(4, 4, 4);
+        var biomes = level.registryAccess().lookupOrThrow(Registries.BIOME);
+        Holder<Biome> was = level.getBiome(at);
+        java.util.List<String> wrong = new java.util.ArrayList<>();
+        for (var c : java.util.List.of(java.util.Map.entry(Biomes.MUSHROOM_FIELDS, "here_no_monsters"), java.util.Map.entry(Biomes.DEEP_DARK, "here_no_monsters"),
+                java.util.Map.entry(Biomes.PLAINS, "here_yes"))) {
+            FillBiomeCommand.fill(level, from, to, biomes.getOrThrow(c.getKey()));
+            for (String id : java.util.List.of("hollow_mourner", "hushwing")) {
+                String got = TeemingCommand.whereYouStand(level, at, RosterStats.get(id));
+                String want = id.equals("hushwing") && c.getKey() == Biomes.PLAINS ? "here_yes" : c.getValue();
+                if (!got.equals(want)) wrong.add(id + " in " + c.getKey().identifier().getPath() + ": " + got + ", want " + want);
+            }
+        }
+        FillBiomeCommand.fill(level, from, to, was);
+        helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
         helper.succeed();
     }
 }

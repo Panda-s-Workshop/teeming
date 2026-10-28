@@ -11,6 +11,7 @@ import com.panda.teeming.mob.overworld.HollowMourner.Grave;
 import com.panda.teeming.mob.overworld.HollowMourner.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -601,7 +602,10 @@ public final class HollowMournerTests {
         Weighted<MobSpawnSettings.SpawnerData> entry = ((BiomeModifiers.AddSpawnsBiomeModifier) modifier.get().value()).spawners().unwrap().stream()
                 .filter(w -> w.value().type() == ModMobs.HOLLOW_MOURNER.get()).findFirst().orElse(null);
         helper.assertTrue(entry != null, "the modifier spawns it");
-        helper.assertTrue(entry.weight() == 5, "spawn weight 5, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 5
+        int rest = SpawnTable.rest("hollow_mourner", 5).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 1,
                 "groups of 1, got " + entry.value().count().minInclusive() + ".." + entry.value().count().maxInclusive());
         List<LookDef> looks = Looks.of("hollow_mourner");

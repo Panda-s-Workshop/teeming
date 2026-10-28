@@ -9,6 +9,7 @@ import com.panda.teeming.mob.overworld.Snowroller;
 import com.panda.teeming.mob.overworld.Snowroller.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -480,7 +481,10 @@ public final class SnowrollerTests {
         helper.assertTrue(entries.size() == 1, "one spawner entry, got " + entries.size());
         var entry = entries.getFirst();
         helper.assertTrue(entry.value().type() == ModMobs.SNOWROLLER.get(), "the entry spawns Snowrollers");
-        helper.assertTrue(entry.weight() == 15, "weight 15, got " + entry.weight());
+        // the rest of its tag (a biome mod's biomes; every vanilla biome of its home is tuned) has its rest weight from the
+        // spawn table, the share in mobs beside the mobs that live there too, not its roster weight 15
+        int rest = SpawnTable.rest("snowroller", 15).weight();
+        helper.assertTrue(entry.weight() == rest, "rest weight " + rest + ", got " + entry.weight());
         helper.assertTrue(entry.value().count().minInclusive() == 1 && entry.value().count().maxInclusive() == 2,
                 "groups of 1 to 2, got " + entry.value().count().minInclusive() + " to " + entry.value().count().maxInclusive());
         helper.assertTrue(!RosterStats.get("snowroller").anyLight(), "it spawns in the dark, like other monsters");

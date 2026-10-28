@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
@@ -403,7 +402,7 @@ public final class DriftsongTests {
 
     /**
      * Home: the void below the outer End islands, placed only by the spawner's void-below rule (on no biome list, so no
-     * biome modifier), its biome tag the four outer End biomes; a creature, alone, weight 0.
+     * biome modifier), its biome tag the four outer End biomes and any modded End biome; a creature, alone, weight 0.
      */
     private static void home(GameTestHelper helper) {
         RosterStats.Entry row = RosterStats.get("driftsong");
@@ -411,8 +410,7 @@ public final class DriftsongTests {
         helper.assertTrue(ModMobs.DRIFTSONG.get().getCategory() == MobCategory.CREATURE, "creature category");
         helper.assertTrue(!row.biomeSpawns(), "on no biome list");
         var access = helper.getLevel().registryAccess();
-        var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("driftsong"));
-        helper.assertTrue(tag.isPresent() && tag.get().size() == 4, "its biome tag holds the four outer End biomes");
+        TeemingGameTests.assertOuterEndTag(helper, "driftsong");
         helper.assertTrue(access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/driftsong"))).isEmpty(), "no biome modifier");
         helper.assertTrue(row.weight() == 0, "weight 0, got " + row.weight());

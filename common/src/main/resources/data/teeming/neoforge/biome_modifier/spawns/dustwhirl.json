@@ -13,7 +13,7 @@
   "spawners": [
     {
       "type": "teeming:dustwhirl",
-      "weight": 12,
+      "weight": 250,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

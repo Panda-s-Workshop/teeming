@@ -14,7 +14,6 @@ import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawner;
-import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,7 +22,6 @@ import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityTypes;
@@ -587,7 +585,7 @@ public final class BrinkrayTests {
 
     /**
      * Home: the void air beside small islands and the outer End, only through the Teeming spawner's void-air rule (which
-     * refuses the main island), on no biome list, its biome tag the four outer End biomes; neutral, of the monster
+     * refuses the main island), on no biome list, its biome tag the four outer End biomes and any modded End biome; neutral, of the monster
      * category; weight 0, one at a time. The Starry Ray is its second look; it drops void membrane.
      */
     private static void home(GameTestHelper helper) {
@@ -597,8 +595,7 @@ public final class BrinkrayTests {
         helper.assertTrue(ModMobs.BRINKRAY.get().getCategory() == MobCategory.MONSTER, "of the monster category");
         helper.assertTrue(row.spawner().equals("void_air"), "the spawner places it in void air, rule " + row.spawner());
         helper.assertTrue(!row.biomeSpawns(), "no biome list: only the spawner places it");
-        var tag = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("brinkray"));
-        helper.assertTrue(tag.isPresent() && tag.get().size() == 4, "its biome tag holds the four outer End biomes");
+        TeemingGameTests.assertOuterEndTag(helper, "brinkray");
         helper.assertTrue(row.weight() == 0, "weight 0, got " + row.weight());
         helper.assertTrue(row.groupMin() == 1 && row.groupMax() == 1, "one at a time, got " + row.groupMin() + ".." + row.groupMax());
         helper.assertTrue(row.tellTicks() == 20, "a 20-tick tell in its row");

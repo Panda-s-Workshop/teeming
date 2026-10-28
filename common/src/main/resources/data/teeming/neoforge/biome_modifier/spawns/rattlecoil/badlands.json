@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:rattlecoil",
-      "weight": 51,
+      "weight": 89,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,
