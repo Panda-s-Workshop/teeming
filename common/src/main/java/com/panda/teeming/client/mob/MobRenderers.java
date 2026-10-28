@@ -149,8 +149,14 @@ public final class MobRenderers {
                 Set.of("base", "gloom_swell"), 0.5F, 1.0F, 5, false));
         out.register(ModMobs.CHRONOMITE.get(), ctx -> new TeemingRenderer<>(ctx, new ChronomiteModel(ctx.bakeLayer(CreatureLayers.CHRONOMITE)), "chronomite",
                 Set.of("base", "gilded_mite"), 0.5F, 1.0F, 5, false));
+        out.register(ModMobs.VIGIL_OWL.get(), ctx -> new TeemingRenderer<>(ctx, new VigilOwlModel(ctx.bakeLayer(CreatureLayers.VIGIL_OWL)), "vigil_owl",
+                Set.of("base", "pale_vigil"), 0.3F, 1.0F, 4, false));
         out.register(ModMobs.ANCHOR_GOLEM.get(), ctx -> new TeemingRenderer<>(ctx, new AnchorGolemModel(ctx.bakeLayer(CreatureLayers.ANCHOR_GOLEM)), "anchor_golem",
                 Set.of(), 0.9F, 1.1F, 1, false));
+        out.register(ModMobs.PULLSTAR.get(), ctx -> new TeemingRenderer<>(ctx, new PullstarModel(ctx.bakeLayer(CreatureLayers.PULLSTAR)), "pullstar",
+                Set.of("base", "red_pullstar"), 0.4F, 1.0F, 3, true));
+        out.register(ModMobs.VOID_BLOOM.get(), ctx -> new TeemingRenderer<>(ctx, new VoidBloomModel(ctx.bakeLayer(CreatureLayers.VOID_BLOOM)), "void_bloom",
+                Set.of("base", "pale_bloom"), 0.5F, 1.0F, 2, false));
         out.register(ModMobs.RECURRENT.get(), ctx -> new TeemingRenderer<>(ctx, new RecurrentModel(ctx.bakeLayer(CreatureLayers.RECURRENT)), "recurrent",
                 Set.of("base", "gilded_recurrent"), 0.4F, 1.0F, 2, false));
         out.register(ModMobs.MNEMOVORE.get(), ctx -> new TeemingRenderer<>(ctx, new MnemovoreModel(ctx.bakeLayer(CreatureLayers.MNEMOVORE)), "mnemovore",

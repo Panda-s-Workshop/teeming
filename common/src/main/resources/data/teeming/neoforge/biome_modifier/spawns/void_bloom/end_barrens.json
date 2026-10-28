@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns/void_bloom",
+      [
+        "minecraft:end_barrens"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:void_bloom",
+      "weight": 3,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 1
+      }
+    }
+  ]
+}

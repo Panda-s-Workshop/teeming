@@ -102,7 +102,11 @@ public final class SpawnTable {
             new Row("swellshade", "minecraft:end_midlands", 4),
             new Row("chronomite", "minecraft:end_midlands", 4),
             new Row("chronomite", "minecraft:end_barrens", 3),
+            new Row("vigil_owl", "minecraft:end_highlands", 2),
+            new Row("vigil_owl", "minecraft:end_midlands", 4),
             new Row("anchor_golem", "minecraft:end_midlands", 4),
+            new Row("pullstar", "minecraft:end_barrens", 3),
+            new Row("void_bloom", "minecraft:end_barrens", 3),
             new Row("recurrent", "minecraft:end_barrens", 3),
             new Row("mnemovore", "minecraft:end_barrens", 3));
 
