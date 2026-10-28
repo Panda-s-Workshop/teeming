@@ -41,9 +41,11 @@ import net.minecraft.world.item.ItemStack;
  */
 public class FieldGuideScreen extends Screen {
     static final Identifier BOOK = TeemingMod.id("textures/gui/field_guide.png");
-    static final int W = 300, H = 184;
+    public static final int W = 300, H = 184;
     static final int L_X = 14, L_W = 128, R_X = 158, R_W = 128;
     static final int TAB_X = L_X - 3, TAB_Y = 26, TAB_H = 12, TAB_GAP = 1, TAB_PAD = 4, LIST_Y = 56, ROW_H = 12;
+    /** Rows that fit on the left page above its bottom margin; a longer list scrolls (the wheel, or the selection). */
+    public static final int ROWS = (H - 8 - LIST_Y) / ROW_H;
     /** Keeps the tabs and the count clear of the spine's shadow on the left page's inner edge. */
     static final int SPINE_MARGIN = 8;
     static final int MODEL_Y = 10, MODEL_H = 52, FLIP_Y = H - 22;
@@ -55,6 +57,8 @@ public class FieldGuideScreen extends Screen {
     private int x0, y0;
     private int tab;
     private int selected;
+    /** The list row shown at the top of the page. */
+    private int top;
     /** Right page: 0 about (model, home, role), 1 tell and counter (once revealed). */
     private int side;
     private float ticks;
@@ -75,7 +79,7 @@ public class FieldGuideScreen extends Screen {
     }
 
     /** The registered creatures of a dimension, in roster order. */
-    static List<Entry> entries(Dim dim) {
+    public static List<Entry> entries(Dim dim) {
         List<Entry> out = new ArrayList<>();
         for (Entry mob : RosterStats.ALL) if (mob.dim() == dim && TeemingSpawns.type(mob).isPresent()) out.add(mob);
         return out;
@@ -107,8 +111,26 @@ public class FieldGuideScreen extends Screen {
         return new int[] {x0 + R_X, y0 + FLIP_Y, R_W, 10};
     }
 
+    /** Where list row {@code i} is drawn, or null when it is scrolled off the page. */
     public int[] rowBounds(int i) {
-        return new int[] {x0 + L_X - 2, y0 + LIST_Y + i * ROW_H, L_W + 4, ROW_H};
+        if (i < top || i >= top + ROWS) return null;
+        return new int[] {x0 + L_X - 2, y0 + LIST_Y + (i - top) * ROW_H, L_W + 4, ROW_H};
+    }
+
+    /** The first row on the page; the harness reads it to check the selection is in view. */
+    public int top() {
+        return top;
+    }
+
+    /** Scrolls so row {@code i} is on the page, moving as little as it can. */
+    private void reveal(int i) {
+        if (i < top) top = i;
+        else if (i >= top + ROWS) top = i - ROWS + 1;
+        clampTop();
+    }
+
+    private void clampTop() {
+        top = Mth.clamp(top, 0, Math.max(0, entries(TABS[tab]).size() - ROWS));
     }
 
     /** Selects a tab and an entry directly (the harness pages through the book this way). */
@@ -120,10 +142,19 @@ public class FieldGuideScreen extends Screen {
         this.tab = Mth.clamp(tab, 0, TABS.length - 1);
         this.selected = Math.max(0, entry);
         this.side = side;
+        reveal(selected);
     }
 
     private static boolean in(double mx, double my, int[] b) {
-        return mx >= b[0] && mx < b[0] + b[2] && my >= b[1] && my < b[1] + b[3];
+        return b != null && mx >= b[0] && mx < b[0] + b[2] && my >= b[1] && my < b[1] + b[3];
+    }
+
+    @Override
+    public boolean mouseScrolled(double mx, double my, double dx, double dy) {
+        if (dy == 0.0 || entries(TABS[tab]).size() <= ROWS) return super.mouseScrolled(mx, my, dx, dy);
+        top -= (int) Math.signum(dy);
+        clampTop();
+        return true;
     }
 
     @Override
@@ -200,7 +231,7 @@ public class FieldGuideScreen extends Screen {
             g.textWithWordWrap(font, Component.translatable("screen.teeming.field_guide.empty"), x0 + L_X, y0 + LIST_Y, L_W, INK_MUTED, false);
             return;
         }
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = top; i < Math.min(list.size(), top + ROWS); i++) {
             int[] b = rowBounds(i);
             Entry mob = list.get(i);
             if (i == selected || in(mx, my, b)) g.fill(b[0], b[1], b[0] + b[2], b[1] + b[3], SELECT);
@@ -211,6 +242,10 @@ public class FieldGuideScreen extends Screen {
             if (p.revealed(mob.id())) g.text(font, "✦", b[0] + b[2] - 10, b[1] + 2, ACCENT, false);
             if (p.hasTrophy(mob.id())) g.text(font, "♛", b[0] + b[2] - 20, b[1] + 2, TROPHY, false);
         }
+        // more rows above or below: a mark at the list's outer edge, where the wheel scrolls them in
+        int edge = x0 + L_X - 9;
+        if (top > 0) g.text(font, "▲", edge, y0 + LIST_Y + 2, INK_MUTED, false);
+        if (top + ROWS < list.size()) g.text(font, "▼", edge, y0 + LIST_Y + (ROWS - 1) * ROW_H + 2, INK_MUTED, false);
     }
 
     private void drawRight(GuiGraphicsExtractor g, FieldGuideProgress p, Entry mob, float partial, int mx, int my) {
