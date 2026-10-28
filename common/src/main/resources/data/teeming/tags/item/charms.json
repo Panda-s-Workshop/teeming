@@ -1,5 +1,8 @@
 {
   "values": [
-    "teeming:shellward_charm"
+    "teeming:shellward_charm",
+    "teeming:hearth_charm",
+    "teeming:hush_charm",
+    "teeming:antivenom_charm"
   ]
 }

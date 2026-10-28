@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -198,7 +199,7 @@ public class Rattlecoil extends TeemingMonster {
         if (target != null && target.isAlive() && reach.intersects(target.getBoundingBox())) bite(level, target);
     }
 
-    /** The bite at the end of the lunge: its attack damage, then Poison II. */
+    /** The bite at the end of the lunge: its attack damage, then Poison II (half as long under an Antivenom Charm). */
     private void bite(ServerLevel level, LivingEntity target) {
         bitten = true;
         setDeltaMovement(getDeltaMovement().multiply(0.2, 1.0, 0.2));
@@ -206,7 +207,7 @@ public class Rattlecoil extends TeemingMonster {
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * STRIKE_HIT;
             boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), damage);
             if (hurt && MechanicEvent.post(this, "venom", target)) {
-                target.addEffect(new MobEffectInstance(MobEffects.POISON, POISON_TICKS, POISON_LEVEL), this);
+                target.addEffect(new MobEffectInstance(MobEffects.POISON, Charms.poisonTicks(target, POISON_TICKS), POISON_LEVEL), this);
                 level.sendParticles(VENOM, target.getX(), target.getY() + target.getBbHeight() * 0.5, target.getZ(), 8, 0.25, 0.25, 0.25, 0.0);
             }
         }

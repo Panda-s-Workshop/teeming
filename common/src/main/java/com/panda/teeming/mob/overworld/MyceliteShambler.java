@@ -1,6 +1,7 @@
 package com.panda.teeming.mob.overworld;
 
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -281,8 +282,8 @@ public class MyceliteShambler extends TeemingMonster {
     }
 
     /**
-     * The spore puff: Poison I for 40 ticks to every living thing within 2 blocks but shamblers and spectators. Returns
-     * how many it poisoned (undead shrug poison off, as always). Public as a test hook.
+     * The spore puff: Poison I for 40 ticks (20 under an Antivenom Charm) to every living thing within 2 blocks but
+     * shamblers and spectators. Returns how many it poisoned (undead shrug poison off, as always). Public as a test hook.
      */
     public int puff(ServerLevel level) {
         int poisoned = 0;
@@ -290,7 +291,7 @@ public class MyceliteShambler extends TeemingMonster {
                 e -> e != this && e.isAlive() && !e.isSpectator() && !(e instanceof MyceliteShambler) && e.distanceTo(this) <= PUFF_RADIUS);
         for (LivingEntity e : near) {
             if (!MechanicEvent.post(this, "spores", e)) continue;
-            if (e.addEffect(new MobEffectInstance(MobEffects.POISON, POISON_TICKS, POISON_LEVEL), this)) poisoned++;
+            if (e.addEffect(new MobEffectInstance(MobEffects.POISON, Charms.poisonTicks(e, POISON_TICKS), POISON_LEVEL), this)) poisoned++;
             level.sendParticles(SPORES, e.getX(), e.getY() + e.getBbHeight() * 0.6, e.getZ(), 8, 0.25, 0.3, 0.25, 0.0);
         }
         double y = getY() + getBbHeight() * 0.5;

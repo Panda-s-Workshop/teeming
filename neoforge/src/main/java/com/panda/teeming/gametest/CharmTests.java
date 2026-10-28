@@ -31,6 +31,7 @@ final class CharmTests {
     static void register(BiConsumer<String, Consumer<GameTestHelper>> out) {
         out.accept("charms_craftable", CharmTests::craftable);
         out.accept("charm_shellward", CharmTests::shellward);
+        OverworldCharmTests.register(out);
     }
 
     private static ItemStack stack(String part) {

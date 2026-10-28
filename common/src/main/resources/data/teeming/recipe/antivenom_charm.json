@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "teeming:venom_fang",
+    "teeming:venom_fang",
+    "teeming:venom_fang",
+    "teeming:venom_fang",
+    "minecraft:gold_ingot",
+    "minecraft:amethyst_shard"
+  ],
+  "result": {
+    "id": "teeming:antivenom_charm"
+  }
+}

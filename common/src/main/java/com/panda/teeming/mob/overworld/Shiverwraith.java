@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
@@ -39,7 +40,8 @@ import org.jspecify.annotations.Nullable;
  * in about 2.4 s, then vanilla freeze damage and the powder-snow slowdown), and the wraith heals 1 health a second
  * while it holds. Counter: heat or cover. Fire, a lit campfire or lava within 3 blocks of the target (or the target
  * burning), losing line of sight, or the target moving out past 12 blocks snaps the tether with a fizzle, and the
- * wraith recoils. It waits 3 s after a snap before it reaches out again; meanwhile it claws (its attack).
+ * wraith recoils. It waits 3 s after a snap before it reaches out again; meanwhile it claws (its attack). A Hearth
+ * Charm in the target's off-hand halves both the freeze and the healing.
  */
 public class Shiverwraith extends TeemingMonster {
     public enum Step implements Phase { IDLE, TELL, TETHER, SNAP }
@@ -47,11 +49,14 @@ public class Shiverwraith extends TeemingMonster {
     public static final int TELL_TICKS = 12;
     /** The tether reaches this far, in blocks from the wraith to its target; past it the beam snaps. */
     public static final double TETHER_RANGE = 12.0;
-    /** Freeze ticks the target gains each tick of the tether: fully frozen (140) in 47 ticks, about 2.4 s. */
+    /**
+     * Freeze ticks the target gains each tick of the tether: fully frozen (140) in 47 ticks, about 2.4 s. A Hearth
+     * Charm halves it (1.5 a tick, alternately 1 and 2).
+     */
     public static final int FREEZE_PER_TICK = 3;
     /** Freeze ticks vanilla takes back every tick from anything outside powder snow; the tether pays it back first. */
     public static final int THAW_PER_TICK = 2;
-    /** Health the wraith gains each second the tether holds. */
+    /** Health the wraith gains each second the tether holds; a Hearth Charm on the target halves it. */
     public static final float HEAL = 1.0F;
     public static final int HEAL_INTERVAL = 20;
     /** Fire, a lit campfire or lava this many blocks or fewer from the target (on each axis) breaks the tether. */
@@ -172,7 +177,10 @@ public class Shiverwraith extends TeemingMonster {
         return valid(target) && distanceTo(target) <= TETHER_RANGE && hasLineOfSight(target) && !warmed(level, target);
     }
 
-    /** One tick of the locked tether: it checks the hold, chills the target, heals itself once a second, draws the beam. */
+    /**
+     * One tick of the locked tether: it checks the hold, chills the target, heals itself once a second, draws the beam.
+     * A Hearth Charm in the target's off-hand halves the chill and the healing.
+     */
     private void tetherTick(ServerLevel level, @Nullable LivingEntity target) {
         holdStill();
         if (!canHold(level, target)) {
@@ -180,11 +188,11 @@ public class Shiverwraith extends TeemingMonster {
             return;
         }
         face(target);
-        if (MechanicEvent.post(this, "freeze", target)) chill(target);
         int t = core().elapsed();
+        if (MechanicEvent.post(this, "freeze", target)) chill(target, t);
         if (t > 0 && t % HEAL_INTERVAL == 0) {
             if (MechanicEvent.post(this, "heal", target)) {
-                heal(HEAL);
+                heal((float) (HEAL * Charms.frostTetherHeal(target)));
                 level.sendParticles(ParticleTypes.SNOWFLAKE, getX(), getY() + getBbHeight() * 0.6, getZ(), 5, 0.3, 0.3, 0.3, 0.01);
             }
             level.playSound(null, target.getX(), target.getY(), target.getZ(), ModSounds.SHIVERWRAITH_DRAIN.get(), getSoundSource(), 0.7F, 1.0F);
@@ -193,14 +201,18 @@ public class Shiverwraith extends TeemingMonster {
     }
 
     /**
-     * Adds the tether's freeze ticks to the target, as powder snow would: up to the vanilla full-freeze mark, plus the
-     * thaw vanilla takes off this tick, so the target stays fully frozen (and takes freeze damage) while it holds.
-     * Anything that can't freeze (leather armour, a stray) is left alone.
+     * Adds the tether's freeze ticks to the target on tick {@code t} of the tether, as powder snow would: up to the
+     * vanilla full-freeze mark, plus the thaw vanilla takes off this tick, so the target stays fully frozen (and takes
+     * freeze damage) while it holds. A Hearth Charm halves the build-up; a rate that isn't whole is paid out so the
+     * total after t ticks is the rate times t, rounded down. Anything that can't freeze (leather armour, a stray) is
+     * left alone.
      */
-    private static void chill(LivingEntity target) {
+    private static void chill(LivingEntity target, int t) {
         if (!target.canFreeze()) return;
+        double rate = FREEZE_PER_TICK * Charms.freezeBuildUp(target);
+        int gain = Mth.floor((t + 1) * rate) - Mth.floor(t * rate);
         int cap = target.getTicksRequiredToFreeze() + THAW_PER_TICK;
-        target.setTicksFrozen(Math.min(cap, target.getTicksFrozen() + FREEZE_PER_TICK + THAW_PER_TICK));
+        target.setTicksFrozen(Math.min(cap, target.getTicksFrozen() + gain + THAW_PER_TICK));
     }
 
     /** Heat close to the target: fire (soul fire too), a lit campfire or lava within 3 blocks on each axis, or the target burning. */

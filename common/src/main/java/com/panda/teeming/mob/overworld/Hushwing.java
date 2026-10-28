@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.overworld;
 
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
@@ -43,7 +44,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Hushwing: a blind cave bat that hunts by sound, in flocks of 3 to 4. It cannot see; it notices only noise, by kind
  * and range: a player sprinting within 16 blocks, fighting (hurting something or being hurt) within 12, or mining
- * (breaking a block) within 10. Walking and sneaking make no noise it hears. It has no warning before a bite; what
+ * (breaking a block) within 10. Walking and sneaking make no noise it hears, and a Hush Charm in the off-hand makes
+ * mining as quiet as walking. It has no warning before a bite; what
  * shows is its hearing: when it hears something its ears snap up and flick for half a second, a ring of sound rises
  * over it and a vibration runs from the noise to it. Then it flies to where it heard the noise and bites whoever it
  * finds there. It chases the last noise for 3 s; someone who goes quiet in that time is lost.
@@ -177,7 +179,10 @@ public class Hushwing extends TeemingMonster {
                 return true;
             }
             if (event.is(GameEvent.BLOCK_DESTROY)) {
-                if (!(from instanceof Player miner) || !prey(miner) || !hears(miner) || distanceTo(miner) > MINING_RANGE) return false;
+                // a Hush Charm in the miner's off-hand leaves only sprinting and fighting to be heard
+                if (!(from instanceof Player miner) || !prey(miner) || !hears(miner)) return false;
+                double range = MINING_RANGE * Charms.miningHeard(miner);
+                if (range <= 0 || distanceTo(miner) > range) return false;
                 heard.add(new Noise(chest(miner), miner, Kind.MINING, false));
                 return true;
             }
