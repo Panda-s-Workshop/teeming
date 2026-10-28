@@ -10,6 +10,7 @@ import com.panda.teeming.mob.end.Phasewalker.Step;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -192,10 +193,20 @@ public final class PhasewalkerTests {
         w.setTarget(player);
         float before = player.getHealth();
         boolean[] started = {false}, phasedOnce = {false};
+        // what it saw each time that changed, so a timeout says why no blow landed
+        StringBuilder seen = new StringBuilder();
+        String[] last = {""};
         helper.onEachTick(() -> {
             if (!started[0] && helper.getTick() >= 2) {
                 helper.assertTrue(w.shimmer(), "it shimmers");
                 started[0] = true;
+            }
+            String now = String.format(Locale.ROOT, "%s gap %.1f x %.1f y %.1f target %s sight %s hurt %d health %.1f", w.phase().step(),
+                    w.gapTo(player), helper.relativeVec(w.position()).x, helper.relativeVec(w.position()).y, w.getTarget() == player,
+                    w.hasLineOfSight(player), player.hurtTime, player.getHealth());
+            if (!now.equals(last[0])) {
+                last[0] = now;
+                seen.append(" | tick ").append(helper.getTick()).append(": ").append(now);
             }
             if (w.phased()) {
                 phasedOnce[0] = true;
@@ -204,7 +215,7 @@ public final class PhasewalkerTests {
             if (!w.phased()) helper.assertTrue(!inBlock(helper, w), "never solid inside the wall");
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(phasedOnce[0] && w.strikes() == 1, "it came through and struck, strikes " + w.strikes() + ", phase " + w.phase());
+            helper.assertTrue(phasedOnce[0] && w.strikes() == 1, "it came through and struck, strikes " + w.strikes() + ", phase " + w.phase() + "; seen" + seen);
             helper.assertTrue(helper.relativeVec(w.position()).x > 7.0, "it stands on the player's side of the wall");
             float lost = before - player.getHealth();
             helper.assertTrue(Math.abs(lost - blowOnPlayer(helper)) < 0.01F, "the blow costs " + blowOnPlayer(helper) + ", lost " + lost);
