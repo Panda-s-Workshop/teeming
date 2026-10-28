@@ -595,7 +595,7 @@ public class Chronomite extends TeemingMonster {
         level.playSound(null, getX(), getY(0.5), getZ(), ModSounds.CHRONOMITE_BITE.get(), getSoundSource(), 1.0F, 1.0F);
         if (!valid(target) || gapTo(target) > BITE_REACH || !inFront(target)) return;
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE;
-        if (target.hurtServer(level, damageSources().mobAttack(this), damage)) {
+        if (AstralAugur.GroundMarks.hurtInPlace(level, target, damageSources().mobAttack(this), damage)) {
             bites++;
             setLastHurtMob(target);
             level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.5), target.getZ(), 6, 0.2, 0.2, 0.2, 0.1);

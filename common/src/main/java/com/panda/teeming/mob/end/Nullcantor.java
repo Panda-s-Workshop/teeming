@@ -260,7 +260,7 @@ public class Nullcantor extends TeemingMonster {
     private void strike(ServerLevel level, @Nullable LivingEntity target) {
         playSound(ModSounds.NULLCANTOR_STRIKE.get(), 1.0F, 1.0F);
         if (valid(target) && isWithinMeleeAttackRange(target) && hasLineOfSight(target)) {
-            doHurtTarget(level, target);
+            AstralAugur.GroundMarks.inPlace(target, () -> doHurtTarget(level, target));
             strikes++;
         }
     }

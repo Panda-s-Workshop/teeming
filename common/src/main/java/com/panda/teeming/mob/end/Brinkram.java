@@ -447,7 +447,7 @@ public class Brinkram extends TeemingMonster {
     private void finishButt(ServerLevel level, @Nullable LivingEntity target) {
         if (target == null || !target.isAlive() || !isWithinMeleeAttackRange(target) || !getSensing().hasLineOfSight(target)) return;
         level.playSound(null, getX(), getY(), getZ(), ModSounds.BRINKRAM_BUTT.get(), getSoundSource(), 1.0F, 1.0F);
-        doHurtTarget(level, target);
+        AstralAugur.GroundMarks.inPlace(target, () -> doHurtTarget(level, target));   // only the edge charge throws
     }
 
     // ---- helpers ---------------------------------------------------------------------------------------------------

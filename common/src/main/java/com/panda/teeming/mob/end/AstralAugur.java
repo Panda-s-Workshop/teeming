@@ -425,7 +425,7 @@ public class AstralAugur extends TeemingMonster {
 
     /** The end of the wind-up: the blow lands if the target is still within reach. */
     private void finishSwipe(ServerLevel level, @Nullable LivingEntity target) {
-        if (valid(target) && isWithinMeleeAttackRange(target) && hasLineOfSight(target)) doHurtTarget(level, target);
+        if (valid(target) && isWithinMeleeAttackRange(target) && hasLineOfSight(target)) GroundMarks.inPlace(target, () -> doHurtTarget(level, target));
     }
 
     // ---- how the circles look --------------------------------------------------------------------------------------
@@ -854,12 +854,20 @@ public class AstralAugur extends TeemingMonster {
          * strike never throws anyone off an island's edge. True if the hit landed.
          */
         public static boolean hurtInPlace(ServerLevel level, LivingEntity victim, DamageSource source, float amount) {
+            return inPlace(victim, () -> victim.hurtServer(level, source, amount));
+        }
+
+        /**
+         * Runs {@code blow} (a mob's own melee hit, say) with {@code victim}'s knockback resistance full for it, so it
+         * lands without moving the victim. Returns what the blow returned.
+         */
+        public static boolean inPlace(LivingEntity victim, java.util.function.BooleanSupplier blow) {
             AttributeInstance resistance = victim.getAttribute(Attributes.KNOCKBACK_RESISTANCE);
             Identifier id = Steady.ID;
             boolean steadied = resistance != null && !resistance.hasModifier(id);
             if (steadied) resistance.addTransientModifier(new AttributeModifier(id, 1.0, AttributeModifier.Operation.ADD_VALUE));
             try {
-                return victim.hurtServer(level, source, amount);
+                return blow.getAsBoolean();
             } finally {
                 if (steadied) resistance.removeModifier(id);
             }

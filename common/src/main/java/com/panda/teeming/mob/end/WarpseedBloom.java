@@ -334,7 +334,7 @@ public class WarpseedBloom extends TeemingMonster {
         level.sendParticles(SEED_DUST, true, true, at.x, at.y, at.z, 12, 0.2, 0.2, 0.2, 0.0);
         level.playSound(null, at.x, at.y, at.z, ModSounds.WARPSEED_BLOOM_SEED_HIT.get(), getSoundSource(), 1.0F, 1.0F);
         if (!MechanicEvent.post(this, "seed_hit", victim)) return;
-        victim.hurtServer(level, Shot.damage(this), SEED_DAMAGE);
+        AstralAugur.GroundMarks.hurtInPlace(level, victim, Shot.damage(this), SEED_DAMAGE);
         if (victim.isAlive()) warp(level, victim);
     }
 

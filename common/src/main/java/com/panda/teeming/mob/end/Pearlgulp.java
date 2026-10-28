@@ -421,7 +421,7 @@ public class Pearlgulp extends TeemingMonster {
     private void bite(ServerLevel level, @Nullable LivingEntity victim) {
         if (canBite(victim) && distanceTo(victim) <= BITE_HOLD && MechanicEvent.post(this, "bite", victim)) {
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE;
-            if (victim.hurtServer(level, damageSources().mobAttack(this), damage)) {
+            if (AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), damage)) {
                 bites++;
                 setLastHurtMob(victim);
             }

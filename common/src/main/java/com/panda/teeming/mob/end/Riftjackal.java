@@ -517,7 +517,7 @@ public class Riftjackal extends TeemingMonster {
     private void bite(ServerLevel level, LivingEntity victim) {
         if (!MechanicEvent.post(this, "bite", victim)) return;
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE;
-        if (victim.hurtServer(level, damageSources().mobAttack(this), damage)) {
+        if (AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), damage)) {
             bites++;
             setLastHurtMob(victim);
         }

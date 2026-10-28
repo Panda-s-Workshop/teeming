@@ -467,7 +467,7 @@ public class Hollowmind extends TeemingMonster {
     private void bite(ServerLevel level, @Nullable LivingEntity target) {
         playSound(ModSounds.HOLLOWMIND_BITE.get(), 1.0F, 1.0F);
         if (valid(target) && isWithinMeleeAttackRange(target) && hasLineOfSight(target)) {
-            doHurtTarget(level, target);
+            AstralAugur.GroundMarks.inPlace(target, () -> doHurtTarget(level, target));
             bites++;
         }
     }

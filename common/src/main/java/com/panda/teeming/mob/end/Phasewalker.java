@@ -546,7 +546,7 @@ public class Phasewalker extends TeemingMonster {
         level.playSound(null, getX(), getY(0.6), getZ(), ModSounds.PHASEWALKER_STRIKE.get(), getSoundSource(), 1.0F, 1.0F);
         if (!valid(target) || gapTo(target) > STRIKE_REACH || !inFront(target) || !MechanicEvent.post(this, "strike", target)) return;
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * STRIKE;
-        if (target.hurtServer(level, damageSources().mobAttack(this), damage)) {
+        if (AstralAugur.GroundMarks.hurtInPlace(level, target, damageSources().mobAttack(this), damage)) {
             strikes++;
             setLastHurtMob(target);
             level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 8, 0.25, 0.25, 0.25, 0.1);

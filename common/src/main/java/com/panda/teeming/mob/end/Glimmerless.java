@@ -377,7 +377,7 @@ public class Glimmerless extends TeemingMonster {
         level.sendParticles(ParticleTypes.SWEEP_ATTACK, claws.x, claws.y, claws.z, 1, 0.0, 0.0, 0.0, 0.0);
         if (valid(target) && gapTo(target) <= STRIKE_REACH && inFront(target) && MechanicEvent.post(this, "rake", target)) {
             float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * STRIKE;
-            if (target.hurtServer(level, damageSources().mobAttack(this), damage)) {
+            if (AstralAugur.GroundMarks.hurtInPlace(level, target, damageSources().mobAttack(this), damage)) {
                 strikes++;
                 setLastHurtMob(target);
                 level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 8, 0.25, 0.25, 0.25, 0.1);

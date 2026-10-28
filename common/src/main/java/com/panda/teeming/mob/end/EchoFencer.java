@@ -376,7 +376,7 @@ public class EchoFencer extends TeemingMonster {
         int hit = 0;
         for (LivingEntity victim : caught) {
             if (!MechanicEvent.post(this, fromEcho ? "echo_hit" : "thrust_hit", victim)) continue;
-            if (victim.hurtServer(level, damageSources().mobAttack(this), damage)) {
+            if (AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), damage)) {
                 hit++;
                 setLastHurtMob(victim);
                 level.sendParticles(ParticleTypes.CRIT, true, true, victim.getX(), victim.getY(0.6), victim.getZ(), 8, 0.25, 0.25, 0.25, 0.1);

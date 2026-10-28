@@ -552,7 +552,7 @@ public class FacetDoppel extends TeemingMonster {
         }
         level.playSound(null, getX(), getY(0.6), getZ(), ModSounds.FACET_DOPPEL_STRIKE.get(), getSoundSource(), 1.0F, 1.0F);
         if (!valid(target) || gapTo(target) > STRIKE_REACH || !inFront(target) || !MechanicEvent.post(this, "strike", target)) return;
-        if (target.hurtServer(level, damageSources().mobAttack(this), blowDamage())) {
+        if (AstralAugur.GroundMarks.hurtInPlace(level, target, damageSources().mobAttack(this), blowDamage())) {
             strikes++;
             setLastHurtMob(target);
             level.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.6), target.getZ(), 8, 0.25, 0.25, 0.25, 0.1);
