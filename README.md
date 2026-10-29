@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/Panda-s-Workshop/teeming/actions/workflows/build.yml/badge.svg)](https://github.com/Panda-s-Workshop/teeming/actions/workflows/build.yml)
 
-**Store page:** *(coming soon)* · **Website:** [panda-s-workshop.github.io/teeming](https://panda-s-workshop.github.io/teeming/)
+**Store page:** [CurseForge](https://www.curseforge.com/minecraft/mc-mods/teeming) · **Website:** [panda-s-workshop.github.io/teeming](https://panda-s-workshop.github.io/teeming/)
 
 A Minecraft 26.3 mod for NeoForge (26.3.0.89) and Fabric (Fabric Loader 0.19.5, Fabric API 0.161.0), Java 25.
 
