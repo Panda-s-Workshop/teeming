@@ -6,6 +6,7 @@ import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.end.Driftsong;
 import com.panda.teeming.mob.end.Driftsong.Step;
+import com.panda.teeming.registry.ModMaterials;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawner.Rule;
@@ -27,6 +28,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -63,6 +65,8 @@ public final class DriftsongTests {
         out.accept("driftsong_stays_under", DriftsongTests::staysUnder);
         TeemingGameTests.timeLimit("driftsong_stays_under", 240);
         out.accept("driftsong_dies_mid_swell", DriftsongTests::diesMidSwell);
+        out.accept("driftsong_drops_over_void", DriftsongTests::dropsOverVoid);
+        out.accept("driftsong_drops_over_ground", DriftsongTests::dropsOverGround);
         out.accept("driftsong_cap", DriftsongTests::cap);
         out.accept("driftsong_spawn_rule", DriftsongTests::spawnRule);
         out.accept("driftsong_save_load", DriftsongTests::saveLoad);
@@ -236,6 +240,62 @@ public final class DriftsongTests {
             helper.assertTrue(slowFalling(p) == 0, "no gift from a dead Driftsong, got " + slowFalling(p));
             helper.succeed();
         });
+    }
+
+    /**
+     * Killed by a player over the void, its void membrane lands at that player's feet: the column under it is opened
+     * down to the world's floor (and put back after), the player stands 7 blocks off on the arena floor.
+     */
+    private static void dropsOverVoid(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos top = helper.absolutePos(new BlockPos(6, 0, 6));
+        List<Runnable> putBack = new ArrayList<>();
+        for (BlockPos at = top; at.getY() >= level.getMinY(); at = at.below()) {
+            BlockPos here = at.immutable();
+            var was = level.getBlockState(here);
+            if (was.isAir()) continue;
+            level.setBlock(here, Blocks.AIR.defaultBlockState(), 2);
+            putBack.add(() -> level.setBlock(here, was, 2));
+        }
+        TestPlayers.whenDone(helper, () -> putBack.forEach(Runnable::run));
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 1, 1.5));
+        Driftsong d = driftsong(helper, new Vec3(6.5, 3, 6.5), p);
+        d.moor(200);
+        helper.runAtTickTime(2, () -> d.hurtServer(level, level.damageSources().playerAttack(p), 1000.0F));
+        helper.runAtTickTime(20, () -> {
+            List<ItemEntity> near = membranes(helper);
+            TestPlayers.whenDone(helper, () -> near.forEach(ItemEntity::discard));
+            helper.assertTrue(!near.isEmpty(), "its membrane was dropped where it can be picked up");
+            for (ItemEntity i : near) {
+                double off = Math.hypot(i.getX() - p.getX(), i.getZ() - p.getZ());
+                helper.assertTrue(off < 1.5, "the membrane lies at the killer's feet, " + off + " blocks off");
+            }
+            helper.succeed();
+        });
+    }
+
+    /** Over ground the drops land under it as usual: none moves to the killer 7 blocks off. */
+    private static void dropsOverGround(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 1, 1.5));
+        Driftsong d = driftsong(helper, new Vec3(6.5, 3, 6.5), p);
+        d.moor(200);
+        helper.runAtTickTime(2, () -> d.hurtServer(level, level.damageSources().playerAttack(p), 1000.0F));
+        helper.runAtTickTime(20, () -> {
+            List<ItemEntity> near = membranes(helper);
+            TestPlayers.whenDone(helper, () -> near.forEach(ItemEntity::discard));
+            helper.assertTrue(!near.isEmpty(), "its membrane dropped");
+            for (ItemEntity i : near) {
+                double off = Math.hypot(i.getX() - d.getX(), i.getZ() - d.getZ());
+                helper.assertTrue(off < 1.5, "the membrane lies under where it died, " + off + " blocks off");
+            }
+            helper.succeed();
+        });
+    }
+
+    private static List<ItemEntity> membranes(GameTestHelper helper) {
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds(),
+                i -> i.isAlive() && i.getItem().is(ModMaterials.VOID_MEMBRANE.get()));
     }
 
     // ---- the drift -------------------------------------------------------------------------------------------------------

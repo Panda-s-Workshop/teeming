@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -128,6 +129,12 @@ public abstract class TeemingMonster extends Monster implements TeemingCreature 
     public void die(DamageSource source) {
         super.die(source);
         if (countsAsKill()) FieldGuide.onKilled(this, source);
+    }
+
+    /** Over the void, a player's kill leaves its drops at the player's feet ({@link VoidDrops}). */
+    @Override
+    protected void dropAllDeathLoot(ServerLevel level, DamageSource source) {
+        VoidDrops.drop(level, this, source, () -> super.dropAllDeathLoot(level, source));
     }
 
     /** Whether its death counts as a Field Guide kill; a mob that comes out of another's death (a split) may not. */

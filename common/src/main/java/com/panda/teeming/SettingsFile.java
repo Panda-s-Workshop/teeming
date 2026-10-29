@@ -2,10 +2,15 @@ package com.panda.teeming;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -21,6 +26,26 @@ public final class SettingsFile {
 
     /** One key's line as the file writes it, with the comment lines above it. */
     private record Line(String key, String value, String text, List<String> comments) {}
+
+    /**
+     * A settings file's text for {@link #write}: empty when there is no file, the text without a leading byte-order mark,
+     * read as ISO-8859-1 (as {@link Properties} reads) when it isn't UTF-8, and nothing when it can't be read at all, so
+     * that a caller never writes defaults over a file it couldn't read.
+     */
+    public static Optional<String> readFile(Path file) {
+        if (!Files.exists(file)) return Optional.of("");
+        String text;
+        try {
+            try {
+                text = Files.readString(file);
+            } catch (CharacterCodingException e) {
+                text = Files.readString(file, StandardCharsets.ISO_8859_1);
+            }
+        } catch (IOException e) {
+            return Optional.empty();
+        }
+        return Optional.of(text.startsWith("\uFEFF") ? text.substring(1) : text);
+    }
 
     /**
      * The file's new text. {@code old}: its text (empty for no file). {@code header}: the header's lines, without the

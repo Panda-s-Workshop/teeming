@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import net.fabricmc.loader.api.FabricLoader;
 
@@ -82,21 +83,17 @@ final class FabricConfig implements TeemingConfig.Source {
 
     static FabricConfig load() {
         Path file = FabricLoader.getInstance().getConfigDir().resolve("teeming.properties");
-        String old = "";
-        if (Files.exists(file)) {
-            try {
-                old = Files.readString(file);
-            } catch (IOException e) {
-                TeemingMod.LOGGER.warn("Couldn't read {}, using the defaults", file, e);
-            }
-        }
+        Optional<String> read = SettingsFile.readFile(file);
+        // a file that can't be read is left as it is: the defaults run this session, and nothing is written over it
+        if (read.isEmpty()) TeemingMod.LOGGER.warn("Couldn't read {}, using the defaults and leaving the file as it is", file);
+        String old = read.orElse("");
         Map<String, String> renamed = new LinkedHashMap<>();
         for (RosterStats.Entry mob : RosterStats.ALL) {                    // an old file's per-mob keys
             for (String name : new String[] {"enabled", "spawnChance"}) renamed.put("mob." + mob.id() + "." + name, mobKey(mob, name));
         }
         // rewritten whenever the text changes (a new key, a renamed one, a new header), keeping values, comments and unknown keys
         String text = SettingsFile.write(old, HEADER, defaults(), renamed);
-        if (!text.equals(old)) {
+        if (read.isPresent() && !text.equals(old)) {
             try {
                 Files.writeString(file, text);
             } catch (IOException e) {
@@ -113,6 +110,9 @@ final class FabricConfig implements TeemingConfig.Source {
         try {
             read = Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
+            read = Double.NaN;
+        }
+        if (!Double.isFinite(read)) {                                        // NaN and the infinities clamp to nothing useful
             TeemingMod.LOGGER.warn("teeming.properties: {} = \"{}\" is not a number; using {}", key, value, fallback);
             return fallback;
         }
