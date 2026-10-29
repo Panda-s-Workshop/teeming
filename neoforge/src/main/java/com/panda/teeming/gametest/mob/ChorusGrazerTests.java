@@ -47,6 +47,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -97,6 +98,7 @@ public final class ChorusGrazerTests {
         out.accept("chorus_grazer_eats_fruit", ChorusGrazerTests::eatsFruit);
         TeemingGameTests.timeLimit("chorus_grazer_eats_fruit", 160);
         out.accept("chorus_grazer_fruit_range", ChorusGrazerTests::fruitRange);
+        out.accept("chorus_grazer_no_grief_when_gamerule_off", ChorusGrazerTests::noGrief);
         out.accept("chorus_grazer_hand_fed", ChorusGrazerTests::handFed);
         out.accept("chorus_grazer_startled_meal", ChorusGrazerTests::startledMeal);
         out.accept("chorus_grazer_veto", ChorusGrazerTests::veto);
@@ -704,6 +706,47 @@ public final class ChorusGrazerTests {
             helper.assertTrue(Math.abs(item.distanceTo(g) - 8.4) < 0.01, "moved to 8.4 off, " + item.distanceTo(g));
             helper.assertTrue(g.fruitInReach() == null, "8.4 blocks off is out of reach");
             helper.assertTrue(g.hungry() && calf.hungry() && !full.hungry(), "shorn and calves are hungry, a fleeced adult isn't");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Where mobs may not pick items up (the mob griefing rule off), a hungry grazer leaves chorus fruit on the ground:
+     * it finds none in reach and won't eat one it stands beside, and the fruit still lies there. Hand-feeding still
+     * works with the rule off. The rule is turned off and back on within one tick, so no other test sees it; with it on,
+     * the same grazer finds the fruit and eats it.
+     */
+    private static void noGrief(GameTestHelper helper) {
+        ChorusGrazer g = grazer(helper, 4.5, 5.5);
+        g.setNoAi(true);
+        g.setShorn(true);
+        ChorusGrazer fed = grazer(helper, 8.5, 5.5);
+        fed.setNoAi(true);
+        fed.setShorn(true);
+        ServerPlayer p = holding(helper, new Vec3(8.5, 1, 3.5), new ItemStack(Items.CHORUS_FRUIT, 2));
+        helper.runAtTickTime(2, () -> {
+            ItemEntity item = fruit(helper, 5.5, 5.5);
+            item.setNoGravity(true);
+            ServerLevel level = helper.getLevel();
+            GameRules rules = level.getGameRules();
+            boolean was = rules.get(GameRules.MOB_GRIEFING);
+            ItemEntity found;
+            boolean ate, handFed;
+            try {
+                rules.set(GameRules.MOB_GRIEFING, false, level.getServer());
+                found = g.fruitInReach();
+                ate = g.eat(item);
+                handFed = use(fed, p).consumesAction();
+            } finally {
+                rules.set(GameRules.MOB_GRIEFING, was, level.getServer());
+            }
+            helper.assertTrue(found == null, "with mob griefing off it finds no fruit, found " + found);
+            helper.assertTrue(!ate && item.isAlive() && item.getItem().getCount() == 1 && g.core().idle() && g.shorn(),
+                    "and eats none off the ground, phase " + g.phase());
+            helper.assertTrue(handFed && fed.core().in(Step.EAT) && p.getMainHandItem().getCount() == 1,
+                    "fed by hand it still eats, phase " + fed.phase());
+            helper.assertTrue(g.fruitInReach() == item, "with it on it finds the fruit");
+            helper.assertTrue(g.eat(item) && !item.isAlive() && g.core().in(Step.EAT), "and eats it");
             helper.succeed();
         });
     }

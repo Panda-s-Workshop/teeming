@@ -45,11 +45,12 @@ import org.jspecify.annotations.Nullable;
  * mote for every point of health it has left (thirty at full), and draws only those: it thins as it weakens.
  *
  * <p>It drifts after whatever it hunts, slower than a walk, and settles round them. Once it has wrapped its target for
- * half a second it gathers (the tell, 8 ticks): it stops dead, pulls in tight round its core and brightens, with a
+ * half a second it gathers (the tell, 10 ticks): it stops dead, pulls in tight round its core and brightens, with a
  * chime that rises in three steps and star sparks drawn in. Then it surges where it gathered, for 10 ticks: its motes
  * stream through everyone inside it, players and its target alike, and each mote that touches is a blow of its
- * attack (1) through armour, at most 3 on one body in a tick. A full swarm's thirty motes so pass through a body over the
- * surge for 30 before armour; a thinner swarm has fewer motes and its surge is shorter. The motes hurt in place: they
+ * attack (1.2) through armour, at most 3 on one body in a tick. A full swarm's thirty motes so pass through a body over
+ * the surge for 36 before armour, which counts as one blow, so it gets the full tell of a big blow; a thinner swarm has
+ * fewer motes and its surge is shorter. The motes hurt in place: they
  * never knock anyone back, so a surge at an island's edge throws no one off it. Then it loosens for 2 seconds, drifting
  * after its target again, before it can gather again.
  *
@@ -68,8 +69,8 @@ public class MoteSwarm extends TeemingMonster {
     public static final int MOTES = 30;
     /** At most this many motes land on one body in one tick. */
     public static final int MOTES_PER_TICK = 3;
-    /** The gather before it surges: 0.4 s. */
-    public static final int TELL_TICKS = 8;
+    /** The gather before it surges: 0.5 s, the tell a big blow gets (the surge counts as one blow of all its motes). */
+    public static final int TELL_TICKS = 10;
     /** The surge: a full swarm's motes, 3 a tick, pass through a body in exactly this long. */
     public static final int SURGE_TICKS = 10;
     /** After the surge it loosens and drifts this long before it can gather again. */

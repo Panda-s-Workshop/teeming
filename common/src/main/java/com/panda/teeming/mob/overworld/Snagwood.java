@@ -357,6 +357,12 @@ public class Snagwood extends TeemingMonster {
         return core().in(Step.ROOTED);
     }
 
+    /** Rooted, it passes for a dead tree. */
+    @Override
+    public boolean hiddenFromSight() {
+        return disguised();
+    }
+
     private void disguiseTick(ServerLevel level) {
         if (rootOnFirstTick) {
             rootOnFirstTick = false;

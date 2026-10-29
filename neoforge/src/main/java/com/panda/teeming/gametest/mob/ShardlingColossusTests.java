@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
@@ -48,7 +49,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * up, which never splits again. The counter: one half killed inside the 100 ticks leaves the other a half for good. The
  * drops: the first half to fall drops a void crystal; the second drops another only when a player's single hit of 12
  * split it and both halves fell inside the 100 ticks, so a colossus worn below half, or halves killed too slowly, pay
- * once. Vetoes, persistence of the halves, a reload, its stats and its home. Every number is checked against a plain
+ * once; with one half out of reach when the other falls, still one between them. Vetoes, persistence of the halves, a
+ * reload, its stats and its home. Every number is checked against a plain
  * value.
  */
 public final class ShardlingColossusTests {
@@ -77,6 +79,8 @@ public final class ShardlingColossusTests {
         TeemingGameTests.timeLimit("shardling_colossus_heavy_split_pays_twice", 160);
         out.accept("shardling_colossus_heavy_split_too_slow", ShardlingColossusTests::heavySplitTooSlow);
         TeemingGameTests.timeLimit("shardling_colossus_heavy_split_too_slow", 160);
+        out.accept("shardling_colossus_twin_gone_left_falls", h -> twinGone(h, false));
+        out.accept("shardling_colossus_twin_gone_right_falls", h -> twinGone(h, true));
         out.accept("shardling_colossus_tell_veto", ShardlingColossusTests::tellVeto);
         out.accept("shardling_colossus_split_veto", ShardlingColossusTests::splitVeto);
         out.accept("shardling_colossus_halves_kept", ShardlingColossusTests::halvesKept);
@@ -585,6 +589,60 @@ public final class ShardlingColossusTests {
         });
     }
 
+    /** A half's save, as a chunk unload writes it. */
+    private static CompoundTag save(GameTestHelper helper, ShardlingColossus half) {
+        TagValueOutput out = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+        half.saveWithoutId(out);
+        return out.buildResult();
+    }
+
+    /** A half loaded from its save and back in the level, removed when the test ends. */
+    private static ShardlingColossus load(GameTestHelper helper, CompoundTag tag) {
+        ServerLevel level = helper.getLevel();
+        ShardlingColossus loaded = ModMobs.SHARDLING_COLOSSUS.get().create(level, EntitySpawnReason.LOAD);
+        loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+        helper.assertTrue(level.addFreshEntity(loaded), "the reloaded half is back in the level");
+        TestPlayers.whenDone(helper, loaded::discard);
+        return loaded;
+    }
+
+    /**
+     * One half out of reach when the other falls: 2 ticks after a player's worn split, one half is saved and unloaded
+     * (taken out of the level as a chunk unload does, so its twin can't find it) and the other is killed; then the
+     * unloaded half comes back from its save and is killed too. One void crystal between them, whichever went:
+     * {@code leftGoes} false, the left half (which carries the drops) falls first and drops it, and the right comes back
+     * without them and drops nothing; true, the right falls first with nothing to find and drops nothing, and the left
+     * comes back still carrying them and drops it.
+     */
+    private static void twinGone(GameTestHelper helper, boolean leftGoes) {
+        ShardlingColossus c = colossus(helper, 5.5, 4.5);
+        ServerPlayer player = TestPlayers.survivor(helper, new Vec3(5.5, 1, 10.5));
+        Set<UUID> crystals = newCrystals(helper);
+        ShardlingColossus[] h = splitByPlayer(helper, c, player, false);
+        CompoundTag[] saved = {null};
+        helper.runAtTickTime(3, () -> {
+            ShardlingColossus gone = h[leftGoes ? 0 : 1], stays = h[leftGoes ? 1 : 0];
+            helper.assertTrue(h[0].carries() && !h[1].carries(), "the left half carries the drops from the split");
+            saved[0] = save(helper, gone);
+            gone.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
+            helper.assertTrue(stays.twin(helper.getLevel()) == null, "its twin is out of reach");
+            kill(helper, stays, player);
+        });
+        helper.runAtTickTime(10, () -> {
+            int first = leftGoes ? 0 : 1;
+            helper.assertTrue(crystals.size() == first, "the half that fell alone dropped " + first + " void crystals, saw " + crystals.size());
+            ShardlingColossus back = load(helper, saved[0]);
+            helper.assertTrue(back.form() == (leftGoes ? Form.LEFT : Form.RIGHT) && back.carries() == leftGoes && !back.twinFell(),
+                    "the half comes back as it went, carrying the drops: " + back.carries());
+            helper.assertTrue(back.twin(helper.getLevel()) == null, "and finds no living twin");
+            kill(helper, back, player);
+        });
+        helper.runAtTickTime(30, () -> {
+            helper.assertTrue(crystals.size() == 1, "one colossus, its halves falling apart, drops one void crystal, saw " + crystals.size());
+            helper.succeed();
+        });
+    }
+
     // ---- vetoes, persistence, reload --------------------------------------------------------------------------------
 
     /** A listener that cancels the "tell" step stops the slam: the pig in front is never hit. */
@@ -649,15 +707,32 @@ public final class ShardlingColossusTests {
 
     /**
      * A half saved and loaded keeps its form, scale, health, its twin (found again by id) and its clock: the reloaded
-     * right half, saved 20 ticks after the split, still sets off to rejoin 100 ticks after it.
+     * right half, saved 20 ticks after a heavy split, still sets off to rejoin 100 ticks after it. It also keeps its
+     * drop record: the split was heavy, 20 ticks ago, its twin hasn't fallen and it doesn't carry the drops. A second
+     * colossus's left half, saved after its right half fell, keeps that its twin fell and that it no longer carries them.
      */
     private static void reload(GameTestHelper helper) {
         ShardlingColossus c = colossus(helper, MID_X, MID_Z);
+        ShardlingColossus d = colossus(helper, MID_X - 8.0, MID_Z);
         ShardlingColossus[] copy = {null};
         long[] split = {-1}, setOff = {-1};
         helper.runAtTickTime(1, () -> {
-            helper.assertTrue(c.split(null, 10) != null, "it split");
+            helper.assertTrue(c.split(null, 10, true) != null, "it split, heavy");
+            helper.assertTrue(d.split(null, 10, true) != null, "the second split, heavy");
             split[0] = helper.getTick();
+        });
+        helper.runAtTickTime(21, () -> {
+            ShardlingColossus dRight = d.twin(helper.getLevel());
+            helper.assertTrue(dRight != null, "the second's right half lives");
+            dRight.hurtServer(helper.getLevel(), dRight.damageSources().magic(), 1000.0F);
+            helper.assertTrue(dRight.isDeadOrDying() && d.twinFell() && !d.carries(), "its left half saw it fall and gave up the drops");
+            CompoundTag tag = save(helper, d);
+            d.discard();
+            ShardlingColossus lone = load(helper, tag);
+            helper.assertTrue(lone.form() == Form.LEFT && lone.heavy() && lone.splitAge() == 20 && lone.twinFell() && !lone.carries(),
+                    "reloaded, it is heavy, split 20 ticks ago, its twin fell and it carries nothing: heavy " + lone.heavy() + ", split age "
+                            + lone.splitAge() + ", twin fell " + lone.twinFell() + ", carries " + lone.carries());
+            lone.discard();
         });
         helper.runAtTickTime(21, () -> {
             ServerLevel level = helper.getLevel();
@@ -675,6 +750,9 @@ public final class ShardlingColossusTests {
             helper.assertTrue(loaded.form() == Form.RIGHT && loaded.made() && near(loaded.getScale(), 0.7)
                     && near(loaded.getHealth(), health) && near(loaded.getMaxHealth(), 25.0), "it is the same right half");
             helper.assertTrue(loaded.age() == 20, "its clock reads 20, got " + loaded.age());
+            helper.assertTrue(loaded.heavy() && loaded.splitAge() == 20 && !loaded.twinFell() && !loaded.carries() && c.carries(),
+                    "its drop record survives: heavy " + loaded.heavy() + ", split age " + loaded.splitAge() + ", twin fell "
+                            + loaded.twinFell() + ", carries " + loaded.carries());
             helper.assertTrue(loaded.twin(level) == c && c.twin(level) == loaded, "the halves find each other again");
             copy[0] = loaded;
         });

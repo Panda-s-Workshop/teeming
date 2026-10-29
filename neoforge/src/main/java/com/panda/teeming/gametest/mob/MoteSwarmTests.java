@@ -43,7 +43,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Mote Swarm: health 30, attack 1.2 a mote, armour 0, a 1.5 x 1.5 hitbox. Wrapped round its target for 10 ticks it
- * gathers for 8 (the tell), then surges for 10: each mote that touches deals 1.2 through armour, at most 3 on one body a
+ * gathers for 10 (the tell), then surges for 10: each mote that touches deals 1.2 through armour, at most 3 on one body a
  * tick, as many motes as it has left (one a point of health, 30 at full). A plain single-target hit does a quarter;
  * sweeps, explosions, splash and lingering potions and other area damage do triple. Small end islands and end midlands,
  * weight 4, alone. Every number is checked against a plain value.
@@ -130,7 +130,7 @@ public final class MoteSwarmTests {
     // ---- tell, counter, failure --------------------------------------------------------------------------------------
 
     /**
-     * The gather: wrapped round a pig, the swarm gathers only after 10 ticks; the gather lasts exactly 8 ticks, glowing
+     * The gather: wrapped round a pig, the swarm gathers only after 10 ticks; the gather lasts exactly 10 ticks, glowing
      * its flare (stage 1) and hanging still (it moves less than 0.01 blocks), and the pig loses nothing in it. On the
      * tick it ends the surge begins and the first motes land: exactly 3.
      */
@@ -164,11 +164,11 @@ public final class MoteSwarmTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(hitAt[0] >= 0, "it gathered and surged on the pig, phase " + s.phase());
             helper.assertTrue(startedAt[0] >= 10, "it gathers only after 10 ticks wrapped round the pig, at tick " + startedAt[0]);
-            helper.assertTrue(ticks[0] == 8, "the gather lasts 8 ticks, " + ticks[0]);
+            helper.assertTrue(ticks[0] == 10, "the gather lasts 10 ticks, " + ticks[0]);
             helper.assertTrue(quiet[0], "nothing lands while it gathers");
             helper.assertTrue(flare[0], "it glows its flare all through the gather");
             helper.assertTrue(moved[0] < 0.01, "it hangs still while it gathers, moved " + moved[0]);
-            helper.assertTrue(hitAt[0] == startedAt[0] + 8 && surging[0], "the first motes land as the gather ends, at tick " + hitAt[0]
+            helper.assertTrue(hitAt[0] == startedAt[0] + 10 && surging[0], "the first motes land as the gather ends, at tick " + hitAt[0]
                     + ", the gather began at " + startedAt[0] + ", surging " + surging[0]);
             helper.assertTrue(near(first[0], 3.6F), "the first tick of the surge lands 3 motes of 1.2, took " + first[0]);
         });

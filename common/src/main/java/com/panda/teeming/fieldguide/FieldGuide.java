@@ -17,7 +17,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * The Field Guide's server side. "Seen": a Teeming mob within 24 blocks that the player has a line of sight
- * to, checked every 20 ticks per player against nearby Teeming mobs only. A player kill counts too; the third kill
+ * to, that isn't invisible to them and isn't hidden (disguised, or under a surface: {@link TeemingCreature#hiddenFromSight}),
+ * checked every 20 ticks per player against nearby Teeming mobs only. A player kill counts too; the third kill
  * (config {@code fieldguide.killsToReveal}) reveals the mob's tell, counter, drops and looks. A trophy in the player's inventory, checked on the same beat, marks
  * that mob's trophy as owned for good. The client turns the synced changes into toasts. Every write, and every look,
  * awards the advancements the progress has earned ({@link TeemingAdvancements#fromProgress}).
@@ -73,8 +74,12 @@ public final class FieldGuide {
         return progress;
     }
 
-    /** The sight rule: within 24 blocks and in the player's line of sight. */
+    /**
+     * The sight rule: within 24 blocks, in the player's line of sight, not invisible to them, and not hidden in a
+     * disguise or under a surface. A hidden mob counts as seen once it breaks cover.
+     */
     public static boolean sees(ServerPlayer player, Mob mob) {
+        if (mob.isInvisibleTo(player) || mob instanceof TeemingCreature creature && creature.hiddenFromSight()) return false;
         return mob.distanceTo(player) <= SEEN_RANGE && player.hasLineOfSight(mob);
     }
 

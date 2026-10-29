@@ -6,7 +6,6 @@ import com.panda.teeming.TeemingMod;
 import com.panda.teeming.command.TeemingCommand;
 import com.panda.teeming.effect.NulledEffect;
 import com.panda.teeming.mob.look.Looks;
-import com.panda.teeming.mob.nether.PhantasmLantern;
 import com.panda.teeming.platform.registry.DeferredRegister;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
@@ -73,11 +72,10 @@ public final class TeemingFabric implements ModInitializer {
         ServerTickEvents.END_LEVEL_TICK.register(TeemingMod::onLevelTick);
         CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> TeemingCommand.register(dispatcher));
         // a refused entity is turned away before it is added, as NeoForge cancels its join: discarded after the load
-        // event it would stay in the level's tick list until the level closed
-        ServerEntityEvents.ALLOW_LOAD.register((entity, level, reason, fromDisk) -> !PhantasmLantern.Illusions.isIllusion(entity));
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
-            if (!TeemingMod.onEntityJoin(entity)) entity.discard();
-        });
+        // event it would stay in the level's tick list until the level closed. So every refusal is made here, and the
+        // load event only runs the side effects of joining
+        ServerEntityEvents.ALLOW_LOAD.register((entity, level, reason, fromDisk) -> TeemingMod.allowJoin(entity));
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> TeemingMod.onJoined(entity));
         TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override
             public <T extends Mob> void set(EntityType<T> type, SpawnPlacementType placement, Heightmap.Types heightmap,

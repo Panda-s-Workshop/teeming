@@ -309,6 +309,12 @@ public class OssuaryWyrm extends TeemingMonster {
         return core().flag(SUBMERGED);
     }
 
+    /** Under the soul sand it is out of sight. */
+    @Override
+    public boolean hiddenFromSight() {
+        return submerged();
+    }
+
     /** Sinks it into the soul sand it is on at once; true if it did. Public as a test hook. */
     public boolean submerge() {
         double t = topAt(getX(), getZ(), getY() + 0.5);

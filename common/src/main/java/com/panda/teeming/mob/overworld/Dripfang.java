@@ -225,6 +225,12 @@ public class Dripfang extends TeemingMonster {
         return core().in(Step.HANGING);
     }
 
+    /** Hanging, it passes for a stalactite. */
+    @Override
+    public boolean hiddenFromSight() {
+        return disguised();
+    }
+
     private void hangTick(ServerLevel level) {
         getNavigation().stop();
         if (tickCount % 10 == 0 && !gripHolds()) {

@@ -96,6 +96,12 @@ public class Gleamtrap extends TeemingMonster {
         return core().idle() || core().in(Step.PULSE);
     }
 
+    /** Disguised, it passes for a shroomlight. */
+    @Override
+    public boolean hiddenFromSight() {
+        return disguised();
+    }
+
     /** Only falling moves it, whether disguised or open: walking, knockback, pistons and currents lose their sideways part. */
     @Override
     public Pin pin() {

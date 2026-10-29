@@ -52,13 +52,20 @@ public final class TeemingMod {
     }
 
     /**
-     * Server, whenever an entity joins a level, spawned or loaded from disk (both loaders). False when it must not
-     * stay: a Phantasm Lantern's illusion never outlives the lantern that made it, so one loaded from disk is refused.
+     * Server, before an entity joins a level, spawned or loaded from disk (both loaders): false turns it away before it
+     * is added, so it never joins at all. A Phantasm Lantern's illusion never outlives the lantern that made it, so one
+     * loaded from disk is refused. Every refusal goes here, never in {@link #onJoined}.
      */
-    public static boolean onEntityJoin(Entity entity) {
-        if (PhantasmLantern.Illusions.isIllusion(entity)) return false;   // marked only after its first join
+    public static boolean allowJoin(Entity entity) {
+        return !PhantasmLantern.Illusions.isIllusion(entity);             // marked only after its first join
+    }
+
+    /**
+     * Server, when an entity that {@link #allowJoin} let in joins a level, spawned or loaded from disk (both loaders):
+     * the side effects of joining only. It never refuses or removes the entity.
+     */
+    public static void onJoined(Entity entity) {
         HollowMourner.onJoin(entity);
-        return true;
     }
 
     public static Identifier id(String path) {

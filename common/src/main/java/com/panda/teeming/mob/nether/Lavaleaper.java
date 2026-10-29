@@ -202,6 +202,13 @@ public class Lavaleaper extends TeemingMonster {
                 && lavaAt(spot.add(0, 0, half)) && lavaAt(spot.add(0, 0, -half));
     }
 
+    /** Lurking: in the lava with its back under the surface, out of sight. Its tell brings its back out. */
+    @Override
+    public boolean hiddenFromSight() {
+        double surface = lavaSurface();
+        return !Double.isNaN(surface) && getBoundingBox().maxY < surface;
+    }
+
     /** The height of the lava surface over its feet, or NaN out of the lava. */
     public double lavaSurface() {
         return isInLava() ? getY() + getFluidHeight(FluidTags.LAVA) : Double.NaN;

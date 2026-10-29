@@ -323,7 +323,7 @@
   "guide.teeming.mote_swarm.counter": "Step out of the cloud when it gathers. Change weapons to fight it: a sword's main hit, an arrow or a trident only does a quarter, but anything that spreads does triple: a sweep from a blow at something beside it, an explosion or a firework, or a splash or lingering potion of Harming. Each blow like that knocks motes loose, and the cloud thins as it weakens.",
   "guide.teeming.mote_swarm.home": "Small end islands and the End midlands, drifting alone.",
   "guide.teeming.mote_swarm.role": "A drifting cloud of tiny star-white motes round a faint core. It drifts after you, slower than you walk, and settles round you. Every so often it surges: its motes stream through everyone inside it, a little over half a heart for each mote that touches, a few at a time. The fewer motes it has left, the less its surge hurts.",
-  "guide.teeming.mote_swarm.tell": "Before it surges it stops dead for under half a second, the cloud pulls in tight and brightens, and a chime rises.",
+  "guide.teeming.mote_swarm.tell": "Before it surges it stops dead for half a second, the cloud pulls in tight and brightens, and a chime rises.",
   "guide.teeming.mycelite_shambler.counter": "Fire. A shambler that is burning, or dies to fire, crumbles to ash with no burst and no spores. Otherwise step back from a falling one: the spores reach two blocks.",
   "guide.teeming.mycelite_shambler.home": "Dark forests, dripstone caves and lush caves, but never on the mushroom fields.",
   "guide.teeming.mycelite_shambler.role": "A slow fungal shambler. When it dies it bursts into two smaller ones, and those burst again, each burst a puff of poison spores.",

@@ -55,8 +55,11 @@ public final class TeemingNeoForge {
         NeoForge.EVENT_BUS.addListener((LevelTickEvent.Post e) -> {
             if (e.getLevel() instanceof ServerLevel level) TeemingMod.onLevelTick(level);
         });
+        // a refused entity's join is cancelled before it is added; only an entity let in gets the join's side effects
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
-            if (!e.getLevel().isClientSide() && !TeemingMod.onEntityJoin(e.getEntity())) e.setCanceled(true);
+            if (e.getLevel().isClientSide()) return;
+            if (!TeemingMod.allowJoin(e.getEntity())) e.setCanceled(true);
+            else TeemingMod.onJoined(e.getEntity());
         });
         modBus.addListener((RegisterSpawnPlacementsEvent e) -> TeemingSpawns.placements(new TeemingSpawns.Placements() {
             @Override

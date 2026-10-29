@@ -150,6 +150,12 @@ public class Dunefin extends TeemingMonster {
         return core().flag(SUBMERGED);
     }
 
+    /** Under the sand it is out of sight. */
+    @Override
+    public boolean hiddenFromSight() {
+        return submerged();
+    }
+
     /** The top of the sand it swims in, or NaN out of the sand. */
     public double sandTop() {
         return submerged ? top : Double.NaN;

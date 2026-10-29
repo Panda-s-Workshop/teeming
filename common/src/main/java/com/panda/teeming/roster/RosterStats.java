@@ -139,7 +139,7 @@ public final class RosterStats {
             e(82, "abyss_angler", Dim.END, Cat.MONSTER, false, 30F, 4F, 2F, 1.2F, 1F, 16, 0F, 30F, 4F, 0, 1, 1, "lantern_angler", "void_membrane", Place.NONE, false, Integer.MAX_VALUE, "underside", false),
             e(83, "brinkray", Dim.END, Cat.NEUTRAL, false, 40F, 9F, 2F, 3F, 0.6F, 20, 0F, 40F, 9F, 0, 1, 1, "starry_ray", "void_membrane", Place.NONE, false, Integer.MAX_VALUE, "void_air", false),
             e(84, "exile_wraith", Dim.END, Cat.MONSTER, false, 26F, 4F, 0F, 0.7F, 1.9F, 20, 0F, 26F, 4F, 4, 1, 1, "dusk_wraith", "rift_essence", Place.GROUND, false, Integer.MAX_VALUE, "", false),
-            e(85, "mote_swarm", Dim.END, Cat.MONSTER, false, 30F, 1.2F, 0F, 1.5F, 1.5F, 0, 0F, 30F, 1.2F, 4, 1, 1, "ember_motes", "star_mote", Place.GROUND, false, Integer.MAX_VALUE, "", false),
+            e(85, "mote_swarm", Dim.END, Cat.MONSTER, false, 30F, 1.2F, 0F, 1.5F, 1.5F, 10, 36F, 30F, 1.2F, 4, 1, 1, "ember_motes", "star_mote", Place.GROUND, false, Integer.MAX_VALUE, "", false),
             e(86, "pearlshell_snail", Dim.END, Cat.CREATURE, false, 16F, 0F, 6F, 0.6F, 0.5F, 0, 0F, 16F, 0F, 5, 1, 3, "purpur_snail", "", Place.GROUND, true, Integer.MAX_VALUE, "", false),
             e(87, "wingshear", Dim.END, Cat.MONSTER, false, 30F, 8.5F, 2F, 1.4F, 0.6F, 16, 0F, 30F, 8.5F, 0, 1, 2, "dusk_shear", "void_membrane", Place.NONE, false, Integer.MAX_VALUE, "sky", false),
             e(88, "grand_orrery", Dim.END, Cat.MONSTER, true, 300F, 6F, 10F, 2F, 2F, 20, 16F, 300F, 6F, 0, 1, 1, "", "star_mote", Place.NONE, false, Integer.MAX_VALUE, "apex_sky", false),

@@ -8,9 +8,10 @@ import com.panda.teeming.roster.RosterStats;
 import org.junit.jupiter.api.Test;
 
 /**
- * The Mote Swarm's numbers, written out as plain values: HP 30, 1 a mote (attack 1), Arm 0, 1.5 x 1.5; single-target
+ * The Mote Swarm's numbers, written out as plain values: HP 30, 1.2 a mote (attack 1.2), Arm 0, 1.5 x 1.5; a 10 tick
+ * tell before its surge, a blow of 36 (30 motes of 1.2); single-target
  * hits x0.25, sweeps, area damage, explosions and splash potions x3; small end islands and end midlands, weight 4,
- * alone; second look Ember Motes; drops star mote. The rest (30 motes, 3 a tick, an 8 tick gather, a 10 tick surge, 40
+ * alone; second look Ember Motes; drops star mote. The rest (30 motes, 3 a tick, a 10 tick gather, a 10 tick surge, 40
  * ticks loosening, 10 ticks wrapped before it gathers, 0.15 blocks a tick) is its design. The GameTests check the
  * numbers are applied; this checks they are the right numbers.
  */
@@ -27,7 +28,7 @@ class MoteSwarmNumbersTest {
     void design() {
         assertEquals(30, MoteSwarm.MOTES);
         assertEquals(3, MoteSwarm.MOTES_PER_TICK);
-        assertEquals(8, MoteSwarm.TELL_TICKS);
+        assertEquals(10, MoteSwarm.TELL_TICKS);
         assertEquals(10, MoteSwarm.SURGE_TICKS);
         assertEquals(40, MoteSwarm.LOOSEN_TICKS);
         assertEquals(10, MoteSwarm.WRAP_TICKS);
@@ -38,14 +39,14 @@ class MoteSwarmNumbersTest {
 
     @Test
     void houseRules() {
-        // the surge hurts a player, so it has a tell of at least 8 ticks: each mote is a blow of its own of 1 x its
-        // attack, under 1.5 x, so 8 is enough
-        assertTrue(MoteSwarm.TELL_TICKS >= 8);
+        // the surge counts as one blow of all its motes (30 x 1.2 = 36, 30 x its attack), at least 1.5 x its attack,
+        // so it has a tell of at least 10 ticks
+        assertTrue(MoteSwarm.TELL_TICKS >= 10);
         // a full swarm's motes pass through a body in exactly the surge, 3 a tick
         assertEquals(MoteSwarm.MOTES, MoteSwarm.MOTES_PER_TICK * MoteSwarm.SURGE_TICKS);
         // it drifts slower than a walk (0.216 blocks a tick), so walking away leaves it
         assertTrue(MoteSwarm.DRIFT_SPEED < 0.216);
-        // stepping out while it gathers is possible: a walk in 8 ticks (1.7 blocks) clears the 1.5 block cloud from its middle
+        // stepping out while it gathers is possible: a walk in 10 ticks (2.2 blocks) clears the 1.5 block cloud from its middle
         assertTrue(0.216 * MoteSwarm.TELL_TICKS > 0.75 + 0.3);
         // the mote count fits its six synced bits, below the stage bits (24..27)
         assertTrue(MoteSwarm.MOTES < 64 && MoteSwarm.SHOWN_BIT + 6 <= 24);
@@ -59,7 +60,8 @@ class MoteSwarmNumbersTest {
         assertEquals(0.0F, row.armor());
         assertEquals(1.5F, row.width());
         assertEquals(1.5F, row.height());
-        assertEquals(0, row.tellTicks());
+        assertEquals(10, row.tellTicks());
+        assertEquals(36.0F, row.blow(), 0.001F);
         assertEquals(4, row.weight());
         assertEquals(1, row.groupMin());
         assertEquals(1, row.groupMax());

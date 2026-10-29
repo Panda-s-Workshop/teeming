@@ -138,6 +138,12 @@ public class MireGulper extends TeemingMonster {
         return core != null && core.flag(SUBMERGED);   // null while the Entity constructor runs
     }
 
+    /** Under water it is out of sight. */
+    @Override
+    public boolean hiddenFromSight() {
+        return submerged();
+    }
+
     /** Under water it can't be seen: the bubbles are the only sign. */
     @Override
     public boolean isInvisible() {

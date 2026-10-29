@@ -6,6 +6,7 @@ import com.panda.teeming.mob.TeemingAnimal;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.Telegraph;
 import com.panda.teeming.mob.overworld.VinedropStrangler;
+import com.panda.teeming.platform.Services;
 import com.panda.teeming.registry.ModMaterials;
 import com.panda.teeming.registry.ModSounds;
 import java.util.ArrayList;
@@ -241,8 +242,12 @@ public class ChorusGrazer extends TeemingAnimal implements Shearable {
         return shorn() || isBaby();
     }
 
-    /** The nearest chorus fruit lying within {@link #FRUIT_RANGE}, or null. Public as a test hook. */
+    /**
+     * The nearest chorus fruit lying within {@link #FRUIT_RANGE}, or null; always null where mobs may not pick items up
+     * (the mob griefing rule off). Public as a test hook.
+     */
     public @Nullable ItemEntity fruitInReach() {
+        if (!(level() instanceof ServerLevel level) || !Services.PLATFORM.canGrief(level, this)) return null;
         ItemEntity best = null;
         for (ItemEntity item : level().getEntitiesOfClass(ItemEntity.class, getBoundingBox().inflate(FRUIT_RANGE),
                 i -> i.isAlive() && i.getItem().is(Items.CHORUS_FRUIT) && i.distanceTo(this) <= FRUIT_RANGE)) {
@@ -253,11 +258,13 @@ public class ChorusGrazer extends TeemingAnimal implements Shearable {
 
     /**
      * Server: eats one chorus fruit from {@code item} if it is hungry and calm: it chews for {@link #EAT_TICKS} and the
-     * fleece comes back when it swallows. False (nothing eaten) otherwise, or when a listener vetoes the "eat" step.
-     * Public as a test hook (the fruit goal calls it once the grazer reaches the fruit).
+     * fleece comes back when it swallows. False (nothing eaten) otherwise, where mobs may not pick items up (the mob
+     * griefing rule off; hand-feeding doesn't count), or when a listener vetoes the "eat" step. Public as a test hook
+     * (the fruit goal calls it once the grazer reaches the fruit).
      */
     public boolean eat(ItemEntity item) {
-        if (level().isClientSide() || !item.isAlive() || !item.getItem().is(Items.CHORUS_FRUIT)) return false;
+        if (!(level() instanceof ServerLevel level) || !item.isAlive() || !item.getItem().is(Items.CHORUS_FRUIT)) return false;
+        if (!Services.PLATFORM.canGrief(level, this)) return false;
         if (!startChewing()) return false;
         item.getItem().shrink(1);
         if (item.getItem().isEmpty()) item.discard();

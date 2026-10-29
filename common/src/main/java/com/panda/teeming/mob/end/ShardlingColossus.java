@@ -64,7 +64,10 @@ import org.jspecify.annotations.Nullable;
  * gives half its experience. The first half to fall drops a whole colossus's drops (its void crystal, its leftovers and
  * its trophy roll); the second drops them again only if a player split it with one heavy hit and both halves fell
  * inside those 100 ticks. A colossus worn below half, or one whose halves took longer, drops once; so does a fused
- * one, which is one colossus again.
+ * one, which is one colossus again. Each half keeps its own record, so the rule holds when its twin is out of reach (in
+ * an unloaded chunk or another dimension): the left half carries the drops from the split, and a half that falls with
+ * its twin in reach takes them from it. A half that falls with its twin out of reach drops them only if it carries them;
+ * the other drops them again only if it saw its twin fall, so the colossus never pays more than the rule says.
  *
  * <p>The halves are this same entity type in another form, kept in the synced flags ({@link Form}). The colossus
  * itself becomes the left half; the right half is new, made at the split, and stays exactly as persistent as the
@@ -150,12 +153,14 @@ public class ShardlingColossus extends TeemingMonster {
     private long splitAt;
     /**
      * A half: whether a player's single hit of {@link #SPLIT_HIT} or more split it (not wearing it below half), the game
-     * time of the split (never moved by a try at rejoining), and whether its twin has already fallen and dropped the
-     * colossus's drops.
+     * time of the split (never moved by a try at rejoining), whether its twin has already fallen and dropped the
+     * colossus's drops, and whether it carries the drops (the one half that may drop them without a heavy split's second
+     * pay). All saved, so none needs the twin to be found.
      */
     private boolean heavy;
     private long splitTime;
     private boolean twinFell;
+    private boolean carries;
     /** The right half, made at the split; and whether the colossus it came from was kept from despawning then. */
     private boolean made;
     private boolean kept;
@@ -456,6 +461,7 @@ public class ShardlingColossus extends TeemingMonster {
             h.heavy = heavy;
             h.splitTime = splitAt;
             h.twinFell = false;
+            h.carries = h == this;                                          // the left half carries the drops
         }
         place(level, this, at.add(side));
         place(level, right, at.subtract(side));
@@ -506,6 +512,7 @@ public class ShardlingColossus extends TeemingMonster {
         kept = false;
         heavy = false;
         twinFell = false;
+        carries = false;
         xpReward = XP;
         refreshDimensions();
     }
@@ -642,12 +649,18 @@ public class ShardlingColossus extends TeemingMonster {
         return twin;
     }
 
-    /** A half that dies while its twin lives: the counter landed, and the twin goes dark and fights on alone. */
+    /**
+     * A half that dies while its twin lives: the counter landed, and the twin goes dark and fights on alone. Falling
+     * first, it takes the drops from its twin. With its twin out of reach nothing passes: each keeps its own record.
+     */
     @Override
     public void die(DamageSource source) {
         if (form() != Form.WHOLE && !isRemoved() && !dead && level() instanceof ServerLevel level) {
             ShardlingColossus t = twin(level);
-            if (t != null) t.sever(level, source.getEntity() instanceof LivingEntity by ? by : null);
+            if (t != null) {
+                carries = true;
+                t.sever(level, source.getEntity() instanceof LivingEntity by ? by : null);
+            }
             twinId = null;
             twin = null;
         }
@@ -655,13 +668,28 @@ public class ShardlingColossus extends TeemingMonster {
     }
 
     /**
-     * The colossus's drops once: the first half to fall drops them; the second drops them again only after a heavy
-     * split, falling inside {@link #REJOIN_AFTER} of it (so both halves did).
+     * The colossus's drops once: the half that carries them drops them (the first to fall, or the left half if they fell
+     * out of each other's reach); the other drops them again only after a heavy split, if it saw its twin fall and falls inside
+     * {@link #REJOIN_AFTER} of the split (so both halves did).
      */
     @Override
     protected boolean shouldDropLoot(ServerLevel level) {
-        if (form() != Form.WHOLE && twinFell && !paysTwice(level)) return false;
+        if (form() != Form.WHOLE && !carries && !(twinFell && paysTwice(level))) return false;
         return super.shouldDropLoot(level);
+    }
+
+    /**
+     * A half that carries the drops and is removed without dying (a despawn, a discard) while its twin is in reach
+     * hands them to its twin, so they aren't lost. Unloading or changing dimension keeps them: the half comes back.
+     */
+    @Override
+    public void onRemoval(RemovalReason reason) {
+        if (reason == RemovalReason.DISCARDED && carries && form() != Form.WHOLE && level() instanceof ServerLevel level) {
+            ShardlingColossus t = twin(level);
+            if (t != null) t.carries = true;
+            carries = false;
+        }
+        super.onRemoval(reason);
     }
 
     /** True for a half of a heavy split, still inside {@link #REJOIN_AFTER} of it. Public as a test hook. */
@@ -674,11 +702,30 @@ public class ShardlingColossus extends TeemingMonster {
         return heavy;
     }
 
-    /** Its twin is dead: it can't rejoin now. Its seam's light gutters out in dark dust, with a dull chime. */
+    /** True for a half whose twin fell first, in reach, and dropped the colossus's drops. Public as a test hook. */
+    public boolean twinFell() {
+        return twinFell;
+    }
+
+    /** True for the half that carries the colossus's drops. Public as a test hook. */
+    public boolean carries() {
+        return carries;
+    }
+
+    /** Ticks since the split itself (never moved by a try at rejoining). Public as a test hook. */
+    public long splitAge() {
+        return level().getGameTime() - splitTime;
+    }
+
+    /**
+     * Its twin is dead: it can't rejoin now, and its twin took the drops. Its seam's light gutters out in dark dust,
+     * with a dull chime.
+     */
     private void sever(ServerLevel level, @Nullable LivingEntity by) {
         twinId = null;
         twin = null;
         twinFell = true;
+        carries = false;
         if (core().in(Step.REGROUP)) core().end();
         if (!MechanicEvent.post(this, "sever", by)) return;
         double y = getY() + getBbHeight() * 0.6;
@@ -715,12 +762,14 @@ public class ShardlingColossus extends TeemingMonster {
         output.putBoolean("Heavy", heavy);
         output.putInt("SplitAge", (int) Math.clamp(level().getGameTime() - splitTime, 0L, Integer.MAX_VALUE));
         output.putBoolean("TwinFell", twinFell);
+        output.putBoolean("Carries", carries);
     }
 
     /**
      * A half keeps its form, its twin's id and its clock (its scale and health share are saved modifiers), whether its
-     * split was heavy and how long ago, and whether its twin has fallen; a fused colossus stays fused; the wait to the
-     * next slam survives. A reload mid-tell, mid-walk or mid-split ends it.
+     * split was heavy and how long ago, whether its twin has fallen and whether it carries the drops (in a save without
+     * that record, the left half carries them unless its twin fell); a fused colossus stays fused; the wait to the next
+     * slam survives. A reload mid-tell, mid-walk or mid-split ends it.
      */
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
@@ -743,6 +792,7 @@ public class ShardlingColossus extends TeemingMonster {
         heavy = input.getBooleanOr("Heavy", false);
         splitTime = level().getGameTime() - Math.max(0, input.getIntOr("SplitAge", 0));
         twinFell = input.getBooleanOr("TwinFell", false);
+        carries = input.getBooleanOr("Carries", f == Form.LEFT.ordinal() && !twinFell);
         xpReward = f == Form.WHOLE.ordinal() ? XP : HALF_XP;
         refreshDimensions();
     }

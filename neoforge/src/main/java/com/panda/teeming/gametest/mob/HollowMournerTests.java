@@ -296,7 +296,8 @@ public final class HollowMournerTests {
             killedAt[0] = helper.getTick();
         });
         helper.succeedWhen(() -> {
-            helper.assertTrue(killedAt[0] >= 0, "the dead husk rose");
+            helper.assertTrue(killedAt[0] >= 0, "the dead husk rose; the mourner is in " + m.core().phase() + " with graves " + m.graves()
+                    + " and stands at " + helper.relativeVec(m.position()) + "; raised husks " + raised(helper));
             helper.assertTrue(helper.getTick() >= killedAt[0] + 24, "waiting for both bodies to fade");
             helper.assertTrue(seen[0] > 0, "a plain husk leaves experience, saw at most " + seen[0] + " orbs");
             helper.assertTrue(seen[1] == 0, "the raised husk leaves no experience, saw " + seen[1] + " orbs");

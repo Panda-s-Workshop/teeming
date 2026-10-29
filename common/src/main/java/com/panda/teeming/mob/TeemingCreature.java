@@ -45,6 +45,15 @@ public interface TeemingCreature {
         return Pin.FREE;
     }
 
+    /**
+     * True while it is hidden from sight though it stands in view: in a disguise (passing for a tree, a block, a
+     * stalactite) or under a surface (water, sand, lava). Being invisible is a separate check. The Field Guide counts it
+     * as seen only once it breaks cover. Server side; false by default.
+     */
+    default boolean hiddenFromSight() {
+        return false;
+    }
+
     /** True during a window when it is open to punishment (quenched, stunned): its weak point glows weak-point gold. */
     default boolean vulnerable() {
         return false;
