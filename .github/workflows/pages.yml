@@ -1,8 +1,10 @@
 name: Website
 
-# Publishes site/ to GitHub Pages. One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions.
-# Manual only until the user approves going public (Gate 3); then restore the push trigger on site/**.
+# Publishes site/ to GitHub Pages on every push that changes it (Settings > Pages > Source: GitHub Actions).
 on:
+  push:
+    branches: [main]
+    paths: ['site/**']
   workflow_dispatch:
 
 permissions:
