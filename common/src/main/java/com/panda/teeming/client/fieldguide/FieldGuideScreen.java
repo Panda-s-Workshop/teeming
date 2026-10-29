@@ -9,6 +9,7 @@ import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.registry.ModComponents;
 import com.panda.teeming.registry.ModItems;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.roster.RosterStats.Cat;
 import com.panda.teeming.roster.RosterStats.Dim;
 import com.panda.teeming.roster.RosterStats.Entry;
 import com.panda.teeming.spawn.TeemingSpawns;
@@ -279,7 +280,7 @@ public class FieldGuideScreen extends Screen {
         if (revealed) {
             flow.side(true);
             flow.para("tell", "tell", INK, mob);
-            flow.para("counter", "counter", INK, mob);
+            flow.para("counter", never(mob) ? "use" : "counter", INK, mob);
             int icons = (int) MobDrops.of(mob.id()).stream().filter(id -> BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).isPresent()).count();
             Component drops = Component.translatable("screen.teeming.field_guide.drops");
             flow.gap(Part.DROPS.height);
@@ -294,6 +295,11 @@ public class FieldGuideScreen extends Screen {
         pieces.set(pieces.indexOf(looks), new Piece(looks.part(), null, looks.text(), alone ? FLIP_Y : FLIP_Y - 11, looks.width(), looks.colour()));
         sides.set(aboutSides - 1, new Side(List.copyOf(pieces), alone ? FLIP_Y + LINE_H : FOOT, false));
         return List.copyOf(sides);
+    }
+
+    /** A creature that never fights: its counter text says how to use it, so its heading reads "Use". */
+    private static boolean never(Entry mob) {
+        return mob.cat() == Cat.CREATURE;
     }
 
     /** Lays pieces down the right page's sides, starting a side when the next one would reach below {@link #FOOT}. */
@@ -545,7 +551,7 @@ public class FieldGuideScreen extends Screen {
             }
         }
         if (sides.size() == 2 && p.revealed(mob.id())) {      // about and the tell: a named link to the other
-            flip(g, at == 0 ? Component.translatable("screen.teeming.field_guide.fight").getString() + " ▶"
+            flip(g, at == 0 ? Component.translatable("screen.teeming.field_guide." + (never(mob) ? "fight_use" : "fight")).getString() + " ▶"
                     : "◀ " + Component.translatable("screen.teeming.field_guide.about").getString());
         } else if (sides.size() > 1) {                        // more: back and on, and which side of how many
             int[] b = flipBounds();

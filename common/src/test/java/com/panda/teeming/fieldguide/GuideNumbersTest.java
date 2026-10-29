@@ -15,6 +15,7 @@ import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.GeminiWatchers;
 import com.panda.teeming.mob.end.GrandOrrery;
 import com.panda.teeming.mob.end.LiftstoneMonolith;
+import com.panda.teeming.mob.end.MendingCrystalling;
 import com.panda.teeming.mob.end.Mnemovore;
 import com.panda.teeming.mob.end.MoteSwarm;
 import com.panda.teeming.mob.end.Pullstar;
@@ -23,7 +24,9 @@ import com.panda.teeming.mob.end.ShardlingColossus;
 import com.panda.teeming.mob.end.VoidBloom;
 import com.panda.teeming.mob.nether.BasaltBehemoth;
 import com.panda.teeming.mob.nether.KeeningShade;
+import com.panda.teeming.mob.nether.CindermothSwarm;
 import com.panda.teeming.mob.nether.MagmaTortoise;
+import com.panda.teeming.mob.nether.PhantasmLantern;
 import com.panda.teeming.mob.nether.PyreHerald;
 import com.panda.teeming.mob.nether.SlagheartGolem;
 import com.panda.teeming.mob.nether.Slagspitter;
@@ -36,6 +39,7 @@ import com.panda.teeming.mob.overworld.MireGulper;
 import com.panda.teeming.mob.overworld.Petalkin;
 import com.panda.teeming.mob.overworld.Rattlecoil;
 import com.panda.teeming.mob.overworld.Thornhorn;
+import com.panda.teeming.roster.RosterStats;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -47,7 +51,8 @@ import org.junit.jupiter.api.Test;
  * What the player reads states the numbers the code plays by. Each phrase below is built from the constant it names
  * (12.0 becomes "twelve", 30 ticks "a second and a half", 2.0 "double"), so a changed constant fails here until the
  * Field Guide text, the charm tooltip or the advancement that quotes it says the new number. The Field Guide writes
- * numbers as words; tooltips and advancements write them as digits.
+ * numbers as words and every amount of damage or health in hearts, the unit the player sees (two health to a heart);
+ * tooltips and advancements write numbers as digits.
  */
 class GuideNumbersTest {
     private static final Path LANG = Path.of("src", "main", "resources", "assets", "teeming", "lang", "en_us.json");
@@ -61,6 +66,22 @@ class GuideNumbersTest {
         if (n != value || n < 0 || n > 99) fail("no plain wording for " + value);
         if (n < 20) return ONES[n];
         return TENS[n / 10] + (n % 10 == 0 ? "" : "-" + ONES[n % 10]);
+    }
+
+    /** An amount of damage or health as the guide writes it, in hearts of two health: "half a heart", "one heart", "six hearts". */
+    static String hearts(double health) {
+        double h = health / 2;
+        if (near(h, 0.5)) return "half a heart";
+        if (near(h, 1.0)) return "one heart";
+        if (near(h, Math.rint(h))) return words(Math.rint(h)) + " hearts";
+        if (near(h - Math.floor(h), 0.5)) return words(Math.floor(h)) + " and a half hearts";
+        fail("no plain wording for " + health + " health in hearts");
+        return "";
+    }
+
+    /** How often, in ticks, as the guide writes it: "every second", "every five seconds". */
+    static String every(int ticks) {
+        return ticks == 20 ? "every second" : "every " + seconds(ticks);
     }
 
     /** A length of time in ticks as the guide writes it: "half a second", "a second", "a second and a half", "three seconds". */
@@ -120,13 +141,24 @@ class GuideNumbersTest {
         JsonObject lang = JsonParser.parseString(Files.readString(LANG)).getAsJsonObject();
 
         // the End: the numbers the balance pass changed, and their neighbours on the same pages
-        guide("shardling_colossus", "A hit of " + words(ShardlingColossus.SPLIT_HIT) + " or more");
+        guide("shardling_colossus", "One blow of " + hearts(ShardlingColossus.SPLIT_HIT) + " or more");
+        // The blows its page names, by 26.3's melee numbers: a weapon deals 1 + its tool's base + its material's bonus;
+        // a fully charged critical hit multiplies that by 1.5 and Sharpness adds 0.5 a level + 0.5 after, unmultiplied;
+        // a mace smash (a fall of more than 1.5 blocks) adds 4 a block fallen over the first three.
+        float netheriteSword = 1 + 3 + 4, weakestAxe = 1 + 7 + 1, woodOrGoldAxe = 1 + 6 + 0, mace = 1 + 5, sharpnessV = 3;
+        assertTrue(netheriteSword * 1.5F >= ShardlingColossus.SPLIT_HIT, "a netherite sword's critical hit splits it");
+        assertTrue(weakestAxe * 1.5F >= ShardlingColossus.SPLIT_HIT, "a stone, copper, iron, diamond or netherite axe's critical hit splits it");
+        assertTrue(woodOrGoldAxe * 1.5F < ShardlingColossus.SPLIT_HIT, "a wooden or golden axe's critical hit falls short");
+        assertTrue(mace + 4 * 1.5F >= ShardlingColossus.SPLIT_HIT, "a mace smash splits it");
+        assertTrue(netheriteSword + sharpnessV < ShardlingColossus.SPLIT_HIT, "a plain netherite sword swing with Sharpness V falls short");
+        guide("shardling_colossus", "a fully charged critical hit (strike as you fall from a jump) with a netherite sword or any axe but a wooden or golden one, or a mace smash");
+        guide("shardling_colossus", "A plain sword swing falls short, even with Sharpness V");
         guide("shardling_colossus", "below " + share(ShardlingColossus.SPLIT_BELOW) + " health");
         guide("shardling_colossus", "Kill one half within " + seconds(ShardlingColossus.REJOIN_AFTER));
         guide("recurrent", "kill it again within " + seconds(Recurrent.REWIND_EVERY) + " of a rewind");
         guide("recurrent", "stands dazed for " + seconds(Recurrent.REWOUND_TICKS));
         guide("recurrent", "where it stood " + seconds(Recurrent.REWIND_BACK) + " earlier");
-        guide("recurrent", "only " + words(Recurrent.ANCHOR_HEALTH) + " health");
+        guide("recurrent", "only " + hearts(Recurrent.ANCHOR_HEALTH) + " of health");
         assertEquals(0, Mnemovore.REPAY_BONUS, "the Mnemovore's page says it pays back every point it took, but never more");
         guide("mnemovore", "every point it took, but never more");
         guide("mnemovore", "takes " + words(Mnemovore.LEVELS_PER_BITE) + " of your experience levels");
@@ -147,9 +179,14 @@ class GuideNumbersTest {
                 + words(VoidBloom.MAX_RADIUS) + " blocks");
         guide("anchor_golem", "Heavy for " + seconds(AnchorGolem.HEAVY_TICKS));
         guide("anchor_golem", "at " + share(AnchorGolem.MIRED_SPEED) + " speed");
-        guide("chronomite", "the first " + words(Chronomite.SHELL) + " points of damage");
+        guide("chronomite", "the first " + hearts(Chronomite.SHELL) + " of damage");
         guide("chronomite", "for " + words(Chronomite.FIELD_RADIUS) + " blocks round it");
         guide("mote_swarm", "only does " + share(MoteSwarm.SINGLE_TARGET_DAMAGE));
+        float mote = RosterStats.get("mote_swarm").attack();
+        assertTrue(mote > 1.0F && mote < 1.5F, "the Mote Swarm's page says each mote does a little over half a heart");
+        guide("mote_swarm", "a little over half a heart for each mote");
+        guide("void_bloom", "takes " + hearts(VoidBloom.STAIN_DAMAGE) + " " + every(VoidBloom.DAMAGE_EVERY));
+        guide("mending_crystalling", "healing it " + hearts(MendingCrystalling.HEAL) + " " + seconds(MendingCrystalling.HEAL_EVERY));
         guide("mote_swarm", "anything that spreads does " + times(MoteSwarm.SPREAD_DAMAGE));
         guide("driftsong", "Every " + seconds(Driftsong.SONG_EVERY) + " it sings");
         guide("driftsong", "within " + words(Driftsong.SONG_RANGE) + " blocks");
@@ -160,7 +197,7 @@ class GuideNumbersTest {
         guide("liftstone_monolith", "lifted " + words(LiftstoneMonolith.LIFT_HEIGHT) + " blocks into the air");
 
         // the Nether
-        guide("spore_cannon", words(SporeCannon.SPORE_DAMAGE) + " damage each");
+        guide("spore_cannon", hearts(SporeCannon.SPORE_DAMAGE) + " each");
         guide("spore_cannon", "Every " + seconds(SporeCannon.VOLLEY_EVERY) + " it fires " + words(SporeCannon.SPORES) + " spores");
         guide("spore_cannon", "stuns it for " + seconds(SporeCannon.STUN_TICKS));
         guide("spore_cannon", "every hit lands " + times(SporeCannon.STUN_DAMAGE));
@@ -177,7 +214,9 @@ class GuideNumbersTest {
         guide("slagspitter", "burns for " + seconds(Slagspitter.PATCH_TICKS));
         guide("keening_shade", "Silenced for " + seconds(KeeningShade.SILENCE_TICKS));
         guide("keening_shade", "Every " + seconds(KeeningShade.WAIL_EVERY));
-        guide("pyre_herald", "soaks up " + words(PyreHerald.SHELL / 2) + " hearts");
+        guide("pyre_herald", "soaks up " + hearts(PyreHerald.SHELL));
+        guide("cindermoth_swarm", hearts(RosterStats.get("cindermoth_swarm").attack()) + " " + every(CindermothSwarm.BURN_INTERVAL));
+        guide("phantasm_lantern", "they have " + hearts(PhantasmLantern.ILLUSION_HEALTH) + " of health");
         guide("weepling_broodmother", "lays " + words(WeeplingBroodmother.CLUTCH) + " pale sacs");
         guide("weepling_broodmother", "at most " + words(WeeplingBroodmother.MAX_BROOD) + " sacs");
         guide("basalt_behemoth", "within " + words(BasaltBehemoth.SLAM_RADIUS) + " blocks");
@@ -247,5 +286,11 @@ class GuideNumbersTest {
         assertEquals("thirty seconds", seconds(600));
         assertEquals("half again as much", times(1.5F));
         assertEquals("a quarter", share(0.25F));
+        assertEquals("half a heart", hearts(1.0F));
+        assertEquals("one heart", hearts(2));
+        assertEquals("six hearts", hearts(12.0F));
+        assertEquals("two and a half hearts", hearts(5));
+        assertEquals("every second", every(20));
+        assertEquals("every five seconds", every(100));
     }
 }

@@ -77,7 +77,8 @@ Nearly everything a pack would change is data under `data/teeming/`; spawn weigh
   `#teeming:reflectable` (what the Prismback turns back; it includes `#minecraft:arrows`),
   `#teeming:pyre_herald_allies`, `#teeming:mending_crystalling_patients`. The mod also adds its mobs to
   `#minecraft:undead` (Soulward Revenant, Ossuary Wyrm), `#minecraft:arthropod` (six mobs), `#minecraft:aquatic`
-  (Stormeel) and `#c:capturing_not_supported` (the apex mobs and the giants).
+  (Stormeel) and `#c:capturing_not_supported` (the apex mobs and the linked groups: Gemini Watchers, Resonant Triad and
+  Recurrent).
 - **Item tags:** `#teeming:signature_materials`, `#teeming:charms`, `#teeming:aurovore_loot` (what the Aurovore
   steals), `#teeming:cold_items` (thrown items that cool a Slagheart Golem as a snowball does; default: snowball).
 - **Damage types:** `#teeming:mote_swarm_scatters` holds the damage types that hit a Mote Swarm as a spreading blow,
