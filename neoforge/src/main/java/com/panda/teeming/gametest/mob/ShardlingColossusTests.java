@@ -81,6 +81,7 @@ public final class ShardlingColossusTests {
         TeemingGameTests.timeLimit("shardling_colossus_heavy_split_too_slow", 160);
         out.accept("shardling_colossus_twin_gone_left_falls", h -> twinGone(h, false));
         out.accept("shardling_colossus_twin_gone_right_falls", h -> twinGone(h, true));
+        out.accept("shardling_colossus_despawn_hands_drops", ShardlingColossusTests::despawnHandsDrops);
         out.accept("shardling_colossus_tell_veto", ShardlingColossusTests::tellVeto);
         out.accept("shardling_colossus_split_veto", ShardlingColossusTests::splitVeto);
         out.accept("shardling_colossus_halves_kept", ShardlingColossusTests::halvesKept);
@@ -639,6 +640,33 @@ public final class ShardlingColossusTests {
         });
         helper.runAtTickTime(30, () -> {
             helper.assertTrue(crystals.size() == 1, "one colossus, its halves falling apart, drops one void crystal, saw " + crystals.size());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The half that carries the drops despawns with its twin in reach: 2 ticks after a player's worn split the left half
+     * (the carrier) is removed as a despawn removes it, dropping nothing, and hands the drops to the right half, which
+     * then carries them. The right half killed afterwards drops the colossus's one void crystal.
+     */
+    private static void despawnHandsDrops(GameTestHelper helper) {
+        ShardlingColossus c = colossus(helper, 5.5, 4.5);
+        ServerPlayer player = TestPlayers.survivor(helper, new Vec3(5.5, 1, 10.5));
+        Set<UUID> crystals = newCrystals(helper);
+        ShardlingColossus[] h = splitByPlayer(helper, c, player, false);
+        helper.runAtTickTime(3, () -> {
+            helper.assertTrue(h[0].carries() && !h[1].carries(), "the left half carries the drops from the split");
+            helper.assertTrue(h[1].twin(helper.getLevel()) == h[0], "its twin is in reach");
+            h[0].discard();
+            helper.assertTrue(h[0].isRemoved() && !h[0].carries(), "the despawned half gave the drops up");
+            helper.assertTrue(h[1].carries() && !h[1].twinFell(), "and its twin carries them now, not as a twin that fell");
+        });
+        helper.runAtTickTime(6, () -> {
+            helper.assertTrue(crystals.isEmpty(), "a despawn drops nothing, saw " + crystals.size());
+            kill(helper, h[1], player);
+        });
+        helper.runAtTickTime(25, () -> {
+            helper.assertTrue(crystals.size() == 1, "the half left carrying them drops the colossus's void crystal, saw " + crystals.size());
             helper.succeed();
         });
     }

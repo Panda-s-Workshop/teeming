@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/snowy_slopes",
       [
         "minecraft:snowy_slopes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/snowy_slopes"
+      }
     ]
   },
   "spawners": [

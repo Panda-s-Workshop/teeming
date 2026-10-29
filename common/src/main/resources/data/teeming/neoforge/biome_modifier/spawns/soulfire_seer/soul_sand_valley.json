@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/soulfire_seer/soul_sand_valley",
       [
         "minecraft:soul_sand_valley"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/soulfire_seer/soul_sand_valley"
+      }
     ]
   },
   "spawners": [

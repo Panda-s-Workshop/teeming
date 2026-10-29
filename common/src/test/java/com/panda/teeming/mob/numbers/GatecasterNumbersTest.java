@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The Gatecaster's numbers against its roster row, written out as plain values: HP 30, Atk 8.5, Arm 2, 0.7 x 2.0; tell
- * 20 t (the exit rift); its bolt comes out of a gate 3-5 blocks behind its target, every 80 t; End highlands, weight
+ * 20 t (the gate); its bolt comes out of a gate 3-5 blocks behind its target, every 80 t; End highlands, weight
  * 4, groups of 1; second look Mirrored Weaver; drops rift essence. The 16-block reach in sight, the 8.5 of the bolt (its
  * attack), the 12-tick follow before the 8-tick lock, the bolt's speed and length, and the turned bolt's burst are its
  * design. Then the gate's layout and its packing into the synced flags. The GameTests check the numbers are applied in

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/dappled_forest",
       [
         "minecraft:dappled_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/dappled_forest"
+      }
     ]
   },
   "spawners": [

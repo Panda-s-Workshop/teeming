@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/badlands",
       [
         "minecraft:badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/badlands"
+      }
     ]
   },
   "spawners": [

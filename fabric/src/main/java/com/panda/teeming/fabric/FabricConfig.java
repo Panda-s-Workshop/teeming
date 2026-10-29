@@ -1,11 +1,10 @@
 package com.panda.teeming.fabric;
 
+import com.panda.teeming.SettingsFile;
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.roster.RosterStats;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -16,8 +15,10 @@ import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * The mod's settings on Fabric: config/teeming.properties, read once at startup (a change needs a restart). Keys the
- * file lacks, a new version's or all of them on first start, are added with their defaults; a value that can't be read
- * is logged and the default used. Only the server acts on them.
+ * file lacks, a new version's or all of them on first start, are added with their defaults, and the header is the
+ * current one; the file keeps its values, the comments above its keys and keys it doesn't know ({@link SettingsFile}).
+ * A value that can't be read is logged and the default used; one out of range is logged and brought into it. Only the
+ * server acts on them.
  */
 final class FabricConfig implements TeemingConfig.Source {
     private static final String HEADER = """
@@ -81,46 +82,47 @@ final class FabricConfig implements TeemingConfig.Source {
 
     static FabricConfig load() {
         Path file = FabricLoader.getInstance().getConfigDir().resolve("teeming.properties");
-        Properties p = new Properties();
+        String old = "";
         if (Files.exists(file)) {
-            try (Reader in = Files.newBufferedReader(file)) {
-                p.load(in);
+            try {
+                old = Files.readString(file);
             } catch (IOException e) {
                 TeemingMod.LOGGER.warn("Couldn't read {}, using the defaults", file, e);
             }
         }
-        boolean added = false;
-        for (RosterStats.Entry mob : RosterStats.ALL) {                    // carry an old file's per-mob values over
-            for (String name : new String[] {"enabled", "spawnChance"}) {
-                String old = p.getProperty("mob." + mob.id() + "." + name);
-                if (old == null) continue;
-                p.remove("mob." + mob.id() + "." + name);
-                p.putIfAbsent(mobKey(mob, name), old);
-                added = true;
-            }
+        Map<String, String> renamed = new LinkedHashMap<>();
+        for (RosterStats.Entry mob : RosterStats.ALL) {                    // an old file's per-mob keys
+            for (String name : new String[] {"enabled", "spawnChance"}) renamed.put("mob." + mob.id() + "." + name, mobKey(mob, name));
         }
-        for (Map.Entry<String, String> key : defaults().entrySet()) {
-            if (p.putIfAbsent(key.getKey(), key.getValue()) == null) added = true;
-        }
-        if (added) {
-            try (Writer out = Files.newBufferedWriter(file)) {
-                p.store(out, HEADER);
+        // rewritten whenever the text changes (a new key, a renamed one, a new header), keeping values, comments and unknown keys
+        String text = SettingsFile.write(old, HEADER, defaults(), renamed);
+        if (!text.equals(old)) {
+            try {
+                Files.writeString(file, text);
             } catch (IOException e) {
                 TeemingMod.LOGGER.warn("Couldn't write {}", file, e);
             }
         }
-        return new FabricConfig(p);
+        return new FabricConfig(SettingsFile.read(text));
     }
 
     private static double number(Properties p, String key, double fallback, double min, double max) {
         String value = p.getProperty(key);
         if (value == null) return fallback;
+        double read;
         try {
-            return Math.clamp(Double.parseDouble(value.trim()), min, max);
+            read = Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
             TeemingMod.LOGGER.warn("teeming.properties: {} = \"{}\" is not a number; using {}", key, value, fallback);
             return fallback;
         }
+        double kept = Math.clamp(read, min, max);
+        if (kept != read) TeemingMod.LOGGER.warn("teeming.properties: {} = {} is outside {} to {}; using {}", key, value.trim(), num(min), num(max), num(kept));
+        return kept;
+    }
+
+    private static String num(double v) {
+        return v == Math.rint(v) ? String.valueOf((long) v) : String.valueOf(v);
     }
 
     private static boolean bool(Properties p, String key, boolean fallback) {

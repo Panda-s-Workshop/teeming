@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/sulfur_caves",
       [
         "minecraft:sulfur_caves"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/sulfur_caves"
+      }
     ]
   },
   "spawners": [

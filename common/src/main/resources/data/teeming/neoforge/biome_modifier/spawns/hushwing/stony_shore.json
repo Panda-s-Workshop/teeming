@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/stony_shore",
       [
         "minecraft:stony_shore"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/stony_shore"
+      }
     ]
   },
   "spawners": [

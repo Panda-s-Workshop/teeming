@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mote_swarm/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mote_swarm/end_midlands"
+      }
     ]
   },
   "spawners": [

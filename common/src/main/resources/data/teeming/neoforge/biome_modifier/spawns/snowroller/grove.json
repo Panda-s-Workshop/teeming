@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snowroller/grove",
       [
         "minecraft:grove"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snowroller/grove"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/snowy_beach",
       [
         "minecraft:snowy_beach"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/snowy_beach"
+      }
     ]
   },
   "spawners": [

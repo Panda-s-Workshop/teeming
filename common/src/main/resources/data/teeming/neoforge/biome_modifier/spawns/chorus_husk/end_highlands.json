@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/chorus_husk/end_highlands",
       [
         "minecraft:end_highlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/chorus_husk/end_highlands"
+      }
     ]
   },
   "spawners": [

@@ -64,8 +64,9 @@ import org.jspecify.annotations.Nullable;
  * glass copy of the item forms in its right hand. A flicker that ends with the player gone copies nothing, and it may
  * flicker again 40 ticks later.
  *
- * <p>Its blows: an 8-tick wind-up (the copy raised overhead, a ring of glass, lilac motes), then a blow for its attack
- * damage (never less than a fist's 1) at whatever is still in reach in front of it.
+ * <p>Its blows: an 8-tick wind-up (the copy raised overhead, a ring of glass, lilac motes), then a blow for a quarter
+ * more than its attack damage (never less than a fist's 1), brought down from overhead, at whatever is still in reach in
+ * front of it: the item it copied hits harder in its hands than in yours.
  *
  * <p>Counter: meet it holding something weak, or switch to something weak while it flickers, then switch up. A melee blow
  * from a weapon that outclasses its copy (more attack damage by the same reading) shatters its facets: the chest diamond
@@ -116,7 +117,7 @@ public class FacetDoppel extends TeemingMonster {
     public static final int WINDUP_TICKS = 8;             // 0.4 s with the copy raised overhead before the blow
     public static final int STRIKE_TICKS = 6;             // the blow lands on its first tick; the arm comes down this long
     public static final int COOLDOWN = 20;                // ticks from the end of one blow to the next wind-up
-    public static final float STRIKE = 1.0F;              // x attack damage
+    public static final float STRIKE = 1.25F;             // x attack damage: the overhead blow lands a quarter harder
     public static final double START_REACH = 0.8;         // blocks between hitboxes: this close it winds up
     public static final double STRIKE_REACH = 1.4;        // blocks between hitboxes: a target this close when the blow lands is hit
     public static final float STRIKE_ARC = 120.0F;        // degrees in front of it the blow covers
@@ -538,7 +539,7 @@ public class FacetDoppel extends TeemingMonster {
         }
     }
 
-    /** The damage of one blow: its attack damage (the copy), never less than a fist's 1. */
+    /** The damage of one blow: its attack damage (the copy), never less than a fist's 1, times {@link #STRIKE}. */
     public float blowDamage() {
         return (float) Math.max(FIST_DAMAGE, getAttributeValue(Attributes.ATTACK_DAMAGE)) * STRIKE;
     }

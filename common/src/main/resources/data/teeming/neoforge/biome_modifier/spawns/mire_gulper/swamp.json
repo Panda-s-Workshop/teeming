@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mire_gulper/swamp",
       [
         "minecraft:swamp"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mire_gulper/swamp"
+      }
     ]
   },
   "spawners": [

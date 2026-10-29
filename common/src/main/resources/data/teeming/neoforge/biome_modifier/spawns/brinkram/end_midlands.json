@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/brinkram/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/brinkram/end_midlands"
+      }
     ]
   },
   "spawners": [

@@ -127,7 +127,8 @@ final class EndCharmTests {
      * <li>a Levimoth's dust cloud: Levitation II for 60 ticks and for 30, read the tick it lands (it may tick twice
      * before the reading, so 2 ticks either way);</li>
      * <li>a Riftmine Sapper's launch: straight up at 1.35 and 0.675, read straight after it (exact);</li>
-     * <li>a Liftstone Monolith's lift: the highest each pig rose, 6 and 3 blocks (it is set in place each tick);</li>
+     * <li>a Liftstone Monolith's lift and slam: the highest each pig rose, 6 and 3 blocks (it is set in place each tick),
+     * and what the slam took on landing, 27 and 13.5;</li>
      * <li>a Brinkram's charge, through the Shellward call site: thrown 2.5 out and 0.4 up, and 1.25 and 0.2, read the
      * tick the hit lands (exact, as the Brinkram's own throw test reads it).</li>
      * </ul>
@@ -212,6 +213,9 @@ final class EndCharmTests {
 
             helper.assertTrue(near(rose[1], LiftstoneMonolith.LIFT_HEIGHT, 0.05), "main hand: lifted " + LiftstoneMonolith.LIFT_HEIGHT + ", rose " + rose[1]);
             helper.assertTrue(near(rose[0], LiftstoneMonolith.LIFT_HEIGHT * g, 0.05), "off-hand: lifted " + LiftstoneMonolith.LIFT_HEIGHT * g + ", rose " + rose[0]);
+            float mainSlam = 100.0F - mainRaised.getHealth(), offSlam = 100.0F - offRaised.getHealth();
+            helper.assertTrue(near(mainSlam, LiftstoneMonolith.SLAM_DAMAGE, 0.01), "main hand: slammed for " + LiftstoneMonolith.SLAM_DAMAGE + ", lost " + mainSlam);
+            helper.assertTrue(near(offSlam, LiftstoneMonolith.SLAM_DAMAGE * g, 0.01), "off-hand: slammed for " + LiftstoneMonolith.SLAM_DAMAGE * g + ", lost " + offSlam);
 
             helper.assertTrue(offThrow[0] != null && mainThrow[0] != null, "both charges hit");
             Vec3 m = mainThrow[0], o = offThrow[0];
@@ -254,7 +258,7 @@ final class EndCharmTests {
     // ---- Rift Charm ------------------------------------------------------------------------------------------------
 
     /**
-     * Forced teleports and exit rifts, in the wide arena (its floor's top is at y 0).
+     * Forced teleports and the Gatecaster's gates, in the wide arena (its floor's top is at y 0).
      * <ul>
      * <li>The share: a Chorus Husk's burst (its own random rolls each body's charm) catches 20 pigs holding a Rift Charm
      * in the off-hand and 20 in the main hand; it bursts 10 times, the pigs set back each time: 200 rolls a side. Every
@@ -264,7 +268,7 @@ final class EndCharmTests {
      * <li>A rift rolls once per step in: 8 off-hand pigs and 2 main-hand pigs each stand in a Riftjackal's rift. Both
      * main-hand pigs are thrown at once; the off-hand pigs that a rift spared (did not throw) on the first tick are all
      * still standing in it 25 ticks later (a roll every tick would throw nearly all of them).</li>
-     * <li>An exit rift opens {@link Charms#RIFT_EARLY} earlier: a Gatecaster's tell at the main-hand pig lasts 20 ticks
+     * <li>A Gatecaster's gate opens {@link Charms#RIFT_EARLY} earlier: a Gatecaster's tell at the main-hand pig lasts 20 ticks
      * (a tick either way for when the counting callback runs), at the off-hand pig exactly 10 more, and both lock their
      * aim 12 ticks in.</li>
      * </ul>
@@ -338,7 +342,7 @@ final class EndCharmTests {
         });
         helper.runAtTickTime(31, () -> stayed[1] = home(offInRift, offRiftAt));
 
-        // exit rifts
+        // the Gatecaster's gates
         Gatecaster[] casters = {caster(helper, 40.5), caster(helper, 50.5)};
         Pig offMark = pig(helper, new Vec3(40.5, 0, 14.5), charm, off), mainMark = pig(helper, new Vec3(50.5, 0, 14.5), charm, main);
         long[] start = {-1};
@@ -370,12 +374,12 @@ final class EndCharmTests {
                     + stayed[1] + " 25 ticks on");
             int offTell = tell[0], mainTell = tell[1];
             // both tells are counted by the same callback, so a tick either way for its order is the same tick on both
-            helper.assertTrue(Math.abs(mainTell - Gatecaster.TELL_TICKS) <= 1, "main hand: the exit rift shows " + Gatecaster.TELL_TICKS
+            helper.assertTrue(Math.abs(mainTell - Gatecaster.TELL_TICKS) <= 1, "main hand: the gate shows " + Gatecaster.TELL_TICKS
                     + " ticks, showed " + mainTell);
-            helper.assertTrue(offTell - mainTell == Charms.RIFT_EARLY, "off-hand: the exit rift shows " + Charms.RIFT_EARLY
+            helper.assertTrue(offTell - mainTell == Charms.RIFT_EARLY, "off-hand: the gate shows " + Charms.RIFT_EARLY
                     + " ticks earlier, showed " + offTell + " against " + mainTell);
             helper.assertTrue(lockedAt13[0] && lockedAt13[1], "both aims locked " + Gatecaster.TRACK_TICKS + " ticks in");
-            TeemingMod.LOGGER.info("charm_rift: burst teleports landed off-hand {} / {} main hand {} / {}; rifts spared {} of 8 off-hand pigs (not thrown), {} still unmoved 25 ticks on; exit rift {} / {} ticks",
+            TeemingMod.LOGGER.info("charm_rift: burst teleports landed off-hand {} / {} main hand {} / {}; rifts spared {} of 8 off-hand pigs (not thrown), {} still unmoved 25 ticks on; gate {} / {} ticks",
                     moved[0], rolls, moved[1], rolls, stayed[0], stayed[1], offTell, mainTell);
         });
     }

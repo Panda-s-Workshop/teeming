@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/frozen_river",
       [
         "minecraft:frozen_river"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/frozen_river"
+      }
     ]
   },
   "spawners": [

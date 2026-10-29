@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/meadow",
       [
         "minecraft:meadow"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/meadow"
+      }
     ]
   },
   "spawners": [

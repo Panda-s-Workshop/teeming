@@ -23,14 +23,20 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.random.Weighted;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.Blocks;
@@ -43,7 +49,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Void Bloom: its stain starts at radius 0.5 and grows exactly 0.5 every 40 ticks while it has a target, to exactly 8
  * and no further, and not at all asleep; an 8-tick tell (the glow lit, the radius unchanged) before every step; inside,
- * 1 damage a second (through armour) and Weakness I, which fades soon after leaving; nothing outside, nothing 2 blocks
+ * 1 damage a second (through armour, Protection and a raised shield) and Weakness I, which fades soon after leaving; nothing outside, nothing 2 blocks
  * up, nothing to itself or another bloom; mobs are hurt too. Killed, the stain recedes over 40 ticks, harmless, the body
  * goes with it and nothing grows; a reload keeps the radius. Every number is checked against a plain value. The blooms
  * are NoAI (their stain runs from their tick), and nothing the stain reaches outside this arena is touched.
@@ -305,37 +311,55 @@ public final class VoidBloomTests {
     // ---- the stain's touch -----------------------------------------------------------------------------------------
 
     /**
-     * A radius-3 stain (asleep, so it holds): over 60 ticks a bare survival player 2 blocks out loses exactly 3 (1 a
-     * second), one with a diamond set's armour 2 blocks out loses 3 x 0.21 (armour counts), one 4.5 blocks out loses nothing.
-     * Nobody is moved.
+     * A radius-3 stain (asleep, so it holds): over 60 ticks every survival player 2 blocks out loses exactly 3 (1 a
+     * second), whatever they wear or hold: one bare, one in the End's reference set (netherite, armour 20, toughness 12,
+     * Protection IV on every piece), one with a shield raised toward the bloom. One 4.5 blocks out loses nothing. Nobody
+     * is moved.
      */
     private static void damage(GameTestHelper helper) {
         VoidBloom bloom = bloom(helper, AT);
         bloom.setStainRadius(3.0);
         ServerPlayer in = TestPlayers.survivor(helper, new Vec3(6.5, 1, 8.5));
-        ServerPlayer armoured = TestPlayers.survivor(helper, new Vec3(4.5, 1, 6.5));
-        // a full diamond set's armour and toughness (a test survivor has no client, so worn gear is never counted)
-        armoured.getAttribute(Attributes.ARMOR).setBaseValue(20.0);
-        armoured.getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(8.0);
+        ServerPlayer clad = TestPlayers.survivor(helper, new Vec3(4.5, 1, 6.5));
+        var protection = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.PROTECTION);
+        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+        Item[] set = {Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS};
+        for (int i = 0; i < 4; i++) {
+            ItemStack piece = new ItemStack(set[i]);
+            piece.enchant(protection, 4);
+            clad.setItemSlot(slots[i], piece);
+        }
+        ServerPlayer shielded = TestPlayers.survivor(helper, new Vec3(8.5, 1, 6.5));
+        shielded.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.SHIELD));
+        shielded.startUsingItem(InteractionHand.MAIN_HAND);
+        helper.onEachTick(() -> {
+            if (shielded.isUsingItem() && !shielded.isBlocking()) shielded.doTick();
+            shielded.setYRot(90.0F);            // facing -x, toward the bloom
+            shielded.setYHeadRot(90.0F);
+            shielded.yHeadRotO = 90.0F;
+        });
         ServerPlayer out = TestPlayers.survivor(helper, new Vec3(6.5, 1, 11.0));
-        float[] start = new float[3];
-        Vec3[] stood = new Vec3[2];
+        ServerPlayer[] who = {in, clad, shielded, out};
+        float[] start = new float[4];
+        Vec3[] stood = new Vec3[3];
+        helper.runAtTickTime(5, () -> clad.doTick());   // a test player doesn't tick by itself, and the set counts once it has
         helper.runAtTickTime(10, () -> {
-            start[0] = in.getHealth();
-            start[1] = armoured.getHealth();
-            start[2] = out.getHealth();
-            stood[0] = in.position();
-            stood[1] = armoured.position();
+            helper.assertTrue(clad.getArmorValue() == 20 && clad.getAttributeValue(Attributes.ARMOR_TOUGHNESS) == 12.0,
+                    "the set gives armour 20 and toughness 12, got " + clad.getArmorValue() + " and " + clad.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+            for (int i = 0; i < 4; i++) start[i] = who[i].getHealth();
+            for (int i = 0; i < 3; i++) stood[i] = who[i].position();
         });
         helper.runAtTickTime(70, () -> {
             float p = pulse(helper);
-            float bare = start[0] - in.getHealth(), clad = start[1] - armoured.getHealth(), none = start[2] - out.getHealth();
-            helper.assertTrue(Math.abs(bare - 3.0F * p) < 0.01F, "the bare player lost " + 3.0F * p + " in 60 ticks, got " + bare);
-            // diamond: 20 armour, 8 toughness against a hit of 1 leaves 1 x (1 - 19.75 / 25) = 0.21 a pulse
-            float each = p * (1.0F - Math.min(20.0F, 20.0F - 4.0F * p / 16.0F) / 25.0F);
-            helper.assertTrue(Math.abs(clad - 3.0F * each) < 0.02F, "the armoured player lost " + 3.0F * each + ", got " + clad);
+            String[] name = {"the bare player", "the player in netherite and Protection IV", "the player behind a shield"};
+            for (int i = 0; i < 3; i++) {
+                float lost = start[i] - who[i].getHealth();
+                helper.assertTrue(Math.abs(lost - 3.0F * p) < 0.01F, name[i] + " lost " + 3.0F * p + " in 60 ticks, got " + lost);
+                helper.assertTrue(who[i].position().distanceTo(stood[i]) < 0.01, name[i] + " was not moved");
+            }
+            helper.assertTrue(shielded.isBlocking(), "the shield is up");
+            float none = start[3] - out.getHealth();
             helper.assertTrue(none == 0.0F, "the player outside lost nothing, got " + none);
-            helper.assertTrue(in.position().distanceTo(stood[0]) < 0.01 && armoured.position().distanceTo(stood[1]) < 0.01, "nobody was moved");
             helper.succeed();
         });
     }

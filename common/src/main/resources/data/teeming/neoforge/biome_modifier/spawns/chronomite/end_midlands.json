@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/chronomite/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/chronomite/end_midlands"
+      }
     ]
   },
   "spawners": [

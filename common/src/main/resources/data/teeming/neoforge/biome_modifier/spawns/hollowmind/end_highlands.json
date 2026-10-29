@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollowmind/end_highlands",
       [
         "minecraft:end_highlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollowmind/end_highlands"
+      }
     ]
   },
   "spawners": [

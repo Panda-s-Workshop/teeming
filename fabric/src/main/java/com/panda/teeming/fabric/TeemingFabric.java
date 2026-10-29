@@ -102,14 +102,16 @@ public final class TeemingFabric implements ModInitializer {
     /**
      * The same spawns as the generated NeoForge biome modifiers, from the same table: the mob's tag gates every one; a
      * tuned biome gets its tuned weight; the rest of the tag gets the rest weight ({@link SpawnTable#rest}), without the
-     * tuned biomes and, for monsters, without the share-capped biomes (the Teeming spawner places monsters there). Where
-     * the rest is split, the part another listed mob's tag also holds gets the beside weight. An outer-island End mob's
-     * tag also holds {@code #teeming:modded_end}: the biomes of that tag, vanilla's five left out, get its planned weight
-     * there, and its rest leaves the whole tag out (vanilla's End biomes are in it). So every spawn stays inside the
-     * mob's tag, and emptying the tag stops the mob everywhere.
+     * tuned biomes. Where the rest is split, the part another listed mob's tag also holds gets the beside weight. An
+     * outer-island End mob's tag also holds {@code #teeming:modded_end}: the biomes of that tag, vanilla's five left out,
+     * get its planned weight there, and its rest leaves the whole tag out (vanilla's End biomes are in it). So every
+     * spawn stays inside the mob's tag, and emptying the tag stops the mob everywhere. A monster's rows all leave the
+     * share-capped biomes out, the tuned ones included: in the Nether the Teeming spawner places monsters there instead,
+     * and in the Overworld none spawn there.
      */
     private static void addSpawns(RosterStats.Entry mob, EntityType<? extends Mob> type) {
         Predicate<BiomeSelectionContext> home = BiomeSelectors.tag(TeemingSpawns.tag(mob.id()));
+        if (!mob.passive()) home = home.and(context -> !context.hasTag(TeemingSpawner.SHARE_CAPPED));
         List<ResourceKey<Biome>> tuned = new ArrayList<>();
         for (SpawnTable.Row row : SpawnTable.tuned(mob.id())) {
             ResourceKey<Biome> biome = ResourceKey.create(Registries.BIOME, Identifier.parse(row.biome()));
@@ -118,7 +120,6 @@ public final class TeemingFabric implements ModInitializer {
                     mob.groupMin(), mob.groupMax());
         }
         Predicate<BiomeSelectionContext> rest = home.and(BiomeSelectors.excludeByKey(tuned));
-        if (!mob.passive()) rest = rest.and(context -> !context.hasTag(TeemingSpawner.SHARE_CAPPED));
         Integer modded = SpawnTable.MODDED_END.get(mob.id());
         // its tag holds #teeming:modded_end, and with it vanilla's End biomes: the rest leaves the whole tag out
         if (modded != null) rest = rest.and(context -> !context.hasTag(TeemingSpawns.MODDED_END));

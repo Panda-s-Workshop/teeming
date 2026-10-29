@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mycelite_shambler/dark_forest",
       [
         "minecraft:dark_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mycelite_shambler/dark_forest"
+      }
     ]
   },
   "spawners": [

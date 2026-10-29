@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/dripstone_caves",
       [
         "minecraft:dripstone_caves"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/dripstone_caves"
+      }
     ]
   },
   "spawners": [

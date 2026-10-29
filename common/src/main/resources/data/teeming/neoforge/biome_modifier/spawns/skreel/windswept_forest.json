@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/skreel/windswept_forest",
       [
         "minecraft:windswept_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/skreel/windswept_forest"
+      }
     ]
   },
   "spawners": [

@@ -69,6 +69,11 @@ public class SlagheartGolem extends TeemingMonster {
     public static final float ERUPT_DAMAGE = 10.0F;
     /** How much a thrown cold item, splash water and powder snow cool it. */
     public static final int SNOWBALL = 2, SPLASH = 4, POWDER_SNOW = 12;
+    /**
+     * Powder snow carries no thrower: a quench from it is credited to the nearest player (not spectating) within this
+     * many blocks, the one who poured it in the golem's path.
+     */
+    public static final double POWDER_SNOW_CREDIT = 8.0;
     /** Thrown items that cool it as a snowball does: snowballs by default, and whatever a pack adds. */
     public static final TagKey<Item> COLD_ITEMS = TagKey.create(Registries.ITEM, TeemingMod.id("cold_items"));
     public static final int QUENCH_TICKS = 60;
@@ -152,9 +157,10 @@ public class SlagheartGolem extends TeemingMonster {
     }
 
     /**
-     * A cooling hit from {@code by} (the thrower of a snowball or splash water, or a Quench Charm holder who struck it;
-     * null for powder snow, rain or water). The hit that brings the heat to 0 and quenches it earns {@code by}, if a
-     * player, the Cooled Off advancement; powder snow, rain and water have no one to earn it.
+     * A cooling hit from {@code by} (the thrower of a snowball or splash water, a Quench Charm holder who struck it, or
+     * for powder snow the nearest player within {@link #POWDER_SNOW_CREDIT}; null for rain or water, or powder snow with
+     * no player near). The hit that brings the heat to 0 and quenches it earns {@code by}, if a player, the Cooled Off
+     * advancement.
      */
     public void cool(int amount, @Nullable Entity by) {
         if (!MechanicEvent.post(this, "cool", null)) return;
@@ -171,7 +177,7 @@ public class SlagheartGolem extends TeemingMonster {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         boolean snow = level.getBlockState(blockPosition()).is(Blocks.POWDER_SNOW) || level.getBlockState(blockPosition().above()).is(Blocks.POWDER_SNOW);
-        if (snow && !inPowderSnow) cool(POWDER_SNOW);
+        if (snow && !inPowderSnow) cool(POWDER_SNOW, level.getNearestPlayer(getX(), getY(), getZ(), POWDER_SNOW_CREDIT, e -> !e.isSpectator()));
         inPowderSnow = snow;
         if (core().in(Step.TELL) || core().in(Step.ERUPT)) {
             getNavigation().stop();

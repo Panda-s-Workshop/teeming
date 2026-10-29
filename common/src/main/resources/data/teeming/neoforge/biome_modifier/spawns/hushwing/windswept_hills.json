@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/windswept_hills",
       [
         "minecraft:windswept_hills"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/windswept_hills"
+      }
     ]
   },
   "spawners": [

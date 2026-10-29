@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/sulfur_caves",
       [
         "minecraft:sulfur_caves"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/sulfur_caves"
+      }
     ]
   },
   "spawners": [

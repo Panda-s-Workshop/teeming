@@ -131,6 +131,23 @@ public final class TeemingSpawner {
             return this == LAVA_SEA_AIR || this == VOID_AIR || this == VOID_BELOW || this == SKY || this == APEX_SKY;
         }
 
+        /**
+         * A rule whose spot the player's own seldom is (inside a structure, over a lava sea, on a fungus cap, at an
+         * island's edge or underside, in the void): the spawn command names the spot instead of answering yes.
+         */
+        public boolean narrow() {
+            return structure() || this == LAVA_SEA_AIR || this == FUNGUS_CAP || this == UNDERSIDE || this == VOID_AIR || this == VOID_BELOW;
+        }
+
+        /** Inside this structure rule's structure (a nether fortress, a bastion); false for any other rule. */
+        public boolean within(ServerLevel level, BlockPos pos) {
+            return switch (this) {
+                case FORTRESS -> inStructure(level, pos, BuiltinStructures.FORTRESS);
+                case BASTION -> inStructure(level, pos, BuiltinStructures.BASTION_REMNANT);
+                default -> false;
+            };
+        }
+
         /** Whether a mob of this rule may stand at {@code pos}: the shape of the spot only, no light or caps. */
         public boolean fits(ServerLevel level, BlockPos pos) {
             if (!air(level, pos)) return false;
@@ -289,8 +306,8 @@ public final class TeemingSpawner {
 
     /**
      * Every mob that may take a spot in the column at x, z near height {@code y}, with that spot: the spot first, then
-     * only the mobs whose rule accepts it. A mob placed only by the spawner goes only where its biome tag says, when the
-     * tag holds anything. Public for the GameTests.
+     * only the mobs whose rule accepts it and whose tag lets the spawner place it ({@link #tagAllows}). Public for the
+     * GameTests.
      */
     public static List<Candidate> candidatesAt(ServerLevel level, int x, int y, int z, RandomSource random, boolean sharedOnly) {
         return candidatesAt(level, x, y, z, random, sharedOnly, false);
@@ -319,7 +336,7 @@ public final class TeemingSpawner {
             }
             BlockPos pos = spots.computeIfAbsent(rule, r -> Optional.ofNullable(r.find(level, x, y, z, random))).orElse(null);
             if (pos == null) continue;
-            if (!mob.biomeSpawns() && !inTagOrUntagged(level, mob, pos)) continue;
+            if (!tagAllows(level, mob, pos)) continue;
             out.add(new Candidate(mob, type.get(), pos, rule));
         }
         if (only == null) shareCappedCandidates(level, x, y, z, random, out);
@@ -343,7 +360,7 @@ public final class TeemingSpawner {
         for (int dy = -SCAN; dy <= SCAN; dy++) {
             pos.setY(y + dy);
             if (pos.getY() <= level.getMinY() || pos.getY() >= level.getMaxY() || !rule.fits(level, pos)) continue;
-            if (!TeemingSpawns.placeOk(mob, type, level, pos) || !inTagOrUntagged(level, mob, pos)) continue;
+            if (!TeemingSpawns.placeOk(mob, type, level, pos) || !tagAllows(level, mob, pos)) continue;
             if (!level.noCollision(type.getSpawnAABB(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5))) continue;
             fit.add(pos.immutable());
         }
@@ -414,11 +431,19 @@ public final class TeemingSpawner {
         return pool.getLast();
     }
 
-    /** Whether the spot's biome is in the mob's tag; an empty tag places it wherever its rule fits. */
-    private static boolean inTagOrUntagged(ServerLevel level, Entry mob, BlockPos pos) {
-        TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
-        int size = level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag).map(set -> set.size()).orElse(0);
-        return size == 0 || level.getBiome(pos).is(tag);
+    /**
+     * Whether the mob's tag lets the spawner place it at {@code pos}, a spot its rule accepted. A mob placed only by the
+     * spawner goes where its tag holds the spot's biome, and wherever its rule fits when the tag is empty. A mob that is
+     * also on the biome lists (the Aurovore in bastions, the main island's Astral Augur and Nullcantor, the Resonant
+     * Triad in the open sky) goes wherever its rule fits while its tag holds anything, and nowhere once it is emptied, as
+     * its lists stop then. Its rule's spot isn't held to the tag's biomes: a bastion stands in four Nether biomes, and the
+     * End mobs' tags reach the main island and the outer biomes only through {@code #teeming:modded_end}, which a pack
+     * may take out of the tag to keep a mob out of biome mods' End biomes.
+     */
+    public static boolean tagAllows(ServerLevel level, Entry mob, BlockPos pos) {
+        int size = TeemingSpawns.tagSize(level, mob.id());
+        if (mob.biomeSpawns()) return size > 0;
+        return size == 0 || level.getBiome(pos).is(TeemingSpawns.tag(mob.id()));
     }
 
     // ---- the share cap -------------------------------------------------------------------------------------------

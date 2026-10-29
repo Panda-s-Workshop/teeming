@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/beach",
       [
         "minecraft:beach"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/beach"
+      }
     ]
   },
   "spawners": [

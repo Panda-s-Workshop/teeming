@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "teeming:void_stain",
     "teeming:orrery_mote"
   ]
 }

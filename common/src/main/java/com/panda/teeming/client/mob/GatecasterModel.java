@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 /**
  * Gatecaster: a slow glide under the long robe, hunched over the ring of violet light it holds upright between its
  * hands; the ring turns slowly, its inner ring the other way. Tell: its fingertips glow, it draws itself up and lifts
- * the ring, which swells and spins faster and faster; the exit rift (a big ring of the same light) opens out where the
+ * the ring, which swells and spins faster and faster; the gate (a big ring of the same light) opens out where the
  * caster's synced flags put it, turned to face the target, and its inner ring lights once the aim locks. Bolt: it
  * thrusts the ring forward and the gate flares and shrinks shut. Turned: dragged through its own gate, it is thrown
  * back, arms flung wide, the ring wobbling small.

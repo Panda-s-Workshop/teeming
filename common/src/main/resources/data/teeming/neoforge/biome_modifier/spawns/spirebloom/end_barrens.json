@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/spirebloom/end_barrens",
       [
         "minecraft:end_barrens"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/spirebloom/end_barrens"
+      }
     ]
   },
   "spawners": [

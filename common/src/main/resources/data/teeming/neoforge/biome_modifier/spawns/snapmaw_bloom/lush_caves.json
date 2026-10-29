@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snapmaw_bloom/lush_caves",
       [
         "minecraft:lush_caves"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snapmaw_bloom/lush_caves"
+      }
     ]
   },
   "spawners": [

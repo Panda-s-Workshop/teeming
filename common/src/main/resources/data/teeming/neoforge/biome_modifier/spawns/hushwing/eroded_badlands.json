@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/eroded_badlands",
       [
         "minecraft:eroded_badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/eroded_badlands"
+      }
     ]
   },
   "spawners": [

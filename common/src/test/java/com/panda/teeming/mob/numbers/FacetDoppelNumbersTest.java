@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * The Facet Doppel's numbers against its row, written out as plain values: HP 36, Atk and Arm copied (0 of its own),
  * 0.6 x 1.95, tell 20 (the flicker on first sight); End midlands, weight 3, groups of 1; second look Obsidian Doppel;
  * drops void ichor. Then the calls made here: a bare hand copies as a fist's 1, a flicker that copied nothing waits 40
- * ticks, and its blows have an 8-tick wind-up. The GameTests check the copy is made in the world from real gear; this
+ * ticks, and its blows have an 8-tick wind-up and land a quarter harder than the copy. The GameTests check the copy is made in the world from real gear; this
  * checks they are the right numbers.
  */
 class FacetDoppelNumbersTest {
@@ -26,7 +26,7 @@ class FacetDoppelNumbersTest {
         assertEquals(8, FacetDoppel.WINDUP_TICKS);
         assertEquals(6, FacetDoppel.STRIKE_TICKS);
         assertEquals(20, FacetDoppel.COOLDOWN);
-        assertEquals(1.0F, FacetDoppel.STRIKE);
+        assertEquals(1.25F, FacetDoppel.STRIKE);
         assertEquals(0.8, FacetDoppel.START_REACH);
         assertEquals(1.4, FacetDoppel.STRIKE_REACH);
         assertEquals(120.0F, FacetDoppel.STRIKE_ARC);
@@ -61,7 +61,7 @@ class FacetDoppelNumbersTest {
 
     @Test
     void houseRules() {
-        // every tell at least 8 ticks (the blow is 1 x Atk, under the 1.5 x that asks for 10); the flicker is long enough
+        // every tell at least 8 ticks (the blow is 1.25 x Atk, under the 1.5 x that asks for 10); the flicker is long enough
         // to switch to a weaker item (a hotbar key is one tick); the flag bits don't reach the stage bits (24 and up)
         assertTrue(FacetDoppel.WINDUP_TICKS >= 8);
         assertTrue(FacetDoppel.TELL_TICKS >= 8);

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/vigil_owl/end_highlands",
       [
         "minecraft:end_highlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/vigil_owl/end_highlands"
+      }
     ]
   },
   "spawners": [

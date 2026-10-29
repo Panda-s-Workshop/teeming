@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/gloamhound/old_growth_pine_taiga",
       [
         "minecraft:old_growth_pine_taiga"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/gloamhound/old_growth_pine_taiga"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/exile_wraith/end_barrens",
       [
         "minecraft:end_barrens"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/exile_wraith/end_barrens"
+      }
     ]
   },
   "spawners": [

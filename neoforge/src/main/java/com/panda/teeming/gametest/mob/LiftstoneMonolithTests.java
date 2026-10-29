@@ -2,11 +2,13 @@ package com.panda.teeming.gametest.mob;
 
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.charm.Charms;
 import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.end.LiftstoneMonolith;
 import com.panda.teeming.mob.end.LiftstoneMonolith.Step;
+import com.panda.teeming.registry.ModCharms;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.SpawnTable;
@@ -22,6 +24,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityTypes;
@@ -70,6 +73,7 @@ public final class LiftstoneMonolithTests {
         TeemingGameTests.timeLimit("liftstone_monolith_cracked_length", 180);
         out.accept("liftstone_monolith_armor", LiftstoneMonolithTests::armor);
         out.accept("liftstone_monolith_survive_three", LiftstoneMonolithTests::surviveThree);
+        out.accept("liftstone_monolith_grounding", LiftstoneMonolithTests::grounding);
         out.accept("liftstone_monolith_slam_veto", LiftstoneMonolithTests::slamVeto);
         out.accept("liftstone_monolith_lets_go", LiftstoneMonolithTests::letsGo);
         out.accept("liftstone_monolith_stats", LiftstoneMonolithTests::stats);
@@ -478,6 +482,87 @@ public final class LiftstoneMonolithTests {
             helper.assertTrue(Math.abs(tookSplit - 10.0F) < 0.01F, "split, a blow of 10 takes 10, took " + tookSplit);
             helper.succeed();
         });
+    }
+
+    /**
+     * A Grounding Charm in the off-hand halves the slam as it halves the lift. Two pigs 3 blocks either side of it, one
+     * holding the charm in the off-hand and one in the main hand, are lifted and slammed by one pull: the main-hand pig
+     * rises 6 and loses the whole 27, the off-hand pig rises 3 and loses 13.5. Two survival players in the End's
+     * reference gear (a netherite set, armour 20 and toughness 12, Protection IV on every piece), out of its reach, take
+     * one slam each: the main-hand one loses 4.04 on Normal (1.65 on Easy, 7.64 on Hard), the off-hand one 1.50 (0.73 on
+     * Easy, 2.64 on Hard), well under half of it.
+     */
+    private static void grounding(GameTestHelper helper) {
+        LiftstoneMonolith m = unaware(helper);
+        Pig offPig = pig(helper, 3.0, 0, 0), mainPig = pig(helper, -3.0, 0, 0);
+        offPig.setItemInHand(InteractionHand.OFF_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        mainPig.setItemInHand(InteractionHand.MAIN_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        Pig[] pigs = {offPig, mainPig};
+        Track[] t = {new Track(offPig.position()), new Track(mainPig.position())};
+        float[] atLanding = {-1.0F, -1.0F};
+        boolean[] lifted = {false, false};
+        helper.runAtTickTime(1, () -> helper.assertTrue(m.rise(null), "it rises"));
+        helper.onEachTick(() -> {
+            for (int i = 0; i < 2; i++) {
+                t[i].see(pigs[i].position());
+                lifted[i] |= m.held().contains(pigs[i]);
+                if (atLanding[i] < 0 && lifted[i] && !m.held().contains(pigs[i])) atLanding[i] = lost(pigs[i]);
+            }
+        });
+
+        // the reference players, 8.5 blocks from its middle, out of its 6-block reach
+        ServerPlayer offPlayer = referencePlayer(helper, new Vec3(0.5, 1, 0.5)), mainPlayer = referencePlayer(helper, new Vec3(11.5, 1, 0.5));
+        offPlayer.setItemInHand(InteractionHand.OFF_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        mainPlayer.setItemInHand(InteractionHand.MAIN_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        // mob blows to players scale with difficulty first; then d x (1 - (20 - d / 5) / 25), then x 0.36 for Protection 16
+        float[] cost = switch (helper.getLevel().getDifficulty()) {
+            case EASY -> new float[] {0.7310F, 1.6495F};       // 7.75 and 14.5
+            case HARD -> new float[] {2.6390F, 7.6399F};       // 20.25 and 40.5
+            default -> new float[] {1.4969F, 4.0435F};         // 13.5 and 27
+        };
+        float[] took = {-1.0F, -1.0F};
+        helper.runAtTickTime(10, () -> {
+            for (ServerPlayer p : new ServerPlayer[] {offPlayer, mainPlayer}) {
+                p.doTick();                        // a test player doesn't tick by itself, and the set counts once it has
+                helper.assertTrue(p.getArmorValue() == 20, "armour 20, got " + p.getArmorValue());
+            }
+        });
+        helper.runAtTickTime(12, () -> {
+            ServerPlayer[] players = {offPlayer, mainPlayer};
+            for (int i = 0; i < 2; i++) {
+                float before = players[i].getHealth();
+                helper.assertTrue(m.slamHit(helper.getLevel(), players[i]), "the slam lands on player " + i);
+                took[i] = before - players[i].getHealth();
+            }
+        });
+
+        helper.succeedWhen(() -> {
+            float whole = LiftstoneMonolith.SLAM_DAMAGE, half = whole * (float) Charms.GROUNDING;
+            helper.assertTrue(atLanding[0] >= 0 && atLanding[1] >= 0, "both pigs were lifted and landed");
+            helper.assertTrue(Math.abs(t[1].rise - 6.0) < 0.05 && Math.abs(atLanding[1] - whole) < 0.01F,
+                    "main hand: rose 6 and lost " + whole + ", rose " + t[1].rise + " and lost " + atLanding[1]);
+            helper.assertTrue(Math.abs(t[0].rise - 3.0) < 0.05 && Math.abs(atLanding[0] - half) < 0.01F,
+                    "off-hand: rose 3 and lost " + half + ", rose " + t[0].rise + " and lost " + atLanding[0]);
+            helper.assertTrue(Math.abs(took[1] - cost[1]) < 0.02F, "the main-hand player's slam costs " + cost[1] + ", cost " + took[1]);
+            helper.assertTrue(Math.abs(took[0] - cost[0]) < 0.02F, "the off-hand player's slam costs " + cost[0] + ", cost " + took[0]);
+            helper.assertTrue(took[0] < took[1] * 0.5F, "the charm takes more than half the slam off the reference player");
+            TeemingMod.LOGGER.info("liftstone_monolith_grounding: pigs off-hand rose {} lost {}, main hand rose {} lost {}; players off-hand {} main hand {}",
+                    t[0].rise, atLanding[0], t[1].rise, atLanding[1], took[0], took[1]);
+        });
+    }
+
+    /** A survival player in the End's reference gear: a netherite set with Protection IV on every piece. */
+    private static ServerPlayer referencePlayer(GameTestHelper helper, Vec3 at) {
+        ServerPlayer p = TestPlayers.survivor(helper, at);
+        var protection = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.PROTECTION);
+        EquipmentSlot[] slots = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+        Item[] set = {Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS};
+        for (int i = 0; i < 4; i++) {
+            ItemStack piece = new ItemStack(set[i]);
+            piece.enchant(protection, 4);
+            p.setItemSlot(slots[i], piece);
+        }
+        return p;
     }
 
     /**

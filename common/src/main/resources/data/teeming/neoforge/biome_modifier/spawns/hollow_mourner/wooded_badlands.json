@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/wooded_badlands",
       [
         "minecraft:wooded_badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/wooded_badlands"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/jagged_peaks",
       [
         "minecraft:jagged_peaks"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/jagged_peaks"
+      }
     ]
   },
   "spawners": [

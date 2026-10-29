@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/void_bloom/end_barrens",
       [
         "minecraft:end_barrens"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/void_bloom/end_barrens"
+      }
     ]
   },
   "spawners": [

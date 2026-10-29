@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/rattlecoil/desert",
       [
         "minecraft:desert"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/rattlecoil/desert"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/snowy_plains",
       [
         "minecraft:snowy_plains"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/snowy_plains"
+      }
     ]
   },
   "spawners": [

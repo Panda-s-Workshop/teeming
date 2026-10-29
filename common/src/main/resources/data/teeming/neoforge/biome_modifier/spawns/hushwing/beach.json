@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/beach",
       [
         "minecraft:beach"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/beach"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mote_swarm/small_end_islands",
       [
         "minecraft:small_end_islands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mote_swarm/small_end_islands"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/astral_augur/end_highlands",
       [
         "minecraft:end_highlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/astral_augur/end_highlands"
+      }
     ]
   },
   "spawners": [

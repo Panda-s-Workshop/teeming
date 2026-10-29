@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/dustwhirl/savanna",
       [
         "minecraft:savanna"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/dustwhirl/savanna"
+      }
     ]
   },
   "spawners": [

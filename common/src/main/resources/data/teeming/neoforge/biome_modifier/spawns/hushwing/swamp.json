@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/swamp",
       [
         "minecraft:swamp"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/swamp"
+      }
     ]
   },
   "spawners": [

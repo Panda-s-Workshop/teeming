@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/lukewarm_ocean",
       [
         "minecraft:lukewarm_ocean"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/lukewarm_ocean"
+      }
     ]
   },
   "spawners": [

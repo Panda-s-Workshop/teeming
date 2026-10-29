@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/vinedrop_strangler/jungle",
       [
         "minecraft:jungle"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/vinedrop_strangler/jungle"
+      }
     ]
   },
   "spawners": [

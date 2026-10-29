@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/pearlgulp/end_highlands",
       [
         "minecraft:end_highlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/pearlgulp/end_highlands"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/dustwhirl/wooded_badlands",
       [
         "minecraft:wooded_badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/dustwhirl/wooded_badlands"
+      }
     ]
   },
   "spawners": [

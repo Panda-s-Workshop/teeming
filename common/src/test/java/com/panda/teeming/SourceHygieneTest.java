@@ -49,7 +49,7 @@ class SourceHygieneTest {
         Set<String> allowed = Set.of(
                 "Brinkram.java: if (!victim.hurtServer(level, source, damage)) return;",
                 "Brinkray.java: if (victim.hurtServer(level, source, (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * RAM_HIT)) {",
-                "LiftstoneMonolith.java: boolean hurt = v.hurtServer(level, slamSource(), SLAM_DAMAGE);",
+                "LiftstoneMonolith.java: boolean hurt = v.hurtServer(level, slamSource(), slamDamage(v));",
                 "Pullstar.java: if (!v.hurtServer(level, damageSources().mobAttack(this), damage)) continue;");
         List<String> bare = new ArrayList<>();
         try (Stream<Path> s = Files.list(SRC.resolve(Path.of("com", "panda", "teeming", "mob", "end")))) {

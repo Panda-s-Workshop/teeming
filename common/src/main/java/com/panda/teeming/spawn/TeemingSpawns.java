@@ -59,8 +59,33 @@ public final class TeemingSpawns {
         <T extends Mob> void set(EntityType<T> type, SpawnPlacementType placement, Heightmap.Types heightmap, SpawnPlacements.SpawnPredicate<T> predicate);
     }
 
+    /** A biome tag no data defines: it reads as an emptied spawn tag. */
+    private static final TagKey<Biome> NO_TAG = TagKey.create(Registries.BIOME, TeemingMod.id("spawns_emptied"));
+    /** Mobs whose spawn tag reads as {@link #NO_TAG}; empty outside the GameTests. */
+    private static Set<String> emptied = Set.of();
+
+    /** The biome tag that says where the mob spawns, {@code #teeming:spawns/<id>}. */
     public static TagKey<Biome> tag(String id) {
-        return TagKey.create(Registries.BIOME, TeemingMod.id("spawns/" + id));
+        return emptied.contains(id) ? NO_TAG : TagKey.create(Registries.BIOME, TeemingMod.id("spawns/" + id));
+    }
+
+    /**
+     * Runs {@code body} as if a data pack had emptied these mobs' spawn tags, and puts the tags back before returning.
+     * A GameTest hook: the spawner and the spawn command read a mob's tag only through {@link #tag}, so they see it empty.
+     */
+    public static void withEmptiedTags(Set<String> ids, Runnable body) {
+        Set<String> was = emptied;
+        emptied = Set.copyOf(ids);
+        try {
+            body.run();
+        } finally {
+            emptied = was;
+        }
+    }
+
+    /** How many biomes the mob's spawn tag holds (0 when a pack emptied it). */
+    public static int tagSize(ServerLevelAccessor level, String id) {
+        return level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag(id)).map(set -> set.size()).orElse(0);
     }
 
     public static MobCategory category(Entry mob) {

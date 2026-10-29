@@ -184,7 +184,7 @@ public final class Charms {
     /**
      * Grounding Charm: the share of an End mob's pull, lift, Levitation or throw that reaches its holder. A pull draws
      * half as fast (the Pullstar's drift, the Abyss Angler's reel) or half as far (the Underclinger's drag); a lift rises
-     * half as high (the Liftstone Monolith); Levitation a Teeming mob or its cloud gives (the Levimoth's dust) lasts half
+     * half as high and its slam lands half as hard (the Liftstone Monolith); Levitation a Teeming mob or its cloud gives (the Levimoth's dust) lasts half
      * as long, so it lifts half as high; a throw, knock-up or launch (Brinkram, Brinkray, Spirebloom, Riftmine Sapper)
      * sets half the motion. Vanilla's own shove from a blow is left as it is. Charges and rams also ask
      * {@link #chargeThrow} (the Shellward Charm) and multiply the two: the off-hand holds one charm, so the product is
@@ -192,7 +192,7 @@ public final class Charms {
      */
     public static final double GROUNDING = 0.5;
 
-    /** The share of an End mob's pull, lift or throw that reaches {@code target}: halved by the Grounding Charm. */
+    /** The share of an End mob's pull, lift, slam or throw that reaches {@code target}: halved by the Grounding Charm. */
     public static double grounded(LivingEntity target) {
         return holds(target, ModCharms.GROUNDING_CHARM) ? GROUNDING : 1.0;
     }
@@ -229,7 +229,7 @@ public final class Charms {
     public static final double RIFT_FAIL = 0.5;
 
     /**
-     * Rift Charm: an exit rift aimed at its holder opens this many ticks earlier before its bolt (the Gatecaster's gate):
+     * Rift Charm: a Gatecaster's gate aimed at its holder opens this many ticks earlier before its bolt:
      * its tell runs this much longer, the extra time spent locked on the line of fire.
      */
     public static final int RIFT_EARLY = 10;
@@ -239,8 +239,8 @@ public final class Charms {
         return felt(target, holds(target, ModCharms.RIFT_CHARM) && random.nextDouble() < RIFT_FAIL);
     }
 
-    /** Ticks an exit rift aimed at {@code target} shows before its bolt, from its usual {@code ticks}: the Rift Charm adds {@link #RIFT_EARLY}. */
-    public static int exitRiftTicks(@Nullable LivingEntity target, int ticks) {
+    /** Ticks a Gatecaster's gate aimed at {@code target} shows before its bolt, from its usual {@code ticks}: the Rift Charm adds {@link #RIFT_EARLY}. */
+    public static int gateTicks(@Nullable LivingEntity target, int ticks) {
         return target != null && holds(target, ModCharms.RIFT_CHARM) ? ticks + RIFT_EARLY : ticks;
     }
 

@@ -11,6 +11,7 @@ import com.panda.teeming.mob.end.AnchorGolem;
 import com.panda.teeming.mob.end.Chronomite;
 import com.panda.teeming.mob.end.Driftsong;
 import com.panda.teeming.mob.end.ExileWraith;
+import com.panda.teeming.mob.end.FacetDoppel;
 import com.panda.teeming.mob.end.Gatecaster;
 import com.panda.teeming.mob.end.GeminiWatchers;
 import com.panda.teeming.mob.end.GrandOrrery;
@@ -169,9 +170,9 @@ class GuideNumbersTest {
         guide("grand_orrery", "takes " + times(GrandOrrery.OPEN_DAMAGE) + " damage");
         guide("grand_orrery", "burst of " + words(GrandOrrery.BURST_VOLLEYS) + " volleys");
         assertEquals(0, GrandOrrery.OPEN_ARMOR, "the Grand Orrery's page says it has no armour while open");
-        guide("grand_orrery", "no armour");
+        guide("grand_orrery", "no armor");
         assertTrue(GrandOrrery.MOTE_PIERCE > 0, "the Grand Orrery's page says each mote goes partly through armour");
-        guide("grand_orrery", "goes partly through armour");
+        guide("grand_orrery", "goes partly through armor");
         guide("pullstar", "within " + words(Pullstar.PULL_RADIUS) + " blocks");
         guide("pullstar", "Every " + seconds(Pullstar.CYCLE_TICKS) + " it dims for " + words(Pullstar.DIM_TICKS / 20.0));
         guide("pullstar", "takes " + times(Pullstar.DIM_DAMAGE) + " damage");
@@ -195,6 +196,7 @@ class GuideNumbersTest {
         guide("exile_wraith", words(ExileWraith.EXILE_NEAR) + " to " + words(ExileWraith.EXILE_FAR) + " blocks off");
         guide("gatecaster", words(Gatecaster.GATE_NEAR) + " to " + words(Gatecaster.GATE_FAR) + " blocks behind you");
         guide("liftstone_monolith", "lifted " + words(LiftstoneMonolith.LIFT_HEIGHT) + " blocks into the air");
+        guide("facet_doppel", "brings it down " + share(FacetDoppel.STRIKE - 1.0F) + " harder than it hits in your hand");
 
         // the Nether
         guide("spore_cannon", hearts(SporeCannon.SPORE_DAMAGE) + " each");
@@ -249,6 +251,11 @@ class GuideNumbersTest {
         text("item.teeming.hearth_charm.effect", "Halves the Shiverwraith's frost and its tether's healing");
         text("item.teeming.quench_charm.effect", "burns you " + share(Charms.QUENCH_PATCH_BURN) + " as much");
         text("item.teeming.tether_charm.effect", "after " + digitSeconds(Charms.TETHER_SNAP_TICKS) + " seconds");
+        assertEquals("half", share(Charms.GROUNDING), "the Grounding Charm's tooltip says it halves");
+        text("item.teeming.grounding_charm.effect", "Halves pulls, lifts, slams, throws and Levitation");
+        text("item.teeming.rot_ward_charm.effect", "last " + share(Charms.ROT_WARD) + " as long");
+        text("item.teeming.rift_charm.effect", "fail " + share(Charms.RIFT_FAIL) + " the time");
+        text("item.teeming.memory_charm.effect", "fails " + share(Charms.MEMORY_FAIL) + " the time; nulled enchantments keep " + share(Charms.MEMORY_LEVELS));
         text("item.teeming.clear_voice_charm.effect", "from " + digitSeconds(KeeningShade.SILENCE_TICKS) + " seconds to "
                 + digitSeconds(Charms.CLEAR_VOICE_SILENCED_TICKS));
 

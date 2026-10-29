@@ -68,6 +68,8 @@ public final class AdvancementTests {
         out.accept("advancement_apex_kills", AdvancementTests::apexKills);
         out.accept("advancement_first_charm", AdvancementTests::firstCharm);
         out.accept("advancement_cooled_off", AdvancementTests::cooledOff);
+        out.accept("advancement_cooled_off_powder_snow", AdvancementTests::cooledOffPowderSnow);
+        TeemingGameTests.wide("advancement_cooled_off_powder_snow");
         for (Stars how : Stars.values()) {
             String name = "advancement_between_the_stars_" + how.name().toLowerCase(java.util.Locale.ROOT);
             out.accept(name, h -> betweenTheStars(h, how));
@@ -299,8 +301,8 @@ public final class AdvancementTests {
      * Cooled Off goes to the player whose own cooling hit quenches a Slagheart Golem, and a Quench Charm hit is one: a
      * survival player with the charm in the off-hand strikes a still golem at heat 2, which cools it to 1 and earns
      * nothing, then again, which quenches it and earns Cooled Off. A second player strikes a golem with a bare hand,
-     * which heats it, and the golem is then quenched by powder snow at its feet: powder snow has no one to earn it, so
-     * that player earns nothing though they were fighting it.
+     * which heats it, and the golem is then quenched by powder snow at its feet: the player fighting it is the nearest,
+     * 5 blocks off, and earns Cooled Off for the snow.
      */
     private static void cooledOff(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -328,7 +330,41 @@ public final class AdvancementTests {
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(snowed.heat() == 0 && snowed.core().in(SlagheartGolem.Step.QUENCHED), "powder snow quenches the second golem, heat " + snowed.heat());
-            helper.assertTrue(!done(helper, fighter, TeemingAdvancements.SLAGHEART_QUENCH), "and earns the player fighting it nothing");
+            helper.assertTrue(done(helper, fighter, TeemingAdvancements.SLAGHEART_QUENCH), "and the snow earns the player fighting it Cooled Off");
+        });
+    }
+
+    /**
+     * Powder snow carries no thrower, so its quench goes to the nearest player within
+     * {@link SlagheartGolem#POWDER_SNOW_CREDIT} (8) blocks of the golem, in the wide arena (its floor's top is at y 0).
+     * Two still golems at heat 2, 30 blocks apart. By the first, one survival player stands 3 blocks off and another 6:
+     * the snow at the golem's feet quenches it and earns the nearer one Cooled Off, and the farther one nothing. By the
+     * second, the only player stands 10 blocks off: the snow quenches it all the same, and earns them nothing.
+     */
+    private static void cooledOffPowderSnow(GameTestHelper helper) {
+        SlagheartGolem near = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(10.5, 0, 20.5));
+        SlagheartGolem alone = helper.spawn(ModMobs.SLAGHEART_GOLEM.get(), new Vec3(40.5, 0, 20.5));
+        for (SlagheartGolem g : new SlagheartGolem[] {near, alone}) {
+            g.removeFreeWill();                           // it stands still, and still feels the snow at its feet
+            g.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
+            g.setHeat(2);
+            TestPlayers.whenDone(helper, g::discard);
+        }
+        ServerPlayer pourer = TestPlayers.survivor(helper, new Vec3(13.5, 0, 20.5));
+        ServerPlayer bystander = TestPlayers.survivor(helper, new Vec3(10.5, 0, 26.5));
+        ServerPlayer far = TestPlayers.survivor(helper, new Vec3(50.5, 0, 20.5));
+        helper.runAtTickTime(2, () -> {
+            helper.assertTrue(near.distanceTo(pourer) < near.distanceTo(bystander) && near.distanceTo(bystander) <= SlagheartGolem.POWDER_SNOW_CREDIT
+                    && alone.distanceTo(far) > SlagheartGolem.POWDER_SNOW_CREDIT, "the players stand where the test says");
+            helper.setBlock(helper.relativePos(near.blockPosition()), Blocks.POWDER_SNOW);
+            helper.setBlock(helper.relativePos(alone.blockPosition()), Blocks.POWDER_SNOW);
+        });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(near.heat() == 0 && near.core().in(SlagheartGolem.Step.QUENCHED), "powder snow quenches the first golem, heat " + near.heat());
+            helper.assertTrue(alone.heat() == 0 && alone.core().in(SlagheartGolem.Step.QUENCHED), "and the second, heat " + alone.heat());
+            helper.assertTrue(done(helper, pourer, TeemingAdvancements.SLAGHEART_QUENCH), "the nearest player, 3 blocks off, earns Cooled Off");
+            helper.assertTrue(!done(helper, bystander, TeemingAdvancements.SLAGHEART_QUENCH), "the one 6 blocks off earns nothing");
+            helper.assertTrue(!done(helper, far, TeemingAdvancements.SLAGHEART_QUENCH), "and the one 10 blocks from the second golem nothing");
         });
     }
 

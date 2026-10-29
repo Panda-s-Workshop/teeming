@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/bamboo_jungle",
       [
         "minecraft:bamboo_jungle"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/bamboo_jungle"
+      }
     ]
   },
   "spawners": [

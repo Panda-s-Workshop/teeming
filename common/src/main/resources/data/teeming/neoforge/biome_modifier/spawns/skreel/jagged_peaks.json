@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/skreel/jagged_peaks",
       [
         "minecraft:jagged_peaks"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/skreel/jagged_peaks"
+      }
     ]
   },
   "spawners": [

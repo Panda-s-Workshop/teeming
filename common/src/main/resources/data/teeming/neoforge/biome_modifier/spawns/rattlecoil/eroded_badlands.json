@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/rattlecoil/eroded_badlands",
       [
         "minecraft:eroded_badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/rattlecoil/eroded_badlands"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/windswept_savanna",
       [
         "minecraft:windswept_savanna"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/windswept_savanna"
+      }
     ]
   },
   "spawners": [

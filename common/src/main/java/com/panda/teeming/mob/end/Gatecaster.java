@@ -47,7 +47,7 @@ import org.jspecify.annotations.Nullable;
  * hands. It keeps its distance and never strikes from the front: its bolts come out of a gate it opens behind you.
  *
  * <p>Every 80 ticks, with a target within 16 blocks in its sight, it weaves for 20 ticks (tell): its hands glow, its
- * ring spins up, and an exit rift opens 3-5 blocks behind the target, behind as the target faces when the tell starts:
+ * ring spins up, and a gate opens 3-5 blocks behind the target, behind as the target faces when the tell starts:
  * an upright violet ring at chest height, crackling, with a rising whine. The gate needs open air: a ring-sized space
  * with no block or liquid in it and a clear line to the target. With no such spot behind, it tries the target's sides
  * (the side farther from the caster first); with none there either it opens no gate and throws its bolt straight from
@@ -256,7 +256,7 @@ public class Gatecaster extends TeemingMonster {
      */
     public boolean weave(@Nullable LivingEntity target) {
         if (target == null || !core().idle() || castCooldown > 0 || !(level() instanceof ServerLevel level)) return false;
-        if (!startPhase(Step.TELL, Charms.exitRiftTicks(target, TELL_TICKS), target)) return false;
+        if (!startPhase(Step.TELL, Charms.gateTicks(target, TELL_TICKS), target)) return false;
         castCooldown = CAST_EVERY;
         tells++;
         holdStill();

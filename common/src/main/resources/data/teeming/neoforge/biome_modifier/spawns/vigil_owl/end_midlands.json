@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/vigil_owl/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/vigil_owl/end_midlands"
+      }
     ]
   },
   "spawners": [

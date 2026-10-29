@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/deep_cold_ocean",
       [
         "minecraft:deep_cold_ocean"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/deep_cold_ocean"
+      }
     ]
   },
   "spawners": [

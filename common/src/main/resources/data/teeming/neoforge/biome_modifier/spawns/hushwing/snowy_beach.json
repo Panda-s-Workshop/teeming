@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/snowy_beach",
       [
         "minecraft:snowy_beach"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/snowy_beach"
+      }
     ]
   },
   "spawners": [

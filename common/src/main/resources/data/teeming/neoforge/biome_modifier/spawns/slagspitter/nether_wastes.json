@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/slagspitter/nether_wastes",
       [
         "minecraft:nether_wastes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/slagspitter/nether_wastes"
+      }
     ]
   },
   "spawners": [

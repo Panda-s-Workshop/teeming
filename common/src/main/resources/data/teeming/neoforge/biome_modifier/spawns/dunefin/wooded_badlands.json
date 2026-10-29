@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/dunefin/wooded_badlands",
       [
         "minecraft:wooded_badlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/dunefin/wooded_badlands"
+      }
     ]
   },
   "spawners": [

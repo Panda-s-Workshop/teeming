@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snagwood/dappled_forest",
       [
         "minecraft:dappled_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snagwood/dappled_forest"
+      }
     ]
   },
   "spawners": [

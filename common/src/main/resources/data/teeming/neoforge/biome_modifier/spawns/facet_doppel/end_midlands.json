@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/facet_doppel/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/facet_doppel/end_midlands"
+      }
     ]
   },
   "spawners": [

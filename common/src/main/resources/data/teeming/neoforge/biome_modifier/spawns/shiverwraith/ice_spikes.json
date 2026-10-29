@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/shiverwraith/ice_spikes",
       [
         "minecraft:ice_spikes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/shiverwraith/ice_spikes"
+      }
     ]
   },
   "spawners": [

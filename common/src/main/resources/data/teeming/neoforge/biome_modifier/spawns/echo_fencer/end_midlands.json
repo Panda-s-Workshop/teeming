@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/echo_fencer/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/echo_fencer/end_midlands"
+      }
     ]
   },
   "spawners": [

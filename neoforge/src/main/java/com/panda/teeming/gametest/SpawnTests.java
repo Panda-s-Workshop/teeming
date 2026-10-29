@@ -1,7 +1,12 @@
 package com.panda.teeming.gametest;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.panda.teeming.TeemingConfig;
 import com.panda.teeming.TeemingMod;
+import com.panda.teeming.command.TeemingCommand;
 import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
@@ -15,7 +20,10 @@ import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawner.Candidate;
 import com.panda.teeming.spawn.TeemingSpawner.Rule;
 import com.panda.teeming.spawn.TeemingSpawns;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +41,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.Weighted;
@@ -85,6 +94,8 @@ final class SpawnTests {
         out.accept("spawn_share_end", SpawnTests::spawnShareEnd);
         out.accept("spawn_share_overworld", SpawnTests::spawnShareOverworld);
         out.accept("spawn_rest_weights", SpawnTests::restWeights);
+        out.accept("spawn_share_capped_lists", SpawnTests::shareCappedLists);
+        out.accept("spawner_emptied_tag", SpawnTests::emptiedTag);
         out.accept("spawn_surface_only", SpawnTests::surfaceOnly);
         out.accept("spawner_picks_by_spot", SpawnTests::picksBySpot);
         out.accept("place_looks", SpawnTests::placeLooks);
@@ -552,6 +563,133 @@ final class SpawnTests {
         for (Map.Entry<String, Integer> e : SpawnTable.MODDED_END.entrySet()) weighs.accept("spawns/" + e.getKey() + "/modded_end", e.getValue());
         if (biomes.get(TeemingSpawns.MODDED_END).isEmpty()) wrong.add("no #teeming:modded_end tag");
         helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
+        helper.succeed();
+    }
+
+    /**
+     * A biome set as a biome modifier's JSON writes it (a biome, a tag, a list, or NeoForge's {@code and}, {@code or},
+     * {@code not} and {@code any}), asked whether it holds a biome, with {@code #teeming:share_capped} read as also
+     * holding one more biome: a pack that adds that biome to the tag, without changing the live tags other tests read.
+     * Teeming's own tags are read from their JSON, so a tag that includes {@code #teeming:share_capped} sees the added
+     * biome; every other tag is the live one.
+     */
+    private static final class BiomeSetJson {
+        private final ResourceManager resources;
+        private final Map<Identifier, JsonArray> tags = new HashMap<>();
+
+        BiomeSetJson(ResourceManager resources) {
+            this.resources = resources;
+        }
+
+        JsonElement modifier(Identifier id) {
+            return read(Identifier.fromNamespaceAndPath(id.getNamespace(), "neoforge/biome_modifier/" + id.getPath() + ".json")).getAsJsonObject().get("biomes");
+        }
+
+        private JsonElement read(Identifier file) {
+            try (Reader in = resources.openAsReader(file)) {
+                return JsonParser.parseReader(in);
+            } catch (IOException e) {
+                throw new IllegalStateException("can't read " + file, e);
+            }
+        }
+
+        boolean holds(JsonElement set, Holder.Reference<Biome> biome, @Nullable ResourceKey<Biome> capped) {
+            if (set.isJsonPrimitive()) return entry(set.getAsString(), biome, capped);
+            if (set.isJsonArray()) {
+                for (JsonElement e : set.getAsJsonArray()) if (holds(e, biome, capped)) return true;
+                return false;
+            }
+            JsonObject o = set.getAsJsonObject();
+            String type = o.get("type").getAsString();
+            switch (type) {
+                case "neoforge:and" -> {
+                    for (JsonElement e : o.getAsJsonArray("values")) if (!holds(e, biome, capped)) return false;
+                    return true;
+                }
+                case "neoforge:or" -> {
+                    for (JsonElement e : o.getAsJsonArray("values")) if (holds(e, biome, capped)) return true;
+                    return false;
+                }
+                case "neoforge:not" -> {
+                    return !holds(o.get("value"), biome, capped);
+                }
+                case "neoforge:any" -> {
+                    return true;
+                }
+                default -> throw new IllegalStateException("a biome set of type " + type);
+            }
+        }
+
+        private boolean entry(String ref, Holder.Reference<Biome> biome, @Nullable ResourceKey<Biome> capped) {
+            if (!ref.startsWith("#")) return biome.key().identifier().equals(Identifier.parse(ref));
+            Identifier tag = Identifier.parse(ref.substring(1));
+            if (tag.equals(TeemingMod.id("share_capped")) && biome.key().equals(capped)) return true;
+            if (!tag.getNamespace().equals(TeemingMod.MODID)) return biome.is(TagKey.create(Registries.BIOME, tag));
+            JsonArray values = tags.computeIfAbsent(tag, t -> read(Identifier.fromNamespaceAndPath(t.getNamespace(),
+                    "tags/worldgen/biome/" + t.getPath() + ".json")).getAsJsonObject().getAsJsonArray("values"));
+            for (JsonElement v : values) {
+                String inner = v.isJsonObject() ? v.getAsJsonObject().get("id").getAsString() : v.getAsString();
+                if (entry(inner, biome, capped)) return true;
+            }
+            return false;
+        }
+    }
+
+    /**
+     * {@code #teeming:share_capped} takes a biome off every Teeming monster's list, tuned biomes included, and leaves the
+     * creatures' lists alone. Every Teeming spawn modifier's JSON, read as a biome set, holds exactly the biomes NeoForge
+     * bound it to, so the reading is the loader's. Then each biome whose live list holds a Teeming monster, none of them
+     * share-capped, is read as if a pack had added it to the tag: no monster modifier may hold it any more (an Overworld
+     * biome so gets no Teeming monster, and a Nether one is left to the spawner's share-capped placements), and every
+     * creature modifier that held it still does.
+     */
+    private static void shareCappedLists(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        var access = helper.getLevel().registryAccess();
+        var modifiers = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
+        List<Holder.Reference<Biome>> biomes = access.lookupOrThrow(Registries.BIOME).listElements().toList();
+        BiomeSetJson json = new BiomeSetJson(server.getResourceManager());
+        List<String> wrong = new ArrayList<>();
+        Map<Identifier, JsonElement> monsters = new HashMap<>(), creatures = new HashMap<>();
+        Map<Identifier, BiomeModifiers.AddSpawnsBiomeModifier> live = new HashMap<>();
+        modifiers.listElements().forEach(ref -> {
+            Identifier id = ref.key().identifier();
+            if (!id.getNamespace().equals(TeemingMod.MODID) || !(ref.value() instanceof BiomeModifiers.AddSpawnsBiomeModifier add)) return;
+            live.put(id, add);
+            MobCategory category = add.spawners().unwrap().getFirst().value().type().getCategory();
+            (category == MobCategory.MONSTER ? monsters : creatures).put(id, json.modifier(id));
+        });
+        if (monsters.isEmpty() || creatures.isEmpty()) wrong.add("found " + monsters.size() + " monster and " + creatures.size() + " creature spawn modifiers");
+        List<Holder.Reference<Biome>> listed = new ArrayList<>();
+        for (Holder.Reference<Biome> biome : biomes) {
+            boolean monster = false;
+            for (var e : live.entrySet()) {
+                JsonElement set = monsters.containsKey(e.getKey()) ? monsters.get(e.getKey()) : creatures.get(e.getKey());
+                boolean bound = e.getValue().biomes().contains(biome);
+                if (json.holds(set, biome, null) != bound)
+                    wrong.add(e.getKey().getPath() + " read from its JSON " + (bound ? "misses " : "holds ") + biome.key().identifier().getPath());
+                if (bound && monsters.containsKey(e.getKey())) monster = true;
+            }
+            if (monster && biome.is(TeemingSpawner.SHARE_CAPPED)) wrong.add(biome.key().identifier().getPath() + " is share-capped, yet a Teeming monster's list holds it");
+            if (monster) listed.add(biome);
+        }
+        if (listed.size() < 20) wrong.add("only " + listed.size() + " biomes list a Teeming monster");
+        int tuned = 0;
+        for (Holder.Reference<Biome> biome : listed) {
+            String name = biome.key().identifier().getPath();
+            for (var e : monsters.entrySet()) {
+                if (json.holds(e.getValue(), biome, biome.key())) wrong.add(name + " added to #teeming:share_capped stays in " + e.getKey().getPath());
+                if (e.getKey().getPath().endsWith("/" + name)) tuned++;
+            }
+            for (var e : creatures.entrySet())
+                if (live.get(e.getKey()).biomes().contains(biome) && !json.holds(e.getValue(), biome, biome.key()))
+                    wrong.add(name + " added to #teeming:share_capped leaves the creature list " + e.getKey().getPath());
+        }
+        if (tuned == 0) wrong.add("no tuned monster modifier was read");
+        String shown = String.join("; ", wrong.subList(0, Math.min(20, wrong.size())));
+        helper.assertTrue(wrong.isEmpty(), shown + (wrong.size() > 20 ? " (" + wrong.size() + " in all)" : ""));
+        TeemingMod.LOGGER.info("spawn_share_capped_lists: {} monster and {} creature modifiers read; {} biomes list Teeming monsters "
+                + "({} tuned modifiers), and each one added to the tag leaves every monster list", monsters.size(), creatures.size(), listed.size(), tuned);
         helper.succeed();
     }
 
@@ -1071,6 +1209,81 @@ final class SpawnTests {
             helper.assertTrue(refused.isEmpty(), "End list monsters refused on open sky-lit ground: " + refused);
             end.setChunkForced(x >> 4, z >> 4, false);
         });
+    }
+
+    /** The ids of the candidates, as a set. */
+    private static Set<String> idSet(List<Candidate> found) {
+        Set<String> out = new HashSet<>();
+        for (Candidate c : found) out.add(c.mob().id());
+        return out;
+    }
+
+    /**
+     * An emptied spawn tag stops a mob that is on the biome lists and also placed by a spawner rule, both ways, while a
+     * spawner-only mob with an empty tag goes wherever its rule fits. In the GameTest server's End (all {@code the_end},
+     * outside these mobs' own vanilla homes): on an end stone floor at (-600, 120, 300), on the main island, with the
+     * main island open, the Astral Augur, the Nullcantor and the spawner-only Mending Crystalling take the main-island
+     * spot; with all three tags read as emptied the Augur and the Cantor don't, and the Crystalling still does. Over open
+     * void at (-1400, y, 700), past the main island, the Resonant Triad takes a sky spot, and with its tag emptied
+     * doesn't in 20 seeded tries. The spawn command's answer at each goes from the spawner's yes to no. Tags read as
+     * emptied through the spawn tag hook, put back within the tick.
+     */
+    private static void emptiedTag(GameTestHelper helper) {
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        int x = -600, floor = 120, z = 300, skyX = -1400, skyZ = 700;
+        for (int[] c : new int[][] {{x, z}, {skyX, skyZ}}) {
+            end.getChunk(c[0] >> 4, c[1] >> 4);
+            end.setChunkForced(c[0] >> 4, c[1] >> 4, true);
+        }
+        islandFloor(end, x, floor, z);
+        BlockPos spot = new BlockPos(x, floor + 1, z);
+        BlockPos air = new BlockPos(skyX, 100, skyZ);
+        RosterStats.Entry augur = RosterStats.get("astral_augur"), cantor = RosterStats.get("nullcantor"), triad = RosterStats.get("resonant_triad");
+        RosterStats.Entry crystalling = RosterStats.get("mending_crystalling");
+        List<String> wrong = new ArrayList<>();
+        for (RosterStats.Entry row : List.of(augur, cantor, triad)) {
+            if (!row.biomeSpawns() || Rule.of(row.spawner()) == null) wrong.add(row.id() + " is not both on the lists and placed by a rule");
+            if (TeemingSpawns.tagSize(end, row.id()) == 0) wrong.add(row.id() + "'s tag is empty by default");
+        }
+        if (crystalling.biomeSpawns() || Rule.of(crystalling.spawner()) != Rule.MAIN_ISLAND) wrong.add("the Mending Crystalling is not a main-island spawner-only mob");
+        if (!Rule.SKY.fits(end, air)) wrong.add("no sky spot at " + air.toShortString());
+        islandOpen(() -> {
+            Set<String> main = idSet(TeemingSpawner.candidatesAt(end, x, floor + 1, z, RandomSource.create(5), false, false, Rule.MAIN_ISLAND));
+            for (String id : List.of("astral_augur", "nullcantor", "mending_crystalling"))
+                if (!main.contains(id)) wrong.add(id + " doesn't take the main-island spot with its tag: " + main);
+            Set<String> sky = new HashSet<>();
+            for (int i = 0; i < 20 && !sky.contains("resonant_triad"); i++)
+                sky.addAll(idSet(TeemingSpawner.candidatesAt(end, skyX, 100, skyZ, RandomSource.create(i), false, false, Rule.SKY)));
+            if (!sky.contains("resonant_triad")) wrong.add("the Triad takes no sky spot with its tag: " + sky);
+            for (var c : List.of(Map.entry(augur, spot), Map.entry(cantor, spot), Map.entry(triad, air))) {
+                String said = TeemingCommand.whereYouStand(end, c.getValue(), c.getKey());
+                if (!said.equals("here_spawner")) wrong.add("the command says " + said + " for " + c.getKey().id() + " with its tag");
+            }
+            TeemingSpawns.withEmptiedTags(Set.of("astral_augur", "nullcantor", "resonant_triad", "mending_crystalling"), () -> {
+                for (RosterStats.Entry row : List.of(augur, cantor, triad, crystalling))
+                    if (TeemingSpawns.tagSize(end, row.id()) != 0) wrong.add(row.id() + "'s tag doesn't read as emptied");
+                Set<String> emptied = idSet(TeemingSpawner.candidatesAt(end, x, floor + 1, z, RandomSource.create(5), false, false, Rule.MAIN_ISLAND));
+                if (emptied.contains("astral_augur") || emptied.contains("nullcantor")) wrong.add("with their tags emptied the main island still offers " + emptied);
+                if (!emptied.contains("mending_crystalling")) wrong.add("an emptied tag stops the spawner-only Crystalling: " + emptied);
+                for (int i = 0; i < 20; i++) {
+                    if (idSet(TeemingSpawner.candidatesAt(end, skyX, 100, skyZ, RandomSource.create(i), false, false, Rule.SKY)).contains("resonant_triad")) {
+                        wrong.add("with its tag emptied the Triad still takes a sky spot");
+                        break;
+                    }
+                }
+                for (var c : List.of(Map.entry(augur, spot), Map.entry(cantor, spot), Map.entry(triad, air))) {
+                    String said = TeemingCommand.whereYouStand(end, c.getValue(), c.getKey());
+                    if (!said.equals("here_no")) wrong.add("with its tag emptied the command says " + said + " for " + c.getKey().id());
+                }
+            });
+        });
+        for (int[] c : new int[][] {{x, z}, {skyX, skyZ}}) end.setChunkForced(c[0] >> 4, c[1] >> 4, false);
+        helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
+        helper.succeed();
     }
 
     /** Natural spawning's question to the mob itself at the spot: its own spawn rules (the walk-target value) and room. */

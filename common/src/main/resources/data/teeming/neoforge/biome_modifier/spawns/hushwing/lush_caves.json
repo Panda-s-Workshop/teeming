@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/lush_caves",
       [
         "minecraft:lush_caves"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/lush_caves"
+      }
     ]
   },
   "spawners": [

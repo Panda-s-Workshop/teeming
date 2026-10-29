@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/phasewalker/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/phasewalker/end_midlands"
+      }
     ]
   },
   "spawners": [

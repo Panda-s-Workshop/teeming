@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/gloamhound/taiga",
       [
         "minecraft:taiga"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/gloamhound/taiga"
+      }
     ]
   },
   "spawners": [

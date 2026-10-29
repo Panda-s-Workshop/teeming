@@ -11,7 +11,13 @@ import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import com.panda.teeming.spawn.TeemingSpawner;
+import com.panda.teeming.spawn.TeemingSpawns;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -33,6 +39,7 @@ final class CommandTests {
         out.accept("command_look", CommandTests::look);
         out.accept("command_spawns", CommandTests::spawns);
         out.accept("command_spawns_where", CommandTests::spawnsWhere);
+        out.accept("command_spawns_rules", CommandTests::spawnsRules);
     }
 
     private static CommandSourceStack op(GameTestHelper helper) {
@@ -129,6 +136,70 @@ final class CommandTests {
             }
         }
         FillBiomeCommand.fill(level, from, to, was);
+        helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
+        helper.succeed();
+    }
+
+    /** The lang keys of the messages a command sent, in order. */
+    private static final class Heard implements CommandSource {
+        final java.util.List<String> keys = new java.util.ArrayList<>();
+
+        @Override public void sendSystemMessage(Component message) {
+            keys.add(message.getContents() instanceof TranslatableContents t ? t.getKey() : message.getString());
+        }
+        @Override public boolean acceptsSuccess() { return true; }
+        @Override public boolean acceptsFailure() { return true; }
+        @Override public boolean shouldInformAdmins() { return false; }
+    }
+
+    /**
+     * The answer for a spawner rule asks the rule's spot, and an emptied tag is told apart. In the GameTest server's
+     * Nether at (-3000, 120, 3000), painted soul sand valley (in no forest, outside the Aurovore's tag) and in neither a
+     * fortress nor a bastion: the fortress's Pyre Herald gets "only inside a nether fortress", the bastion's Aurovore
+     * "only inside a bastion" and the lava sea's Soot Manta "where its rule fits, in the air over a lava sea", never the
+     * spawner's yes. The Aurovore's tag lets the spawner place it there though the tag doesn't hold the biome (its
+     * bastions stand in four Nether biomes). With its tag read as emptied the spawner places it nowhere, the command's
+     * biome line says its tag is empty and "where you stand" says no; the spawner-only Herald with an emptied tag keeps
+     * "any biome where its rule fits". The biome is put back after.
+     */
+    private static void spawnsRules(GameTestHelper helper) {
+        ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
+        if (nether == null) {
+            helper.fail("the GameTest server has no Nether");
+            return;
+        }
+        BlockPos at = new BlockPos(-3000, 120, 3000);
+        nether.getChunk(at.getX() >> 4, at.getZ() >> 4);
+        BlockPos from = at.offset(-4, -4, -4), to = at.offset(4, 4, 4);
+        Holder<Biome> was = nether.getBiome(at);
+        FillBiomeCommand.fill(nether, from, to, nether.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.SOUL_SAND_VALLEY));
+        java.util.List<String> wrong = new java.util.ArrayList<>();
+        RosterStats.Entry aurovore = RosterStats.get("aurovore"), herald = RosterStats.get("pyre_herald"), manta = RosterStats.get("soot_manta");
+        if (TeemingSpawner.Rule.FORTRESS.within(nether, at) || TeemingSpawner.Rule.BASTION.within(nether, at)) wrong.add("the spot is inside a structure");
+        if (nether.getBiome(at).is(TeemingSpawns.tag("aurovore"))) wrong.add("the Aurovore's tag holds the soul sand valley");
+        for (var c : java.util.List.of(java.util.Map.entry(herald, "here_only_fortress"), java.util.Map.entry(aurovore, "here_only_bastion"),
+                java.util.Map.entry(manta, "here_rule_lava_sea_air"))) {
+            String got = TeemingCommand.whereYouStand(nether, at, c.getKey());
+            if (!got.equals(c.getValue())) wrong.add(c.getKey().id() + ": " + got + ", want " + c.getValue());
+        }
+        if (!TeemingSpawner.tagAllows(nether, aurovore, at)) wrong.add("the Aurovore's tag keeps the spawner from a bastion in a biome outside it");
+        Heard heard = new Heard();
+        // not op(): its output is suppressed, and the messages are what this reads
+        CommandSourceStack there = helper.getLevel().getServer().createCommandSourceStack().withLevel(nether).withPosition(Vec3.atCenterOf(at)).withSource(heard);
+        TeemingSpawns.withEmptiedTags(java.util.Set.of("aurovore", "pyre_herald"), () -> {
+            if (TeemingSpawner.tagAllows(nether, aurovore, at)) wrong.add("with its tag emptied the spawner may still place the Aurovore");
+            String got = TeemingCommand.whereYouStand(nether, at, aurovore);
+            if (!got.equals("here_no")) wrong.add("with its tag emptied the Aurovore gets " + got);
+            got = TeemingCommand.whereYouStand(nether, at, herald);
+            if (!got.equals("here_only_fortress")) wrong.add("with its tag emptied the Herald gets " + got);
+            run(helper, there, "teeming spawns aurovore");
+            if (!heard.keys.contains("commands.teeming.spawns.emptied") || !heard.keys.contains("commands.teeming.spawns.here_no"))
+                wrong.add("the Aurovore with its tag emptied: " + heard.keys);
+            heard.keys.clear();
+            run(helper, there, "teeming spawns pyre_herald");
+            if (!heard.keys.contains("commands.teeming.spawns.anywhere")) wrong.add("the Herald with its tag emptied: " + heard.keys);
+        });
+        FillBiomeCommand.fill(nether, from, to, was);
         helper.assertTrue(wrong.isEmpty(), String.join("; ", wrong));
         helper.succeed();
     }

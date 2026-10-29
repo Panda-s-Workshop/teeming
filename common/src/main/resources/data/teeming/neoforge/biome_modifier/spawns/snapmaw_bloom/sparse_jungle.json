@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snapmaw_bloom/sparse_jungle",
       [
         "minecraft:sparse_jungle"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snapmaw_bloom/sparse_jungle"
+      }
     ]
   },
   "spawners": [

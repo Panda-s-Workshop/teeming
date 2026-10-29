@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/chronomite/end_barrens",
       [
         "minecraft:end_barrens"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/chronomite/end_barrens"
+      }
     ]
   },
   "spawners": [

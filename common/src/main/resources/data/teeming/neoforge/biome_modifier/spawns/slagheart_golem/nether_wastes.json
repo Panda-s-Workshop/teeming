@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/slagheart_golem/nether_wastes",
       [
         "minecraft:nether_wastes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/slagheart_golem/nether_wastes"
+      }
     ]
   },
   "spawners": [

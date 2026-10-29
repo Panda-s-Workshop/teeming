@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/swellshade/end_midlands",
       [
         "minecraft:end_midlands"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/swellshade/end_midlands"
+      }
     ]
   },
   "spawners": [

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mnemovore/end_barrens",
       [
         "minecraft:end_barrens"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mnemovore/end_barrens"
+      }
     ]
   },
   "spawners": [

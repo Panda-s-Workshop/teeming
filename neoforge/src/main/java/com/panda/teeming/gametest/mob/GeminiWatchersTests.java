@@ -37,7 +37,7 @@ import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
- * Gemini Watchers: an 8-tick staff wind-up (still, harmless) before a blow of 8.5 through armour, with no knockback, that
+ * Gemini Watchers: an 8-tick staff wind-up (still, harmless) before a blow of 8.5 (armour counts), with no knockback, that
  * doesn't reach a pig 4 blocks up. A pair links at spawn through the spawn data, and a watcher from a spawn egg links to
  * the nearest unlinked one within 8 or comes alone. One killed falls as an untouchable husk and its twin channels a beam
  * for exactly 100 ticks, standing still and fighting nothing, the husk glowing a step brighter each quarter; then the
@@ -302,6 +302,7 @@ public final class GeminiWatchersTests {
         w.snapTo(at.x, at.y, at.z, 0.0F, 0.0F);
         w.finalizeSpawn(level, level.getCurrentDifficultyAt(w.blockPosition()), EntitySpawnReason.SPAWN_ITEM_USE, null);
         w.setNoAi(true);
+        w.setPersistenceRequired();               // an egg's mob despawns at once with every player over 128 blocks off
         w.getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(1.0);
         level.addFreshEntity(w);
         TestPlayers.whenDone(helper, w::discard);

@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/shiverwraith/snowy_plains",
       [
         "minecraft:snowy_plains"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/shiverwraith/snowy_plains"
+      }
     ]
   },
   "spawners": [

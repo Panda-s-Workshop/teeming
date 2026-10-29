@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/lavaleaper/soul_sand_valley",
       [
         "minecraft:soul_sand_valley"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/lavaleaper/soul_sand_valley"
+      }
     ]
   },
   "spawners": [

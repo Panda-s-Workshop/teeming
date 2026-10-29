@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snagwood/flower_forest",
       [
         "minecraft:flower_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snagwood/flower_forest"
+      }
     ]
   },
   "spawners": [

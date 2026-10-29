@@ -64,10 +64,11 @@ import org.jspecify.annotations.Nullable;
  * light one after another from the bottom up, a deep hum climbs, end-rod motes rise round it and a ring of portal
  * light traces its reach on the ground. Then everything within 6 blocks (players and mobs; not players in creative or
  * spectator) is lifted straight up 6 blocks over 1 s, held there half a second, and slammed straight back down onto the
- * ground it stood on: 12 on landing. The slam is the whole blow: a victim is held in place from the lift to the landing
+ * ground it stood on: 27 on landing. The slam is the whole blow: a victim is held in place from the lift to the landing
  * and its fall is forgotten every tick until half a second after it, so no vanilla fall damage comes on top. No one
- * is moved sideways, so the pull never puts anyone over the void. It pulls again 8 s after it last rose, while its
- * target stays in reach.
+ * is moved sideways, so the pull never puts anyone over the void. A Grounding Charm in a victim's off-hand halves both
+ * its rise and its slam (3 blocks, 13.5): a lift half as high lands half as hard. It pulls again 8 s after it last
+ * rose, while its target stays in reach.
  *
  * <p>Counter: a roof. A solid block within 3 blocks over a victim's head stops that victim's lift, and they stay on the
  * ground untouched (a lifted victim whose rise meets a block higher up stops under it, and still falls). Running out
@@ -95,7 +96,8 @@ public class LiftstoneMonolith extends TeemingMonster {
     public static final int SLAM_TICKS = 4;
     /**
      * What the landing does, its whole blow: a slam the End reference player (netherite, Protection IV) survives at
-     * least 3 and at most 5 times, so an apex lift left unbroken is a real risk.
+     * least 3 and at most 5 times, so an apex lift left unbroken is a real risk. A Grounding Charm holder takes
+     * {@link Charms#GROUNDING} of it, as it rises that share of the height.
      */
     public static final float SLAM_DAMAGE = 27.0F;
     /** A solid block within this many blocks over a victim's head stops its lift. */
@@ -323,7 +325,7 @@ public class LiftstoneMonolith extends TeemingMonster {
 
     /**
      * The pull takes hold: everything in reach that a roof doesn't cover is held at its feet, ready to rise (half as
-     * high with a Grounding Charm in the off-hand; the slam's damage stays); each one a roof covers is left on the
+     * high with a Grounding Charm in the off-hand, and its slam half as hard); each one a roof covers is left on the
      * ground, and the pull catches on that roof.
      */
     private void takeHold(ServerLevel level) {
@@ -353,14 +355,15 @@ public class LiftstoneMonolith extends TeemingMonster {
     }
 
     /**
-     * The landing blow on {@code v}: 12, from the Monolith but from no point (so a raised shield, which only blocks
-     * blows from a side, can't catch a slam into the ground); armour counts. The landing pins it: no knockback, and its
-     * fall forgotten. Returns whether it was hurt. Public as a test hook.
+     * The landing blow on {@code v}: {@link #SLAM_DAMAGE}, or {@link Charms#GROUNDING} of it with a Grounding Charm in
+     * the off-hand (the charm halved its rise too), from the Monolith but from no point (so a raised shield, which only
+     * blocks blows from a side, can't catch a slam into the ground); armour counts. The landing pins it: no knockback,
+     * and its fall forgotten. Returns whether it was hurt. Public as a test hook.
      */
     public boolean slamHit(ServerLevel level, LivingEntity v) {
         if (!MechanicEvent.post(this, "slam_hit", v)) return false;
         v.damageCooldownTime = 0;                                               // a recent scratch doesn't eat the slam
-        boolean hurt = v.hurtServer(level, slamSource(), SLAM_DAMAGE);
+        boolean hurt = v.hurtServer(level, slamSource(), slamDamage(v));
         Push.set(v, Vec3.ZERO);
         v.resetFallDistance();
         BlockState under = level.getBlockState(BlockPos.containing(v.getX(), v.getY() - 0.2, v.getZ()));
@@ -368,6 +371,11 @@ public class LiftstoneMonolith extends TeemingMonster {
         level.sendParticles(crumbs, true, true, v.getX(), v.getY() + 0.1, v.getZ(), 30, 0.5, 0.1, 0.5, 0.2);
         level.sendParticles(ParticleTypes.POOF, true, true, v.getX(), v.getY() + 0.1, v.getZ(), 8, 0.4, 0.05, 0.4, 0.05);
         return hurt;
+    }
+
+    /** What the slam deals {@code v}: the whole slam, halved by a Grounding Charm in its off-hand. */
+    public static float slamDamage(LivingEntity v) {
+        return SLAM_DAMAGE * (float) Charms.grounded(v);
     }
 
     /** The slam's blow: the Monolith's own attack type, with it as the cause and no direct source or position. */

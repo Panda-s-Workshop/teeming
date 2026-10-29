@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/stony_peaks",
       [
         "minecraft:stony_peaks"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/stony_peaks"
+      }
     ]
   },
   "spawners": [

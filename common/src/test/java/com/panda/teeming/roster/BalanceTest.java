@@ -2,16 +2,19 @@ package com.panda.teeming.roster;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.panda.teeming.mob.end.FacetDoppel;
 import com.panda.teeming.mob.end.GrandOrrery;
 import com.panda.teeming.mob.end.MoteSwarm;
 import com.panda.teeming.mob.end.Phasewalker;
 import com.panda.teeming.mob.end.Riftjackal;
+import com.panda.teeming.mob.end.VoidBloom;
 import com.panda.teeming.mob.nether.BlackstoneScuttler;
 import com.panda.teeming.mob.nether.ScarletMantis;
 import com.panda.teeming.mob.overworld.Gloamhound;
 import com.panda.teeming.roster.RosterStats.Dim;
 import com.panda.teeming.roster.RosterStats.Entry;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -26,7 +29,8 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Two kinds of bound. Ceilings keep a mob fair: the player kills it in time and survives enough of its hits.
  * Floors keep it a threat, so failing a counter costs something: the player dies to a dimension's ordinary hits, its
- * mechanic blows and its apex's strongest blow within a set number of each.
+ * mechanic blows and its apex's strongest blow within a set number of each. A mob the floors leave out of a kind of hit
+ * is named here with its reason, and {@link #theFloorsNameEveryMobTheyLeaveOut} lists them all.
  */
 class BalanceTest {
     private static final float SWINGS_PER_SECOND = 1.6F;
@@ -60,8 +64,9 @@ class BalanceTest {
     }
 
     /**
-     * Mobs whose failed counter costs something other than their own hit or blow, so the floors don't ask those to be
-     * a threat. Each still answers every ceiling.
+     * Mobs whose failed counter costs something other than their own normal hit, so the normal-hit floor doesn't ask it
+     * to be a threat. Each still answers every ceiling, and the mechanic-blow floor checks a blow it has unless
+     * {@link #NOT_ITS_BLOW} names it too.
      */
     private static final Map<String, String> NOT_ITS_HIT = Map.ofEntries(
             Map.entry("veinleech", "its cost is the vein's drain, a second at a time through armour"),
@@ -74,6 +79,52 @@ class BalanceTest {
             Map.entry("abyss_angler", "its cost is the reel toward the edge"),
             Map.entry("vigil_owl", "its cost is the mark that calls the island's mobs on you"),
             Map.entry("hollowmind", "its cost is its host's hit, an Enderman's at +50 %"));
+
+    /** Mobs whose mechanic blow is not where its cost lies, so the mechanic-blow floor doesn't ask it to be a threat. */
+    private static final Map<String, String> NOT_ITS_BLOW = Map.ofEntries(
+            Map.entry("warpseed_bloom", "its blow is the seed's 3, and the seed's cost is the teleport that comes with it"));
+
+    /**
+     * Mobs with no hit at all (attack 0, and none taken from the player), and why: the floors and ceilings on a normal
+     * hit have nothing to ask of them. A mechanic blow they have is still checked.
+     */
+    private static final Map<String, String> NO_HIT = Map.ofEntries(
+            Map.entry("magma_tortoise", "a passive creature that never attacks: a lava ferry"),
+            Map.entry("woolcap_grazer", "a passive creature: a scared herd's stampede only throws (Shellward Charm)"),
+            Map.entry("chorus_grazer", "a passive creature: a startled herd only blinks away"),
+            Map.entry("pearlshell_snail", "a passive creature that never attacks"),
+            Map.entry("driftsong", "a passive creature: its song gives Slow Falling"),
+            Map.entry("phantasm_lantern", "it never strikes: its cost is the harmless illusions that hide the real mobs round it"),
+            Map.entry("mending_crystalling", "it never strikes: its cost is the End mobs its beam heals"));
+
+    /**
+     * The End reference player's netherite sword as a Facet Doppel copies it: a bare hand's 1, the sword's 3 and
+     * netherite's 4, no enchantments.
+     */
+    private static final float COPIED_SWORD = 1 + 3 + 4;
+
+    /**
+     * Its normal hit. The row's attack, except where a mob takes its hit from somewhere else: a Facet Doppel whose
+     * counter failed swings the End reference player's own sword at {@link FacetDoppel#STRIKE} of it, and a Void
+     * Bloom's stain lands {@link VoidBloom#STAIN_DAMAGE} once a second on whoever stands in it.
+     */
+    private static float attack(Entry mob) {
+        return switch (mob.id()) {
+            case "facet_doppel" -> COPIED_SWORD * FacetDoppel.STRIKE;
+            case "void_bloom" -> VoidBloom.STAIN_DAMAGE;
+            default -> mob.balanceAttack();
+        };
+    }
+
+    /** A normal hit that armour and Protection don't stop: the Void Bloom's stain. */
+    private static boolean unstoppable(Entry mob) {
+        return mob.id().equals("void_bloom");
+    }
+
+    /** Its armour: the row's, except a Facet Doppel whose counter failed, which wears the reference player's, copied. */
+    private static float armor(Entry mob) {
+        return mob.id().equals("facet_doppel") ? ref(mob.dim()).armor() : mob.armor();
+    }
 
     /** The share of the reference player's hits a mob takes: damage it shrugs off, or time it can't be hit. */
     private static float taken(Entry mob) {
@@ -128,7 +179,7 @@ class BalanceTest {
     }
 
     static float secondsToKill(Entry mob) {
-        float dealt = afterArmor(ref(mob.dim()).hit, mob.armor(), 0) * taken(mob);
+        float dealt = afterArmor(ref(mob.dim()).hit, armor(mob), 0) * taken(mob);
         return mob.balanceHealth() / (dealt * SWINGS_PER_SECOND);
     }
 
@@ -138,7 +189,8 @@ class BalanceTest {
 
     /** Hits of its normal attack the reference player survives, with mob damage times {@code scale}. */
     private static float normalHits(Entry mob, Ref ref, float scale) {
-        return 20.0F / toPlayer(mob.balanceAttack() * scale, ref);
+        float hit = attack(mob) * scale;
+        return 20.0F / (unstoppable(mob) ? hit : toPlayer(hit, ref));
     }
 
     /**
@@ -146,16 +198,32 @@ class BalanceTest {
      * damage times {@code scale}; infinite for a mob with none.
      */
     private static float strongestBlows(Entry mob, Ref ref, float scale) {
-        if (surgeHits(mob) > 0) return 20.0F / (surgeHits(mob) * toPlayer(mob.balanceAttack() * scale, ref));
-        float blow = mob.blow(), strongest = Math.max(blow, mob.apex() ? mob.balanceAttack() : 0);
+        if (surgeHits(mob) > 0) return 20.0F / (surgeHits(mob) * toPlayer(attack(mob) * scale, ref));
+        float blow = mob.blow(), strongest = Math.max(blow, mob.apex() ? attack(mob) : 0);
         if (strongest <= 0) return Float.POSITIVE_INFINITY;
         float pierce = strongest == blow ? pierce(mob) : 0.0F;
         return 20.0F / toPlayer(strongest * scale, pierce * scale, ref);
     }
 
     private static float hardestHit(Dim dim) {
-        return (float) RosterStats.ALL.stream().filter(e -> e.dim() == dim && !e.apex()).mapToDouble(Entry::balanceAttack).max().orElse(0);
+        return (float) RosterStats.ALL.stream().filter(e -> e.dim() == dim && !e.apex()).mapToDouble(BalanceTest::attack).max().orElse(0);
     }
+
+    /** Why the floors leave {@code mob}'s normal hit out; null when they check it. */
+    private static String hitLeftOut(Entry mob) {
+        if (mob.apex()) return "an apex: the apex floor checks its strongest blow instead";
+        if (surgeHits(mob) > 0) return "its only attack is its surge, checked as its mechanic blow";
+        if (NOT_ITS_HIT.containsKey(mob.id())) return NOT_ITS_HIT.get(mob.id());
+        return attack(mob) > 0 ? null : NO_HIT.get(mob.id());
+    }
+
+    /** Why the floors leave {@code mob}'s mechanic blow out; null when they check it. */
+    private static String blowLeftOut(Entry mob) {
+        if (!Float.isFinite(strongestBlows(mob, ref(mob.dim()), 1.0F))) return NO_BLOW;
+        return NOT_ITS_BLOW.get(mob.id());
+    }
+
+    private static final String NO_BLOW = "it has no mechanic blow";
 
     @Test
     void formulaMatchesTheMddExample() {
@@ -182,8 +250,8 @@ class BalanceTest {
         List<String> deadly = new ArrayList<>();
         for (Entry mob : everyForm()) {
             Ref ref = ref(mob.dim());
-            if (!mob.apex() && mob.balanceAttack() > 0) {
-                float need = mob.balanceAttack() >= hardestHit(mob.dim()) ? 5 : 7;
+            if (!mob.apex() && attack(mob) > 0) {
+                float need = attack(mob) >= hardestHit(mob.dim()) ? 5 : 7;
                 float hits = normalHits(mob, ref, 1.0F);
                 if (hits < need) deadly.add("%s normal hit: %.1f < %.0f".formatted(mob.id(), hits, need));
             }
@@ -203,26 +271,58 @@ class BalanceTest {
         for (Entry mob : everyForm()) {
             Ref ref = ref(mob.dim());
             Floor floor = floor(mob.dim());
-            if (NOT_ITS_HIT.containsKey(mob.id())) continue;
-            if (!mob.apex() && mob.balanceAttack() > 0 && surgeHits(mob) == 0) {
+            if (hitLeftOut(mob) == null) {
                 float hits = normalHits(mob, ref, 1.0F);
                 if (hits > floor.normalHits()) harmless.add("%s normal hit: %.1f > %.0f".formatted(mob.id(), hits, floor.normalHits()));
             }
-            float blows = strongestBlows(mob, ref, 1.0F);
-            float most = mob.apex() ? floor.apexBlows() : floor.mechanicBlows();
-            if (Float.isFinite(blows) && blows > most) harmless.add("%s strongest blow: %.1f > %.0f".formatted(mob.id(), blows, most));
+            if (blowLeftOut(mob) == null) {
+                float blows = strongestBlows(mob, ref, 1.0F);
+                float most = mob.apex() ? floor.apexBlows() : floor.mechanicBlows();
+                if (blows > most) harmless.add("%s strongest blow: %.1f > %.0f".formatted(mob.id(), blows, most));
+            }
         }
         assertTrue(harmless.isEmpty(), "costs too little to take: " + harmless);
     }
 
-    /** Every exception to the normal-hit floor names a mob that has a hit, and gives its reason. */
+    /**
+     * Every exception names a mob it fits, with its reason: one left out of the normal-hit floor has a hit to leave out,
+     * one with no hit really has none, one left out of the blow floor has a blow.
+     */
     @Test
     void theFloorsExceptionsAreRealMobs() {
         for (var e : NOT_ITS_HIT.entrySet()) {
             Entry mob = RosterStats.get(e.getKey());
-            assertTrue(mob.balanceAttack() > 0 && !mob.apex(), e.getKey() + " has a normal hit to leave out");
+            assertTrue(attack(mob) > 0 && !mob.apex(), e.getKey() + " has a normal hit to leave out");
             assertFalse(e.getValue().isBlank(), e.getKey() + " says why");
         }
+        for (var e : NO_HIT.entrySet()) {
+            Entry mob = RosterStats.get(e.getKey());
+            assertTrue(attack(mob) == 0 && !mob.apex() && surgeHits(mob) == 0, e.getKey() + " has no hit of its own");
+            assertFalse(e.getValue().isBlank(), e.getKey() + " says why");
+        }
+        for (var e : NOT_ITS_BLOW.entrySet()) {
+            Entry mob = RosterStats.get(e.getKey());
+            assertTrue(mob.blow() > 0, e.getKey() + " has a mechanic blow to leave out");
+            assertFalse(e.getValue().isBlank(), e.getKey() + " says why");
+        }
+    }
+
+    /**
+     * The floors never skip a mob in silence: every hit and blow they leave out, on every row and alpha, has its reason,
+     * and the list of them is printed with the test's output.
+     */
+    @Test
+    void theFloorsNameEveryMobTheyLeaveOut() {
+        Map<String, String> leftOut = new LinkedHashMap<>();
+        List<String> unnamed = new ArrayList<>();
+        for (Entry mob : everyForm()) {
+            String hit = hitLeftOut(mob), blow = blowLeftOut(mob);
+            if (hit == null && attack(mob) <= 0) unnamed.add(mob.id() + " has no hit and no reason in NO_HIT");
+            if (hit != null) leftOut.put(mob.id() + " normal hit", hit);
+            if (blow != null && !blow.equals(NO_BLOW)) leftOut.put(mob.id() + " mechanic blow", blow);
+        }
+        assertTrue(unnamed.isEmpty(), "left out without a reason: " + unnamed);
+        leftOut.forEach((what, why) -> System.out.println("the floors leave out " + what + ": " + why));
     }
 
     /**
@@ -238,7 +338,7 @@ class BalanceTest {
         for (Entry mob : RosterStats.ALL) {
             if (mob.dim() != Dim.END) continue;
             float least = mob.apex() ? 1.5F : 2.5F;
-            float blows = Math.min(strongestBlows(mob, nulled, 1.0F), mob.balanceAttack() > 0 ? normalHits(mob, nulled, 1.0F) : Float.POSITIVE_INFINITY);
+            float blows = Math.min(strongestBlows(mob, nulled, 1.0F), attack(mob) > 0 ? normalHits(mob, nulled, 1.0F) : Float.POSITIVE_INFINITY);
             if (blows < least) deadly.add("%s %.2f < %.1f".formatted(mob.id(), blows, least));
         }
         assertTrue(deadly.isEmpty(), "too deadly inside a nulling ring: " + deadly);
@@ -253,7 +353,7 @@ class BalanceTest {
         List<String> deadly = new ArrayList<>();
         for (Entry mob : everyForm()) {
             Ref ref = ref(mob.dim());
-            if (mob.balanceAttack() > 0) {
+            if (attack(mob) > 0) {
                 float hits = normalHits(mob, ref, HARD);
                 if (hits < 1.5F) deadly.add("%s normal hit on Hard: %.2f".formatted(mob.id(), hits));
             }
@@ -267,8 +367,8 @@ class BalanceTest {
     void ordinaryMobsWinTheDuelRatio() {
         List<String> lost = new ArrayList<>();
         for (Entry mob : everyForm()) {
-            if (mob.apex() || mob.balanceAttack() <= 0) continue;
-            float ratio = hitsToDie(mob.balanceAttack(), ref(mob.dim())) / secondsToKill(mob);
+            if (mob.apex() || attack(mob) <= 0) continue;
+            float ratio = normalHits(mob, ref(mob.dim()), 1.0F) / secondsToKill(mob);
             if (ratio < 1.4F) lost.add("%s %.2f".formatted(mob.id(), ratio));
         }
         assertTrue(lost.isEmpty(), "duel ratio under 1.4: " + lost);

@@ -51,7 +51,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * flicker ends is what it copies; the copy never changes after, and the glass copy in its hand matches the item.
  * Spectators are never copied, creative players are; a player out of range or out of sight starts nothing; a flicker
  * that ends with its player gone copies nothing and waits 40 ticks. Its blow: an 8-tick wind-up, then its copied attack
- * (6 from an iron sword, a fist's 1 before any copy). The counter: a melee blow from a weapon that outclasses the copy
+ * times 1.25 (7.5 from an iron sword, 1.25 from a fist's 1 before any copy). The counter: a melee blow from a weapon that outclasses the copy
  * shatters its facets once, and the copied armour is gone; an equal weapon or an arrow does nothing to them. HP 36,
  * attack and armour 0 until it copies, 0.6 x 1.95, End midlands at weight 3 in groups of 1. Its follow range is 1 (it
  * notices no one) until a test opens it to 5, which reaches its own player and nothing past the arena's barrier walls.
@@ -206,7 +206,7 @@ public final class FacetDoppelTests {
     /**
      * The counter: the player meets it bare-handed in an iron set, so it copies a fist (1) and armour 15. A blow with a
      * diamond sword (7, which outclasses 1) shatters its facets: armour 0, its attack still 1, once. Its blow on a pig
-     * then takes exactly 1.
+     * then takes exactly 1.25 (a fist's 1, a quarter harder).
      */
     private static void counter(GameTestHelper helper) {
         FacetDoppel d = doppel(helper);
@@ -228,14 +228,15 @@ public final class FacetDoppelTests {
         helper.runAtTickTime(42, () -> helper.assertTrue(d.startWindup(pig[0]), "it winds up at the pig"));
         helper.runAtTickTime(60, () -> {
             float lost = 100.0F - pig[0].getHealth();
-            helper.assertTrue(d.strikes() == 1 && Math.abs(lost - 1.0F) < 0.01F, "its blow takes 1, the pig lost " + lost);
+            helper.assertTrue(d.strikes() == 1 && Math.abs(lost - 1.25F) < 0.01F, "its blow takes 1.25, the pig lost " + lost);
             helper.succeed();
         });
     }
 
     /**
      * Failing it: the player meets it with an iron set and an iron sword, so it copies 6 and 15. A blow from the same
-     * iron sword (6, no better) leaves its facets whole and its armour 15; its blow on a pig takes 6.
+     * iron sword (6, no better) leaves its facets whole and its armour 15; its blow on a pig takes 7.5, a quarter more
+     * than the sword in the player's hand.
      */
     private static void failure(GameTestHelper helper) {
         FacetDoppel d = doppel(helper);
@@ -253,7 +254,7 @@ public final class FacetDoppelTests {
         helper.runAtTickTime(42, () -> helper.assertTrue(d.startWindup(pig[0]), "it winds up at the pig"));
         helper.runAtTickTime(60, () -> {
             float lost = 100.0F - pig[0].getHealth();
-            helper.assertTrue(d.strikes() == 1 && Math.abs(lost - 6.0F) < 0.01F, "its blow takes 6, the pig lost " + lost);
+            helper.assertTrue(d.strikes() == 1 && Math.abs(lost - 7.5F) < 0.01F, "its blow takes 7.5, the pig lost " + lost);
             helper.succeed();
         });
     }
@@ -482,7 +483,7 @@ public final class FacetDoppelTests {
 
     // ---- the blow ------------------------------------------------------------------------------------------------------
 
-    /** Its blow with an iron sword's copy: an 8-tick wind-up, held still and harmless, then 6 to the pig in reach. */
+    /** Its blow with an iron sword's copy: an 8-tick wind-up, held still and harmless, then 7.5 (6 x 1.25) to the pig in reach. */
     private static void windup(GameTestHelper helper) {
         FacetDoppel d = doppel(helper);
         d.setCopy(6.0, 15.0, Held.SWORD, false);
@@ -500,7 +501,7 @@ public final class FacetDoppelTests {
             helper.assertTrue(d.strikes() == 1, "the blow landed, strikes " + d.strikes() + ", phase " + d.phase());
             helper.assertTrue(ticks[0] == 8, "the wind-up lasts 8 ticks, saw " + ticks[0]);
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 6.0F) < 0.01F, "the blow takes 6, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 7.5F) < 0.01F, "the blow takes 7.5, the pig lost " + lost);
         });
     }
 
@@ -524,7 +525,7 @@ public final class FacetDoppelTests {
         });
     }
 
-    /** Before it has copied anyone its attack is 0, and its blow lands as a fist: 1. */
+    /** Before it has copied anyone its attack is 0, and its blow lands as a fist's 1, a quarter harder: 1.25. */
     private static void fistFloor(GameTestHelper helper) {
         FacetDoppel d = doppel(helper);
         Pig pig = pig(helper, 6.5, 1, 7.7);
@@ -533,7 +534,7 @@ public final class FacetDoppelTests {
             helper.assertTrue(!d.copied() && attack(d) == 0.0, "attack 0 with no copy");
             helper.assertTrue(d.strikes() == 1, "the blow landed");
             float lost = 100.0F - pig.getHealth();
-            helper.assertTrue(Math.abs(lost - 1.0F) < 0.01F, "a fist's 1, the pig lost " + lost);
+            helper.assertTrue(Math.abs(lost - 1.25F) < 0.01F, "a fist's 1 x 1.25, the pig lost " + lost);
         });
     }
 

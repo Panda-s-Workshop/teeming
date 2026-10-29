@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/scarlet_mantis/nether_wastes",
       [
         "minecraft:nether_wastes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/scarlet_mantis/nether_wastes"
+      }
     ]
   },
   "spawners": [

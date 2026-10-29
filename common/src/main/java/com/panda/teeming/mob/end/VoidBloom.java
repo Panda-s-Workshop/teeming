@@ -1,5 +1,6 @@
 package com.panda.teeming.mob.end;
 
+import com.panda.teeming.TeemingMod;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.Pin;
@@ -11,10 +12,13 @@ import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -39,8 +43,9 @@ import org.jspecify.annotations.Nullable;
  * target), a stain spreads on the ground round it: an area drawn with dark violet dust and a darker rim, never blocks.
  * The stain starts at radius 0.5 and grows 0.5 every 40 ticks, up to 8. Asleep (no target), it holds its size.
  *
- * <p>Inside the stain, everything but Void Blooms takes 1 damage a second (armour counts, no knockback) and is
- * weakened (Weakness I, lasting a moment after it steps out).
+ * <p>Inside the stain, everything but Void Blooms takes 1 damage a second and is weakened (Weakness I, lasting a moment
+ * after it steps out). The stain eats at it from below: no knockback, and armour, Protection and a raised shield don't
+ * stop it ({@code teeming:void_stain}), so it costs every player the same.
  *
  * <p>Tell: for the 8 ticks before each growth step the next ring darkens and throbs where it will land, the cup swells
  * and its drips glow and lengthen, and the stain seethes. Then the edge jumps out half a block.
@@ -61,6 +66,8 @@ public class VoidBloom extends TeemingMonster {
     public static final int TELL_TICKS = 8;
     /** What the stain does to those inside: this much damage once a second, and Weakness while they stay. */
     public static final float STAIN_DAMAGE = 1.0F;
+    /** The stain's damage type: through armour, Protection and shields. */
+    public static final ResourceKey<DamageType> STAIN_TYPE = ResourceKey.create(Registries.DAMAGE_TYPE, TeemingMod.id("void_stain"));
     public static final int DAMAGE_EVERY = 20;
     public static final int WEAKNESS_LEVEL = 0;                 // amplifier 0 = Weakness I
     /** Weakness is topped up to this long while inside, whenever it has this little left: it fades soon after leaving. */
@@ -241,10 +248,15 @@ public class VoidBloom extends TeemingMonster {
         if (!MechanicEvent.post(this, "stain", victim)) return;
         if (topUp) victim.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, WEAKNESS_TICKS, WEAKNESS_LEVEL, false, true, true), this);
         if (pulse) {
-            AstralAugur.GroundMarks.hurtInPlace(level, victim, damageSources().mobAttack(this), STAIN_DAMAGE);
+            AstralAugur.GroundMarks.hurtInPlace(level, victim, stainSource(level), STAIN_DAMAGE);
             Vec3 at = victim.position();
             level.sendParticles(DEEP, at.x, at.y + 0.2, at.z, 4, victim.getBbWidth() * 0.4, 0.15, victim.getBbWidth() * 0.4, 0.0);
         }
+    }
+
+    /** The stain's hit, from the bloom. */
+    private DamageSource stainSource(ServerLevel level) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(STAIN_TYPE), this);
     }
 
     /** The stain's room: a flat disc on the ground round the bloom, as wide as the stain is now. */

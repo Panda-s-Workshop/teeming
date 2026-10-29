@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snowroller/jagged_peaks",
       [
         "minecraft:jagged_peaks"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snowroller/jagged_peaks"
+      }
     ]
   },
   "spawners": [

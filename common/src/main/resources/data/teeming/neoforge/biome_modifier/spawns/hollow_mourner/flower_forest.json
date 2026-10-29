@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/flower_forest",
       [
         "minecraft:flower_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/flower_forest"
+      }
     ]
   },
   "spawners": [

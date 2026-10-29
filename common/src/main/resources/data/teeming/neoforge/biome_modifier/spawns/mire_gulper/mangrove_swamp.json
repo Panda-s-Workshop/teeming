@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/mire_gulper/mangrove_swamp",
       [
         "minecraft:mangrove_swamp"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/mire_gulper/mangrove_swamp"
+      }
     ]
   },
   "spawners": [

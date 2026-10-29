@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/stormeel/lukewarm_ocean",
       [
         "minecraft:lukewarm_ocean"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/stormeel/lukewarm_ocean"
+      }
     ]
   },
   "spawners": [

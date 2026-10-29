@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/blackstone_scuttler/basalt_deltas",
       [
         "minecraft:basalt_deltas"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/blackstone_scuttler/basalt_deltas"
+      }
     ]
   },
   "spawners": [

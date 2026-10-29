@@ -50,7 +50,7 @@ import org.jspecify.annotations.Nullable;
  * Gemini Watchers: two tall, slender sentinels of void crystal of the End barrens, mirror images of each other, each with
  * one great crystal eye set to one side of its face. They come as a pair, linked from the moment they spawn, and each
  * fights on its own with a staff: for 8 ticks it raises the staff with a lens-like slide while motes rise (it turns after
- * its target for the first half, then holds), then brings it down for its attack, through armour, on a target still
+ * its target for the first half, then holds), then brings it down for its attack (armour counts) on a target still
  * within 1.2 blocks (across or up and down) in front of it, without knockback.
  *
  * <p>When one is killed while its twin stands within 12 blocks, it doesn't die: it falls as a crystal husk, lying on the
@@ -713,7 +713,7 @@ public class GeminiWatchers extends TeemingMonster {
         else core().end();
     }
 
-    /** The strike: its attack, through armour, to a target still in reach (across or up and down), in front and in sight, without knockback. */
+    /** The strike: its attack (armour counts) to a target still in reach (across or up and down), in front and in sight, without knockback. */
     private void strike(ServerLevel level, @Nullable LivingEntity target) {
         if (!startPhase(Step.STRIKE, STRIKE_TICKS, target)) {
             core().end();

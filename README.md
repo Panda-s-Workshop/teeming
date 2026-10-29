@@ -24,7 +24,11 @@ with real uses and twelve counter charms. It adds no biomes, structures or dimen
 The server's settings apply to everyone; clients only show the Field Guide's kill count. NeoForge keeps them in
 `config/teeming-synced.toml` (one file for every world, sent to joining clients). Fabric keeps them in
 `config/teeming.properties`, read once at startup: restart after a change. Both files are written with the defaults
-on first start, and a newer version adds its new keys to an existing file.
+on first start, and a newer version adds its new keys to an existing file. On Fabric a start that changes the file
+(a new key, or a newer header) writes the mod's keys in the order below under the current header, and keeps every
+value, the comments above a key (with that key), keys the mod doesn't read (after its own) and comments after the last
+key; comments at the very top of the file are taken for the old header and replaced. A value out of range is brought
+into it, with a warning in the log.
 
 | Key | Default | What it does |
 |---|---|---|
@@ -42,8 +46,14 @@ on first start, and a newer version adds its new keys to an existing file.
 All need operator permission (level 2).
 
 - `/teeming guide reveal <players> <mob|all>` fills in Field Guide entries; `/teeming guide reset <players> <mob|all>` clears them.
+  A reveal also awards the Field Guide advancements the entries now earn (the first sighting, each dimension's
+  Naturalist once all its creatures are in, and with `all` the one for revealing every creature), announced in chat
+  like any advancement; a reset doesn't take them back.
 - `/teeming look <entity> <look>` gives a Teeming mob one of its looks.
 - `/teeming spawns <mob>` tells where and how often a mob spawns in the dimension you're in, and whether it can where you stand.
+  For a mob of Teeming's own spawner whose rule needs a particular spot, it answers by that spot: a fortress or bastion
+  mob outside its structure gets "no, only inside ..."; a lava-sea, fungus-cap, island-edge, underside or void mob gets
+  "where its rule fits" and the spot, not a yes.
 
 ## Data packs
 
@@ -51,20 +61,40 @@ Nearly everything a pack would change is data under `data/teeming/`. The excepti
 spawn weights on Fabric, and the weights and rules of the mobs Teeming's own spawner places.
 
 - **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to
-  give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that Teeming's own
+  give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that only Teeming's own
   spawner places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty.
-  To switch a mob off either way, use `mobs.<id>.enabled`. `#teeming:share_capped` holds Nether biomes whose
-  vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead (by default
-  the crimson and warped forests, and biome mods' biomes in `#c:is_nether_forest`, `#c:primary_wood_type/crimson` or
-  `#c:primary_wood_type/warped`). That spawner doesn't run in the Overworld, so an Overworld biome added to the tag
-  gets no Teeming monsters at all (the deep dark and the mushroom fields are in it by default, where no monster spawns
-  anyway).
+  Four mobs are both on biome lists and placed by a spawner rule: the Aurovore (bastions), the Astral Augur and the
+  Nullcantor (the main island, after the dragon) and the Resonant Triad (the End's open sky). Emptying their tag stops
+  them both ways; while it holds anything, their rule places them wherever it fits, whatever biomes the tag names (a
+  bastion stands in four Nether biomes). To switch a mob off either way, use `mobs.<id>.enabled`.
+  `#teeming:share_capped` holds Nether biomes whose vanilla monster list is too small to share, where Teeming's own
+  spawner places their monsters instead (by default the crimson and warped forests, and biome mods' biomes in
+  `#c:is_nether_forest`, `#c:primary_wood_type/crimson` or `#c:primary_wood_type/warped`). A biome in the tag gets no
+  Teeming monster from the biome lists, tuned vanilla biomes included, on both loaders: a Nether biome added to it gets
+  the spawner's placements of the monsters whose tags hold it, kept to about 1 in 5 of the monsters round the player.
+  That spawner doesn't run in the Overworld, so an Overworld biome added to the tag gets no Teeming monsters at all
+  (the deep dark and the mushroom fields are in it by default, where no monster spawns anyway). Creatures keep their
+  lists in either.
 - **Biome mods' End biomes:** `#teeming:modded_end` (by default `#c:is_end` and `#minecraft:is_end`) is how they get
   the outer islands' mobs. Each outer-island list mob's tag holds it, so emptying the mob's tag takes the mob out of
   them too. The tag holds vanilla's five End biomes as well; Teeming leaves those five out wherever it reads the tag, so
   a mob still spawns only in its own vanilla End biomes. Don't add the tag (or `#c:is_end`) to another mob's tag: that
   mob would get every modded End biome at its rest weight. No End list mob spawns naturally within 1024 blocks of the
-  origin (the main island's area, whatever its biome) except the main island's own mobs, once the dragon is dead.
+  origin (the main island's area, whatever its biome) except the main island's own mobs, once the dragon is dead. In a
+  biome mod's End biome one more Teeming monster spawns only while Teeming's don't outnumber the other monsters within
+  128 blocks, since the lists assume endermen in groups of four: a biome with few monsters of its own gets few of
+  Teeming's, and monsters a pack adds there raise Teeming's number with them.
+- **Biome mods' Nether biomes:** the open-ground Nether monsters' homes name vanilla biomes only, so a biome mod's
+  Nether biome tagged only `#c:is_nether` gets 7 of the 30 Nether mobs: the Lavaleaper and the Magma Tortoise from the
+  biome lists, and the Soot Manta, the three fortress mobs and the Aurovore from Teeming's spawner. One in
+  `#c:is_nether_forest` without a wood-type tag also gets the Gleamtrap, under the share cap; one in
+  `#c:primary_wood_type/crimson` or `/warped` gets that forest's mobs, under the share cap. Add the biome to a mob's
+  tag to give it more.
+- **Spawn costs:** vanilla's soul sand valley charges each of its monsters a spawn cost (0.7, energy budget 0.15),
+  which keeps them from crowding together. Teeming gives its 7 valley mobs the same: on NeoForge through
+  `data/teeming/neoforge/biome_modifier/spawn_costs/soul_sand_valley.json` (replace it by id to change the numbers or
+  the mobs), on Fabric in code. A mob a pack adds to the valley through its tag gets no cost, so it out-spawns the
+  rest there; add it to that file's `entity_types` on NeoForge.
 - **How often and in what groups (NeoForge):** each biome-list mob's spawn weight and group size are NeoForge biome
   modifiers. `data/teeming/neoforge/biome_modifier/spawns/<mob>/<biome>.json` gives it a weight tuned to one vanilla
   biome's monster list. `spawns/<mob>.json` gives it the weight it carries in the biomes its tag reaches that are not
@@ -82,7 +112,8 @@ spawn weights on Fabric, and the weights and rules of the mobs Teeming's own spa
   `teeming:trophy_chance`, and the loot function `teeming:trophy_look` gives the trophy the look of the mob that
   dropped it. Keep both, and the pool's `teeming:trophy_mob` component, when you replace a table.
 - **Entity tags:** `#teeming:overworld`, `#teeming:nether`, `#teeming:end`, `#teeming:apex`, `#teeming:passive`;
-  `#teeming:reflectable` (what the Prismback turns back; it includes `#minecraft:arrows`),
+  `#teeming:reflectable` (what the Prismback turns back; by default `#minecraft:arrows`, tridents, snowballs, eggs,
+  the blaze's small fireballs and wind charges, not the ghast's or the dragon's fireballs),
   `#teeming:pyre_herald_allies`, `#teeming:mending_crystalling_patients`. The mod also adds its mobs to
   `#minecraft:undead` (Soulward Revenant, Ossuary Wyrm), `#minecraft:arthropod` (six mobs), `#minecraft:aquatic`
   (Stormeel) and `#c:capturing_not_supported` (the apex mobs and the linked groups: Gemini Watchers, Resonant Triad and

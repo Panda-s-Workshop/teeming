@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/old_growth_pine_taiga",
       [
         "minecraft:old_growth_pine_taiga"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/old_growth_pine_taiga"
+      }
     ]
   },
   "spawners": [

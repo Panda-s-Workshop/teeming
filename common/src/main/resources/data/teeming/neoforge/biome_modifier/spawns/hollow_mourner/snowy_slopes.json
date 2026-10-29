@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/snowy_slopes",
       [
         "minecraft:snowy_slopes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/snowy_slopes"
+      }
     ]
   },
   "spawners": [

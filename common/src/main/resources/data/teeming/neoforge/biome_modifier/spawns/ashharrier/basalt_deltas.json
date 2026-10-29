@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/ashharrier/basalt_deltas",
       [
         "minecraft:basalt_deltas"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/ashharrier/basalt_deltas"
+      }
     ]
   },
   "spawners": [

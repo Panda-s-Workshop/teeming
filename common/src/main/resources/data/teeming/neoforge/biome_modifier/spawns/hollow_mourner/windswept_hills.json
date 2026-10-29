@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hollow_mourner/windswept_hills",
       [
         "minecraft:windswept_hills"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hollow_mourner/windswept_hills"
+      }
     ]
   },
   "spawners": [

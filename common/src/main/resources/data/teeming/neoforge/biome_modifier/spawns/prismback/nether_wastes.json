@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/prismback/nether_wastes",
       [
         "minecraft:nether_wastes"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/prismback/nether_wastes"
+      }
     ]
   },
   "spawners": [

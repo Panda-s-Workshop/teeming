@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/snagwood/old_growth_birch_forest",
       [
         "minecraft:old_growth_birch_forest"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/snagwood/old_growth_birch_forest"
+      }
     ]
   },
   "spawners": [

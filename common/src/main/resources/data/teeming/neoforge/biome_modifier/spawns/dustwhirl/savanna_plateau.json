@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/dustwhirl/savanna_plateau",
       [
         "minecraft:savanna_plateau"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/dustwhirl/savanna_plateau"
+      }
     ]
   },
   "spawners": [

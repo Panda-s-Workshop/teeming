@@ -6,7 +6,11 @@
       "#teeming:spawns_gate/hushwing/mangrove_swamp",
       [
         "minecraft:mangrove_swamp"
-      ]
+      ],
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/hushwing/mangrove_swamp"
+      }
     ]
   },
   "spawners": [
