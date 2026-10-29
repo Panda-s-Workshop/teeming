@@ -141,6 +141,9 @@ public final class TeemingSpawns {
         if (end && !mainIslandAllows(mob, level.getLevel(), pos)) return false;
         if (!mob.passive()) {
             if (level.getDifficulty() == Difficulty.PEACEFUL) return false;
+            // the game rules' monster switch (spawn_mobs and spawn_monsters), as vanilla's lists heed it: this is the one
+            // check every natural placement passes, Teeming's own spawner's included; creatures still spawn
+            if (!level.getLevel().isSpawningMonsters()) return false;
             if (level.getBiome(pos).is(NO_DEFAULT_MONSTERS)) return false; // mushroom fields, deep dark
             if (!mob.anyLight() && mob.place() != RosterStats.Place.WATER && mob.place() != RosterStats.Place.LAVA
                     && !Monster.isDarkEnoughToSpawn(level, pos, random)) return false;

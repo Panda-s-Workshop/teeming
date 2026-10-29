@@ -8,6 +8,7 @@ import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
 import com.panda.teeming.mob.nether.MagmaTortoise;
 import com.panda.teeming.mob.nether.MagmaTortoise.Step;
+import com.panda.teeming.registry.ModMaterials;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.spawn.TeemingSpawns;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.biome.Biomes;
@@ -76,6 +78,7 @@ public final class MagmaTortoiseTests {
         out.accept("magma_tortoise_steer", MagmaTortoiseTests::steer);
         TeemingGameTests.timeLimit("magma_tortoise_steer", 120);
         out.accept("magma_tortoise_fire_immune", MagmaTortoiseTests::fireImmune);
+        out.accept("magma_tortoise_drops_from_lava", MagmaTortoiseTests::dropsFromLava);
         out.accept("magma_tortoise_stats", MagmaTortoiseTests::stats);
         out.accept("magma_tortoise_spawns", MagmaTortoiseTests::spawns);
         out.accept("magma_tortoise_feat", MagmaTortoiseTests::feat);
@@ -479,6 +482,31 @@ public final class MagmaTortoiseTests {
             helper.assertTrue(!t.hurtServer(helper.getLevel(), t.damageSources().lava(), 4.0F), "lava damage is refused");
             helper.assertTrue(!t.hurtServer(helper.getLevel(), t.damageSources().onFire(), 4.0F), "burning is refused");
             helper.assertTrue(t.getHealth() >= 60.0F, "still at full health, " + t.getHealth());
+            helper.succeed();
+        });
+    }
+
+    /**
+     * Killed by a player in the lava, its scute doesn't burn: lava x 1 to 6, the player on the dry floor at x 9.5, and the
+     * scute lands at their feet (within the 3 blocks a dropped item slides).
+     */
+    private static void dropsFromLava(GameTestHelper helper) {
+        pool(helper, 6);
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(9.5, 1, 5.5));
+        MagmaTortoise t = tortoise(helper, 3.5, 5.5, 0.0F);
+        helper.runAtTickTime(20, () -> {
+            helper.assertTrue(t.isInLava(), "it floats in the lava");
+            t.hurtServer(helper.getLevel(), helper.getLevel().damageSources().playerAttack(p), 1000.0F);
+        });
+        helper.runAtTickTime(40, () -> {
+            List<ItemEntity> scutes = helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds(),
+                    i -> i.isAlive() && i.getItem().is(ModMaterials.MAGMA_SCUTE.get()));
+            TestPlayers.whenDone(helper, () -> scutes.forEach(ItemEntity::discard));
+            helper.assertTrue(!scutes.isEmpty(), "its scute was dropped where it can be picked up");
+            for (ItemEntity i : scutes) {
+                double off = Math.hypot(i.getX() - p.getX(), i.getZ() - p.getZ());
+                helper.assertTrue(off < 3.0 && !i.isInLava(), "the scute lies at the killer's feet, " + off + " blocks off");
+            }
             helper.succeed();
         });
     }

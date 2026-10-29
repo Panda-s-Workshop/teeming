@@ -2,16 +2,19 @@ package com.panda.teeming;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * The text of a {@code key=value} settings file (Fabric's {@code teeming.properties}), written in a fixed key order under
@@ -29,22 +32,54 @@ public final class SettingsFile {
 
     /**
      * A settings file's text for {@link #write}: empty when there is no file, the text without a leading byte-order mark,
-     * read as ISO-8859-1 (as {@link Properties} reads) when it isn't UTF-8, and nothing when it can't be read at all, so
-     * that a caller never writes defaults over a file it couldn't read.
+     * and nothing when it can't be read at all, so that a caller never writes defaults over a file it couldn't read. A
+     * UTF-16 byte-order mark (little or big end first, as Windows editors and PowerShell write) reads the file as UTF-16;
+     * without one it is read as UTF-8, or as ISO-8859-1 (as {@link Properties} reads) when it isn't UTF-8.
      */
     public static Optional<String> readFile(Path file) {
         if (!Files.exists(file)) return Optional.of("");
-        String text;
+        byte[] bytes;
         try {
-            try {
-                text = Files.readString(file);
-            } catch (CharacterCodingException e) {
-                text = Files.readString(file, StandardCharsets.ISO_8859_1);
-            }
+            bytes = Files.readAllBytes(file);
         } catch (IOException e) {
             return Optional.empty();
         }
+        String text;
+        if (startsWith(bytes, 0xFF, 0xFE)) {
+            text = new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16LE);
+        } else if (startsWith(bytes, 0xFE, 0xFF)) {
+            text = new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16BE);
+        } else {
+            try {
+                text = StandardCharsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(bytes)).toString();
+            } catch (CharacterCodingException e) {
+                text = new String(bytes, StandardCharsets.ISO_8859_1);
+            }
+        }
         return Optional.of(text.startsWith("\uFEFF") ? text.substring(1) : text);
+    }
+
+    private static boolean startsWith(byte[] bytes, int first, int second) {
+        return bytes.length >= 2 && (bytes[0] & 0xFF) == first && (bytes[1] & 0xFF) == second;
+    }
+
+    /**
+     * The keys the text sets that aren't in {@code known}, in the file's order: a mistyped key, or one this version doesn't
+     * read. They are kept in the file, and nothing acts on them.
+     */
+    public static List<String> unknownKeys(String text, Set<String> known) {
+        Set<String> out = new LinkedHashSet<>();
+        for (String line : logicalLines(text)) {
+            if (line.isBlank() || comment(line)) continue;
+            Properties one = new Properties();
+            try {
+                one.load(new StringReader(line));
+            } catch (IOException | IllegalArgumentException e) {
+                continue;
+            }
+            for (String key : one.stringPropertyNames()) if (!known.contains(key)) out.add(key);
+        }
+        return List.copyOf(out);
     }
 
     /**

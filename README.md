@@ -23,12 +23,19 @@ with real uses and twelve counter charms. It adds no biomes, structures or dimen
 
 The server's settings apply to everyone; clients only show the Field Guide's kill count. NeoForge keeps them in
 `config/teeming-synced.toml` (one file for every world, sent to joining clients). Fabric keeps them in
-`config/teeming.properties`, read once at startup: restart after a change. Both files are written with the defaults
-on first start, and a newer version adds its new keys to an existing file. On Fabric a start that changes the file
-(a new key, or a newer header) writes the mod's keys in the order below under the current header, and keeps every
-value, the comments above a key (with that key), keys the mod doesn't read (after its own) and comments after the last
-key; comments at the very top of the file are taken for the old header and replaced. A value out of range is brought
-into it, with a warning in the log.
+`config/teeming.properties`, read once at startup: restart after a change. Fabric doesn't send the file to clients, so a
+client whose own file switches off other mobs than the server's lists a different set of creatures in its Field Guide.
+Both files are written with the defaults on first start, and a newer version adds its new keys to an existing file. On
+Fabric a start that changes the file (a new key, or a newer header) writes the mod's keys in the order below under the
+current header, and keeps every value, the comments above a key (with that key), keys the mod doesn't read (after its
+own) and comments after the last key; comments at the very top of the file are taken for the old header and replaced. A
+value out of range is brought into it, with a warning in the log. A file saved as UTF-16 with a byte-order mark (as
+Notepad's "UTF-16" and Windows PowerShell's `Out-File` save it) is read as such and rewritten as UTF-8, and a key the
+mod doesn't read (a typo, or a pack's own key) is kept and named in a warning in the log.
+
+Teeming heeds the world's own switches: on Peaceful, or with the game rule `spawn_monsters` (or `spawn_mobs`) set to
+false, none of its monsters spawn naturally, from the biome lists or from its own spawner; its creatures stop only with
+`spawn_mobs`.
 
 | Key | Default | What it does |
 |---|---|---|
@@ -63,34 +70,46 @@ Nearly everything a pack would change is data under `data/teeming/`. The excepti
 spawn weights on Fabric, the weights and rules of the mobs Teeming's own spawner places, and the items some mechanics
 drop on top of a loot table (listed under drops below).
 
-- **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to
-  give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that only Teeming's own
-  spawner places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty.
-  Four mobs are both on biome lists and placed by a spawner rule: the Aurovore (bastions), the Astral Augur and the
+- **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to give a
+  mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that only Teeming's own spawner
+  places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty. Four
+  mobs are both on biome lists and placed by a spawner rule: the Aurovore (bastions), the Astral Augur and the
   Nullcantor (the main island, after the dragon) and the Resonant Triad (the End's open sky). Emptying their tag stops
   them both ways; while it holds anything, their rule places them wherever it fits, whatever biomes the tag names (a
-  bastion stands in four Nether biomes). To switch a mob off either way, use `mobs.<id>.enabled`. The biome lists
-  read the tags once, when the server starts; Teeming's own spawner and `/teeming spawns` read them live. So after a
-  `/reload` a changed tag changes the spawner's placements and the command's answers at once, and the lists only
-  after a restart.
+  bastion stands in four Nether biomes). To switch a mob off either way, use `mobs.<id>.enabled`. Only that key also
+  takes the mob out of the Field Guide's list and the collection advancements (each dimension's Naturalist, *Teeming
+  with Knowledge*, *The Whole Menagerie*): a mob stopped by an emptied tag or `spawnChance=0` still counts there, so
+  they can't be finished in a world where it never spawns. The biome lists read the tags once, when the server starts;
+  Teeming's own spawner and `/teeming spawns` read them live. So after a `/reload` a changed tag changes the spawner's
+  placements and the command's answers at once, and the lists only after a restart.
   `#teeming:share_capped` holds Nether biomes whose vanilla monster list is too small to share, where Teeming's own
   spawner places their monsters instead (by default the crimson and warped forests, and biome mods' biomes in
   `#c:is_nether_forest`, `#c:primary_wood_type/crimson` or `#c:primary_wood_type/warped`). A biome in the tag gets no
   Teeming monster from the biome lists, tuned vanilla biomes included, on both loaders: a Nether biome added to it gets
   the spawner's placements of the monsters whose tags hold it, kept to about 1 in 5 of the monsters round the player.
-  That spawner doesn't run in the Overworld, so an Overworld biome added to the tag gets no Teeming monsters at all
-  (the deep dark and the mushroom fields are in it by default, where no monster spawns anyway). Creatures keep their
-  lists in either.
-- **Biome mods' End biomes:** `#teeming:modded_end` (by default `#c:is_end` and `#minecraft:is_end`) is how they get
-  the outer islands' mobs. Each outer-island list mob's tag holds it, so emptying the mob's tag takes the mob out of
-  them too. The tag holds vanilla's five End biomes as well; Teeming leaves those five out wherever it reads the tag, so
-  a mob still spawns only in its own vanilla End biomes. Don't add the tag (or `#c:is_end`) to another mob's tag: that
-  mob would get every modded End biome, and vanilla's five End biomes too, at its rest weight (only the outer-island
-  mobs whose tags hold it by default leave vanilla's five out). No End list mob spawns naturally within 1024 blocks of
-  the origin (the main island's area, whatever its biome) except the main island's own mobs, once the dragon is dead. In
-  a biome mod's End biome one more Teeming monster spawns only while Teeming's don't outnumber the other monsters within
-  128 blocks, since the lists assume endermen in groups of four: a biome with few monsters of its own gets few of
-  Teeming's, and monsters a pack adds there raise Teeming's number with them.
+  That spawner doesn't run in the Overworld, so an Overworld biome added to the tag gets no Teeming monsters at all (the
+  deep dark and the mushroom fields are in it by default, where no monster spawns anyway). Creatures keep their lists in
+  either. A biome in `#c:no_default_monsters` (vanilla's mushroom fields and deep dark) gets no Teeming monster from the
+  lists or the spawner, so one entry there clears a biome mod's biome of them; creatures still spawn.
+- **Biome mods' End biomes:** `#teeming:modded_end` (by default `#c:is_end` and `#minecraft:is_end`) is how they get the
+  outer islands' mobs. Each outer-island list mob's tag holds it, so emptying the mob's tag takes the mob out of them
+  too. The tag holds vanilla's five End biomes as well; Teeming leaves those five out wherever it reads the tag, so a
+  mob still spawns only in its own vanilla End biomes. This means that among vanilla's five End biomes an End mob's tag
+  doesn't move it: 38 of the 40 End mobs' tags hold all five through `#teeming:modded_end`, so taking a vanilla End
+  biome out of the tag leaves the mob there, and adding one gives it nothing (`/teeming spawns` lists the vanilla End
+  biomes a mob really gets). To keep a mob out of a vanilla End biome, replace its tag (`"replace": true`) with one that
+  leaves `#teeming:modded_end` out and names the biomes it should keep, a biome mod's End biomes by id (`#c:is_end`
+  would bring vanilla's five back). Then the six region mobs of Teeming's spawner (the Underclinger, Abyss Angler,
+  Brinkray, Wingshear, Grand Orrery and Driftsong) go by their tag biome by biome, and a biome-list mob keeps only the
+  vanilla End biomes it had that the tag still names. A biome-list mob can't be given a vanilla End biome it doesn't
+  have through its tag: on NeoForge add a `neoforge:add_spawns` biome modifier of your own; on Fabric there is no way.
+  Don't add the tag (or `#c:is_end`) to another mob's tag: that mob would get every modded End biome, and vanilla's five
+  End biomes too, at its rest weight (only the outer-island mobs whose tags hold it by default leave vanilla's five
+  out). No End list mob spawns naturally within 1024 blocks of the origin (the main island's area, whatever its biome)
+  except the main island's own mobs, once the dragon is dead. In a biome mod's End biome one more Teeming monster spawns
+  only while Teeming's don't outnumber the other monsters within 128 blocks, since the lists assume endermen in groups
+  of four: a biome with few monsters of its own gets few of Teeming's, and monsters a pack adds there raise Teeming's
+  number with them.
 - **Biome mods' Nether biomes:** the open-ground Nether monsters' homes name vanilla biomes only, so a biome mod's
   Nether biome tagged only `#c:is_nether` gets 7 of the 30 Nether mobs: the Lavaleaper and the Magma Tortoise from the
   biome lists, and the Soot Manta, the three fortress mobs and the Aurovore from Teeming's spawner. The fortress mobs
@@ -107,10 +126,12 @@ drop on top of a loot table (listed under drops below).
   modifiers. `data/teeming/neoforge/biome_modifier/spawns/<mob>/<biome>.json` gives it a weight tuned to one vanilla
   biome's monster list. `spawns/<mob>.json` gives it the weight it carries in the biomes its tag reaches that are not
   tuned (a biome mod's biomes), and `spawns/<mob>/beside.json` a smaller one where another mob already carries that
-  biome's share. `spawns/<mob>/modded_end.json` gives an outer-island End mob its weight in biome mods' End biomes. All
-  stay inside the mob's tag. Replace a file by id to change its `weight` or `count`. On Fabric these
-  numbers are built into the mod, so a pack can't change them; the server can only lower a mob with
-  `mobs.<id>.spawnChance`.
+  biome's share. For an Overworld monster that rest weight is a share of vanilla's common Overworld monster list (515 in
+  all), not of the biome's own list, so a pack that adds such a mob to a Nether or End biome brings that weight there
+  (the Hollow Mourner's 355 beside the End's endermen at 10 makes nearly every pick a Mourner).
+  `spawns/<mob>/modded_end.json` gives an outer-island End mob its weight in biome mods' End biomes. All stay inside the
+  mob's tag. Replace a file by id to change its `weight` or `count`. On Fabric these numbers are built into the mod, so
+  a pack can't change them; the server can only lower a mob with `mobs.<id>.spawnChance`.
 - **Looks:** `data/teeming/teeming/looks/<mob>/<look>.json` with `weight` (0 switches a look off), and optionally
   `scale`, `attributes` and `biomes`. Where no allowed look has weight, the mob takes its base look, even a base set to
   0: so a base switched off still appears wherever the mob's other look isn't allowed (the Rattlecoil anywhere outside
@@ -134,7 +155,8 @@ drop on top of a loot table (listed under drops below).
   the blaze's small fireballs and wind charges, not the ghast's or the dragon's fireballs),
   `#teeming:pyre_herald_allies`, `#teeming:mending_crystalling_patients`. The mod also adds its mobs to
   `#minecraft:undead` (Soulward Revenant, Ossuary Wyrm), `#minecraft:arthropod` (six mobs), `#minecraft:aquatic`
-  (Stormeel) and `#c:capturing_not_supported` (the apex mobs and the linked groups: Gemini Watchers, Resonant Triad and
+  (Stormeel), `#minecraft:freeze_immune_entity_types` (Snowroller, Shiverwraith: powder snow doesn't freeze them) and
+  `#c:capturing_not_supported` (the apex mobs and the linked groups: Gemini Watchers, Resonant Triad and
   Recurrent).
 - **Item tags:** `#teeming:signature_materials`, `#teeming:charms`, `#teeming:aurovore_loot` (what the Aurovore
   steals), `#teeming:cold_items` (thrown items that cool a Slagheart Golem as a snowball does; default: snowball).

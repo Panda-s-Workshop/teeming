@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -91,8 +92,14 @@ final class FabricConfig implements TeemingConfig.Source {
         for (RosterStats.Entry mob : RosterStats.ALL) {                    // an old file's per-mob keys
             for (String name : new String[] {"enabled", "spawnChance"}) renamed.put("mob." + mob.id() + "." + name, mobKey(mob, name));
         }
-        // rewritten whenever the text changes (a new key, a renamed one, a new header), keeping values, comments and unknown keys
-        String text = SettingsFile.write(old, HEADER, defaults(), renamed);
+        // rewritten whenever the text changes (a new key, a renamed one, a new header), keeping values, comments and unknown
+        // keys; it is written as UTF-8 whatever it was read as
+        Map<String, String> defaults = defaults();
+        String text = SettingsFile.write(old, HEADER, defaults, renamed);
+        // a mistyped key, or one this version doesn't read, is kept but does nothing: say so, or the default runs unnoticed
+        List<String> unknown = SettingsFile.unknownKeys(text, defaults.keySet());
+        if (!unknown.isEmpty())
+            TeemingMod.LOGGER.warn("{}: kept, but not read by Teeming (a typo, or a key this version doesn't have): {}", file, String.join(", ", unknown));
         if (read.isPresent() && !text.equals(old)) {
             try {
                 Files.writeString(file, text);

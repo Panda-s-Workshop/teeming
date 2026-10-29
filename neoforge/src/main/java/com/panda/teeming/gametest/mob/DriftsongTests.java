@@ -67,6 +67,8 @@ public final class DriftsongTests {
         out.accept("driftsong_dies_mid_swell", DriftsongTests::diesMidSwell);
         out.accept("driftsong_drops_over_void", DriftsongTests::dropsOverVoid);
         out.accept("driftsong_drops_over_ground", DriftsongTests::dropsOverGround);
+        out.accept("driftsong_drops_to_the_rim", DriftsongTests::dropsToTheRim);
+        out.accept("driftsong_drops_to_a_glider", DriftsongTests::dropsToAGlider);
         out.accept("driftsong_cap", DriftsongTests::cap);
         out.accept("driftsong_spawn_rule", DriftsongTests::spawnRule);
         out.accept("driftsong_save_load", DriftsongTests::saveLoad);
@@ -260,16 +262,7 @@ public final class DriftsongTests {
      */
     private static void dropsOverVoid(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockPos top = helper.absolutePos(new BlockPos(6, 0, 6));
-        List<Runnable> putBack = new ArrayList<>();
-        for (BlockPos at = top; at.getY() >= level.getMinY(); at = at.below()) {
-            BlockPos here = at.immutable();
-            var was = level.getBlockState(here);
-            if (was.isAir()) continue;
-            level.setBlock(here, Blocks.AIR.defaultBlockState(), 2);
-            putBack.add(() -> level.setBlock(here, was, 2));
-        }
-        TestPlayers.whenDone(helper, () -> putBack.forEach(Runnable::run));
+        openColumn(helper, 6, 6);
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 1, 1.5));
         Driftsong d = driftsong(helper, new Vec3(6.5, 3, 6.5), p);
         d.moor(200);
@@ -303,6 +296,66 @@ public final class DriftsongTests {
             }
             helper.succeed();
         });
+    }
+
+    /**
+     * Killed over the void by a player crouched at a rim, the player's middle over the void too and one edge of them on
+     * the block beside it: the membrane lands on that block, not in the void under the player.
+     */
+    private static void dropsToTheRim(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        openColumn(helper, 6, 6);
+        openColumn(helper, 1, 1);
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.95, 1, 1.5));
+        p.setShiftKeyDown(true);
+        p.setOnGroundWithMovement(true, Vec3.ZERO);
+        Driftsong d = driftsong(helper, new Vec3(6.5, 3, 6.5), p);
+        d.moor(200);
+        helper.runAtTickTime(2, () -> {
+            helper.assertTrue(p.mainSupportingBlockPos.isPresent(), "the player stands on the block beside the hole");
+            d.hurtServer(level, level.damageSources().playerAttack(p), 1000.0F);
+        });
+        helper.runAtTickTime(20, () -> {
+            List<ItemEntity> near = membranes(helper);
+            TestPlayers.whenDone(helper, () -> near.forEach(ItemEntity::discard));
+            helper.assertTrue(!near.isEmpty(), "its membrane was dropped on the rim");
+            BlockPos rim = p.mainSupportingBlockPos.orElseThrow();
+            for (ItemEntity i : near) {
+                double off = Math.hypot(i.getX() - (rim.getX() + 0.5), i.getZ() - (rim.getZ() + 0.5));
+                helper.assertTrue(off < 3.0 && i.getY() >= rim.getY(), "the membrane lies on the rim, " + off + " blocks off at y " + i.getY());
+            }
+            helper.succeed();
+        });
+    }
+
+    /** Killed over the void by a player with no ground under them either (gliding): the membrane goes into their inventory. */
+    private static void dropsToAGlider(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        openColumn(helper, 6, 6);
+        openColumn(helper, 1, 1);
+        ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 3, 1.5));
+        Driftsong d = driftsong(helper, new Vec3(6.5, 3, 6.5), p);
+        d.moor(200);
+        helper.runAtTickTime(2, () -> d.hurtServer(level, level.damageSources().playerAttack(p), 1000.0F));
+        helper.runAtTickTime(10, () -> {
+            helper.assertTrue(p.getInventory().countItem(ModMaterials.VOID_MEMBRANE.get()) >= 1, "the membrane is in the player's inventory");
+            helper.assertTrue(membranes(helper).isEmpty(), "none was thrown into the void");
+            helper.succeed();
+        });
+    }
+
+    /** Opens the column at (x, z) of the arena from its floor down to the world's floor, and puts it back when the test ends. */
+    private static void openColumn(GameTestHelper helper, int x, int z) {
+        ServerLevel level = helper.getLevel();
+        List<Runnable> putBack = new ArrayList<>();
+        for (BlockPos at = helper.absolutePos(new BlockPos(x, 0, z)); at.getY() >= level.getMinY(); at = at.below()) {
+            BlockPos here = at.immutable();
+            var was = level.getBlockState(here);
+            if (was.isAir()) continue;
+            level.setBlock(here, Blocks.AIR.defaultBlockState(), 2);
+            putBack.add(() -> level.setBlock(here, was, 2));
+        }
+        TestPlayers.whenDone(helper, () -> putBack.forEach(Runnable::run));
     }
 
     private static List<ItemEntity> membranes(GameTestHelper helper) {

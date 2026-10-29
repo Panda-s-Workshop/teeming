@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -57,6 +58,25 @@ public final class TestPlayers {
         AABB area = helper.getBounds().inflate(margin, 0, margin);
         for (int cx = Mth.floor(area.minX) >> 4; cx <= Mth.floor(area.maxX) >> 4; cx++) {
             for (int cz = Mth.floor(area.minZ) >> 4; cz <= Mth.floor(area.maxZ) >> 4; cz++) helper.getLevel().setChunkForced(cx, cz, true);
+        }
+    }
+
+    /**
+     * Runs {@code body} with the game rules' monster switches on (spawn_mobs and spawn_monsters, which the GameTest
+     * world keeps off), for a test that asks the natural-spawn predicate about a monster, and puts both back before
+     * returning, within the same tick, so no other test and no natural spawning tick sees them.
+     */
+    public static void monstersOn(ServerLevel level, Runnable body) {
+        GameRules rules = level.getGameRules();
+        boolean mobs = rules.get(GameRules.SPAWN_MOBS);
+        boolean monsters = rules.get(GameRules.SPAWN_MONSTERS);
+        rules.set(GameRules.SPAWN_MOBS, true, level.getServer());
+        rules.set(GameRules.SPAWN_MONSTERS, true, level.getServer());
+        try {
+            body.run();
+        } finally {
+            rules.set(GameRules.SPAWN_MOBS, mobs, level.getServer());
+            rules.set(GameRules.SPAWN_MONSTERS, monsters, level.getServer());
         }
     }
 

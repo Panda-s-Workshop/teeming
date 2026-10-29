@@ -544,8 +544,10 @@ public final class AnchorGolemTests {
         helper.assertTrue(TeemingSpawns.placeOk(row, type, level, helper.absolutePos(new BlockPos(3, 1, 3))), "end stone is a spawn spot");
         helper.assertTrue(!TeemingSpawns.placeOk(row, type, level, helper.absolutePos(new BlockPos(8, 1, 8))), "a spot over air is not");
         helper.runAtTickTime(5, () -> {
-            helper.assertTrue(!TeemingSpawns.check(row, type, level, EntitySpawnReason.NATURAL, helper.absolutePos(new BlockPos(8, 2, 3)), level.getRandom()),
-                    "a lit spot on end stone takes no natural spawn");
+            boolean[] taken = {false};
+            TestPlayers.monstersOn(level, () -> taken[0] = TeemingSpawns.check(row, type, level, EntitySpawnReason.NATURAL,
+                    helper.absolutePos(new BlockPos(8, 2, 3)), level.getRandom()));
+            helper.assertTrue(!taken[0], "a lit spot on end stone takes no natural spawn, with monster spawning on");
             helper.succeed();
         });
     }

@@ -565,8 +565,10 @@ public final class HushwingTests {
         helper.assertTrue(!row.anyLight(), "only in the dark");
         BlockPos abs = helper.absolutePos(new BlockPos(5, 1, 5));
         BlockPos above = new BlockPos(abs.getX(), 1, abs.getZ());
-        helper.assertTrue(!TeemingSpawns.check(row, ModMobs.HUSHWING.get(), helper.getLevel(), EntitySpawnReason.NATURAL, above,
-                helper.getLevel().getRandom()), "no natural spawn at y 1");
+        boolean[] taken = {false};
+        TestPlayers.monstersOn(helper.getLevel(), () -> taken[0] = TeemingSpawns.check(row, ModMobs.HUSHWING.get(), helper.getLevel(),
+                EntitySpawnReason.NATURAL, above, helper.getLevel().getRandom()));
+        helper.assertTrue(!taken[0], "no natural spawn at y 1, with monster spawning on");
         BlockPos at = new BlockPos(2, 1, 2);
         helper.setBlock(at.east(), Blocks.GLOWSTONE);
         Hushwing bat = helper.spawn(ModMobs.HUSHWING.get(), new Vec3(2.5, 1, 2.5));

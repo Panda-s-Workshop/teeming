@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
@@ -101,6 +103,34 @@ class SettingsFileTest {
         String text = SettingsFile.write(old, HEADER, DEFAULTS, RENAMED);
         assertEquals("0.05", SettingsFile.read(text).getProperty("trophies.chance"));
         assertTrue(text.contains("# caf\u00e9"), "its comment kept: " + text);
+    }
+
+    @Test
+    void aUtf16FileWithAByteOrderMarkIsReadAsUtf16(@TempDir Path dir) throws IOException {
+        // as Windows PowerShell 5.1's Out-File and Notepad's "UTF-16 LE" save it, and the big-endian form
+        String body = "# café\nspawningDensity=2.5\ntrophies.chance=0.05\n";
+        for (Charset charset : new Charset[] {StandardCharsets.UTF_16LE, StandardCharsets.UTF_16BE}) {
+            Path file = dir.resolve("teeming-" + charset.name() + ".properties");
+            Files.write(file, ("﻿" + body).getBytes(charset));
+            String old = SettingsFile.readFile(file).orElseThrow();
+            assertEquals(body, old, charset + ": the text, without its mark");
+            String text = SettingsFile.write(old, HEADER, DEFAULTS, RENAMED);
+            Properties p = SettingsFile.read(text);
+            assertEquals("2.5", p.getProperty("spawningDensity"), charset + ": " + text);
+            assertEquals("0.05", p.getProperty("trophies.chance"), charset + ": " + text);
+            assertEquals(List.of(), SettingsFile.unknownKeys(text, DEFAULTS.keySet()), charset + ": no key is left unread");
+        }
+    }
+
+    @Test
+    void aMistypedOrUnknownKeyIsNamedInFileOrder() {
+        String old = "spawningDensty=2.0\n# the pack's own\npack.extra = keep me\ntrophies.chance=0.05\nmob.thornhorn.enabled=false\n";
+        String text = SettingsFile.write(old, HEADER, DEFAULTS, RENAMED);
+        assertEquals(List.of("spawningDensty", "pack.extra"), SettingsFile.unknownKeys(text, DEFAULTS.keySet()),
+                "the typo and the pack's key; a renamed key has moved to its new name: " + text);
+        assertEquals("2.0", SettingsFile.read(text).getProperty("spawningDensty"), "the unknown key is still kept");
+        assertEquals(List.of(), SettingsFile.unknownKeys(SettingsFile.write("", HEADER, DEFAULTS, RENAMED), DEFAULTS.keySet()),
+                "a fresh file has none");
     }
 
     @Test

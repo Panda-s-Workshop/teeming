@@ -59,6 +59,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -88,6 +89,7 @@ final class SpawnTests {
         out.accept("spawner_main_island_gate", SpawnTests::mainIslandGate);
         out.accept("spawn_main_island_lists", SpawnTests::mainIslandLists);
         out.accept("spawner_spawns", SpawnTests::spawnerSpawns);
+        out.accept("spawner_spawn_monsters_rule", SpawnTests::spawnMonstersRule);
         out.accept("spawn_any_light", SpawnTests::anyLight);
         out.accept("spawn_share", SpawnTests::spawnShare);
         out.accept("spawn_share_counts", SpawnTests::shareCounts);
@@ -145,10 +147,12 @@ final class SpawnTests {
             RosterStats.Entry row = RosterStats.get("stormeel");
             var type = TeemingSpawns.type(row).orElseThrow();
             RandomSource random = RandomSource.create(17);
-            int passed = 0;
-            for (int i = 0; i < 600; i++)
-                if (TeemingSpawns.check(row, type, helper.getLevel(), EntitySpawnReason.NATURAL, helper.absolutePos(new BlockPos(3, 1, 3)), random)) passed++;
-            double rate = passed / 600.0;
+            int[] passed = {0};
+            TestPlayers.monstersOn(helper.getLevel(), () -> {
+                for (int i = 0; i < 600; i++)
+                    if (TeemingSpawns.check(row, type, helper.getLevel(), EntitySpawnReason.NATURAL, helper.absolutePos(new BlockPos(3, 1, 3)), random)) passed[0]++;
+            });
+            double rate = passed[0] / 600.0;
             helper.assertTrue(Math.abs(rate - SpawnTable.OPEN_WATER_CHANCE) < 0.07,
                     "stormeel: natural spawns go ahead " + rate + " of the time, the open-water chance is " + SpawnTable.OPEN_WATER_CHANCE);
         });
@@ -183,8 +187,15 @@ final class SpawnTests {
         return type == net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS ? "NO_RESTRICTIONS" : String.valueOf(type);
     }
 
-    /** The first step of natural spawning that refuses the mob at the spot, or "taken". */
+    /** The first step of natural spawning that refuses the mob at the spot, or "taken", with monster spawning on. */
     private static String why(GameTestHelper helper, String id, BlockPos rel) {
+        String[] out = new String[1];
+        TestPlayers.monstersOn(helper.getLevel(), () -> out[0] = whyAsIs(helper, id, rel));
+        return out[0];
+    }
+
+    /** As {@link #why}, under the world's game rules as they stand. */
+    private static String whyAsIs(GameTestHelper helper, String id, BlockPos rel) {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(rel);
         EntityType<? extends Mob> type = TeemingSpawns.type(RosterStats.get(id)).orElseThrow();
@@ -304,6 +315,53 @@ final class SpawnTests {
         helper.succeed();
     }
 
+    /**
+     * The game rule spawn_monsters off stops Teeming's monsters wherever a natural spawn is checked, its own spawner's
+     * placements included, and leaves its creatures, as vanilla's lists do. In a sealed dark room a Hollow Mourner is
+     * taken with monster spawning on; in the same tick, with spawn_mobs on and spawn_monsters off, the spawn predicate
+     * refuses it and the spawner's last step places none in 24 seeded tries, while a Thornhorn on the open floor is
+     * still placed. Both rules are put back before the tick ends, so no other test sees them, and again when the test
+     * ends.
+     */
+    private static void spawnMonstersRule(GameTestHelper helper) {
+        sealed(helper, 3);
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        boolean mobsWas = level.getGameRules().get(GameRules.SPAWN_MOBS);
+        boolean was = level.getGameRules().get(GameRules.SPAWN_MONSTERS);
+        TestPlayers.whenDone(helper, () -> {
+            level.getGameRules().set(GameRules.SPAWN_MOBS, mobsWas, server);
+            level.getGameRules().set(GameRules.SPAWN_MONSTERS, was, server);
+        });
+        BlockPos room = new BlockPos(3, 1, 3);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(natural(helper, "hollow_mourner", room),
+                    "with spawn_monsters on, natural spawning takes a Hollow Mourner on the dark floor (" + why(helper, "hollow_mourner", room) + ")");
+            List<Mob> placed = new ArrayList<>();
+            level.getGameRules().set(GameRules.SPAWN_MOBS, true, server);       // mobs on, monsters off: the rule alone
+            level.getGameRules().set(GameRules.SPAWN_MONSTERS, false, server);
+            try {
+                helper.assertTrue(!level.isSpawningMonsters(), "the level spawns no monsters with the rule off");
+                String refused = whyAsIs(helper, "hollow_mourner", room);
+                helper.assertTrue(refused.startsWith("its spawn predicate"), "with spawn_monsters off the spawn predicate refuses a Hollow Mourner, got: " + refused);
+                RosterStats.Entry mourner = RosterStats.get("hollow_mourner");
+                RandomSource random = RandomSource.create(5);
+                for (int i = 0; i < 24; i++) {
+                    Mob mob = TeemingSpawner.spawn(level, mourner, ModMobs.HOLLOW_MOURNER.get(), helper.absolutePos(room), random);
+                    if (mob != null) placed.add(mob);
+                }
+                helper.assertTrue(placed.isEmpty(), "with spawn_monsters off the spawner placed " + placed.size() + " Hollow Mourners");
+                Mob horn = TeemingSpawner.spawn(level, RosterStats.get("thornhorn"), ModMobs.THORNHORN.get(), helper.absolutePos(new BlockPos(8, 1, 8)), random);
+                if (horn != null) placed.add(horn);
+                helper.assertTrue(horn != null, "with spawn_monsters off the spawner still places a Thornhorn, a creature");
+            } finally {
+                level.getGameRules().set(GameRules.SPAWN_MOBS, mobsWas, server);
+                level.getGameRules().set(GameRules.SPAWN_MONSTERS, was, server);
+                placed.forEach(Mob::discard);
+            }
+        });
+    }
+
     /** Before the dragon dies (here: no dragon fight at all) main-island spots are refused. */
     private static void mainIslandGate(GameTestHelper helper) {
         helper.assertTrue(!TeemingSpawner.mainIslandOpen(helper.getLevel()), "the main island is shut without a killed dragon");
@@ -343,7 +401,7 @@ final class SpawnTests {
         RosterStats.Entry augur = RosterStats.get("astral_augur");
         var grazerType = TeemingSpawns.type(grazer).orElseThrow();
         var augurType = TeemingSpawns.type(augur).orElseThrow();
-        helper.succeedWhen(() -> {
+        helper.succeedWhen(() -> TestPlayers.monstersOn(end, () -> {
             helper.assertTrue(end.getBiome(inside).is(TeemingSpawns.MODDED_END), "the inside spot's biome is in #teeming:modded_end");
             helper.assertTrue(TeemingSpawner.onMainIsland(inside) && !TeemingSpawner.onMainIsland(outside), "300 out is the main island's area, 1300 isn't");
             helper.assertTrue(!TeemingSpawner.mainIslandOpen(end), "the dragon gate is shut");
@@ -367,7 +425,7 @@ final class SpawnTests {
             });
             helper.assertTrue(open[0], "with the dragon gate open the Augur is taken on the main island");
             for (BlockPos at : List.of(inside, outside)) end.setChunkForced(at.getX() >> 4, at.getZ() >> 4, false);
-        });
+        }));
     }
 
     // ---- spawn share ----------------------------------------------------------------------------------------------
@@ -1320,8 +1378,11 @@ final class SpawnTests {
         helper.assertTrue(end.getDifficulty() != Difficulty.PEACEFUL, "monsters spawn at this difficulty");
         helper.runAtTickTime(5, () -> {
             RandomSource random = RandomSource.create(89);
-            Mob first = null;
-            for (int i = 0; i < 20 && first == null; i++) first = TeemingSpawner.spawnGroup(end, new Candidate(row, type, spot, Rule.SKY), random);
+            Mob[] got = {null};
+            TestPlayers.monstersOn(end, () -> {
+                for (int i = 0; i < 20 && got[0] == null; i++) got[0] = TeemingSpawner.spawnGroup(end, new Candidate(row, type, spot, Rule.SKY), random);
+            });
+            Mob first = got[0];
             List<Mob> placed = end.getEntitiesOfClass(Mob.class, new AABB(spot).inflate(8), e -> e.getType() == type);
             placed.forEach(Mob::discard);
             end.setChunkForced(spot.getX() >> 4, spot.getZ() >> 4, false);

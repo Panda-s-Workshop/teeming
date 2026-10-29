@@ -110,8 +110,10 @@ final class FieldGuideTests {
     private static void hiddenUnseen(GameTestHelper helper) {
         ServerPlayer player = player(helper, 1.5, 5.5);
         List<Hiding<?>> table = List.of(
+                // the base look: a Shimmering one's faint outline is seen while it hides (checked below), and the look is rolled at spawn
                 new Hiding<>("an invisible Glimmerless", ModMobs.GLIMMERLESS.get(),
-                        m -> m.core().setFlag(Glimmerless.HIDDEN_FLAG, true), m -> m.core().setFlag(Glimmerless.HIDDEN_FLAG, false)),
+                        m -> { m.core().setLook("base", true); m.core().setFlag(Glimmerless.HIDDEN_FLAG, true); },
+                        m -> m.core().setFlag(Glimmerless.HIDDEN_FLAG, false)),
                 new Hiding<Snagwood>("a rooted Snagwood", ModMobs.SNAGWOOD.get(),
                         m -> helper.assertTrue(m.disguised() || m.root(true), "it roots"), m -> helper.assertTrue(m.wake(null), "it wakes")),
                 new Hiding<Gleamtrap>("a disguised Gleamtrap", ModMobs.GLEAMTRAP.get(),

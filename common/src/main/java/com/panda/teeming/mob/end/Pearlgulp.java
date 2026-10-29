@@ -5,6 +5,7 @@ import com.panda.teeming.mob.Phase;
 import com.panda.teeming.mob.TeemingAttributes;
 import com.panda.teeming.mob.TeemingMonster;
 import com.panda.teeming.mob.Telegraph;
+import com.panda.teeming.mob.VoidDrops;
 import com.panda.teeming.mob.end.Riftjackal.SafeTeleport;
 import com.panda.teeming.registry.ModSounds;
 import java.util.EnumSet;
@@ -468,7 +469,8 @@ public class Pearlgulp extends TeemingMonster {
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (level() instanceof ServerLevel level) spill(level);
+        // what it owes goes where its own drops go: to the killer when it would be lost in lava or the void
+        if (level() instanceof ServerLevel level) VoidDrops.drop(level, this, source, () -> spill(level));
     }
 
     /** Removed for good some other way (Peaceful, a command): it still never destroys the pearls it owes. */

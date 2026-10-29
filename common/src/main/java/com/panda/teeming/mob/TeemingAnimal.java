@@ -12,6 +12,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.storage.ValueInput;
@@ -110,10 +112,15 @@ public abstract class TeemingAnimal extends PathfinderMob implements TeemingCrea
         FieldGuide.onKilled(this, source);
     }
 
-    /** Over the void, a player's kill leaves its drops at the player's feet ({@link VoidDrops}). */
+    /** Drops that would fall into lava or the void go to the player who killed it ({@link VoidDrops}). */
     @Override
     protected void dropAllDeathLoot(ServerLevel level, DamageSource source) {
         VoidDrops.drop(level, this, source, () -> super.dropAllDeathLoot(level, source));
+    }
+
+    @Override
+    public @Nullable ItemEntity spawnAtLocation(ServerLevel level, ItemStack stack, Vec3 offset) {
+        return VoidDrops.handed(this, stack) ? null : super.spawnAtLocation(level, stack, offset);
     }
 
     @Override
