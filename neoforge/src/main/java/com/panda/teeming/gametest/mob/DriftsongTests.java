@@ -109,6 +109,17 @@ public final class DriftsongTests {
         return seen;
     }
 
+    /** Game ticks at which this Driftsong gave {@code p} its gift, recorded from now on; gifts to other arenas' players don't count. */
+    private static List<Long> gifts(GameTestHelper helper, Driftsong d, Player p) {
+        List<Long> seen = new ArrayList<>();
+        Consumer<MechanicEvent> listener = e -> {
+            if (e.mob() == d && e.step().equals("gift") && e.target() == p) seen.add(helper.getLevel().getGameTime());
+        };
+        MechanicEvent.listen(listener);
+        TestPlayers.whenDone(helper, () -> MechanicEvent.unlisten(listener));
+        return seen;
+    }
+
     private static int slowFalling(Player p) {
         MobEffectInstance e = p.getEffect(MobEffects.SLOW_FALLING);
         return e == null ? 0 : e.getDuration();
@@ -140,7 +151,7 @@ public final class DriftsongTests {
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(6.5, 1, 1.5));
         Driftsong d = driftsong(helper, new Vec3(6.5, 1, 6.5), p);
         d.moor(200);
-        List<Long> swell = steps(helper, d, "swell"), sing = steps(helper, d, "sing"), gift = steps(helper, d, "gift");
+        List<Long> swell = steps(helper, d, "swell"), sing = steps(helper, d, "sing"), gift = gifts(helper, d, p);
         helper.runAtTickTime(2, () -> d.setSongIn(3));
         helper.onEachTick(() -> {
             if (swell.isEmpty() || !sing.isEmpty()) return;
@@ -179,7 +190,7 @@ public final class DriftsongTests {
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 1, 6.5));
         Driftsong d = driftsong(helper, new Vec3(6.5, 1, 6.5), p);
         d.moor(1000);
-        List<Long> swell = steps(helper, d, "swell"), gift = steps(helper, d, "gift");
+        List<Long> swell = steps(helper, d, "swell"), gift = gifts(helper, d, p);
         helper.runAtTickTime(2, () -> d.setSongIn(5));
         helper.runAtTickTime(40, () -> {
             helper.assertTrue(swell.size() == 1 && gift.size() == 1, "one song so far, " + swell.size() + " swells " + gift.size() + " gifts");
@@ -244,7 +255,8 @@ public final class DriftsongTests {
 
     /**
      * Killed by a player over the void, its void membrane lands at that player's feet: the column under it is opened
-     * down to the world's floor (and put back after), the player stands 7 blocks off on the arena floor.
+     * down to the world's floor (and put back after), the player stands 7 blocks off on the arena floor. A dropped
+     * item is thrown a little and slides, so "at" is within 3 blocks.
      */
     private static void dropsOverVoid(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -268,13 +280,13 @@ public final class DriftsongTests {
             helper.assertTrue(!near.isEmpty(), "its membrane was dropped where it can be picked up");
             for (ItemEntity i : near) {
                 double off = Math.hypot(i.getX() - p.getX(), i.getZ() - p.getZ());
-                helper.assertTrue(off < 1.5, "the membrane lies at the killer's feet, " + off + " blocks off");
+                helper.assertTrue(off < 3.0, "the membrane lies at the killer's feet, " + off + " blocks off");
             }
             helper.succeed();
         });
     }
 
-    /** Over ground the drops land under it as usual: none moves to the killer 7 blocks off. */
+    /** Over ground the drops land under it as usual (within the 3 blocks an item slides): none moves to the killer 7 blocks off. */
     private static void dropsOverGround(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServerPlayer p = TestPlayers.survivor(helper, new Vec3(1.5, 1, 1.5));
@@ -287,7 +299,7 @@ public final class DriftsongTests {
             helper.assertTrue(!near.isEmpty(), "its membrane dropped");
             for (ItemEntity i : near) {
                 double off = Math.hypot(i.getX() - d.getX(), i.getZ() - d.getZ());
-                helper.assertTrue(off < 1.5, "the membrane lies under where it died, " + off + " blocks off");
+                helper.assertTrue(off < 3.0, "the membrane lies under where it died, " + off + " blocks off");
             }
             helper.succeed();
         });

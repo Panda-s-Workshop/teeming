@@ -526,6 +526,8 @@ public final class MoteSwarmTests {
         double[] top = {0.0};
         Vec3[] last = {null};
         helper.onEachTick(() -> {
+            // it hunts this test's player only: with a follow range of 8 a survivor in a neighbouring arena can be nearer
+            if (s.getTarget() != null && s.getTarget() != p) s.setTarget(p);
             Vec3 now = s.position();
             if (last[0] != null) top[0] = Math.max(top[0], now.distanceTo(last[0]));
             last[0] = now;
