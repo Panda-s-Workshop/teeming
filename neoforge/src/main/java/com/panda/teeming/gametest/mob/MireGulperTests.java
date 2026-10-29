@@ -38,8 +38,8 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Mire Gulper: prey within 1.5 blocks sets off 20 ticks of bubbles that do nothing yet; prey still within 2.5 blocks
- * then is swallowed: held in its mouth (rooted, carried with it) and chewed for half its attack (2) every 10 ticks, for
- * at most 100 ticks. Three hits on it while it holds someone (from inside or outside) make it spit the victim out and
+ * then is swallowed: held in its mouth (rooted, carried with it) and chewed for 0.35 of its attack (1.4) every 10
+ * ticks, for at most 100 ticks. Three hits on it while it holds someone (from inside or outside) make it spit the victim out and
  * leave it stunned for 40 ticks, taking x1.5. Under water it is invisible, untargetable and arrows pass through it.
  *
  * <p>Every gulper here has its goals cleared and a follow range of 0, so it never notices a survival player in a
@@ -127,11 +127,11 @@ public final class MireGulperTests {
         return listener;
     }
 
-    /** Chew damage to a player scales with difficulty: 2 is 2 on Easy and Normal, 3 on Hard. */
+    /** Chew damage to a player scales with difficulty: 1.4 is 1.4 on Easy and Normal, 2.1 on Hard. */
     private static float chewOnPlayer(GameTestHelper helper) {
         return switch (helper.getLevel().getDifficulty()) {
-            case HARD -> 3.0F;
-            default -> 2.0F;
+            case HARD -> 2.1F;
+            default -> 1.4F;
         };
     }
 
@@ -210,13 +210,13 @@ public final class MireGulperTests {
 
     /**
      * Failing the counter: a survival player is swallowed and nobody hits the gulper. They are held for the whole 100
-     * ticks, chewed 9 times (2 each on Easy and Normal, 3 on Hard), then let go, free to walk away.
+     * ticks, chewed 9 times (1.4 each on Easy and Normal, 2.1 on Hard), then let go, free to walk away. The player has
+     * no armour and vanilla's 20 health, and lives through the whole hold on any difficulty (18.9 lost on Hard).
      */
     private static void chewedForTheWholeHold(GameTestHelper helper) {
         MireGulper g = gulper(helper, AT);
         ServerPlayer p = TestPlayers.survivor(helper, AT.add(1.0, 0, 0));
-        p.getAttribute(Attributes.MAX_HEALTH).setBaseValue(40.0);      // 9 chews on Hard would kill a 20-health player early
-        p.setHealth(40.0F);
+        helper.assertTrue(p.getMaxHealth() == 20.0F && p.getHealth() == 20.0F && p.getArmorValue() == 0, "a fresh unarmoured player");
         Map<String, List<Integer>> at = new HashMap<>();
         steps(helper, g, at);
         float before = p.getHealth();
@@ -233,6 +233,7 @@ public final class MireGulperTests {
             helper.assertTrue(!slipped[0], "the player stayed in its mouth the whole time");
             float lost = before - p.getHealth();
             helper.assertTrue(Math.abs(lost - 9.0F * each) < 0.01F, "9 chews of " + each + " here: lost " + lost);
+            helper.assertTrue(p.isAlive(), "an unarmoured player lives through a full hold, " + p.getHealth() + " left");
             helper.assertTrue(g.victim() == null && g.core().in(Step.RECOVER), "it let go, phase " + g.phase());
             moveTo(helper, p, AT.add(3.5, 0, 0));
         });
@@ -242,7 +243,7 @@ public final class MireGulperTests {
         });
     }
 
-    /** On a pig (no difficulty scaling, no armour): each chew is exactly 2 (half of Atk 4), 10 ticks apart, the first 10 ticks in. */
+    /** On a pig (no difficulty scaling, no armour): each chew is exactly 1.4 (0.35 of Atk 4), 10 ticks apart, the first 10 ticks in. */
     private static void chewNumbers(GameTestHelper helper) {
         MireGulper g = gulper(helper, AT);
         Pig pig = pig(helper, AT.add(1.0, 0, 0));
@@ -264,7 +265,7 @@ public final class MireGulperTests {
             for (int i = 1; i < times.size(); i++) {
                 helper.assertTrue(times.get(i) - times.get(i - 1) == 10, "chews are 10 ticks apart: " + times);
             }
-            for (float c : chews) helper.assertTrue(Math.abs(c - 2.0F) < 0.01F, "each chew does 2 (half of Atk 4): " + chews);
+            for (float c : chews) helper.assertTrue(Math.abs(c - 1.4F) < 0.01F, "each chew does 1.4 (0.35 of Atk 4): " + chews);
             helper.succeed();
         });
     }

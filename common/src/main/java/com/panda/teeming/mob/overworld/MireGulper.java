@@ -45,9 +45,10 @@ import org.jspecify.annotations.Nullable;
  * tell, its eyes under the surface) it is invisible, no mob can target it and projectiles pass through it; a few
  * bubbles are the only sign. When its prey stands within 1.5 blocks of it, bubbles boil up over it for 1 s (tell); then
  * it lunges up and swallows its prey if it is still within 2.5 blocks. The victim is held in its mouth, rooted and
- * carried with it, and takes half its attack damage every 10 ticks, for at most 100 ticks. Counter: hit it 3 times
- * while it holds someone (the victim from inside or anyone from outside): it spits the victim out and is stunned for
- * 2 s, taking x1.5 damage. Out of water it can still ambush, frothing at the mouth instead.
+ * carried with it, and is chewed for 0.35 of its attack damage every 10 ticks, for at most 100 ticks: 9 chews, which
+ * count as one blow of all of them. Counter: hit it 3 times while it holds someone (the victim from inside or anyone
+ * from outside): it spits the victim out and is stunned for 2 s, taking x1.5 damage. Out of water it can still ambush,
+ * frothing at the mouth instead.
  *
  * <p>Nothing is kept on the victim: the hold is the gulper putting its victim back in its mouth each tick, so a gulper
  * that dies, unloads, loses its AI or lets go leaves its victim free on the spot.
@@ -61,7 +62,9 @@ public class MireGulper extends TeemingMonster {
     public static final double LUNGE_REACH = 2.5;         // prey still this close across when the bubbles stop is swallowed
     public static final int HOLD_TICKS = 100;             // it lets go after 5 s at the most
     public static final int BITE_EVERY = 10;              // a chew every half second while it holds someone
-    public static final float BITE_HIT = 0.5F;            // x attack damage per chew
+    public static final float BITE_HIT = 0.35F;           // x attack damage per chew: 1.4 for its attack of 4
+    /** Chews in a full hold: one every {@link #BITE_EVERY} ticks after the swallow, before it lets go (ticks 10 to 90). */
+    public static final int CHEWS = (HOLD_TICKS - 1) / BITE_EVERY;
     public static final int HITS_TO_SPIT = 3;             // hits on it while it holds someone: it spits them out
     public static final int STUN_TICKS = 40;              // stunned for 2 s after spitting
     public static final float STUN_DAMAGE = 1.5F;         // stunned, it takes x1.5 from every blow
@@ -372,7 +375,7 @@ public class MireGulper extends TeemingMonster {
         if (v.isBlocking()) v.stopUsingItem();
     }
 
-    /** One chew: half its attack damage, landing in full whatever hit the victim just before. */
+    /** One chew: {@link #BITE_HIT} of its attack damage, landing in full whatever hit the victim just before. */
     private void chew(ServerLevel level, LivingEntity v) {
         if (!MechanicEvent.post(this, "chew", v)) return;
         Grab.hurt(level, v, damageSources().mobAttack(this), (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * BITE_HIT);

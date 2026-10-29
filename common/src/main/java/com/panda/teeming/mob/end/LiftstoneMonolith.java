@@ -67,7 +67,8 @@ import org.jspecify.annotations.Nullable;
  * ground it stood on: 27 on landing. The slam is the whole blow: a victim is held in place from the lift to the landing
  * and its fall is forgotten every tick until half a second after it, so no vanilla fall damage comes on top. No one
  * is moved sideways, so the pull never puts anyone over the void. A Grounding Charm in a victim's off-hand halves both
- * its rise and its slam (3 blocks, 13.5): a lift half as high lands half as hard. It pulls again 8 s after it last
+ * its rise and its slam (3 blocks, 13.5): a lift half as high lands half as hard. The charm is read once, as the pull
+ * takes hold, and that share stays with the victim to its landing, so swapping hands in the air changes neither. It pulls again 8 s after it last
  * rose, while its target stays in reach.
  *
  * <p>Counter: a roof. A solid block within 3 blocks over a victim's head stops that victim's lift, and they stay on the
@@ -261,8 +262,8 @@ public class LiftstoneMonolith extends TeemingMonster {
             hoist.keep(level);
             if (core().elapsed() % 3 == 0) pullTrails(level);
         } else if (core().in(Step.SLAM)) {
-            List<LivingEntity> landed = hoist.drop(level, SLAM_SPEED);
-            for (LivingEntity v : landed) slamHit(level, v);
+            List<Hoist.Landing> landed = hoist.drop(level, SLAM_SPEED);
+            for (Hoist.Landing l : landed) slamHit(level, l.victim(), l.share());
             if (!landed.isEmpty()) slamSound(level);
         } else if (core().in(Step.CRACKED) && core().elapsed() % 3 == 0) {
             Vec3 h = heartPos();                                                // gold motes drift from the open heart
@@ -312,8 +313,8 @@ public class LiftstoneMonolith extends TeemingMonster {
                 finish(level);
             }
         } else if (ended == Step.SLAM) {
-            List<LivingEntity> late = hoist.setDown(level);                    // anyone with farther to fall lands now
-            for (LivingEntity v : late) slamHit(level, v);
+            List<Hoist.Landing> late = hoist.setDown(level);                   // anyone with farther to fall lands now
+            for (Hoist.Landing l : late) slamHit(level, l.victim(), l.share());
             if (!slamHeard) slamSound(level);
             finish(level);
         } else if (ended == Step.CRACKED) {
@@ -325,8 +326,8 @@ public class LiftstoneMonolith extends TeemingMonster {
 
     /**
      * The pull takes hold: everything in reach that a roof doesn't cover is held at its feet, ready to rise (half as
-     * high with a Grounding Charm in the off-hand, and its slam half as hard); each one a roof covers is left on the
-     * ground, and the pull catches on that roof.
+     * high with a Grounding Charm in the off-hand, and its slam half as hard: the share read here is the one it lands
+     * with); each one a roof covers is left on the ground, and the pull catches on that roof.
      */
     private void takeHold(ServerLevel level) {
         hoist.clear();
@@ -340,7 +341,7 @@ public class LiftstoneMonolith extends TeemingMonster {
                 caughtOn(level, v);
                 continue;
             }
-            if (MechanicEvent.post(this, "lift_take", v)) hoist.take(level, v, LIFT_HEIGHT * Charms.grounded(v));
+            if (MechanicEvent.post(this, "lift_take", v)) hoist.take(level, v, LIFT_HEIGHT, Charms.grounded(v));
         }
         playSound(ModSounds.LIFTSTONE_MONOLITH_LIFT.get(), 2.0F, 1.0F);
         level.sendParticles(ParticleTypes.END_ROD, true, true, getX(), getY() + 3.6, getZ(), 16, 0.6, 0.4, 0.6, 0.05);
@@ -354,16 +355,21 @@ public class LiftstoneMonolith extends TeemingMonster {
         level.playSound(null, v.getX(), top, v.getZ(), ModSounds.LIFTSTONE_MONOLITH_CAUGHT.get(), getSoundSource(), 1.4F, 1.0F);
     }
 
-    /**
-     * The landing blow on {@code v}: {@link #SLAM_DAMAGE}, or {@link Charms#GROUNDING} of it with a Grounding Charm in
-     * the off-hand (the charm halved its rise too), from the Monolith but from no point (so a raised shield, which only
-     * blocks blows from a side, can't catch a slam into the ground); armour counts. The landing pins it: no knockback,
-     * and its fall forgotten. Returns whether it was hurt. Public as a test hook.
-     */
+    /** A landing blow on {@code v} outside a pull, its share read from its hands now. Public as a test hook. */
     public boolean slamHit(ServerLevel level, LivingEntity v) {
+        return slamHit(level, v, Charms.grounded(v));
+    }
+
+    /**
+     * The landing blow on {@code v}: {@code share} of {@link #SLAM_DAMAGE}, the share of its rise it was taken with
+     * ({@link Charms#GROUNDING} with a Grounding Charm in the off-hand as the pull took hold, else all of it), from the
+     * Monolith but from no point (so a raised shield, which only blocks blows from a side, can't catch a slam into the
+     * ground); armour counts. The landing pins it: no knockback, and its fall forgotten. Returns whether it was hurt.
+     */
+    private boolean slamHit(ServerLevel level, LivingEntity v, double share) {
         if (!MechanicEvent.post(this, "slam_hit", v)) return false;
         v.damageCooldownTime = 0;                                               // a recent scratch doesn't eat the slam
-        boolean hurt = v.hurtServer(level, slamSource(), slamDamage(v));
+        boolean hurt = v.hurtServer(level, slamSource(), slamDamage(share));
         Push.set(v, Vec3.ZERO);
         v.resetFallDistance();
         BlockState under = level.getBlockState(BlockPos.containing(v.getX(), v.getY() - 0.2, v.getZ()));
@@ -373,9 +379,9 @@ public class LiftstoneMonolith extends TeemingMonster {
         return hurt;
     }
 
-    /** What the slam deals {@code v}: the whole slam, halved by a Grounding Charm in its off-hand. */
-    public static float slamDamage(LivingEntity v) {
-        return SLAM_DAMAGE * (float) Charms.grounded(v);
+    /** What the slam deals a victim taken with {@code share} of the rise: that share of the whole slam. */
+    public static float slamDamage(double share) {
+        return SLAM_DAMAGE * (float) share;
     }
 
     /** The slam's blow: the Monolith's own attack type, with it as the cause and no direct source or position. */
@@ -645,19 +651,23 @@ public class LiftstoneMonolith extends TeemingMonster {
 
         private static final class Held {
             final LivingEntity victim;
-            final double x, z, from, rise;
+            final double x, z, from, rise, share;
             double y;
             double floor = Double.NaN;
 
-            Held(LivingEntity victim, double rise) {
+            Held(LivingEntity victim, double rise, double share) {
                 this.victim = victim;
                 this.x = victim.getX();
                 this.z = victim.getZ();
                 this.from = victim.getY();
                 this.rise = rise;
+                this.share = share;
                 this.y = from;
             }
         }
+
+        /** A victim that met solid ground, with the share of the rise it was taken with. */
+        public record Landing(LivingEntity victim, double share) {}
 
         /** True if a solid block lies within {@code reach} blocks over {@code v}'s head: a roof that stops its lift. */
         public static boolean roofed(LivingEntity v, double reach) {
@@ -694,9 +704,12 @@ public class LiftstoneMonolith extends TeemingMonster {
             return best;
         }
 
-        /** Takes hold of {@code v} where it stands, to rise up to {@code height} (less under a block higher up). */
-        public void take(ServerLevel level, LivingEntity v, double height) {
-            Held h = new Held(v, headroom(v, height));
+        /**
+         * Takes hold of {@code v} where it stands, to rise up to {@code share} of {@code height} (less under a block
+         * higher up). The share is fixed here and handed back with its landing.
+         */
+        public void take(ServerLevel level, LivingEntity v, double height, double share) {
+            Held h = new Held(v, headroom(v, height * share), share);
             held.add(h);
             place(level, v, h.x, h.from, h.z);
         }
@@ -723,8 +736,8 @@ public class LiftstoneMonolith extends TeemingMonster {
          * Drives every victim down {@code speed} blocks, no lower than its landing; returns those that landed on solid
          * ground this tick (no longer held). One with no ground under it is set down where it was taken and let go.
          */
-        public List<LivingEntity> drop(ServerLevel level, double speed) {
-            List<LivingEntity> down = new ArrayList<>();
+        public List<Landing> drop(ServerLevel level, double speed) {
+            List<Landing> down = new ArrayList<>();
             List<Held> done = new ArrayList<>();
             for (Held h : still(level)) {
                 double floor = Double.isNaN(h.floor) ? h.from : h.floor;
@@ -733,21 +746,21 @@ public class LiftstoneMonolith extends TeemingMonster {
                 if (h.y > floor + 1.0E-7) continue;
                 land(h);
                 done.add(h);
-                if (!Double.isNaN(h.floor)) down.add(h.victim);
+                if (!Double.isNaN(h.floor)) down.add(new Landing(h.victim, h.share));
             }
             held.removeAll(done);
             return down;
         }
 
         /** Sets every victim still held straight down on its landing at once; returns those that met solid ground. */
-        public List<LivingEntity> setDown(ServerLevel level) {
-            List<LivingEntity> down = new ArrayList<>();
+        public List<Landing> setDown(ServerLevel level) {
+            List<Landing> down = new ArrayList<>();
             for (Held h : still(level)) {
                 if (Double.isNaN(h.floor)) h.floor = floorUnder(h.victim, h.y, h.from, LIFT_HEIGHT);
                 h.y = Double.isNaN(h.floor) ? h.from : h.floor;
                 place(level, h.victim, h.x, h.y, h.z);
                 land(h);
-                if (!Double.isNaN(h.floor)) down.add(h.victim);
+                if (!Double.isNaN(h.floor)) down.add(new Landing(h.victim, h.share));
             }
             held.clear();
             return down;

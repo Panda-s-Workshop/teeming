@@ -22,6 +22,7 @@ class VinedropStranglerNumbersTest {
         assertEquals(3, VinedropStrangler.SLOWNESS_LEVEL);
         assertEquals(1.0F, VinedropStrangler.SQUEEZE_DAMAGE);
         assertEquals(20, VinedropStrangler.SQUEEZE_EVERY);
+        assertEquals(4, VinedropStrangler.SQUEEZES);
         assertEquals(0.9F, VinedropStrangler.SWEEP_CHARGE);
         assertEquals(60, VinedropStrangler.STUN_TICKS);
         assertEquals(1.5F, VinedropStrangler.STUN_DAMAGE);

@@ -470,7 +470,7 @@ public class Brinkray extends TeemingMonster {
     }
 
     /**
-     * The ram lands: its attack, through armour. At a brink the victim is thrown on along the ram, 1.8 a tick and 0.3
+     * The ram lands: its attack (armour counts). At a brink the victim is thrown on along the ram, 1.8 a tick and 0.3
      * up, less by its knockback resistance and by half with a Shellward or a Grounding Charm in the off-hand; anywhere
      * else it throws no one, so nobody but a player at the brink is ever moved out over the void.
      */

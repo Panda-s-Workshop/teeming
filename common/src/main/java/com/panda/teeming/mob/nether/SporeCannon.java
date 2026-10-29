@@ -45,7 +45,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Tell: for 20 ticks the bulb swells and glows weak-point gold, hissing louder and louder. Then it fires a volley of
  * 3 spores, one every 4 ticks, up out of the vent in a fan; each climbs for a moment, then homes in on its target at
- * 0.3 blocks a tick, turning at most 10 degrees a tick, and bursts on the first thing it touches for 4. A spore has 1
+ * 0.3 blocks a tick, turning at most 10 degrees a tick, and bursts on the first thing it touches for 6. A spore has 1
  * health: a swing that passes through it or an arrow that crosses it pops it. One volley every 80 ticks.
  *
  * <p>Counter: hit the bulb while it glows, before and during the volley. The bulb is the top of its body, so the blow

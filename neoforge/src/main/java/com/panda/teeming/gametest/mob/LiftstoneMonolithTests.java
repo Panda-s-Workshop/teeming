@@ -74,6 +74,7 @@ public final class LiftstoneMonolithTests {
         out.accept("liftstone_monolith_armor", LiftstoneMonolithTests::armor);
         out.accept("liftstone_monolith_survive_three", LiftstoneMonolithTests::surviveThree);
         out.accept("liftstone_monolith_grounding", LiftstoneMonolithTests::grounding);
+        out.accept("liftstone_monolith_grounding_swap", LiftstoneMonolithTests::groundingSwap);
         out.accept("liftstone_monolith_slam_veto", LiftstoneMonolithTests::slamVeto);
         out.accept("liftstone_monolith_lets_go", LiftstoneMonolithTests::letsGo);
         out.accept("liftstone_monolith_stats", LiftstoneMonolithTests::stats);
@@ -548,6 +549,52 @@ public final class LiftstoneMonolithTests {
             helper.assertTrue(took[0] < took[1] * 0.5F, "the charm takes more than half the slam off the reference player");
             TeemingMod.LOGGER.info("liftstone_monolith_grounding: pigs off-hand rose {} lost {}, main hand rose {} lost {}; players off-hand {} main hand {}",
                     t[0].rise, atLanding[0], t[1].rise, atLanding[1], took[0], took[1]);
+        });
+    }
+
+    /**
+     * The charm counts as the pull takes hold, and that share lands: swapping hands in the air changes nothing. Two pigs
+     * 3 blocks either side of it: one holds the charm in the off-hand as it is taken and swaps it to the main hand at
+     * the top, the other holds it in the main hand and swaps it to the off-hand at the top. The first still rises 3 and
+     * loses 13.5, the second still rises 6 and loses the whole 27.
+     */
+    private static void groundingSwap(GameTestHelper helper) {
+        LiftstoneMonolith m = unaware(helper);
+        Pig outPig = pig(helper, 3.0, 0, 0), inPig = pig(helper, -3.0, 0, 0);
+        outPig.setItemInHand(InteractionHand.OFF_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        inPig.setItemInHand(InteractionHand.MAIN_HAND, ModCharms.GROUNDING_CHARM.get().getDefaultInstance());
+        Pig[] pigs = {outPig, inPig};
+        Track[] t = {new Track(outPig.position()), new Track(inPig.position())};
+        float[] atLanding = {-1.0F, -1.0F};
+        boolean[] lifted = {false, false};
+        boolean[] swapped = {false};
+        helper.runAtTickTime(1, () -> helper.assertTrue(m.rise(null), "it rises"));
+        helper.onEachTick(() -> {
+            if (!swapped[0] && m.core().in(Step.HOLD)) {
+                helper.assertTrue(m.held().contains(outPig) && m.held().contains(inPig), "both pigs are held at the top");
+                for (Pig p : pigs) {
+                    ItemStack off = p.getItemInHand(InteractionHand.OFF_HAND), main = p.getItemInHand(InteractionHand.MAIN_HAND);
+                    p.setItemInHand(InteractionHand.OFF_HAND, main);
+                    p.setItemInHand(InteractionHand.MAIN_HAND, off);
+                }
+                helper.assertTrue(Charms.grounded(outPig) == 1.0 && Charms.grounded(inPig) == Charms.GROUNDING, "the hands are swapped");
+                swapped[0] = true;
+            }
+            for (int i = 0; i < 2; i++) {
+                t[i].see(pigs[i].position());
+                lifted[i] |= m.held().contains(pigs[i]);
+                if (atLanding[i] < 0 && lifted[i] && !m.held().contains(pigs[i])) atLanding[i] = lost(pigs[i]);
+            }
+        });
+        helper.succeedWhen(() -> {
+            float whole = LiftstoneMonolith.SLAM_DAMAGE, half = whole * (float) Charms.GROUNDING;
+            helper.assertTrue(swapped[0] && atLanding[0] >= 0 && atLanding[1] >= 0, "both pigs swapped hands aloft and landed");
+            helper.assertTrue(Math.abs(t[0].rise - 3.0) < 0.05 && Math.abs(atLanding[0] - half) < 0.01F,
+                    "charm swapped out aloft: rose 3 and lost " + half + ", rose " + t[0].rise + " and lost " + atLanding[0]);
+            helper.assertTrue(Math.abs(t[1].rise - 6.0) < 0.05 && Math.abs(atLanding[1] - whole) < 0.01F,
+                    "charm swapped in aloft: rose 6 and lost " + whole + ", rose " + t[1].rise + " and lost " + atLanding[1]);
+            TeemingMod.LOGGER.info("liftstone_monolith_grounding_swap: swapped out rose {} lost {}, swapped in rose {} lost {}",
+                    t[0].rise, atLanding[0], t[1].rise, atLanding[1]);
         });
     }
 

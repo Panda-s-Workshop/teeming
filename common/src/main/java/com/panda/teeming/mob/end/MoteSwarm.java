@@ -48,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * half a second it gathers (the tell, 10 ticks): it stops dead, pulls in tight round its core and brightens, with a
  * chime that rises in three steps and star sparks drawn in. Then it surges where it gathered, for 10 ticks: its motes
  * stream through everyone inside it, players and its target alike, and each mote that touches is a blow of its
- * attack (1.2) through armour, at most 3 on one body in a tick. A full swarm's thirty motes so pass through a body over
+ * attack (1.2, armour counts), at most 3 on one body in a tick. A full swarm's thirty motes so pass through a body over
  * the surge for 36 before armour, which counts as one blow, so it gets the full tell of a big blow; a thinner swarm has
  * fewer motes and its surge is shorter. The motes hurt in place: they
  * never knock anyone back, so a surge at an island's edge throws no one off it. Then it loosens for 2 seconds, drifting
@@ -254,7 +254,7 @@ public class MoteSwarm extends TeemingMonster {
 
     /**
      * One tick of the surge: everyone inside takes the motes that reach them this tick, at most 3, and no more than the
-     * swarm's motes over the whole surge. Each mote is a blow of its own: its attack, through armour, without knockback.
+     * swarm's motes over the whole surge. Each mote is a blow of its own: its attack (armour counts), without knockback.
      */
     private void sting(ServerLevel level) {
         if (!isAlive() || isDeadOrDying()) return;

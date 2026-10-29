@@ -242,7 +242,7 @@ public final class AstralAugurTests {
 
     /**
      * Failing the counter: a survival player stays in the circle under them. The strike hits them for 20 (mob damage to
-     * players scales with difficulty: 11 on Easy, 30 on Hard; the player has 40 health) as the augur's own attack, which goes through armour, and
+     * players scales with difficulty: 11 on Easy, 30 on Hard; the player has 40 health) as the augur's own attack, so armour counts, and
      * doesn't move them.
      */
     private static void failure(GameTestHelper helper) {

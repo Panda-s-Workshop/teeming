@@ -80,7 +80,7 @@ class PhasewalkerNumbersTest {
         float leak = (Phasewalker.PHASED_TICKS / Phasewalker.BLEED_INTERVAL) * Phasewalker.BLEED;
         assertEquals(12.0F, leak);
         assertTrue(leak < 32.0F / 2.0F);
-        // the crack needs more than a weak blow but no more than one full End blow (11 through armour 2 is 10.824)
+        // the crack needs more than a weak blow but no more than one full End blow (11 against armour 2 is 10.824)
         assertTrue(Phasewalker.CRACK_DAMAGE <= 10.824F);
         assertTrue(Phasewalker.CRACK_DAMAGE > 6.0F);
     }

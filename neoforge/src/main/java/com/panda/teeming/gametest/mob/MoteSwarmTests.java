@@ -43,7 +43,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * Mote Swarm: health 30, attack 1.2 a mote, armour 0, a 1.5 x 1.5 hitbox. Wrapped round its target for 10 ticks it
- * gathers for 10 (the tell), then surges for 10: each mote that touches deals 1.2 through armour, at most 3 on one body a
+ * gathers for 10 (the tell), then surges for 10: each mote that touches deals 1.2 (armour counts), at most 3 on one body a
  * tick, as many motes as it has left (one a point of health, 30 at full). A plain single-target hit does a quarter;
  * sweeps, explosions, splash and lingering potions and other area damage do triple. Small end islands and end midlands,
  * weight 4, alone. Every number is checked against a plain value.

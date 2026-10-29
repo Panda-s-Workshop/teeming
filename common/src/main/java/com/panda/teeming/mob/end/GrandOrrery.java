@@ -57,7 +57,7 @@ import org.jspecify.annotations.Nullable;
  * mote heads straight at its target, and its motes dip to pass through the target's chest. A mote flies straight at
  * 0.25 blocks a tick (the slow ring's at 0.15) for up to 12 blocks, stops at the first block or hitbox, and hits for
  * the orrery's attack damage as a mob's projectile (a raised shield takes it), and a mote that lands also deals
- * {@link #MOTE_PIERCE} through armour ({@code teeming:orrery_mote}, Protection still counts), all without knocking
+ * {@link #MOTE_PIERCE} past armour ({@code teeming:orrery_mote}, Protection still counts), all without knocking
  * anyone back, so no mote throws a player off an island.
  *
  * <p>Counter: read the lanes. Every pattern leaves lanes wider than a player 4 blocks out, wider the farther out, and a
@@ -112,11 +112,11 @@ public class GrandOrrery extends TeemingMonster {
     public static final double MOTE_RANGE = 12.0;          // blocks a mote flies before it fades
     public static final double MOTE_RADIUS = 0.1;          // how far from a hitbox a mote still hits it
     /**
-     * What a mote that lands deals on top of its attack, through armour: with it the End reference player (netherite,
+     * What a mote that lands deals on top of its attack, past armour: with it the End reference player (netherite,
      * Protection IV) survives about 5 motes, not 37, so a pattern stood in costs something.
      */
     public static final float MOTE_PIERCE = 10.0F;
-    /** The share of a mote that goes through armour. */
+    /** The share of a mote that goes past armour. */
     public static final ResourceKey<DamageType> PIERCE = ResourceKey.create(Registries.DAMAGE_TYPE, TeemingMod.id("orrery_mote"));
     /** Motes leave the core, this high over its feet, this far out from its middle. */
     public static final double CORE_UP = 1.0;
@@ -652,7 +652,7 @@ public class GrandOrrery extends TeemingMonster {
 
     /**
      * A mote reaches a hitbox: the orrery's attack damage as a mob's projectile (a shield raised toward the orrery takes
-     * it), then, if that landed, {@link #MOTE_PIERCE} through armour; both with no knockback, so a mote never throws
+     * it), then, if that landed, {@link #MOTE_PIERCE} past armour; both with no knockback, so a mote never throws
      * anyone off an island's edge. A mote the shield took, or the last hit's cooldown swallowed, pierces nothing.
      */
     private void strike(ServerLevel level, Shot shot, LivingEntity victim, Vec3 at) {

@@ -61,7 +61,7 @@ import org.jspecify.annotations.Nullable;
  * take damage like any mob, for good. A triad that loses a member any other way (one gone for 100 ticks) breaks too.
  *
  * <p>Each zaps whoever it hunts: within 5 blocks (across or up and down) and in sight it crackles for 8 ticks (its tines
- * pinch and spark, the fork leans in), then an arc of violet light strikes for its attack, through armour and without
+ * pinch and spark, the fork leans in), then an arc of violet light strikes for its attack (armour counts), without
  * knockback, if the target is still within 5 blocks and in sight. Then it waits 40 ticks before it can crackle again.
  *
  * <p>A natural group the spawner could seat only in part is completed by its first member 20 ticks after it arrives. A
@@ -540,7 +540,7 @@ public class ResonantTriad extends TeemingMonster {
         else core().end();
     }
 
-    /** The zap: an arc of light to the target, its attack through armour and without knockback, if still in reach and sight. */
+    /** The zap: an arc of light to the target, its attack (armour counts), without knockback, if still in reach and sight. */
     private void zap(ServerLevel level, @Nullable LivingEntity target) {
         untilZap = ZAP_EVERY;
         if (!isAlive() || !startPhase(Step.ZAP, ZAP_TICKS, target)) {

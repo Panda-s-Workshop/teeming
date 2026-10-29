@@ -134,7 +134,9 @@ public final class TeemingCommand {
             return 0;
         }
         ServerLevel level = source.getLevel();
-        if (dimension(mob.dim()) != level.dimension()) {
+        BlockPos at = BlockPos.containing(source.getPosition());
+        // another mod's dimension may carry the mob's list through a biome its tag reaches: the live list there decides
+        if (dimension(mob.dim()) != level.dimension() && listWeight(level, at, mob) == 0) {
             source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.elsewhere", name,
                     Component.translatable("screen.teeming.field_guide.tab." + mob.dim().name().toLowerCase(Locale.ROOT))), false);
             return 0;
@@ -146,7 +148,6 @@ public final class TeemingCommand {
         if (!mob.spawner().isEmpty()) {
             source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.rule", mob.spawner()), false);
         }
-        BlockPos at = BlockPos.containing(source.getPosition());
         int listed = listWeight(level, at, mob);
         if (listed > 0) source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.weight", biomeId(level.getBiome(at)), listed), false);
         TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
@@ -165,12 +166,15 @@ public final class TeemingCommand {
                                 || level.dimension() == Level.OVERWORLD && rule == null && biome.is(TeemingSpawner.SHARE_CAPPED))))
                 .map(TeemingCommand::biomeId).sorted().toList();
         int tagged = TeemingSpawns.tagSize(level, mob.id());
+        // a mob both on the lists and placed by a rule: while its tag holds anything the rule places it wherever it
+        // fits, whatever biomes the tag names (the biome line lists only where its lists reach)
+        boolean ruleToo = mob.biomeSpawns() && rule != null && rule.dimension == level.dimension();
         if (tagged == 0) {
             // an emptied tag places a spawner-only mob wherever its rule fits, and stops a biome-list mob everywhere
             String empty = mob.biomeSpawns() ? "emptied" : "anywhere";
             source.sendSuccess(() -> Component.translatable("commands.teeming.spawns." + empty), false);
         } else if (here.isEmpty()) {
-            source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.no_biome"), false);
+            if (!ruleToo) source.sendSuccess(() -> Component.translatable("commands.teeming.spawns.no_biome"), false);
         } else {
             String list = here.stream().limit(BIOMES_LISTED).collect(Collectors.joining(", "));
             Component biomes = here.size() > BIOMES_LISTED
@@ -178,6 +182,7 @@ public final class TeemingCommand {
                     : Component.translatable("commands.teeming.spawns.biomes", here.size(), list);
             source.sendSuccess(() -> biomes, false);
         }
+        if (tagged > 0 && ruleToo) source.sendSuccess(() -> Component.translatable(ruleTooKey(rule)), false);
         Holder<Biome> standing = level.getBiome(at);
         String answer = whereYouStand(level, at, mob);
         source.sendSuccess(() -> Component.translatable("commands.teeming.spawns." + answer, biomeId(standing)), false);
@@ -221,6 +226,16 @@ public final class TeemingCommand {
         String name = rule.name().toLowerCase(Locale.ROOT);
         if (rule.structure()) return rule.within(level, pos) ? "here_spawner" : "here_only_" + name;
         return rule.narrow() ? "here_rule_" + name : "here_spawner";
+    }
+
+    /**
+     * The line naming where a list-and-rule mob's rule places it, beyond its biomes: "rule_too_<rule>", and for the
+     * main island "rule_too_main_island_any" with the dragon gate off. Public for the GameTests.
+     */
+    public static String ruleTooKey(TeemingSpawner.Rule rule) {
+        String name = rule.name().toLowerCase(Locale.ROOT);
+        if (rule == TeemingSpawner.Rule.MAIN_ISLAND && !TeemingConfig.endMainIslandAfterDragon()) name += "_any";
+        return "commands.teeming.spawns.rule_too_" + name;
     }
 
     /** The answer for a main-island mob away from it: "once the dragon is dead" only while that gate is on. */

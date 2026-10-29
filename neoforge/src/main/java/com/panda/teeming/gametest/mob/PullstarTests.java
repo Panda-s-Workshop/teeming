@@ -42,7 +42,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Pullstar: while bright it pulls every living thing whose middle is within 8 blocks of its own toward itself, at a
  * steady 0.09 blocks a tick (a sneaking player at a quarter of that), never across open void. Touching it starts an
- * 8-tick flare, then the touch deals its attack of 8.5 through armour. Every 100 ticks it dims for 40, after a 20-tick
+ * 8-tick flare, then the touch deals its attack of 8.5 (armour counts). Every 100 ticks it dims for 40, after a 20-tick
  * tell: dim, it neither pulls nor burns and takes x2. Dead, it finishes nothing.
  *
  * <p>Stars with their AI on run the cycle; they get a speed of 0 so they hold still, and a follow range of 1 so they

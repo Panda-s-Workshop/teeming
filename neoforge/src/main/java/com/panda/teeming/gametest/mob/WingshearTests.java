@@ -41,7 +41,7 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Wingshear: it hunts only survival players gliding on elytra within 48 blocks, at 1.25 blocks a tick. Within a gap of
  * 5 it screeches for 16 ticks, keeping its place and hurting nothing, then dives at 1.5 blocks a tick: the hit deals its
- * attack of 8.5 through armour, ends the glide, and every try to glide again in the next 40 ticks is put out. Outrun by
+ * attack of 8.5 (armour counts), ends the glide, and every try to glide again in the next 40 ticks is put out. Outrun by
  * 8 blocks past the closest it got, it loses its glider and circles off for 100 ticks, hunting nobody; a player who
  * lands is left alone. Killed mid-screech, it dives at nothing.
  *

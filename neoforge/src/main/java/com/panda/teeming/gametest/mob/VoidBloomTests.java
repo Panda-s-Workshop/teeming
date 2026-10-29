@@ -49,7 +49,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Void Bloom: its stain starts at radius 0.5 and grows exactly 0.5 every 40 ticks while it has a target, to exactly 8
  * and no further, and not at all asleep; an 8-tick tell (the glow lit, the radius unchanged) before every step; inside,
- * 1 damage a second (through armour, Protection and a raised shield) and Weakness I, which fades soon after leaving; nothing outside, nothing 2 blocks
+ * 1 damage a second (past armour, Protection and a raised shield) and Weakness I, which fades soon after leaving; nothing outside, nothing 2 blocks
  * up, nothing to itself or another bloom; mobs are hurt too. Killed, the stain recedes over 40 ticks, harmless, the body
  * goes with it and nothing grows; a reload keeps the radius. Every number is checked against a plain value. The blooms
  * are NoAI (their stain runs from their tick), and nothing the stain reaches outside this arena is touched.

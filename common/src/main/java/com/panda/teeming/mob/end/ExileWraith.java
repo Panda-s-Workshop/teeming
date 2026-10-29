@@ -69,7 +69,7 @@ import org.jspecify.annotations.Nullable;
  * into its own circle and held there, snagged, for 40 ticks (it can't move or mark, though it still claws whatever comes
  * in reach), within reach of the one it marked. The fight shifts to close quarters, where its claws are its only answer.
  *
- * <p>Up close it rakes with its claws after an 8-tick wind-up, for its attack, through armour and with no knockback, so a
+ * <p>Up close it rakes with its claws after an 8-tick wind-up, for its attack (armour counts), with no knockback, so a
  * blow never throws anyone off an island.
  *
  * <p>The circles are {@link GroundMarks}; the landing search is {@link #landing}. A reload ends a mark in progress.
@@ -583,7 +583,7 @@ public class ExileWraith extends TeemingMonster {
         return true;
     }
 
-    /** The rake: its attack to a target still in reach and in front, through armour and with no knockback. */
+    /** The rake: its attack to a target still in reach and in front (armour counts), with no knockback. */
     private void rake(ServerLevel level, @Nullable LivingEntity target) {
         if (!startPhase(Step.CLAW, CLAW_TICKS, target)) {
             core().end();

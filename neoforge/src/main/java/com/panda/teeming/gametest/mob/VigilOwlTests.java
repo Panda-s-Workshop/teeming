@@ -46,7 +46,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * the marked one takes them as its target; vanilla mobs, Teeming mobs of other dimensions, one 33 blocks off and other
  * players don't. A hit drops the stare and sends it fluttering off; so does closing within 4 blocks. A hit from the one
  * it marked ends the mark at once and turns the mobs it called on the owl for 100 ticks. Cornered, it pecks after an 8
- * tick wind-up for its attack of 4, through armour, and never at a target 2 blocks above it. Killed in the stare, it
+ * tick wind-up for its attack of 4 (armour counts), and never at a target 2 blocks above it. Killed in the stare, it
  * marks no one.
  *
  * <p>Every owl here watches only its own test's quarry ({@link VigilOwl#watchOnly}), and every step it takes that pairs

@@ -21,6 +21,7 @@ import com.panda.teeming.mob.end.Mnemovore;
 import com.panda.teeming.mob.end.MoteSwarm;
 import com.panda.teeming.mob.end.Pullstar;
 import com.panda.teeming.mob.end.Recurrent;
+import com.panda.teeming.mob.end.RiftmineSapper;
 import com.panda.teeming.mob.end.ShardlingColossus;
 import com.panda.teeming.mob.end.VoidBloom;
 import com.panda.teeming.mob.nether.BasaltBehemoth;
@@ -171,8 +172,8 @@ class GuideNumbersTest {
         guide("grand_orrery", "burst of " + words(GrandOrrery.BURST_VOLLEYS) + " volleys");
         assertEquals(0, GrandOrrery.OPEN_ARMOR, "the Grand Orrery's page says it has no armour while open");
         guide("grand_orrery", "no armor");
-        assertTrue(GrandOrrery.MOTE_PIERCE > 0, "the Grand Orrery's page says each mote goes partly through armour");
-        guide("grand_orrery", "goes partly through armor");
+        assertTrue(GrandOrrery.MOTE_PIERCE > 0, "the Grand Orrery's page says each mote goes partly past armour");
+        guide("grand_orrery", "goes partly past armor");
         guide("pullstar", "within " + words(Pullstar.PULL_RADIUS) + " blocks");
         guide("pullstar", "Every " + seconds(Pullstar.CYCLE_TICKS) + " it dims for " + words(Pullstar.DIM_TICKS / 20.0));
         guide("pullstar", "takes " + times(Pullstar.DIM_DAMAGE) + " damage");
@@ -196,7 +197,8 @@ class GuideNumbersTest {
         guide("exile_wraith", words(ExileWraith.EXILE_NEAR) + " to " + words(ExileWraith.EXILE_FAR) + " blocks off");
         guide("gatecaster", words(Gatecaster.GATE_NEAR) + " to " + words(Gatecaster.GATE_FAR) + " blocks behind you");
         guide("liftstone_monolith", "lifted " + words(LiftstoneMonolith.LIFT_HEIGHT) + " blocks into the air");
-        guide("facet_doppel", "brings it down " + share(FacetDoppel.STRIKE - 1.0F) + " harder than it hits in your hand");
+        guide("facet_doppel", "brings it down " + share(FacetDoppel.STRIKE - 1.0F) + " harder than your weapon hits without its enchantments");
+        guide("riftmine_sapper", "raises its pick for " + seconds(RiftmineSapper.TELL_TICKS) + " before it jabs");
 
         // the Nether
         guide("spore_cannon", hearts(SporeCannon.SPORE_DAMAGE) + " each");
@@ -272,9 +274,16 @@ class GuideNumbersTest {
         assertTrue(stale.isEmpty(), "text that no longer states its constant:\n" + String.join("\n", stale));
     }
 
-    /** The lang text for {@code key}; for a mob's guide prefix, its four texts joined. Null when there is none. */
+    /**
+     * The lang text for {@code key}, with the lines a long tooltip line goes on over ({@code key.2}, {@code key.3}...)
+     * joined to it by a space; for a mob's guide prefix, its four texts joined. Null when there is none.
+     */
     private static String said(JsonObject lang, String key) {
-        if (lang.has(key)) return lang.get(key).getAsString();
+        if (lang.has(key)) {
+            StringBuilder text = new StringBuilder(lang.get(key).getAsString());
+            for (int i = 2; lang.has(key + "." + i); i++) text.append(' ').append(lang.get(key + "." + i).getAsString());
+            return text.toString();
+        }
         if (!key.startsWith("guide.teeming.")) return null;
         StringBuilder all = new StringBuilder();
         for (String side : new String[] {"home", "role", "tell", "counter"}) {

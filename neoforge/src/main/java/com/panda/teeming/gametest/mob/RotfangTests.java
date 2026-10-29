@@ -182,8 +182,8 @@ public final class RotfangTests {
     /**
      * The counter: a survival player already rotting stands in reach and strikes the Rotfang for 1, 5 ticks into its
      * snarl. Its jaw turns on itself: it gnaws its own leg (no bite comes, the player keeps all 20 health through the
-     * gnaw), the player's Void Rot is drawn out, and the Rotfang lost exactly the blow (1 through armour 2: 0.94) plus its
-     * own bite (8.5 through armour 2: 8.364), 9.304 in all, last hurt by the player, and rots itself.
+     * gnaw), the player's Void Rot is drawn out, and the Rotfang lost exactly the blow (1 against armour 2: 0.94) plus its
+     * own bite (8.5 against armour 2: 8.364), 9.304 in all, last hurt by the player, and rots itself.
      */
     private static void counter(GameTestHelper helper) {
         Rotfang f = fang(helper, 5.5, 6.5);

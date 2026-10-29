@@ -49,7 +49,7 @@ import org.jspecify.annotations.Nullable;
  * turns on the owl instead, and keeps after it for 5 seconds.
  *
  * <p>Cornered (a player within reach while it can't flutter off again yet) it pecks: an 8 tick tell, its head drawn
- * back, then its attack through armour, with no knockback. A reload ends a stare, a mark's payoff and the turned
+ * back, then its attack (armour counts), with no knockback. A reload ends a stare, a mark's payoff and the turned
  * mobs' hunt; the Glowing and the targets it gave stay as they are.
  */
 public class VigilOwl extends TeemingMonster {

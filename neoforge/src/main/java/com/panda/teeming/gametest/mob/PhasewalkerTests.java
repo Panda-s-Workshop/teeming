@@ -46,7 +46,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * a stone wall to its target, which it never hurts while phased. When the phased spell runs out inside a block it stays
  * phased and floats to open ground, and is never solid inside a block, not even after a reload. Solid, it strikes: an
  * 8-tick wind-up, then 9 to a target still in reach. The counter: 10 health lost in one solid spell cracks its glass
- * (11 from a player is 10.824 through armour 2), and a cracked walker leaks 12 health over a phased spell, never below
+ * (11 from a player is 10.824 against armour 2), and a cracked walker leaks 12 health over a phased spell, never below
  * 1. Failing it: it walks through the wall a survival player hides behind and strikes. Health 32, attack 9, armour 2,
  * 0.7 x 2.0, End midlands at weight 4, alone. Every number is checked against a plain value.
  */
@@ -166,7 +166,7 @@ public final class PhasewalkerTests {
     }
 
     /**
-     * The counter: a survival player strikes it for 11 while it is solid. Through armour 2 it loses 10.824, which cracks
+     * The counter: a survival player strikes it for 11 while it is solid. Against armour 2 it loses 10.824, which cracks
      * its glass (10 or more in one solid spell).
      */
     private static void counter(GameTestHelper helper) {
@@ -582,7 +582,7 @@ public final class PhasewalkerTests {
         helper.runAtTickTime(2, () -> {
             w.hurtServer(helper.getLevel(), w.damageSources().mobAttack(pig), 10.0F);
             float lost = 32.0F - w.getHealth();
-            helper.assertTrue(Math.abs(lost - 9.84F) < 0.01F, "a blow of 10 costs 9.84 through armour 2, lost " + lost);
+            helper.assertTrue(Math.abs(lost - 9.84F) < 0.01F, "a blow of 10 costs 9.84 against armour 2, lost " + lost);
             helper.succeed();
         });
     }

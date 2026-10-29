@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * hunts only players gliding on elytra within 48 blocks, flying 1.25 blocks a tick: faster than a glide that holds its
  * height, slower than a rocket's boost. Within 5 blocks of its glider it keeps station beside them and screeches for
  * 16 ticks (tell): its blade wings flare, their leading edges light up lilac and sparks stream off the tips. Then it
- * dives through at 1.5 blocks a tick: a hit deals its attack through armour, ends the glide and shuts the glider's
+ * dives through at 1.5 blocks a tick: a hit deals its attack (armour counts), ends the glide and shuts the glider's
  * wings for 40 ticks. Counter: fire a rocket. A boosted glide outruns both its chase and its dive, and once the glider
  * is 8 blocks farther off than the closest it got, it loses them and circles off for 5 seconds, hunting nobody. A
  * player who lands is left alone at once.
@@ -276,7 +276,7 @@ public class Wingshear extends TeemingMonster {
         if (reach.intersects(target.getBoundingBox())) strike(level, target);
     }
 
-    /** The dive lands: its attack through armour with no knockback, then the glide ends and the wings stay shut for 40 ticks. */
+    /** The dive lands: its attack (armour counts), with no knockback, then the glide ends and the wings stay shut for 40 ticks. */
     private void strike(ServerLevel level, LivingEntity victim) {
         if (MechanicEvent.post(this, "dive_hit", victim)) {
             DamageSource source = damageSources().mobAttack(this);

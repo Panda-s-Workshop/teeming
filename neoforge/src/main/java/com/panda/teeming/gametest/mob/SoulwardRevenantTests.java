@@ -161,7 +161,7 @@ public final class SoulwardRevenantTests {
         helper.runAtTickTime(14, () -> {
             r.setGauge(0.0F);
             r.hurtServer(helper.getLevel(), r.damageSources().mobAttack(hitter), 4.0F);
-            helper.assertTrue(Math.abs(r.gauge() - 3.36F) < 0.01F, "a blow of 4 through armour 6 lands 3.36 and fills that, gauge " + r.gauge());
+            helper.assertTrue(Math.abs(r.gauge() - 3.36F) < 0.01F, "a blow of 4 against armour 6 lands 3.36 and fills that, gauge " + r.gauge());
             r.setGauge(14.9F);
         });
         helper.runAtTickTime(26, () -> {

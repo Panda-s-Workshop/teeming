@@ -84,6 +84,8 @@ public class VinedropStrangler extends TeemingMonster {
     public static final int SLOWNESS_LEVEL = 3;           // amplifier 3 = Slowness IV
     public static final float SQUEEZE_DAMAGE = 1.0F;      // each squeeze
     public static final int SQUEEZE_EVERY = 20;           // once a second: 4 damage over the whole wrap
+    /** Squeezes in a full wrap: one a second, the last as it lets go (ticks 20 to 80). */
+    public static final int SQUEEZES = WRAP_TICKS / SQUEEZE_EVERY;
     public static final int STUN_TICKS = 60;              // knocked loose, it lies stunned for 3 s
     public static final float STUN_DAMAGE = 1.5F;         // stunned, it takes x1.5 from every blow
     /** A sword swing at least this charged sweeps (the vanilla rule), so it lands at 0.2 + 0.8 x 0.9² of full damage. */

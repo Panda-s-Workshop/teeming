@@ -49,7 +49,7 @@ class GrandOrreryNumbersTest {
 
     @Test
     void houseRules() {
-        // a tell of at least 10 ticks before a blow of 1.5x its attack or more (a mote is 6 + 10 through armour)
+        // a tell of at least 10 ticks before a blow of 1.5x its attack or more (a mote is 6, and 10 past armour)
         assertTrue(GrandOrrery.TELL_TICKS >= 10);
         // a punish window is 40-100 ticks, and a punish multiplier x1.5-x2
         assertTrue(GrandOrrery.OPEN_TICKS >= 40 && GrandOrrery.OPEN_TICKS <= 100);
@@ -207,7 +207,7 @@ class GrandOrreryNumbersTest {
 
     @Test
     void motesAgainstTheReferencePlayer() {
-        // one mote, 6 through armour and 10 past it, on the End's reference player (netherite: armour 20, toughness 12;
+        // one mote, 6 against armour and 10 past it, on the End's reference player (netherite: armour 20, toughness 12;
         // Protection IV, -64 %): (0.54 + 3.6) = 4.14, so 4.8 motes kill: between the apex's 3 and 5
         float protection = 1.0F - 16.0F / 25.0F;
         float mote = (afterArmor(6.0F, 20, 12) + GrandOrrery.MOTE_PIERCE) * protection;

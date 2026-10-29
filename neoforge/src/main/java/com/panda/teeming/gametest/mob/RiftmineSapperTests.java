@@ -50,7 +50,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * blocks (9.8 to 10.4) and a fall that costs 7; an arrow sets an armed mine off from range and knocks out one still
  * arming; its own mine never goes off under it, but shot while it stands in it throws it 10 blocks up (7 from the fall)
  * and its other mines fizzle; killed, its mines fizzle at once, set nothing off and are gone within 40 ticks; a reload
- * keeps them, their ages and their arming. Over the void it sows nothing. Its jab: a 10-tick tell, then 4 through armour
+ * keeps them, their ages and their arming. Over the void it sows nothing. Its jab: a 10-tick tell, then 4 (armour counts)
  * with no knockback, out of reach of a target on a pillar, and nothing from a sapper killed mid-tell. Every number is
  * checked against a plain value.
  *

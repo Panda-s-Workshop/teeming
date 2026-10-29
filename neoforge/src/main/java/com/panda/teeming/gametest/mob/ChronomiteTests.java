@@ -39,7 +39,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
  * slows everything inside to x0.4 (a player's speed 0.1 to 0.04, a pig's 0.25 to 0.1), projectiles to x0.4 (and back
  * to full speed once out, or as one strikes: a slowed arrow still hits a pig for 2, not 1), and attack speed to x0.6
  * (a player's 4.0 to 2.4); a creative player is left alone. Its 20-point shell takes every blow first (8 leaves 12 and
- * its health whole; a blow past the shell reaches its health through armour 6), its cracks growing through stages 1 to
+ * its health whole; a blow past the shell reaches its health against armour 6), its cracks growing through stages 1 to
  * 3; when it cracks the field ends that tick and stays gone, also across a save. The bite: an 8-tick tell, then 8.5 to
  * whatever is still in reach. Health 26, attack 8.5, armour 6, 0.9 x 0.7; End midlands and barrens, weight 4, alone.
  * Every slowing of a body outside this arena is vetoed. Every number is checked against a plain value.

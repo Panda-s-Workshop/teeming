@@ -47,7 +47,7 @@ import org.jspecify.annotations.Nullable;
  * its belly. Asleep it stays as it is. From the tick it first takes a foe it swells every 200 ticks: a deep breath for
  * the last 16 ticks before (it holds still, lilac motes streaming into it, the breath's sound), then a pulse and one step
  * bigger: +0.25 scale and +25 % of its base health and attack, up to four steps (x2: 0.8 x 1.6 to 1.6 x 3.2, health 24
- * to 48, attack 4 to 8). Each swell adds the health it gains to what it has left, and lights more of the cracks round
+ * to 48, attack 4.5 to 9). Each swell adds the health it gains to what it has left, and lights more of the cracks round
  * its core. Once awake it keeps swelling whether or not its foe stays in sight: it grows while you wait. A swell needs
  * headroom; under a ceiling too low for the bigger body it waits until it has room.
  *

@@ -69,7 +69,7 @@ import org.jspecify.annotations.Nullable;
  * within 20 ticks.
  *
  * <p>It keeps its distance: it backs off from a target closer than 3 blocks and follows one farther than 8. Cornered,
- * it jabs with its pick: a 10-tick wind-up with the pick raised (tell), then its attack through armour with no
+ * it jabs with its pick: a 10-tick wind-up with the pick raised (tell), then its attack (armour counts) with no
  * knockback, if its target is still within a block (across or up and down) and in sight; at most once every 36 ticks.
  */
 public class RiftmineSapper extends TeemingMonster {
@@ -106,7 +106,7 @@ public class RiftmineSapper extends TeemingMonster {
     public static final int JAB_COOLDOWN = 20;
     /** Blocks between hitboxes, across or up and down: this close (and in sight) it jabs, and the jab lands. */
     public static final double JAB_REACH = 1.0;
-    /** The jab: x its attack (4), through armour. */
+    /** The jab: x its attack (4); armour counts. */
     public static final float STRIKE = 1.0F;
     /** It backs off from a target closer than this, and follows one farther than that. */
     public static final double KEEP_AWAY = 3.0;

@@ -66,7 +66,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Its blows: an 8-tick wind-up (the copy raised overhead, a ring of glass, lilac motes), then a blow for a quarter
  * more than its attack damage (never less than a fist's 1), brought down from overhead, at whatever is still in reach in
- * front of it: the item it copied hits harder in its hands than in yours.
+ * front of it: the item it copied hits harder in its hands than it does in yours without its enchantments.
  *
  * <p>Counter: meet it holding something weak, or switch to something weak while it flickers, then switch up. A melee blow
  * from a weapon that outclasses its copy (more attack damage by the same reading) shatters its facets: the chest diamond

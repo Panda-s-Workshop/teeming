@@ -52,7 +52,7 @@ import org.jspecify.annotations.Nullable;
  * hands, its motes spin faster and a chime climbs, and three circles of radius 1.5 open on the ground: one under the
  * target and two behind it, on the side away from the augur, each a ring of star-white light that fills in from its
  * rim to its middle as the channel runs. Then every circle strikes at once: a falling column of starlight, 9 damage
- * (the augur's attack, through armour) to everything standing inside, once per strike however many circles it
+ * (the augur's attack; armour counts) to everything standing inside, once per strike however many circles it
  * stands in, and no knockback, so a strike never throws anyone off an island.
  *
  * <p>Counter: step out of the circles (toward the augur always gets clear: the two flanks lie behind the target), or
@@ -94,7 +94,7 @@ public class AstralAugur extends TeemingMonster {
     /** Motes in a whole halo, and the last one it never loses. */
     public static final int MOTES = 3;
     public static final int MIN_MOTES = 1;
-    /** The backhand: a 10-tick wind-up, then a blow of its attack (4), at most every 30 ticks. */
+    /** The backhand: a 10-tick wind-up, then a blow of its attack (8.5), at most every 30 ticks. */
     public static final int SWIPE_TICKS = 10;
     public static final int SWIPE_EVERY = 30;
     /** It backs off from a target closer than this, and walks toward one farther than this or out of sight. */
@@ -353,7 +353,7 @@ public class AstralAugur extends TeemingMonster {
     }
 
     /**
-     * One victim of the strike: 9 as the augur's own attack, with no knockback. It goes through armour like any blow:
+     * One victim of the strike: 9 as the augur's own attack, with no knockback. Armour counts, as for any blow:
      * magic that skipped armour would leave only Protection, and a Nullcantor's ring turns that off.
      */
     private void strikeHit(ServerLevel level, LivingEntity victim) {

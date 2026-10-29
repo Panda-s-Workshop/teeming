@@ -260,7 +260,7 @@ public final class ShardlingColossusTests {
         helper.runAtTickTime(1, () -> {
             c.hurtServer(helper.getLevel(), c.damageSources().mobAttack(pig), 12.0F);
             ShardlingColossus twin = c.twin(helper.getLevel());
-            helper.assertTrue(c.form() == Form.LEFT && twin != null, "a blow of 12 through armour still splits it");
+            helper.assertTrue(c.form() == Form.LEFT && twin != null, "a blow of 12 still splits it before armour");
             helper.assertTrue(near(c.getHealth(), 19.48) && near(c.getHealth(), twin.getHealth()),
                     "armour took part of the blow: each half has 19.48, got " + c.getHealth() + " and " + twin.getHealth());
             helper.assertTrue(c.getTarget() == pig && twin.getTarget() == pig, "both halves turn on whoever split it");

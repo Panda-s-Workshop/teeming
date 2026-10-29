@@ -42,7 +42,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Spirebloom: at a target in range it cracks the ground for exactly 16 ticks (rooted, hurting nothing) along a line
  * fixed toward where the target stood, 19 spikes from 1 to 10 blocks out; then spikes burst up along the line and strike
- * everyone on it for its attack of 20 through armour, throwing them straight up at 0.6 with nothing across (a plain blow
+ * everyone on it for its attack of 20 (armour counts), throwing them straight up at 0.6 with nothing across (a plain blow
  * knocks the control across), never a bystander and never a player beside the line. A line that hits nobody leaves its
  * spikes standing for exactly 60 ticks: an ownerless arrow shatters on them, a player's flies through, a monster in them
  * is pushed out across the line, a pig and a player are left alone. It cracks once every 80 ticks, not at a target 11.5

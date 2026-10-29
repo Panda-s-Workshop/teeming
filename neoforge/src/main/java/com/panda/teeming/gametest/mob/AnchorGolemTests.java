@@ -38,7 +38,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Anchor Golem: with its target within 1.5 blocks it heaves its anchor for exactly 14 ticks (still, hurting nothing)
  * while a ring of radius 1.25 lies at the target's feet; the anchor then strikes everyone in the ring for its attack of
- * 9 through armour, without knockback and never a bystander, and makes them Heavy for exactly 120 ticks (shown, with
+ * 9 (armour counts), without knockback and never a bystander, and makes them Heavy for exactly 120 ticks (shown, with
  * particles and an icon): no jump, Levitation and Slow Falling cancelled and refused, and the Slow Falling given back
  * when the weight lifts (at once if the golem dies). A target that steps out of the ring is missed, and the anchor leaves
  * a sink of radius 1.5 for exactly 160 ticks; an Anchor Golem in a sink can't start a tell and moves at half speed, and

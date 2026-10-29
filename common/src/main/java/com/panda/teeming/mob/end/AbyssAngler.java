@@ -58,7 +58,7 @@ import org.jspecify.annotations.Nullable;
  * <p>When its target stands within 16 blocks of the lantern's casting spot (half a block over the edge and half a block
  * out from the rim's face) with nothing solid between them, it lures (its tell, 16 ticks): the stalk swings the lantern
  * up over the edge, it brightens and throws out rays of light, and a low cranking sound plays. Then it casts: a line
- * from the lantern to its target's body and a hook, which bites for its attack, through armour. Hooked, the target is
+ * from the lantern to its target's body and a hook, which bites for its attack (armour counts). Hooked, the target is
  * reeled straight toward the lantern at 0.5 blocks a tick, across the ground (down a step of a block at most, up one of
  * 0.6), and stops at the brink: standing on the rim's last block, its toes at the edge. A bigger drop or a wall ahead
  * stops the reel where it is, so the reel never takes anyone over an edge: the fall is the victim's own step. At the

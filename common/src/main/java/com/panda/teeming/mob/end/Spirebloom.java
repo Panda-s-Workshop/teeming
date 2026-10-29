@@ -46,7 +46,7 @@ import org.jspecify.annotations.Nullable;
  * 16 ticks (tell) its crown draws in and shivers and a line of dark violet cracks runs over the ground from it toward
  * where the target stood, 10 blocks long, crystal motes rising along it and a grinding crack. The line is fixed where it
  * pointed when the tell began. Then crystal spikes burst up along it: everyone standing on the line (its target, and any
- * player) takes its attack through armour and is thrown straight up, never sideways, so no one is knocked off an
+ * player) takes its attack (armour counts) and is thrown straight up, never sideways, so no one is knocked off an
  * island's edge. Spikes rise only from ground: none stand over the void. A dead Spirebloom bursts nothing.
  *
  * <p>Counter: step off the line, to either side. A line that hits nobody leaves its spikes standing for 60 ticks as
@@ -74,7 +74,7 @@ public class Spirebloom extends TeemingMonster {
     public static final double SPIKE_RADIUS = 0.5;
     /** How high over the ground a body's feet may be and still be struck: a jump doesn't clear the spikes. */
     public static final double SPIKE_HEIGHT = 1.5;
-    /** The blow: x its attack (20), through armour. */
+    /** The blow: x its attack (20); armour counts. */
     public static final float STRIKE = 1.0F;
     /** The throw: straight up at this many blocks a tick (about 2 blocks high, no fall damage), nothing across. */
     public static final double KNOCK_UP = 0.6;
@@ -361,7 +361,7 @@ public class Spirebloom extends TeemingMonster {
         return e == core().target();
     }
 
-    /** One body on the line: its attack through armour, with no knockback, then a throw straight up (half as hard with a Grounding Charm). */
+    /** One body on the line: its attack (armour counts), with no knockback, then a throw straight up (half as hard with a Grounding Charm). */
     private void strikeHit(ServerLevel level, LivingEntity victim) {
         if (isDeadOrDying() || !MechanicEvent.post(this, "spike", victim)) return;
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * STRIKE;

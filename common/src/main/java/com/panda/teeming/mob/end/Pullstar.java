@@ -48,7 +48,7 @@ import org.jspecify.annotations.Nullable;
  * the star (its own column included) is left alone, and the star itself never drifts out over the void.
  *
  * <p>Touching it burns: when something touches it the heart flares white for 8 ticks (the stones clench round it, a
- * charging whine, white sparks), then everything still touching takes its attack, through armour, and is held where it
+ * charging whine, white sparks), then everything still touching takes its attack (armour counts), and is held where it
  * is rather than knocked back. Then it waits a second before it can flare again.
  *
  * <p>Every 100 ticks it dims for 40. For the 20 ticks before (the tell) its stones loosen and wobble outward, the heart
@@ -414,7 +414,7 @@ public class Pullstar extends TeemingMonster {
         if (core().stage() == STAGE_FLARE) core().setStage(isDeadOrDying() || core().in(Step.DIM) ? STAGE_DARK : STAGE_BRIGHT);
     }
 
-    /** The flare lands: its attack, through armour, on everything still touching it, held where it is (no knockback). */
+    /** The flare lands: its attack (armour counts), on everything still touching it, held where it is (no knockback). */
     private void touch(ServerLevel level) {
         float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE) * TOUCH_HIT;
         for (LivingEntity v : touching()) {

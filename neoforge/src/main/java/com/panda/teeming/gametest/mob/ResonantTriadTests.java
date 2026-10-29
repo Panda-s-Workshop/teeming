@@ -52,7 +52,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 /**
  * Resonant Triad: health 16 each, attack 8.5, armour 0, a 0.6 x 0.9 hitbox, in groups of three. While all three live
  * only the singer takes damage; the song passes every 60 ticks, with a 10 tick tell on the next one; killing the singer
- * breaks the chord and the other two take damage. Each zaps for its attack (through armour, without knockback) after an
+ * breaks the chord and the other two take damage. Each zaps for its attack (armour counts, no knockback) after an
  * 8 tick crackle, within 5 blocks, then waits 40 ticks. Every number is checked against a plain value.
  *
  * <p>Shards here are NoAI unless a test needs the zap: the song, the link and the shield run in the entity's tick, so
@@ -489,7 +489,7 @@ public final class ResonantTriadTests {
     // ---- the zap -----------------------------------------------------------------------------------------------------
 
     /**
-     * The zap: its attack of 8.5 through armour (a pig has none), exactly 8.5 lost, and no knockback (a pig with no
+     * The zap: its attack of 8.5 (armour counts; a pig has none), exactly 8.5 lost, and no knockback (a pig with no
      * goals but its physics doesn't move).
      */
     private static void zap(GameTestHelper helper) {

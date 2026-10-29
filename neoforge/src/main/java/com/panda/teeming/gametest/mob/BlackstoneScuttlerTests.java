@@ -142,7 +142,7 @@ public final class BlackstoneScuttlerTests {
     // ---- the counter and the failure -------------------------------------------------------------------------------
 
     /**
-     * The counter: a pickaxe blow of 4 reaches it as 12 (x3) and costs 10.08 through armour 10, where the same 4 as
+     * The counter: a pickaxe blow of 4 reaches it as 12 (x3) and costs 10.08 against armour 10, where the same 4 as
      * magic costs 4 and as a sword blow 0.75; a netherite pickaxe blow of 10 costs 27.6.
      */
     private static void pickaxeCracks(GameTestHelper helper) {
@@ -156,7 +156,7 @@ public final class BlackstoneScuttlerTests {
             float before = control.getHealth();
             control.hurtServer(helper.getLevel(), control.damageSources().magic(), 4.0F);
             near(helper, before - control.getHealth(), 4.0F, "the same 4 as magic lands whole");
-            near(helper, blow(helper, sword, player, Items.IRON_SWORD, 4.0F), 0.75F, "the same 4 with a sword glances off (1.2 through armour 10)");
+            near(helper, blow(helper, sword, player, Items.IRON_SWORD, 4.0F), 0.75F, "the same 4 with a sword glances off (1.2 against armour 10)");
             near(helper, blow(helper, hard, player, Items.NETHERITE_PICKAXE, 10.0F), 27.6F, "a pickaxe blow of 10 cracks it for x3");
             helper.assertTrue(BlackstoneScuttler.shell(cracked.damageSources().playerAttack(player)) == BlackstoneScuttler.Shell.CRACK,
                     "a pickaxe in the hand reads as a crack");
@@ -166,7 +166,7 @@ public final class BlackstoneScuttlerTests {
     }
 
     /**
-     * The failure: a sword blow of 10 costs it only 1.98 (x0.3 through armour 10), and the Scuttler that was struck
+     * The failure: a sword blow of 10 costs it only 1.98 (x0.3 against armour 10), and the Scuttler that was struck
      * rears and lunges into the pig in front of it, which loses 5 (1x Atk).
      */
     private static void swordGlancesThenPinch(GameTestHelper helper) {

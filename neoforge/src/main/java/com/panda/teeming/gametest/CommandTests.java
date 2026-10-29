@@ -160,7 +160,9 @@ final class CommandTests {
      * spawner's yes. The Aurovore's tag lets the spawner place it there though the tag doesn't hold the biome (its
      * bastions stand in four Nether biomes). With its tag read as emptied the spawner places it nowhere, the command's
      * biome line says its tag is empty and "where you stand" says no; the spawner-only Herald with an emptied tag keeps
-     * "any biome where its rule fits". The biome is put back after.
+     * "any biome where its rule fits". The biome is put back after. Each mob both on the lists and placed by a rule
+     * (the Aurovore here; the Astral Augur, the Nullcantor and the Resonant Triad in the End) also gets the line naming
+     * where its rule places it, and never "no biome carries its tag".
      */
     private static void spawnsRules(GameTestHelper helper) {
         ServerLevel nether = helper.getLevel().getServer().getLevel(Level.NETHER);
@@ -186,6 +188,22 @@ final class CommandTests {
         Heard heard = new Heard();
         // not op(): its output is suppressed, and the messages are what this reads
         CommandSourceStack there = helper.getLevel().getServer().createCommandSourceStack().withLevel(nether).withPosition(Vec3.atCenterOf(at)).withSource(heard);
+        run(helper, there, "teeming spawns aurovore");
+        if (!heard.keys.contains("commands.teeming.spawns.rule_too_bastion")) wrong.add("the Aurovore's rule line: " + heard.keys);
+        heard.keys.clear();
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) wrong.add("the GameTest server has no End");
+        else {
+            BlockPos island = new BlockPos(0, 80, 0);
+            end.getChunk(0, 0);
+            CommandSourceStack inEnd = helper.getLevel().getServer().createCommandSourceStack().withLevel(end).withPosition(Vec3.atCenterOf(island)).withSource(heard);
+            for (String id : java.util.List.of("astral_augur", "nullcantor", "resonant_triad")) {
+                String rule = TeemingCommand.ruleTooKey(TeemingSpawner.Rule.of(RosterStats.get(id).spawner()));
+                run(helper, inEnd, "teeming spawns " + id);
+                if (!heard.keys.contains(rule) || heard.keys.contains("commands.teeming.spawns.no_biome")) wrong.add(id + "'s rule line, want " + rule + ": " + heard.keys);
+                heard.keys.clear();
+            }
+        }
         TeemingSpawns.withEmptiedTags(java.util.Set.of("aurovore", "pyre_herald"), () -> {
             if (TeemingSpawner.tagAllows(nether, aurovore, at)) wrong.add("with its tag emptied the spawner may still place the Aurovore");
             String got = TeemingCommand.whereYouStand(nether, at, aurovore);

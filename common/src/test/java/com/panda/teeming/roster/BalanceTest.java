@@ -11,6 +11,8 @@ import com.panda.teeming.mob.end.VoidBloom;
 import com.panda.teeming.mob.nether.BlackstoneScuttler;
 import com.panda.teeming.mob.nether.ScarletMantis;
 import com.panda.teeming.mob.overworld.Gloamhound;
+import com.panda.teeming.mob.overworld.MireGulper;
+import com.panda.teeming.mob.overworld.VinedropStrangler;
 import com.panda.teeming.roster.RosterStats.Dim;
 import com.panda.teeming.roster.RosterStats.Entry;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ import org.junit.jupiter.api.Test;
  * Every mob against its dimension's weak reference player, with vanilla's armour and Protection formulas
  * ({@code CombatRules}: armour − damage / (2 + toughness / 4), clamped to [armour / 5, 20], each point −4 %; EPF
  * clamped to 20, each point −4 %). Reads {@code RosterStats}, so every changed number is checked here, and the mob
- * classes' own constants where a row's numbers alone would mislead (a share of a blow through armour, a blow made of
+ * classes' own constants where a row's numbers alone would mislead (a share of a blow past armour, a blow made of
  * many small hits, damage a mob shrugs off, an alpha's stats).
  *
  * <p>Two kinds of bound. Ceilings keep a mob fair: the player kills it in time and survives enough of its hits.
@@ -69,7 +71,7 @@ class BalanceTest {
      * {@link #NOT_ITS_BLOW} names it too.
      */
     private static final Map<String, String> NOT_ITS_HIT = Map.ofEntries(
-            Map.entry("veinleech", "its cost is the vein's drain, a second at a time through armour"),
+            Map.entry("veinleech", "its cost is the vein's drain, a second at a time past armour"),
             Map.entry("siphonjelly", "its cost is the beneficial effect its sting steals"),
             Map.entry("cindermoth_swarm", "its cost is the burning, a second at a time"),
             Map.entry("levimoth", "its cost is the Levitation and the fall after it"),
@@ -82,7 +84,8 @@ class BalanceTest {
 
     /** Mobs whose mechanic blow is not where its cost lies, so the mechanic-blow floor doesn't ask it to be a threat. */
     private static final Map<String, String> NOT_ITS_BLOW = Map.ofEntries(
-            Map.entry("warpseed_bloom", "its blow is the seed's 3, and the seed's cost is the teleport that comes with it"));
+            Map.entry("warpseed_bloom", "its blow is the seed's 3, and the seed's cost is the teleport that comes with it"),
+            Map.entry("vinedrop_strangler", "its wrap's cost is the Slowness IV that roots you for 4 s under the jungle's other mobs, not its four squeezes of 1"));
 
     /**
      * Mobs with no hit at all (attack 0, and none taken from the player), and why: the floors and ceilings on a normal
@@ -137,17 +140,35 @@ class BalanceTest {
         };
     }
 
-    /** The part of a mob's strongest blow that goes through armour (Protection still counts). */
+    /** The part of a mob's strongest blow that goes past armour (Protection still counts). */
     private static float pierce(Entry mob) {
         return mob.id().equals("grand_orrery") ? GrandOrrery.MOTE_PIERCE : 0.0F;
     }
 
     /**
-     * A mechanic blow made of many small hits, each its attack through armour: how many land in one. Such a mob's only
-     * attack is that blow, so its floor is the blow's.
+     * A mechanic blow made of many small hits, armour counting on each: how many land in one, each one's damage,
+     * and whether it is the mob's only attack (then its floor is the blow's, and it has no normal hit to check).
      */
-    private static int surgeHits(Entry mob) {
-        return mob.id().equals("mote_swarm") ? MoteSwarm.MOTES : 0;
+    private record ManyHits(int hits, float each, boolean onlyAttack) {}
+
+    /**
+     * Its blow made of many small hits, or null: a Mote Swarm's surge (each mote its attack, its only attack), a Mire
+     * Gulper's full hold ({@link MireGulper#CHEWS} chews of {@link MireGulper#BITE_HIT} × its attack) and a Vinedrop
+     * Strangler's full wrap ({@link VinedropStrangler#SQUEEZES} squeezes of {@link VinedropStrangler#SQUEEZE_DAMAGE}).
+     */
+    private static ManyHits manyHits(Entry mob) {
+        return switch (mob.id()) {
+            case "mote_swarm" -> new ManyHits(MoteSwarm.MOTES, attack(mob), true);
+            case "mire_gulper" -> new ManyHits(MireGulper.CHEWS, mob.balanceAttack() * MireGulper.BITE_HIT, false);
+            case "vinedrop_strangler" -> new ManyHits(VinedropStrangler.SQUEEZES, VinedropStrangler.SQUEEZE_DAMAGE, false);
+            default -> null;
+        };
+    }
+
+    /** True for a mob whose only attack is a blow made of many small hits. */
+    private static boolean onlyManyHits(Entry mob) {
+        ManyHits many = manyHits(mob);
+        return many != null && many.onlyAttack();
     }
 
     /** Every row, plus the stronger forms a row's numbers leave out: the pack alphas. */
@@ -173,7 +194,7 @@ class BalanceTest {
         return toPlayer(damage, 0.0F, ref);
     }
 
-    /** A hit of {@code damage}, {@code pierce} of it through armour, on the reference player. */
+    /** A hit of {@code damage}, {@code pierce} of it past armour, on the reference player. */
     static float toPlayer(float damage, float pierce, Ref ref) {
         return (afterArmor(damage - pierce, ref.armor, ref.toughness) + pierce) * (1.0F - Math.min(20.0F, ref.epf) / 25.0F);
     }
@@ -193,16 +214,23 @@ class BalanceTest {
         return 20.0F / (unstoppable(mob) ? hit : toPlayer(hit, ref));
     }
 
+    /** Its blow made of many small hits that many times survived, with mob damage times {@code scale}; infinite for none. */
+    private static float manyHitBlows(Entry mob, Ref ref, float scale) {
+        ManyHits many = manyHits(mob);
+        return many == null ? Float.POSITIVE_INFINITY : 20.0F / (many.hits() * toPlayer(many.each() * scale, ref));
+    }
+
     /**
-     * Its strongest blow (its mechanic blow, or an apex's attack if that is bigger) that many times survived, with mob
-     * damage times {@code scale}; infinite for a mob with none.
+     * Its strongest blow (its mechanic blow, a blow made of many small hits, or an apex's attack if that is bigger) that
+     * many times survived, with mob damage times {@code scale}; infinite for a mob with none.
      */
     private static float strongestBlows(Entry mob, Ref ref, float scale) {
-        if (surgeHits(mob) > 0) return 20.0F / (surgeHits(mob) * toPlayer(attack(mob) * scale, ref));
+        float many = manyHitBlows(mob, ref, scale);
+        if (onlyManyHits(mob)) return many;
         float blow = mob.blow(), strongest = Math.max(blow, mob.apex() ? attack(mob) : 0);
-        if (strongest <= 0) return Float.POSITIVE_INFINITY;
+        if (strongest <= 0) return many;
         float pierce = strongest == blow ? pierce(mob) : 0.0F;
-        return 20.0F / toPlayer(strongest * scale, pierce * scale, ref);
+        return Math.min(many, 20.0F / toPlayer(strongest * scale, pierce * scale, ref));
     }
 
     private static float hardestHit(Dim dim) {
@@ -212,7 +240,7 @@ class BalanceTest {
     /** Why the floors leave {@code mob}'s normal hit out; null when they check it. */
     private static String hitLeftOut(Entry mob) {
         if (mob.apex()) return "an apex: the apex floor checks its strongest blow instead";
-        if (surgeHits(mob) > 0) return "its only attack is its surge, checked as its mechanic blow";
+        if (onlyManyHits(mob)) return "its only attack is its surge, checked as its mechanic blow";
         if (NOT_ITS_HIT.containsKey(mob.id())) return NOT_ITS_HIT.get(mob.id());
         return attack(mob) > 0 ? null : NO_HIT.get(mob.id());
     }
@@ -230,8 +258,23 @@ class BalanceTest {
         // Iron armour turns Dripfang's 7 into 3.78, so 20 health takes 5.3 hits
         assertEquals(3.78F, afterArmor(7, 15, 0), 0.005F);
         assertEquals(5.29F, hitsToDie(7, ref(Dim.OVERWORLD)), 0.01F);
-        // a share through armour skips the armour step only: 6 + 10 on the End player is 0.54 + 3.6
+        // a share past armour skips the armour step only: 6 + 10 on the End player is 0.54 + 3.6
         assertEquals(4.14F, toPlayer(16, 10, ref(Dim.END)), 0.01F);
+    }
+
+    /**
+     * A blow made of many small hits counts as one blow of all of them, armour counting on each hit. A full Mire
+     * Gulper hold is 9 chews of 1.4, each 0.60 against iron, so 5.4 a hold: survived 3.7 times on Normal (at least 3)
+     * and 2.4 times on Hard (at least 1.5). A Vinedrop Strangler's full wrap is 4 squeezes of 1, each 0.42: 11.9 wraps.
+     */
+    @Test
+    void aHoldIsOneBlowOfAllItsHits() {
+        Ref iron = ref(Dim.OVERWORLD);
+        Entry gulper = RosterStats.get("mire_gulper"), strangler = RosterStats.get("vinedrop_strangler");
+        assertEquals(0.599F, toPlayer(1.4F, iron), 0.001F);
+        assertEquals(3.71F, strongestBlows(gulper, iron, 1.0F), 0.01F);
+        assertEquals(2.39F, strongestBlows(gulper, iron, HARD), 0.01F);
+        assertEquals(11.9F, strongestBlows(strangler, iron, 1.0F), 0.01F);
     }
 
     @Test
@@ -297,12 +340,12 @@ class BalanceTest {
         }
         for (var e : NO_HIT.entrySet()) {
             Entry mob = RosterStats.get(e.getKey());
-            assertTrue(attack(mob) == 0 && !mob.apex() && surgeHits(mob) == 0, e.getKey() + " has no hit of its own");
+            assertTrue(attack(mob) == 0 && !mob.apex() && !onlyManyHits(mob), e.getKey() + " has no hit of its own");
             assertFalse(e.getValue().isBlank(), e.getKey() + " says why");
         }
         for (var e : NOT_ITS_BLOW.entrySet()) {
             Entry mob = RosterStats.get(e.getKey());
-            assertTrue(mob.blow() > 0, e.getKey() + " has a mechanic blow to leave out");
+            assertTrue(mob.blow() > 0 || manyHits(mob) != null, e.getKey() + " has a mechanic blow to leave out");
             assertFalse(e.getValue().isBlank(), e.getKey() + " says why");
         }
     }

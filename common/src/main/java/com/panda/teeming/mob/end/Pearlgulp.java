@@ -60,7 +60,7 @@ import org.jspecify.annotations.Nullable;
  * </ul>
  * Each blink spends one pearl for good.
  *
- * <p>Its bite (its attack, 5) comes after an 8-tick gape: the jaw drops wide and it hums; the bite lands if the target
+ * <p>Its bite (its attack, 8.5) comes after an 8-tick gape: the jaw drops wide and it hums; the bite lands if the target
  * is still within {@link #BITE_HOLD}. At most one gape every {@link #BITE_EVERY} ticks.
  *
  * <p>Counter: don't throw pearls near it. If it has eaten some, stand and fight: it blinks only to reach a target far

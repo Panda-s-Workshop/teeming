@@ -152,7 +152,7 @@ public final class GrandOrreryTests {
     }
 
     /**
-     * One mote's cost to an unarmoured player here: its 6 and the 10 through armour, each scaled with difficulty as mob
+     * One mote's cost to an unarmoured player here: its 6 and the 10 past armour, each scaled with difficulty as mob
      * blows to players are.
      */
     private static float moteHere(GameTestHelper helper) {
@@ -327,7 +327,7 @@ public final class GrandOrreryTests {
 
     /**
      * Failing it: a survival player standing on the line of the spiral's first mote, 5 blocks out, is struck once for
-     * exactly one mote (6 and 10 through armour, 16 on Normal, as the game scales mob blows) and not moved at all, and no other mote of
+     * exactly one mote (6, and 10 past armour, 16 on Normal, as the game scales mob blows) and not moved at all, and no other mote of
      * the turn touches them.
      */
     private static void failure(GameTestHelper helper) {
@@ -356,7 +356,7 @@ public final class GrandOrreryTests {
     }
 
     /**
-     * A mote's share goes through armour: a pig in 20 armour on the spiral's first line, 5 blocks out, takes the mote's 6
+     * A mote's share goes past armour: a pig in 20 armour on the spiral's first line, 5 blocks out, takes the mote's 6
      * as 6 x (1 - 17 / 25) = 1.92 and the 10 past its armour in full, 11.92 in all, from the one mote that reaches it, and
      * the last of it is the orrery's own armour-piercing damage type.
      */
@@ -375,7 +375,7 @@ public final class GrandOrreryTests {
         helper.succeedWhen(() -> {
             helper.assertTrue(o.core().in(Step.OPEN) && o.motes().isEmpty(), "the spiral is over and every mote spent, phase " + o.phase());
             helper.assertTrue(o.strikes() == 1, "one mote struck the pig, " + o.strikes());
-            helper.assertTrue(Math.abs(lost(pig, 100.0F) - 11.92F) < 0.01F, "1.92 through armour and 10 past it, lost " + lost(pig, 100.0F));
+            helper.assertTrue(Math.abs(lost(pig, 100.0F) - 11.92F) < 0.01F, "1.92 against armour and 10 past it, lost " + lost(pig, 100.0F));
             var last = lastHit[0];
             helper.assertTrue(last != null && last.typeHolder().is(GrandOrrery.PIERCE) && last.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR),
                     "the share past armour is the orrery's own type, in #minecraft:bypasses_armor, got " + last);
@@ -557,7 +557,7 @@ public final class GrandOrreryTests {
     // ---- motes -----------------------------------------------------------------------------------------------------
 
     /**
-     * A mote: flies 0.25 blocks a tick, strikes a pig for exactly 16 (6, then 10 through armour) and doesn't move it (the
+     * A mote: flies 0.25 blocks a tick, strikes a pig for exactly 16 (6, then 10 past armour) and doesn't move it (the
      * pig keeps its physics), and stops at a block: every mote of the burst's lane 20 degrees round from the aim ends at
      * a stone pillar standing in it a block and a half out, at the pillar's face and never past it.
      */

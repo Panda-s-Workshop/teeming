@@ -66,7 +66,7 @@ public class VoidBloom extends TeemingMonster {
     public static final int TELL_TICKS = 8;
     /** What the stain does to those inside: this much damage once a second, and Weakness while they stay. */
     public static final float STAIN_DAMAGE = 1.0F;
-    /** The stain's damage type: through armour, Protection and shields. */
+    /** The stain's damage type: past armour, Protection and shields. */
     public static final ResourceKey<DamageType> STAIN_TYPE = ResourceKey.create(Registries.DAMAGE_TYPE, TeemingMod.id("void_stain"));
     public static final int DAMAGE_EVERY = 20;
     public static final int WEAKNESS_LEVEL = 0;                 // amplifier 0 = Weakness I
