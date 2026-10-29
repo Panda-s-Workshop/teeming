@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/riftjackal/modded_end",
+      "#teeming:spawns_region/riftjackal/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/riftjackal/modded_end"

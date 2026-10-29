@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/phasewalker/modded_end",
+      "#teeming:spawns_region/phasewalker/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/phasewalker/modded_end"

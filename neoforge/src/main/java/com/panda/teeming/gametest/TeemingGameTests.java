@@ -86,6 +86,30 @@ public final class TeemingGameTests {
     }
 
     /**
+     * The biomes of this world the mob's own spawn modifiers ({@code spawns/<mob>} and {@code spawns/<mob>/...}) place it
+     * in: where it spawns from the biome lists. An outer End list mob's tag also holds {@code #teeming:modded_end}, and
+     * with it every vanilla End biome, so its home is read from the modifiers, which leave the vanilla ones out of that
+     * part, and not from the tag.
+     */
+    public static List<Holder<Biome>> spawnBiomes(GameTestHelper helper, String mob) {
+        var access = helper.getLevel().registryAccess();
+        var modifiers = access.lookupOrThrow(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.BIOME_MODIFIERS);
+        List<net.neoforged.neoforge.common.world.BiomeModifiers.AddSpawnsBiomeModifier> own = new ArrayList<>();
+        modifiers.listElements().forEach(ref -> {
+            Identifier id = ref.key().identifier();
+            String path = id.getPath();
+            if (id.getNamespace().equals(TeemingMod.MODID) && (path.equals("spawns/" + mob) || path.startsWith("spawns/" + mob + "/"))
+                    && ref.value() instanceof net.neoforged.neoforge.common.world.BiomeModifiers.AddSpawnsBiomeModifier add)
+                own.add(add);
+        });
+        List<Holder<Biome>> out = new ArrayList<>();
+        access.lookupOrThrow(Registries.BIOME).listElements().forEach(biome -> {
+            if (own.stream().anyMatch(add -> add.biomes().contains(biome))) out.add(biome);
+        });
+        return out;
+    }
+
+    /**
      * Gives one test longer than the default 100 ticks, for mechanics that need it (a cooldown timed through to the
      * next attack, two shots 40 ticks apart). Call it next to the test's registration.
      */

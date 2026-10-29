@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/void_bloom/modded_end",
+      "#teeming:spawns_region/void_bloom/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/void_bloom/modded_end"

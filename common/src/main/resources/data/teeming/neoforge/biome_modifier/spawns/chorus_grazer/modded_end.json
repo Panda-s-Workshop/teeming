@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/chorus_grazer/modded_end",
+      "#teeming:spawns_region/chorus_grazer/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/chorus_grazer/modded_end"

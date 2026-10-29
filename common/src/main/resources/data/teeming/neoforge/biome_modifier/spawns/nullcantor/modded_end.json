@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/nullcantor/modded_end",
+      "#teeming:spawns_region/nullcantor/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/nullcantor/modded_end"

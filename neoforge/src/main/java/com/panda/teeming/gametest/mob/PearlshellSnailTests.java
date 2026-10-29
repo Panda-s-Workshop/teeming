@@ -1,5 +1,6 @@
 package com.panda.teeming.gametest.mob;
 
+import com.panda.teeming.gametest.TeemingGameTests;
 import com.panda.teeming.TeemingMod;
 import com.panda.teeming.gametest.TestPlayers;
 import com.panda.teeming.mob.MechanicEvent;
@@ -464,12 +465,12 @@ public final class PearlshellSnailTests {
     }
 
     /**
-     * Home: its biome modifier adds it to the small End islands at weight 5 in groups of 1 to 3, and not to the main
+     * Home: its small-islands modifier adds it there at weight 5 in groups of 1 to 3, and none of its modifiers to the main
      * island, the highlands, the midlands or the barrens. End stone is a spawn spot, in any light; a spot over air isn't.
      */
     private static void spawns(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
-        var key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/pearlshell_snail"));
+        var key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/pearlshell_snail/small_end_islands"));
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS).get(key).map(Holder::value).orElse(null);
         if (!(modifier instanceof BiomeModifiers.AddSpawnsBiomeModifier add)) {
             helper.fail("no spawn biome modifier for the Pearlshell Snail: " + modifier);
@@ -483,10 +484,10 @@ public final class PearlshellSnailTests {
                 "groups of 1 to 3, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
         var biomes = access.lookupOrThrow(Registries.BIOME);
         helper.assertTrue(add.biomes().contains(biomes.getOrThrow(Biomes.SMALL_END_ISLANDS)), "the small End islands are its home");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.THE_END)), "not the main island");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.END_HIGHLANDS)), "nor the highlands");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.END_MIDLANDS)), "nor the midlands");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.END_BARRENS)), "nor the barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlshell_snail").stream().noneMatch(b -> b.is(Biomes.THE_END)), "not the main island");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlshell_snail").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS)), "nor the highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlshell_snail").stream().noneMatch(b -> b.is(Biomes.END_MIDLANDS)), "nor the midlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlshell_snail").stream().noneMatch(b -> b.is(Biomes.END_BARRENS)), "nor the barrens");
 
         helper.setBlock(new BlockPos(5, 0, 5), Blocks.END_STONE);
         RosterStats.Entry row = RosterStats.get("pearlshell_snail");

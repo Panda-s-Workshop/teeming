@@ -995,12 +995,12 @@ public final class ChorusGrazerTests {
     }
 
     /**
-     * Home: the biome modifier adds it to the End highlands at weight 6 in groups of 2 to 4, and not to the main island,
+     * Home: its highlands modifier adds it there at weight 6 in groups of 2 to 4, and none of its modifiers to the main island,
      * the barrens or the small islands; end stone is a spawn spot, and it spawns in any light.
      */
     private static void spawns(GameTestHelper helper) {
         var access = helper.getLevel().registryAccess();
-        var key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/chorus_grazer"));
+        var key = ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/chorus_grazer/end_highlands"));
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS).get(key).map(Holder::value).orElse(null);
         if (!(modifier instanceof BiomeModifiers.AddSpawnsBiomeModifier add)) {
             helper.fail("no spawn biome modifier for the Chorus Grazer: " + modifier);
@@ -1014,9 +1014,9 @@ public final class ChorusGrazerTests {
                 "groups of 2 to 4, got " + spawner.value().count().minInclusive() + " to " + spawner.value().count().maxInclusive());
         var biomes = access.lookupOrThrow(Registries.BIOME);
         helper.assertTrue(add.biomes().contains(biomes.getOrThrow(Biomes.END_HIGHLANDS)), "the End highlands are its home");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.THE_END)), "not the main island");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.END_BARRENS)), "nor the barrens");
-        helper.assertTrue(!add.biomes().contains(biomes.getOrThrow(Biomes.SMALL_END_ISLANDS)), "nor the small islands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "chorus_grazer").stream().noneMatch(b -> b.is(Biomes.THE_END)), "not the main island");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "chorus_grazer").stream().noneMatch(b -> b.is(Biomes.END_BARRENS)), "nor the barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "chorus_grazer").stream().noneMatch(b -> b.is(Biomes.SMALL_END_ISLANDS)), "nor the small islands");
 
         helper.setBlock(new BlockPos(5, 0, 5), Blocks.END_STONE);
         RosterStats.Entry row = RosterStats.get("chorus_grazer");

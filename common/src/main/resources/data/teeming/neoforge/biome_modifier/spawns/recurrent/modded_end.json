@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/recurrent/modded_end",
+      "#teeming:spawns_region/recurrent/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/recurrent/modded_end"

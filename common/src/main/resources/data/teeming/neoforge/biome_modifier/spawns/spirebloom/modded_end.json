@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/spirebloom/modded_end",
+      "#teeming:spawns_region/spirebloom/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/spirebloom/modded_end"

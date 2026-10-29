@@ -559,9 +559,9 @@ public final class MoteSwarmTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("mote_swarm"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.SMALL_END_ISLANDS)), "its home holds the small end islands");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the end midlands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
+        helper.assertTrue(com.panda.teeming.gametest.TeemingGameTests.spawnBiomes(helper, "mote_swarm").stream().anyMatch(b -> b.is(Biomes.SMALL_END_ISLANDS)), "its home holds the small end islands");
+        helper.assertTrue(com.panda.teeming.gametest.TeemingGameTests.spawnBiomes(helper, "mote_swarm").stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the end midlands");
+        helper.assertTrue(com.panda.teeming.gametest.TeemingGameTests.spawnBiomes(helper, "mote_swarm").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/mote_swarm")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");

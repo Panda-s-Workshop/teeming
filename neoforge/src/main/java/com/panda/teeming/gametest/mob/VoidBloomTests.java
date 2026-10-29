@@ -524,8 +524,8 @@ public final class VoidBloomTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("void_bloom"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the end barrens");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "void_bloom").stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the end barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "void_bloom").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/void_bloom")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");

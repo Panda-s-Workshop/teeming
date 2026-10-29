@@ -550,9 +550,9 @@ public final class PearlgulpTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("pearlgulp"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.SMALL_END_ISLANDS)), "and the small End islands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_MIDLANDS) || b.is(Biomes.THE_END)), "never the midlands or the main island");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlgulp").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlgulp").stream().anyMatch(b -> b.is(Biomes.SMALL_END_ISLANDS)), "and the small End islands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "pearlgulp").stream().noneMatch(b -> b.is(Biomes.END_MIDLANDS) || b.is(Biomes.THE_END)), "never the midlands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/pearlgulp")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");

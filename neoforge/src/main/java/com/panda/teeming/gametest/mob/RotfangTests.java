@@ -582,8 +582,8 @@ public final class RotfangTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("rotfang"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.END_MIDLANDS)
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "rotfang").stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "rotfang").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.END_MIDLANDS)
                 || b.is(Biomes.SMALL_END_ISLANDS) || b.is(Biomes.THE_END)), "and nowhere else in the End");
         Weighted<MobSpawnSettings.SpawnerData> own = entry(helper, "spawns/rotfang");
         helper.assertTrue(own != null, "it has a spawn modifier that spawns it");

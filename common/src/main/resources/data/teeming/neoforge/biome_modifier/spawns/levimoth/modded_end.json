@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/levimoth/modded_end",
+      "#teeming:spawns_region/levimoth/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/levimoth/modded_end"

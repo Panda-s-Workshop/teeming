@@ -539,6 +539,22 @@ public final class TeemingSpawner {
         return teemingNearby < MobCategory.MONSTER.getMaxInstancesPerChunk() * SpawnTable.END_SHARE;
     }
 
+    /**
+     * A biome mod's End biome: one more Teeming monster only while the Teeming monsters within {@link #SHARE_RADIUS} of
+     * the spot don't outnumber the others ({@link #outnumberAllows}). Its lists are set for endermen in groups of four;
+     * where its endermen come in ones and twos the lists alone would bring Teeming to about 70 % of its monsters, and
+     * this holds it near half ({@link SpawnTable#END_SHARE}).
+     */
+    public static boolean moddedEndAllows(ServerLevel level, BlockPos pos) {
+        int[] count = monstersAround(level, pos);
+        return outnumberAllows(count[0], count[1]);
+    }
+
+    /** Room for one more Teeming monster: they don't outnumber the others yet. */
+    public static boolean outnumberAllows(int teeming, int others) {
+        return teeming <= others;
+    }
+
     // ---- the main-island gate ------------------------------------------------------------------------------------
 
     /** In the End, within the main island region. */

@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/chronomite/modded_end",
+      "#teeming:spawns_region/chronomite/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/chronomite/modded_end"

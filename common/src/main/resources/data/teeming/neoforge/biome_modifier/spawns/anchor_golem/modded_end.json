@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/anchor_golem/modded_end",
+      "#teeming:spawns_region/anchor_golem/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/anchor_golem/modded_end"

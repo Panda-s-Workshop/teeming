@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/mote_swarm/modded_end",
+      "#teeming:spawns_region/mote_swarm/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/mote_swarm/modded_end"

@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/facet_doppel/modded_end",
+      "#teeming:spawns_region/facet_doppel/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/facet_doppel/modded_end"

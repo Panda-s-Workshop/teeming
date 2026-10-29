@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/pearlgulp/modded_end",
+      "#teeming:spawns_region/pearlgulp/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/pearlgulp/modded_end"

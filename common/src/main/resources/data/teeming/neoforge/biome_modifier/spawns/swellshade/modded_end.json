@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/swellshade/modded_end",
+      "#teeming:spawns_region/swellshade/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/swellshade/modded_end"

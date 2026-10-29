@@ -513,8 +513,8 @@ public final class AnchorGolemTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("anchor_golem"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the End midlands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "anchor_golem").stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the End midlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "anchor_golem").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.THE_END)), "never the highlands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/anchor_golem")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");

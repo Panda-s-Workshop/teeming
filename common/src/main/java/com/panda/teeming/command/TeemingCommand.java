@@ -13,6 +13,7 @@ import com.panda.teeming.mob.TeemingCreature;
 import com.panda.teeming.mob.look.LookDef;
 import com.panda.teeming.mob.look.Looks;
 import com.panda.teeming.roster.RosterStats;
+import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawns;
 import java.util.Collection;
@@ -153,8 +154,13 @@ public final class TeemingCommand {
         // monster spawns where no monster spawns, nor in a share-capped biome where no spawner runs (the Overworld's)
         TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
         boolean outer = rule != null && rule.dimension == Level.END && rule != TeemingSpawner.Rule.MAIN_ISLAND && rule != TeemingSpawner.Rule.APEX_ISLAND;
+        // an outer End list mob's tag holds #teeming:modded_end, and with it every vanilla End biome: of those it spawns
+        // only in its own home's (a biome with a modifier of its own), and in every biome mod's End biome
+        boolean modded = SpawnTable.MODDED_END.containsKey(mob.id());
+        List<String> home = SpawnTable.tuned(mob.id()).stream().map(SpawnTable.Row::biome).toList();
         List<String> here = level.getChunkSource().getGenerator().getBiomeSource().possibleBiomes().stream()
                 .filter(biome -> biome.is(tag) && !(outer && !mob.biomeSpawns() && biome.is(net.minecraft.world.level.biome.Biomes.THE_END))
+                        && !(modded && SpawnTable.VANILLA_END_BIOMES.contains(biomeId(biome)) && !home.contains(biomeId(biome)))
                         && !(!mob.passive() && (biome.is(TeemingSpawns.NO_DEFAULT_MONSTERS)
                                 || level.dimension() == Level.OVERWORLD && rule == null && biome.is(TeemingSpawner.SHARE_CAPPED))))
                 .map(TeemingCommand::biomeId).sorted().toList();
@@ -181,29 +187,38 @@ public final class TeemingCommand {
      * there holds it; "here_spawner" when Teeming's spawner places it there (its rule's region holds the spot, or a
      * share-capped Nether biome its tag holds); "here_no_monsters" for a monster where no monster spawns (mushroom
      * fields, deep dark); "here_no_capped" for a monster whose tag holds a share-capped Overworld biome (its list there
-     * holds no Teeming monster and no spawner runs); "here_no_main_island" and "here_only_main_island" for an End rule
+     * holds no Teeming monster and no spawner runs); "here_no_main_island" and "here_only_main_island" (or
+     * "here_only_main_island_any" with the dragon gate off) for an End rule or End list mob
      * on the wrong side of the main island's edge; else "here_no". Public for the GameTests.
      */
     public static String whereYouStand(ServerLevel level, BlockPos pos, RosterStats.Entry mob) {
         Holder<Biome> biome = level.getBiome(pos);
         if (!mob.passive() && biome.is(TeemingSpawns.NO_DEFAULT_MONSTERS)) return "here_no_monsters";
+        TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
+        boolean wantsMain = rule == TeemingSpawner.Rule.MAIN_ISLAND || rule == TeemingSpawner.Rule.APEX_ISLAND;
+        // the spawn predicate keeps every End list mob but a main-island one off the main island's area, by position
+        if (mob.biomeSpawns() && level.dimension() == Level.END && !TeemingSpawns.mainIslandAllows(mob, level, pos))
+            return wantsMain ? mainIslandKey() : "here_no_main_island";
         if (mob.biomeSpawns() && listWeight(level, pos, mob) > 0) return "here_yes";
         TagKey<Biome> tag = TeemingSpawns.tag(mob.id());
         boolean inTag = biome.is(tag);
         if (mob.biomeSpawns() && !mob.passive() && inTag && biome.is(TeemingSpawner.SHARE_CAPPED))
             return level.dimension() == Level.NETHER ? "here_spawner" : "here_no_capped";
-        TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
         if (rule == null || rule.dimension != level.dimension()) return "here_no";
         // the spawner asks a spawner-only mob's tag (an empty one places it wherever its rule fits), not a biome-list mob's
         int tagged = level.registryAccess().lookupOrThrow(Registries.BIOME).get(tag).map(set -> set.size()).orElse(0);
         if (!mob.biomeSpawns() && tagged > 0 && !inTag) return "here_no";
         if (level.dimension() == Level.END) {
             boolean main = TeemingSpawner.mainIsland(level, pos);
-            boolean wantsMain = rule == TeemingSpawner.Rule.MAIN_ISLAND || rule == TeemingSpawner.Rule.APEX_ISLAND;
             if (main && !wantsMain) return "here_no_main_island";
-            if (wantsMain && (!main || !TeemingSpawner.mainIslandOpen(level))) return "here_only_main_island";
+            if (wantsMain && (!main || !TeemingSpawner.mainIslandOpen(level))) return mainIslandKey();
         }
         return "here_spawner";
+    }
+
+    /** The answer for a main-island mob away from it: "once the dragon is dead" only while that gate is on. */
+    private static String mainIslandKey() {
+        return TeemingConfig.endMainIslandAfterDragon() ? "here_only_main_island" : "here_only_main_island_any";
     }
 
     /** The mob's weight in the live spawn list the game uses at {@code pos}, after every loader and data change; 0 if absent. */

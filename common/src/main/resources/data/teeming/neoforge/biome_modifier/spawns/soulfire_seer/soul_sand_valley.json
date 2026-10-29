@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:soulfire_seer",
-      "weight": 2,
+      "weight": 3,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

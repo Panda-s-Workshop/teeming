@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/brinkram/modded_end",
+      "#teeming:spawns_region/brinkram/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/brinkram/modded_end"

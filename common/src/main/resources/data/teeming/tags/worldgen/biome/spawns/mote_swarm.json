@@ -1,6 +1,7 @@
 {
   "values": [
     "minecraft:small_end_islands",
-    "minecraft:end_midlands"
+    "minecraft:end_midlands",
+    "#teeming:modded_end"
   ]
 }

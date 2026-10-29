@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/glimmerless/modded_end",
+      "#teeming:spawns_region/glimmerless/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/glimmerless/modded_end"

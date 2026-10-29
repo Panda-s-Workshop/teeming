@@ -4,10 +4,6 @@
     {
       "id": "#c:is_overworld",
       "required": false
-    },
-    {
-      "id": "#c:is_swamp",
-      "required": false
     }
   ]
 }

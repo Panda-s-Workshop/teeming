@@ -103,8 +103,10 @@ public final class TeemingFabric implements ModInitializer {
      * The same spawns as the generated NeoForge biome modifiers, from the same table: the mob's tag gates every one; a
      * tuned biome gets its tuned weight; the rest of the tag gets the rest weight ({@link SpawnTable#rest}), without the
      * tuned biomes and, for monsters, without the share-capped biomes (the Teeming spawner places monsters there). Where
-     * the rest is split, the part another listed mob's tag also holds gets the beside weight. An outer-island End mob
-     * also gets a biome mod's End biomes ({@code #teeming:modded_end} without vanilla's five) at its planned weight.
+     * the rest is split, the part another listed mob's tag also holds gets the beside weight. An outer-island End mob's
+     * tag also holds {@code #teeming:modded_end}: the biomes of that tag, vanilla's five left out, get its planned weight
+     * there, and its rest leaves the whole tag out (vanilla's End biomes are in it). So every spawn stays inside the
+     * mob's tag, and emptying the tag stops the mob everywhere.
      */
     private static void addSpawns(RosterStats.Entry mob, EntityType<? extends Mob> type) {
         Predicate<BiomeSelectionContext> home = BiomeSelectors.tag(TeemingSpawns.tag(mob.id()));
@@ -117,6 +119,9 @@ public final class TeemingFabric implements ModInitializer {
         }
         Predicate<BiomeSelectionContext> rest = home.and(BiomeSelectors.excludeByKey(tuned));
         if (!mob.passive()) rest = rest.and(context -> !context.hasTag(TeemingSpawner.SHARE_CAPPED));
+        Integer modded = SpawnTable.MODDED_END.get(mob.id());
+        // its tag holds #teeming:modded_end, and with it vanilla's End biomes: the rest leaves the whole tag out
+        if (modded != null) rest = rest.and(context -> !context.hasTag(TeemingSpawns.MODDED_END));
         SpawnTable.Rest weights = SpawnTable.rest(mob.id(), mob.weight());
         if (weights.beside() < 0) {
             BiomeModifications.addSpawn(rest, TeemingSpawns.category(mob), type, weights.weight(), mob.groupMin(), mob.groupMax());
@@ -126,11 +131,10 @@ public final class TeemingFabric implements ModInitializer {
             BiomeModifications.addSpawn(rest.and(beside.negate()), TeemingSpawns.category(mob), type, weights.weight(), mob.groupMin(), mob.groupMax());
             BiomeModifications.addSpawn(rest.and(beside), TeemingSpawns.category(mob), type, weights.beside(), mob.groupMin(), mob.groupMax());
         }
-        Integer modded = SpawnTable.MODDED_END.get(mob.id());
         if (modded != null) {
             List<ResourceKey<Biome>> vanillaEnd = SpawnTable.VANILLA_END_BIOMES.stream()
                     .map(id -> ResourceKey.create(Registries.BIOME, Identifier.parse(id))).toList();
-            BiomeModifications.addSpawn(BiomeSelectors.tag(TeemingSpawns.MODDED_END).and(BiomeSelectors.excludeByKey(vanillaEnd)),
+            BiomeModifications.addSpawn(home.and(BiomeSelectors.tag(TeemingSpawns.MODDED_END)).and(BiomeSelectors.excludeByKey(vanillaEnd)),
                     TeemingSpawns.category(mob), type, modded, mob.groupMin(), mob.groupMax());
         }
     }

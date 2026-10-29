@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:prismback",
-      "weight": 5,
+      "weight": 9,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

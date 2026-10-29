@@ -47,22 +47,30 @@ All need operator permission (level 2).
 
 ## Data packs
 
-Nearly everything a pack would change is data under `data/teeming/`; spawn weights on Fabric are the one exception.
+Nearly everything a pack would change is data under `data/teeming/`. The exceptions are code on both loaders: the
+spawn weights on Fabric, and the weights and rules of the mobs Teeming's own spawner places.
 
 - **Where each mob spawns:** biome tags `#teeming:spawns/<mob>`. Add a biome (or a tag such as `#c:is_forest`) to
   give a mob that biome. Mobs on the biome lists stop spawning when their tag is emptied; mobs that Teeming's own
   spawner places (fortress, lava sea, End islands and the like) spawn wherever their rule fits when their tag is empty.
   To switch a mob off either way, use `mobs.<id>.enabled`. `#teeming:share_capped` holds Nether biomes whose
-  vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead. That spawner
-  doesn't run in the Overworld, so an Overworld biome added to the tag gets no Teeming monsters at all (the deep dark
-  and the mushroom fields are in it by default, where no monster spawns anyway). `#teeming:modded_end` (by default
-  `#c:is_end` and `#minecraft:is_end`) is how a biome mod's End biomes get the outer islands' mobs; vanilla's five End
-  biomes are always left out of it.
+  vanilla monster list is too small to share, where Teeming's own spawner places their monsters instead (by default
+  the crimson and warped forests, and biome mods' biomes in `#c:is_nether_forest`, `#c:primary_wood_type/crimson` or
+  `#c:primary_wood_type/warped`). That spawner doesn't run in the Overworld, so an Overworld biome added to the tag
+  gets no Teeming monsters at all (the deep dark and the mushroom fields are in it by default, where no monster spawns
+  anyway).
+- **Biome mods' End biomes:** `#teeming:modded_end` (by default `#c:is_end` and `#minecraft:is_end`) is how they get
+  the outer islands' mobs. Each outer-island list mob's tag holds it, so emptying the mob's tag takes the mob out of
+  them too. The tag holds vanilla's five End biomes as well; Teeming leaves those five out wherever it reads the tag, so
+  a mob still spawns only in its own vanilla End biomes. Don't add the tag (or `#c:is_end`) to another mob's tag: that
+  mob would get every modded End biome at its rest weight. No End list mob spawns naturally within 1024 blocks of the
+  origin (the main island's area, whatever its biome) except the main island's own mobs, once the dragon is dead.
 - **How often and in what groups (NeoForge):** each biome-list mob's spawn weight and group size are NeoForge biome
   modifiers. `data/teeming/neoforge/biome_modifier/spawns/<mob>/<biome>.json` gives it a weight tuned to one vanilla
   biome's monster list. `spawns/<mob>.json` gives it the weight it carries in the biomes its tag reaches that are not
   tuned (a biome mod's biomes), and `spawns/<mob>/beside.json` a smaller one where another mob already carries that
-  biome's share. All stay inside the mob's tag. Replace a file by id to change its `weight` or `count`. On Fabric these
+  biome's share. `spawns/<mob>/modded_end.json` gives an outer-island End mob its weight in biome mods' End biomes. All
+  stay inside the mob's tag. Replace a file by id to change its `weight` or `count`. On Fabric these
   numbers are built into the mod, so a pack can't change them; the server can only lower a mob with
   `mobs.<id>.spawnChance`.
 - **Looks:** `data/teeming/teeming/looks/<mob>/<look>.json` with `weight` (0 switches a look off), and optionally

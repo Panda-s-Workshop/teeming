@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/pullstar/modded_end",
+      "#teeming:spawns_region/pullstar/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/pullstar/modded_end"

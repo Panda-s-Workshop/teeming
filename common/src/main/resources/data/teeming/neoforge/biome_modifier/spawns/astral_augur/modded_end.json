@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/astral_augur/modded_end",
+      "#teeming:spawns_region/astral_augur/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/astral_augur/modded_end"

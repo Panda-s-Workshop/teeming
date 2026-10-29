@@ -674,8 +674,8 @@ public final class ResonantTriadTests {
         helper.assertTrue(row.dim() == RosterStats.Dim.END, "an End mob");
         helper.assertTrue(ModMobs.RESONANT_TRIAD.get().getCategory() == MobCategory.MONSTER, "a monster");
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("resonant_triad"));
-        helper.assertTrue(tag.isPresent() && tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the end highlands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.THE_END)), "never the main island");
+        helper.assertTrue(tag.isPresent() && TeemingGameTests.spawnBiomes(helper, "resonant_triad").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the end highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "resonant_triad").stream().noneMatch(b -> b.is(Biomes.THE_END)), "never the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/resonant_triad")));
         helper.assertTrue(modifier.isPresent() && modifier.get().value() instanceof BiomeModifiers.AddSpawnsBiomeModifier, "it has a spawn modifier");

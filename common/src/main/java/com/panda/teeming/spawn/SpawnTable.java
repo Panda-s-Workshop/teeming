@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Teeming's share of the Nether's and the Overworld's monster spawns. Vanilla's own lists stay as they are: Teeming adds about
- * 21 % of each biome's monster picks. Where whole biome-list weights can land in the share range,
- * each mob gets a tuned weight in that biome ({@link #TUNED}; its roster weight sets its part of the biome's total).
- * Where they can't (a biome whose vanilla monster weight is too small for even weight 1 per mob), the biome is
- * share-capped: the Teeming spawner places those monsters, and only while that brings the Teeming share of the
- * monsters round the player nearer the target. Plain Java with no Minecraft types, so JUnit can read it.
+ * Teeming's share of the Nether's, the Overworld's and the End's monster spawns. Vanilla's own lists stay as they are.
+ * Shares are counted in mobs: each entry's weight times its mean group (a vanilla entry's up to its cluster size, times
+ * the share of its picks its own spawn rule lets through), since natural spawning places a pick's whole group. Where
+ * whole biome-list weights can land in the share range, each mob gets a tuned weight in that biome ({@link #TUNED};
+ * its roster weight sets its part of the biome's total). Where they can't, the biome is share-capped: the Teeming
+ * spawner places those monsters, and only while that brings the Teeming share of the monsters round the player nearer
+ * the target. Plain Java with no Minecraft types, so JUnit can read it.
  */
 public final class SpawnTable {
     private SpawnTable() {}
@@ -26,6 +27,37 @@ public final class SpawnTable {
             "minecraft:crimson_forest", 15,
             "minecraft:warped_forest", 1,
             "minecraft:basalt_deltas", 140);
+
+    /**
+     * Vanilla's monsters in each Nether biome, in mobs: weight times the mean count up to the cluster size, times the
+     * share of picks the mob's own spawn rule lets through. The Nether's carrying mobs (all but the lava mobs, whose
+     * picks land only on a lava sea's surface) aim at {@link #NETHER_CARRY} of these; the lava mobs go on top up to
+     * the target.
+     */
+    public static final Map<String, Double> VANILLA_NETHER_MOBS = Map.of(
+            "minecraft:nether_wastes", 474.50,
+            "minecraft:soul_sand_valley", 86.50,
+            "minecraft:crimson_forest", 52.00,
+            "minecraft:warped_forest", 4.00,
+            "minecraft:basalt_deltas", 327.00);
+    public static final double NETHER_CARRY = 0.18;
+
+    /** Natural spawning stops a spot at the mob's cluster size: {@link #CLUSTER} for every monster but these. */
+    public static final int CLUSTER = 4;
+    public static final Map<String, Integer> VANILLA_CLUSTER = Map.of("minecraft:ghast", 1);
+    /** The share of a vanilla monster's picks its own spawn rule lets through, where it isn't all (the ghast's 1 in 20). */
+    public static final Map<String, Double> VANILLA_PASS = Map.of("minecraft:ghast", 0.05);
+
+    /**
+     * Biomes whose ordinary ground is a narrow-place mob's place (the desert's sand for the Dunefin): there the mob
+     * carries the share, and counts once, as its picks in the caves below fail while it skips the darkness roll above.
+     */
+    public static final Map<String, List<String>> CARRIES = Map.of("dunefin", List.of("minecraft:desert"));
+
+    /** The mob carries the share in this biome though its place is a narrow one ({@link #CARRIES}). */
+    public static boolean carries(String mob, String biome) {
+        return CARRIES.getOrDefault(mob, List.of()).contains(biome);
+    }
 
     /**
      * Vanilla's total monster weight in each Overworld biome that has a Teeming biome-list monster (26.3 biome files).
@@ -301,10 +333,11 @@ public final class SpawnTable {
     }
 
     /**
-     * A biome mod's End biomes ({@code #teeming:modded_end}: {@code #c:is_end} and {@code #minecraft:is_end}, vanilla's five
-     * End biomes left out) get every outer-island biome-list End mob at this weight. Their terrain class is unknown, so
-     * the monsters are scaled together until their share, counted as mobs against the enderman, is about
-     * {@link #MODDED_END_PLANNED_SHARE}; the creatures keep their roster weight.
+     * A biome mod's End biomes ({@code #teeming:modded_end}, which every one of these mobs' spawn tags holds: by default
+     * {@code #c:is_end} and {@code #minecraft:is_end}, so it holds vanilla's five End biomes as well, and every modifier
+     * that reads it leaves them out) get every outer-island biome-list End mob at this weight, inside the mob's own tag.
+     * Their terrain class is unknown, so the monsters are scaled together until their share, counted as mobs against
+     * the enderman, is about {@link #MODDED_END_PLANNED_SHARE}; the creatures keep their roster weight.
      */
     public static final Map<String, Integer> MODDED_END = Map.ofEntries(
             Map.entry("astral_augur", 1),
@@ -342,10 +375,17 @@ public final class SpawnTable {
     public static final double MODDED_END_PLANNED_SHARE = 0.4839;
     public static final List<String> VANILLA_END_BIOMES = List.of("minecraft:the_end", "minecraft:end_highlands", "minecraft:end_midlands", "minecraft:end_barrens", "minecraft:small_end_islands");
 
-    /** The default contents of {@code #teeming:share_capped}: biomes whose Teeming monsters only the spawner places. */
+    /**
+     * The vanilla biomes of {@code #teeming:share_capped}: biomes whose Teeming monsters only the spawner places. The tag
+     * also holds biome mods' Nether forests, through {@code #c:is_nether_forest}, {@code #c:primary_wood_type/crimson}, {@code #c:primary_wood_type/warped}.
+     */
     public static final List<String> SHARE_CAPPED = List.of("minecraft:crimson_forest", "minecraft:warped_forest", "minecraft:deep_dark", "minecraft:mushroom_fields");
 
-    /** A mob's biome-list weight in one tuned biome; elsewhere in its tag it has its rest weight ({@link #rest}). */
+    /**
+     * A mob's biome-list weight in one biome with a modifier of its own: a tuned biome, or a vanilla End biome of an outer
+     * End creature's home (at its roster weight: its rest leaves {@code #teeming:modded_end} out, which holds vanilla's
+     * End biomes). Elsewhere in its tag it has its rest weight ({@link #rest}).
+     */
     public record Row(String mob, String biome, int weight) {}
 
     public static final List<Row> TUNED = List.of(
@@ -360,11 +400,11 @@ public final class SpawnTable {
             new Row("dunefin", "minecraft:badlands", 24),
             new Row("dunefin", "minecraft:eroded_badlands", 24),
             new Row("dunefin", "minecraft:wooded_badlands", 25),
-            new Row("dunefin", "minecraft:desert", 25),
+            new Row("dunefin", "minecraft:desert", 180),
             new Row("rattlecoil", "minecraft:badlands", 89),
             new Row("rattlecoil", "minecraft:eroded_badlands", 89),
             new Row("rattlecoil", "minecraft:wooded_badlands", 55),
-            new Row("rattlecoil", "minecraft:desert", 89),
+            new Row("rattlecoil", "minecraft:desert", 7),
             new Row("snowroller", "minecraft:grove", 177),
             new Row("snowroller", "minecraft:jagged_peaks", 118),
             new Row("snowroller", "minecraft:snowy_slopes", 177),
@@ -489,7 +529,7 @@ public final class SpawnTable {
             new Row("hollow_mourner", "minecraft:jungle", 118),
             new Row("hollow_mourner", "minecraft:mangrove_swamp", 355),
             new Row("hollow_mourner", "minecraft:swamp", 355),
-            new Row("hollow_mourner", "minecraft:desert", 89),
+            new Row("hollow_mourner", "minecraft:desert", 67),
             new Row("hollow_mourner", "minecraft:dripstone_caves", 44),
             new Row("hollow_mourner", "minecraft:frozen_river", 355),
             new Row("hollow_mourner", "minecraft:ice_spikes", 118),
@@ -506,28 +546,29 @@ public final class SpawnTable {
             new Row("skreel", "minecraft:windswept_forest", 79),
             new Row("skreel", "minecraft:windswept_gravelly_hills", 79),
             new Row("skreel", "minecraft:windswept_hills", 79),
-            new Row("prismback", "minecraft:nether_wastes", 5),
-            new Row("slagspitter", "minecraft:nether_wastes", 8),
-            new Row("slagspitter", "minecraft:basalt_deltas", 10),
+            new Row("prismback", "minecraft:nether_wastes", 9),
+            new Row("slagspitter", "minecraft:nether_wastes", 14),
+            new Row("slagspitter", "minecraft:basalt_deltas", 15),
             new Row("ash_jackal", "minecraft:nether_wastes", 8),
-            new Row("ash_jackal", "minecraft:soul_sand_valley", 4),
-            new Row("slagheart_golem", "minecraft:nether_wastes", 3),
-            new Row("scarlet_mantis", "minecraft:nether_wastes", 6),
+            new Row("ash_jackal", "minecraft:soul_sand_valley", 2),
+            new Row("slagheart_golem", "minecraft:nether_wastes", 8),
+            new Row("scarlet_mantis", "minecraft:nether_wastes", 14),
             new Row("ossuary_wyrm", "minecraft:soul_sand_valley", 1),
             new Row("keening_shade", "minecraft:soul_sand_valley", 3),
-            new Row("soulfire_seer", "minecraft:soul_sand_valley", 2),
-            new Row("cindermoth_swarm", "minecraft:nether_wastes", 7),
+            new Row("soulfire_seer", "minecraft:soul_sand_valley", 3),
+            new Row("cindermoth_swarm", "minecraft:nether_wastes", 17),
             new Row("cindermoth_swarm", "minecraft:soul_sand_valley", 4),
             new Row("soulward_revenant", "minecraft:soul_sand_valley", 2),
-            new Row("quakehopper", "minecraft:basalt_deltas", 8),
-            new Row("ashharrier", "minecraft:basalt_deltas", 6),
-            new Row("lavaleaper", "minecraft:nether_wastes", 5),
-            new Row("lavaleaper", "minecraft:soul_sand_valley", 3),
-            new Row("lavaleaper", "minecraft:basalt_deltas", 7),
-            new Row("blackstone_scuttler", "minecraft:basalt_deltas", 6),
-            new Row("aurovore", "minecraft:nether_wastes", 3),
+            new Row("quakehopper", "minecraft:basalt_deltas", 12),
+            new Row("ashharrier", "minecraft:basalt_deltas", 15),
+            new Row("lavaleaper", "minecraft:nether_wastes", 9),
+            new Row("lavaleaper", "minecraft:soul_sand_valley", 2),
+            new Row("lavaleaper", "minecraft:basalt_deltas", 10),
+            new Row("blackstone_scuttler", "minecraft:basalt_deltas", 10),
+            new Row("aurovore", "minecraft:nether_wastes", 8),
             new Row("astral_augur", "minecraft:end_highlands", 2),
             new Row("nullcantor", "minecraft:end_barrens", 3),
+            new Row("chorus_grazer", "minecraft:end_highlands", 6),
             new Row("levimoth", "minecraft:end_highlands", 3),
             new Row("warpseed_bloom", "minecraft:end_highlands", 3),
             new Row("glimmerless", "minecraft:end_highlands", 2),
@@ -561,6 +602,7 @@ public final class SpawnTable {
             new Row("exile_wraith", "minecraft:small_end_islands", 7),
             new Row("mote_swarm", "minecraft:end_midlands", 4),
             new Row("mote_swarm", "minecraft:small_end_islands", 7),
+            new Row("pearlshell_snail", "minecraft:small_end_islands", 5),
             new Row("resonant_triad", "minecraft:end_highlands", 2));
 
     /** The mob's tuned rows, empty when it has none. */

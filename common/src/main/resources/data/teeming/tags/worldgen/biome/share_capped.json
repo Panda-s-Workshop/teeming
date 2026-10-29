@@ -3,6 +3,18 @@
     "minecraft:crimson_forest",
     "minecraft:warped_forest",
     "minecraft:deep_dark",
-    "minecraft:mushroom_fields"
+    "minecraft:mushroom_fields",
+    {
+      "id": "#c:is_nether_forest",
+      "required": false
+    },
+    {
+      "id": "#c:primary_wood_type/crimson",
+      "required": false
+    },
+    {
+      "id": "#c:primary_wood_type/warped",
+      "required": false
+    }
   ]
 }

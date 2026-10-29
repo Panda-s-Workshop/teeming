@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/rotfang/modded_end",
+      "#teeming:spawns_region/rotfang/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/rotfang/modded_end"

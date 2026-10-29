@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/hollowmind/modded_end",
+      "#teeming:spawns_region/hollowmind/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/hollowmind/modded_end"

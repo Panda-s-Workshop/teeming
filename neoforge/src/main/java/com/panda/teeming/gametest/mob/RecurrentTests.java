@@ -622,8 +622,8 @@ public final class RecurrentTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("recurrent"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.END_MIDLANDS) || b.is(Biomes.THE_END)),
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "recurrent").stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "recurrent").stream().noneMatch(b -> b.is(Biomes.END_HIGHLANDS) || b.is(Biomes.END_MIDLANDS) || b.is(Biomes.THE_END)),
                 "never the highlands, midlands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/recurrent")));

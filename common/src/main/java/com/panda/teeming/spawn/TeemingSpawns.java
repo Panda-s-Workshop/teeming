@@ -8,9 +8,11 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -109,13 +112,34 @@ public final class TeemingSpawns {
         if (chance <= 0 || random.nextDouble() >= chance) return false;
         if (pos.getY() > mob.maxY()) return false;
         if (mob.surface() && !level.canSeeSky(pos)) return false;
+        boolean end = level.getLevel().dimension() == Level.END;
+        if (end && !mainIslandAllows(mob, level.getLevel(), pos)) return false;
         if (!mob.passive()) {
             if (level.getDifficulty() == Difficulty.PEACEFUL) return false;
             if (level.getBiome(pos).is(NO_DEFAULT_MONSTERS)) return false; // mushroom fields, deep dark
             if (!mob.anyLight() && mob.place() != RosterStats.Place.WATER && mob.place() != RosterStats.Place.LAVA
                     && !Monster.isDarkEnoughToSpawn(level, pos, random)) return false;
         }
-        return underCap(mob, type, level, pos);
+        if (!underCap(mob, type, level, pos)) return false;
+        return !(end && !mob.passive() && moddedEnd(level.getBiome(pos)) && !TeemingSpawner.moddedEndAllows(level.getLevel(), pos));
+    }
+
+    /**
+     * The main island's rule in the End, by position, as the spawner's rules have it: inside the main island's area only a
+     * main-island mob may spawn, and only once the dragon is dead (config {@code endMainIslandAfterDragon}); outside it,
+     * any. A biome mod's End biome can lie inside that area, so a biome list there would otherwise reach the dragon's
+     * island with the outer islands' mobs.
+     */
+    public static boolean mainIslandAllows(Entry mob, ServerLevel level, BlockPos pos) {
+        if (!TeemingSpawner.mainIsland(level, pos)) return true;
+        TeemingSpawner.Rule rule = TeemingSpawner.Rule.of(mob.spawner());
+        boolean main = rule == TeemingSpawner.Rule.MAIN_ISLAND || rule == TeemingSpawner.Rule.APEX_ISLAND;
+        return main && TeemingSpawner.mainIslandOpen(level);
+    }
+
+    /** A biome mod's End biome: in {@link #MODDED_END}, and not one of vanilla's five End biomes. */
+    public static boolean moddedEnd(Holder<Biome> biome) {
+        return biome.is(MODDED_END) && biome.unwrapKey().map(k -> !SpawnTable.VANILLA_END_BIOMES.contains(k.identifier().toString())).orElse(true);
     }
 
     /**

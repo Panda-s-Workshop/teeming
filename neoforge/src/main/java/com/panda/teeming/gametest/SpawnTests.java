@@ -9,7 +9,7 @@ import com.panda.teeming.neoforge.NeoForgeConfig;
 import com.panda.teeming.registry.ModMobs;
 import com.panda.teeming.roster.RosterStats;
 import com.panda.teeming.roster.RosterStats.Place;
-import com.panda.teeming.spawn.OverworldShare;
+import com.panda.teeming.spawn.ListShare;
 import com.panda.teeming.spawn.SpawnTable;
 import com.panda.teeming.spawn.TeemingSpawner;
 import com.panda.teeming.spawn.TeemingSpawner.Candidate;
@@ -77,6 +77,7 @@ final class SpawnTests {
         out.accept("placement_void_air", SpawnTests::voidAir);
         out.accept("placement_underside", SpawnTests::underside);
         out.accept("spawner_main_island_gate", SpawnTests::mainIslandGate);
+        out.accept("spawn_main_island_lists", SpawnTests::mainIslandLists);
         out.accept("spawner_spawns", SpawnTests::spawnerSpawns);
         out.accept("spawn_any_light", SpawnTests::anyLight);
         out.accept("spawn_share", SpawnTests::spawnShare);
@@ -302,6 +303,62 @@ final class SpawnTests {
         helper.succeed();
     }
 
+    /**
+     * A biome list can't bring an outer End mob onto the main island: the spawn predicate refuses an End list mob inside
+     * the main island's area by position, whatever the biome, as the spawner's outer rules do, and lets a main-island
+     * mob's list spawn there only once the dragon is dead. A biome mod's End biome can lie there (one ring of debris
+     * islands sits 150 to 450 blocks out); here the spot's biome is vanilla's main island, which is in
+     * {@code #teeming:modded_end} too. In the GameTest server's End, on end stone floors at (300, 120, 0), inside the
+     * area, and at (1300, 120, 0), past it: the Chorus Grazer (a creature in any light, so only the place and the
+     * position decide) is refused at 300 and taken at 1300; the Astral Augur (a main-island mob with a biome list) is
+     * refused at 300 while the dragon gate is shut, and with it open is taken there within 40 seeded tries (each passes
+     * the End's darkness roll about half the time), as at 1300; an egg still places the grazer at 300.
+     */
+    private static void mainIslandLists(GameTestHelper helper) {
+        ServerLevel end = helper.getLevel().getServer().getLevel(Level.END);
+        if (end == null) {
+            helper.fail("the GameTest server has no End");
+            return;
+        }
+        int floor = 120;
+        BlockPos inside = new BlockPos(300, floor + 1, 0);
+        BlockPos outside = new BlockPos(1300, floor + 1, 0);
+        for (BlockPos at : List.of(inside, outside)) {
+            end.getChunk(at.getX() >> 4, at.getZ() >> 4);
+            end.setChunkForced(at.getX() >> 4, at.getZ() >> 4, true);
+            islandFloor(end, at.getX(), floor, at.getZ());
+        }
+        RosterStats.Entry grazer = RosterStats.get("chorus_grazer");
+        RosterStats.Entry augur = RosterStats.get("astral_augur");
+        var grazerType = TeemingSpawns.type(grazer).orElseThrow();
+        var augurType = TeemingSpawns.type(augur).orElseThrow();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(end.getBiome(inside).is(TeemingSpawns.MODDED_END), "the inside spot's biome is in #teeming:modded_end");
+            helper.assertTrue(TeemingSpawner.onMainIsland(inside) && !TeemingSpawner.onMainIsland(outside), "300 out is the main island's area, 1300 isn't");
+            helper.assertTrue(!TeemingSpawner.mainIslandOpen(end), "the dragon gate is shut");
+            RandomSource random = RandomSource.create(11);
+            helper.assertTrue(TeemingSpawns.placeOk(grazer, grazerType, end, inside), "end stone at 300 is a grazer spot");
+            helper.assertTrue(!TeemingSpawns.check(grazer, grazerType, end, EntitySpawnReason.NATURAL, inside, random),
+                    "a natural grazer spawn inside the main island's area is refused");
+            helper.assertTrue(!TeemingSpawns.check(grazer, grazerType, end, EntitySpawnReason.CHUNK_GENERATION, inside, random),
+                    "and a chunk-generation one");
+            helper.assertTrue(TeemingSpawns.check(grazer, grazerType, end, EntitySpawnReason.NATURAL, outside, random), "a grazer at 1300 is taken");
+            helper.assertTrue(TeemingSpawns.check(grazer, grazerType, end, EntitySpawnReason.SPAWN_ITEM_USE, inside, random), "an egg still places it at 300");
+            boolean shut = false;
+            for (int i = 0; i < 40 && !shut; i++) shut = TeemingSpawns.check(augur, augurType, end, EntitySpawnReason.NATURAL, inside, random);
+            helper.assertTrue(!shut, "the Augur's list spawn on the main island is refused while the dragon lives");
+            boolean far = false;
+            for (int i = 0; i < 40 && !far; i++) far = TeemingSpawns.check(augur, augurType, end, EntitySpawnReason.NATURAL, outside, random);
+            helper.assertTrue(far, "the Augur is taken at 1300");
+            boolean[] open = {false};
+            islandOpen(() -> {
+                for (int i = 0; i < 40 && !open[0]; i++) open[0] = TeemingSpawns.check(augur, augurType, end, EntitySpawnReason.NATURAL, inside, random);
+            });
+            helper.assertTrue(open[0], "with the dragon gate open the Augur is taken on the main island");
+            for (BlockPos at : List.of(inside, outside)) end.setChunkForced(at.getX() >> 4, at.getZ() >> 4, false);
+        });
+    }
+
     // ---- spawn share ----------------------------------------------------------------------------------------------
 
     private static boolean teeming(EntityType<?> type) {
@@ -313,13 +370,16 @@ final class SpawnTests {
     }
 
     /**
-     * In each Nether biome Teeming makes about 1 in 4 to 6 of the monster picks (17-25 %). Read from the live
-     * spawn lists, after the biome modifiers ran. Vanilla's own monster weights are unchanged. A biome with tuned
-     * weights lands in the range. A share-capped biome can't: its vanilla monster weight is too small for even weight 1
-     * per Teeming mob (the warped forest has only the enderman at weight 1, so its six Teeming monsters would be 6 of 7
-     * picks; the crimson forest's 15 against nine mobs would be 38 %). Its list holds no Teeming monster, and for any
-     * number of other monsters round the player the spawner's cap settles in the range, or, where whole mobs can't, on
-     * the whole number nearest the target.
+     * In each Nether biome Teeming makes about 1 in 4 to 6 of the monsters (17-25 %), counted in mobs ({@link ListShare}:
+     * each entry's weight times its mean group, a vanilla one's up to its cluster size and times the share of its picks
+     * its own rule lets through, so the ghast's 1-in-20 rule and cluster of 1 count), read from the live spawn lists
+     * after the biome modifiers ran. Vanilla's own monster weights are unchanged and its mobs match the table. A biome
+     * with tuned weights lands in the range with its carrying mobs alone and with the lava mobs on top. In a share-capped
+     * biome the split by roster weight doesn't land there (the warped forest has only the enderman at weight 1, 4 mobs,
+     * so its Teeming monsters at weight 1 each would be 60 %; the crimson forest's nine kinds all round to weight 1, 15 %
+     * carrying, under the band). Its list holds no Teeming monster, and for any number of other
+     * monsters round the player the spawner's cap settles in the range, or, where whole mobs can't, on the whole number
+     * nearest the target.
      */
     private static void spawnShare(GameTestHelper helper) {
         var biomes = helper.getLevel().registryAccess().lookupOrThrow(Registries.BIOME);
@@ -333,7 +393,10 @@ final class SpawnTests {
             int vanilla = 0;
             int ours = 0;
             String name = key.identifier().getPath();
+            List<ListShare.Entry> entries = new ArrayList<>();
             for (Weighted<MobSpawnSettings.SpawnerData> w : settings.getMobsInCategory(MobCategory.MONSTER).unwrap()) {
+                entries.add(new ListShare.Entry(w.value().type().builtInRegistryHolder().key().identifier().toString(), w.weight(),
+                        w.value().count().minInclusive(), w.value().count().maxInclusive()));
                 if (teeming(w.value().type())) {
                     ours += w.weight();
                     RosterStats.Entry row = RosterStats.BY_ID.get(w.value().type().builtInRegistryHolder().key().identifier().getPath());
@@ -361,10 +424,16 @@ final class SpawnTests {
             } else {
                 String costs = costsMatch(settings);
                 if (costs != null) wrong.add(name + ": " + costs);
-                double got = share(ours, vanilla);
-                if (got < SpawnTable.SHARE_MIN || got > SpawnTable.SHARE_MAX)
-                    wrong.add(String.format(Locale.ROOT, "%s: Teeming weight %d of %d, %.1f %%", name, ours, ours + vanilla, got * 100));
-                seen.add(String.format(Locale.ROOT, "%s %d/%d = %.1f %%", name, ours, ours + vanilla, got * 100));
+                ListShare.Shares got = ListShare.of(entries, e.getKey());
+                Double table = SpawnTable.VANILLA_NETHER_MOBS.get(e.getKey());
+                if (table == null || Math.abs(table - got.vanillaLand()) > 0.01)
+                    wrong.add(name + ": vanilla mobs " + got.vanillaLand() + " on the live list, the table has " + table);
+                for (var check : List.of(Map.entry("carrying", got.carrying()), Map.entry("with the lava mobs", got.surface()))) {
+                    if (check.getValue() < SpawnTable.SHARE_MIN || check.getValue() > SpawnTable.SHARE_MAX)
+                        wrong.add(String.format(Locale.ROOT, "%s: Teeming %s share %.1f %% of the mobs", name, check.getKey(), check.getValue() * 100));
+                }
+                seen.add(String.format(Locale.ROOT, "%s in mobs: carrying %.1f %%, with the lava mobs %.1f %% (picks %d/%d)", name,
+                        got.carrying() * 100, got.surface() * 100, ours, ours + vanilla));
             }
         }
         if (TeemingSpawner.shareAllows(0, 0)) wrong.add("the cap adds a Teeming monster where no other monster is");
@@ -378,7 +447,7 @@ final class SpawnTests {
      * (17-25 %), counted in mobs (each entry's weight times its mean group, since a pick places its whole group and
      * vanilla's land monsters come four at a time), read from the live spawn lists after the biome modifiers ran, with
      * vanilla's own monster weights unchanged. Each kind is held against the vanilla mobs that can stand where it does
-     * ({@link OverworldShare}): the carrying land mobs alone, then with the narrow-place mobs (the land above y 0) and with
+     * ({@link ListShare}): the carrying land mobs alone, then with the narrow-place mobs (the land above y 0) and with
      * the below-y-0 mobs (the land below y 0), each against vanilla's land mobs (the slime and the ocelot uncounted), and
      * the open-water mobs against the drowned, at the whole weight nearest the target, at least 1. A biome with no
      * vanilla monsters is share-capped and its list holds no Teeming monster.
@@ -394,12 +463,12 @@ final class SpawnTests {
                     .applyModifier(EnvironmentAttributes.NATURAL_MOB_SPAWNS, MobSpawnSettings.EMPTY);
             String name = key.identifier().getPath();
             int vanilla = 0, drowned = 0, ours = 0, wetWeight = 0, wetRoster = 0;
-            List<OverworldShare.Entry> entries = new ArrayList<>();
+            List<ListShare.Entry> entries = new ArrayList<>();
             List<RosterStats.Entry> wetRows = new ArrayList<>();
             var monsters = settings.getMobsInCategory(MobCategory.MONSTER); // null where the biome lists no monster at all
             for (Weighted<MobSpawnSettings.SpawnerData> w : monsters == null ? List.<Weighted<MobSpawnSettings.SpawnerData>>of() : monsters.unwrap()) {
                 EntityType<?> type = w.value().type();
-                entries.add(new OverworldShare.Entry(type.builtInRegistryHolder().key().identifier().toString(), w.weight(),
+                entries.add(new ListShare.Entry(type.builtInRegistryHolder().key().identifier().toString(), w.weight(),
                         w.value().count().minInclusive(), w.value().count().maxInclusive()));
                 if (!teeming(type)) {
                     vanilla += w.weight();
@@ -411,7 +480,7 @@ final class SpawnTests {
                 if (row == null) continue;
                 if (row.apex()) wrong.add(name + ": the apex " + row.id() + " is on its list");
                 if (row.dim() != RosterStats.Dim.OVERWORLD) wrong.add(name + ": " + row.id() + ", a " + row.dim() + " mob, is on its list");
-                if (OverworldShare.kind(row) == OverworldShare.Kind.WET) {
+                if (ListShare.kind(row) == ListShare.Kind.WET) {
                     wetWeight += w.weight();
                     wetRoster += row.weight();
                     wetRows.add(row);
@@ -428,7 +497,7 @@ final class SpawnTests {
                 seen.add(name + " share-capped (vanilla " + vanilla + ")");
                 continue;
             }
-            OverworldShare.Shares got = OverworldShare.of(entries);
+            ListShare.Shares got = ListShare.of(entries, e.getKey());
             Double table = SpawnTable.VANILLA_OVERWORLD_LAND_MOBS.get(e.getKey());
             if (table == null || Math.abs(table - got.vanillaLand()) > 0.01)
                 wrong.add(name + ": vanilla land mobs " + got.vanillaLand() + " on the live list, the table has " + table);
@@ -441,7 +510,7 @@ final class SpawnTests {
                 double want = SpawnTable.TARGET_SHARE / (1 - SpawnTable.TARGET_SHARE) * got.vanillaWater() * row.weight() / wetRoster
                         / ((row.groupMin() + row.groupMax()) / 2.0);
                 int rule = Math.max(1, (int) Math.round(want));
-                int live = entries.stream().filter(x -> x.type().equals(TeemingMod.MODID + ":" + row.id())).mapToInt(OverworldShare.Entry::weight).sum();
+                int live = entries.stream().filter(x -> x.type().equals(TeemingMod.MODID + ":" + row.id())).mapToInt(ListShare.Entry::weight).sum();
                 if (live != rule) wrong.add(name + ": open-water weight of " + row.id() + " " + live + " against the drowned's " + drowned + ", the rule gives " + rule);
             }
             seen.add(String.format(Locale.ROOT, "%s in mobs: carrying %.1f %%, above y 0 %.1f %%, below %.1f %%%s", name, got.carrying() * 100,
@@ -580,6 +649,11 @@ final class SpawnTests {
         }
         if (SpawnTable.END_PLANNED_SHARE.size() != 4) wrong.add("a plan for the four outer End biomes, got " + SpawnTable.END_PLANNED_SHARE.keySet());
         if (!TeemingSpawner.endAllows(0)) wrong.add("the End cap refuses with no Teeming monster about");
+        // a biome mod's End biome: one more Teeming monster only while they don't outnumber the others round the spot
+        if (!TeemingSpawner.outnumberAllows(0, 0)) wrong.add("a biome mod's End biome refuses the first Teeming monster");
+        if (TeemingSpawner.outnumberAllows(1, 0)) wrong.add("a biome mod's End biome takes a second Teeming monster with no other about");
+        if (!TeemingSpawner.outnumberAllows(5, 5) || TeemingSpawner.outnumberAllows(6, 5))
+            wrong.add("a biome mod's End biome stops at as many Teeming monsters as others, plus one");
         if (!TeemingSpawner.endAllows(34)) wrong.add("the End cap refuses at 34 Teeming monsters");
         if (TeemingSpawner.endAllows(35)) wrong.add("the End cap allows a 36th Teeming monster, past half of 70");
         if (!wrong.isEmpty()) helper.fail(String.join("; ", wrong));

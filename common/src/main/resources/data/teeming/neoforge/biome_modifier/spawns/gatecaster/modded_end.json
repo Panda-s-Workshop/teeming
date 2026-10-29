@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/gatecaster/modded_end",
+      "#teeming:spawns_region/gatecaster/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/gatecaster/modded_end"

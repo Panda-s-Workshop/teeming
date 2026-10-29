@@ -590,9 +590,9 @@ public final class AstralAugurTests {
         var biomes = access.lookupOrThrow(Registries.BIOME);
         var tag = biomes.get(TeemingSpawns.tag("astral_augur"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "astral_augur").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
         for (var other : List.of(Biomes.END_MIDLANDS, Biomes.END_BARRENS, Biomes.SMALL_END_ISLANDS, Biomes.PLAINS)) {
-            helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
+            helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "astral_augur").stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
         }
         RosterStats.Entry row = RosterStats.get("astral_augur");
         helper.assertTrue(row.dim() == RosterStats.Dim.END, "an End mob");

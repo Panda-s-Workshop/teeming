@@ -5,9 +5,6 @@
       "required": false
     },
     "#minecraft:is_badlands",
-    {
-      "id": "#c:is_desert",
-      "required": false
-    }
+    "minecraft:desert"
   ]
 }

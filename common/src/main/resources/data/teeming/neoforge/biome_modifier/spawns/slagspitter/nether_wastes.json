@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:slagspitter",
-      "weight": 8,
+      "weight": 14,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

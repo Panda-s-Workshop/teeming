@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:cindermoth_swarm",
-      "weight": 7,
+      "weight": 17,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

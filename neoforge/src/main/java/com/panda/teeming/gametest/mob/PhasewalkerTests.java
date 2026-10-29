@@ -608,9 +608,9 @@ public final class PhasewalkerTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("phasewalker"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the End midlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "phasewalker").stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "its home holds the End midlands");
         for (var other : List.of(Biomes.END_HIGHLANDS, Biomes.END_BARRENS, Biomes.SMALL_END_ISLANDS, Biomes.THE_END, Biomes.PLAINS)) {
-            helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "never " + other.identifier());
+            helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "phasewalker").stream().noneMatch(b -> b.is(other)), "never " + other.identifier());
         }
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/phasewalker")));

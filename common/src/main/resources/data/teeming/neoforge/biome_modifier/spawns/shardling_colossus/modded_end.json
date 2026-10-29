@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/shardling_colossus/modded_end",
+      "#teeming:spawns_region/shardling_colossus/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/shardling_colossus/modded_end"

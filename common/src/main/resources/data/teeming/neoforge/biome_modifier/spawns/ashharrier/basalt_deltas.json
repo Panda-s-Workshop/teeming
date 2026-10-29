@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:ashharrier",
-      "weight": 6,
+      "weight": 15,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

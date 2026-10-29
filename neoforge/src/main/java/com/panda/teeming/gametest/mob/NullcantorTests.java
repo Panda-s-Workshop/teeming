@@ -499,9 +499,9 @@ public final class NullcantorTests {
         var biomes = access.lookupOrThrow(Registries.BIOME);
         var tag = biomes.get(TeemingSpawns.tag("nullcantor"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "nullcantor").stream().anyMatch(b -> b.is(Biomes.END_BARRENS)), "its home holds the End barrens");
         for (var other : List.of(Biomes.END_HIGHLANDS, Biomes.END_MIDLANDS, Biomes.SMALL_END_ISLANDS, Biomes.PLAINS)) {
-            helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
+            helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "nullcantor").stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
         }
         RosterStats.Entry row = RosterStats.get("nullcantor");
         helper.assertTrue(row.dim() == RosterStats.Dim.END, "an End mob");

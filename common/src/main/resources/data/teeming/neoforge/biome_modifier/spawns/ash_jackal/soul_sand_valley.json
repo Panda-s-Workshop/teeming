@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:ash_jackal",
-      "weight": 4,
+      "weight": 2,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 2,

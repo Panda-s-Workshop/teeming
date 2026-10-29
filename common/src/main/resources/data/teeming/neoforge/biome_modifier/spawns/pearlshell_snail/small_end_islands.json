@@ -1,0 +1,23 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/pearlshell_snail/small_end_islands",
+      [
+        "minecraft:small_end_islands"
+      ]
+    ]
+  },
+  "spawners": [
+    {
+      "type": "teeming:pearlshell_snail",
+      "weight": 5,
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 1,
+        "max_inclusive": 3
+      }
+    }
+  ]
+}

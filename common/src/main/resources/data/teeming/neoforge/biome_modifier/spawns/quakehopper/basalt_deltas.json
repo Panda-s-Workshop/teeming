@@ -12,7 +12,7 @@
   "spawners": [
     {
       "type": "teeming:quakehopper",
-      "weight": 8,
+      "weight": 12,
       "count": {
         "type": "minecraft:uniform",
         "min_inclusive": 1,

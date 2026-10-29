@@ -39,6 +39,7 @@ public final class RattlecoilTests {
         out.accept("rattlecoil_bite_numbers", RattlecoilTests::biteNumbers);
         out.accept("rattlecoil_stats", RattlecoilTests::stats);
         out.accept("rattlecoil_venom_cancel", RattlecoilTests::venomCancel);
+        out.accept("rattlecoil_desert", RattlecoilTests::desert);
     }
 
     // ---- set-up --------------------------------------------------------------------------------------------------
@@ -280,5 +281,53 @@ public final class RattlecoilTests {
             helper.assertTrue(pig.getHealth() < before, "the bite still lands, phase " + snake.phase());
             helper.assertTrue(!pig.hasEffect(MobEffects.POISON), "a cancelled venom step poisons nothing");   // venom goes on in the same tick as the bite
         });
+    }
+
+    /** The live monster list's mobs of one Teeming mob in the biome: weight times mean group, 0 when absent. */
+    private static double mobs(GameTestHelper helper, net.minecraft.resources.ResourceKey<net.minecraft.world.level.biome.Biome> key, String id) {
+        var biome = helper.getLevel().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME).getOrThrow(key);
+        var list = biome.value().getModifiedEnvironmentAttributes()
+                .applyModifier(net.minecraft.world.attribute.EnvironmentAttributes.NATURAL_MOB_SPAWNS, net.minecraft.world.level.biome.MobSpawnSettings.EMPTY)
+                .getMobsInCategory(net.minecraft.world.entity.MobCategory.MONSTER);
+        double out = 0;
+        for (var w : list.unwrap())
+            if (w.value().type().builtInRegistryHolder().key().identifier().equals(com.panda.teeming.TeemingMod.id(id)))
+                out += w.weight() * (w.value().count().minInclusive() + w.value().count().maxInclusive()) / 2.0;
+        return out;
+    }
+
+    /**
+     * The badlands are its home and the desert the Dunefin's: on the live lists the Rattlecoil, counted twice for
+     * spawning in any light, brings at most a third of the Dunefin's mobs to the desert and outnumbers it in the
+     * badlands; its tag holds the desert by name. In the desert every look picked is the Sidewinder, in the badlands
+     * every one the base look.
+     */
+    private static void desert(GameTestHelper helper) {
+        var biomes = helper.getLevel().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        var desert = net.minecraft.world.level.biome.Biomes.DESERT;
+        var badlands = net.minecraft.world.level.biome.Biomes.BADLANDS;
+        double snakeDesert = 2 * mobs(helper, desert, "rattlecoil");
+        double finDesert = mobs(helper, desert, "dunefin");
+        double snakeBadlands = 2 * mobs(helper, badlands, "rattlecoil");
+        double finBadlands = mobs(helper, badlands, "dunefin");
+        helper.assertTrue(snakeDesert > 0, "it still turns up in the desert");
+        helper.assertTrue(snakeDesert * 3 <= finDesert, "rare in the desert: " + snakeDesert + " mobs against the Dunefin's " + finDesert);
+        helper.assertTrue(snakeBadlands > finBadlands, "the badlands are its: " + snakeBadlands + " mobs against the Dunefin's " + finBadlands);
+        var tag = biomes.get(com.panda.teeming.spawn.TeemingSpawns.tag("rattlecoil")).orElseThrow();
+        helper.assertTrue(tag.contains(biomes.getOrThrow(desert)), "its tag holds the desert");
+        var looks = com.panda.teeming.mob.look.Looks.of("rattlecoil");
+        for (var key : java.util.List.of(desert, badlands)) {
+            var biome = biomes.getOrThrow(key);
+            String want = key == desert ? "sidewinder" : com.panda.teeming.mob.look.LookDef.BASE;
+            for (int roll = 0; roll < 89; roll++) {
+                int r = roll;
+                String got = com.panda.teeming.mob.look.LookDef.pick(looks, spec -> spec.startsWith("#")
+                        ? biome.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME, net.minecraft.resources.Identifier.parse(spec.substring(1))))
+                        : biome.is(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, net.minecraft.resources.Identifier.parse(spec))),
+                        bound -> r % bound).id();
+                helper.assertTrue(got.equals(want), "in " + key.identifier().getPath() + " every pick is " + want + ", got " + got);
+            }
+        }
+        helper.succeed();
     }
 }

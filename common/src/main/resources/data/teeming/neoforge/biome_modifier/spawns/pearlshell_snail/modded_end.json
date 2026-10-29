@@ -4,6 +4,7 @@
     "type": "neoforge:and",
     "values": [
       "#teeming:spawns_gate/pearlshell_snail/modded_end",
+      "#teeming:spawns_region/pearlshell_snail/modded_end",
       {
         "type": "neoforge:not",
         "value": "#teeming:spawns_excluded/pearlshell_snail/modded_end"

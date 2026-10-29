@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/chorus_grazer",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/chorus_grazer/rest",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/chorus_grazer"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:chorus_grazer",

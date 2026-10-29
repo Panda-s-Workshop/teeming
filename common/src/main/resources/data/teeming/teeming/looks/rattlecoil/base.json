@@ -1,3 +1,4 @@
 {
-  "weight": 80
+  "weight": 80,
+  "biomes": "#c:is_badlands"
 }

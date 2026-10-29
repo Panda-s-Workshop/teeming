@@ -1,6 +1,15 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#teeming:spawns/pearlshell_snail",
+  "biomes": {
+    "type": "neoforge:and",
+    "values": [
+      "#teeming:spawns_gate/pearlshell_snail/rest",
+      {
+        "type": "neoforge:not",
+        "value": "#teeming:spawns_excluded/pearlshell_snail"
+      }
+    ]
+  },
   "spawners": [
     {
       "type": "teeming:pearlshell_snail",

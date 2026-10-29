@@ -412,9 +412,9 @@ public final class GlimmerlessTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("glimmerless"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "and the End midlands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.THE_END) || b.is(Biomes.SMALL_END_ISLANDS) || b.is(Biomes.END_BARRENS)),
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "glimmerless").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "glimmerless").stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)), "and the End midlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "glimmerless").stream().noneMatch(b -> b.is(Biomes.THE_END) || b.is(Biomes.SMALL_END_ISLANDS) || b.is(Biomes.END_BARRENS)),
                 "never the main island, the small islands or the barrens");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/glimmerless")));

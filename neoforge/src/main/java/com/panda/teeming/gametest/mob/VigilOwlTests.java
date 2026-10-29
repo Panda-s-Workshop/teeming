@@ -594,9 +594,9 @@ public final class VigilOwlTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("vigil_owl"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)) && tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)),
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "vigil_owl").stream().anyMatch(b -> b.is(Biomes.END_MIDLANDS)) && TeemingGameTests.spawnBiomes(helper, "vigil_owl").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)),
                 "its home holds the midlands and the highlands");
-        helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(Biomes.END_BARRENS) || b.is(Biomes.SMALL_END_ISLANDS) || b.is(Biomes.THE_END)),
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "vigil_owl").stream().noneMatch(b -> b.is(Biomes.END_BARRENS) || b.is(Biomes.SMALL_END_ISLANDS) || b.is(Biomes.THE_END)),
                 "never the barrens, the small islands or the main island");
         var modifier = access.lookupOrThrow(NeoForgeRegistries.Keys.BIOME_MODIFIERS)
                 .get(ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, TeemingMod.id("spawns/vigil_owl")));

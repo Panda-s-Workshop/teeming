@@ -647,9 +647,9 @@ public final class GatecasterTests {
         var access = helper.getLevel().registryAccess();
         var tag = access.lookupOrThrow(Registries.BIOME).get(TeemingSpawns.tag("gatecaster"));
         helper.assertTrue(tag.isPresent(), "it has a biome tag");
-        helper.assertTrue(tag.get().stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
+        helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "gatecaster").stream().anyMatch(b -> b.is(Biomes.END_HIGHLANDS)), "its home holds the End highlands");
         for (var other : List.of(Biomes.END_MIDLANDS, Biomes.END_BARRENS, Biomes.SMALL_END_ISLANDS, Biomes.THE_END, Biomes.PLAINS)) {
-            helper.assertTrue(tag.get().stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
+            helper.assertTrue(TeemingGameTests.spawnBiomes(helper, "gatecaster").stream().noneMatch(b -> b.is(other)), "and not " + other.identifier());
         }
         RosterStats.Entry row = RosterStats.get("gatecaster");
         helper.assertTrue(row.dim() == RosterStats.Dim.END, "an End mob");
